@@ -43,6 +43,7 @@ import {
 } from "../everyTeamComposer/historicalRosters";
 import { PlayerFilterBar } from "../tierListComposer/PlayerFilterBar";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
+import { TeamPicker } from "../standingsComposer/TeamPicker";
 import {
   EMPTY_PLAYER_FILTERS,
   getPlayer,
@@ -55,16 +56,20 @@ import { exportPlotPng } from "./exportPlotPng";
 import { renderPlotCanvas } from "./renderPlotCanvas";
 import {
   autoPlotTitle,
+  DEFAULT_PLOT_QUADRANTS,
   defaultPlotDraft,
   isPlotDraft,
   normalizePlotDraft,
+  parsePlotSizeMetric,
   pinPlotPlayer,
   plotCaptionNames,
   plotMetricLabel,
   populatePlotPoints,
+  togglePlotId,
   unpinPlotPlayer,
   type PlotDraft,
   type PlotPoint,
+  type PlotQuadrants,
   type PlotSubject,
 } from "./plotState";
 import "@fontsource/montserrat/latin-900.css";
@@ -104,6 +109,12 @@ export function PlotComposerApp() {
   const [season, setSeason] = useState(empty.season);
   const [points, setPoints] = useState<PlotPoint[]>([]);
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+  const [highlightedIds, setHighlightedIds] = useState<string[]>([]);
+  const [sizeMetric, setSizeMetric] = useState<EveryTeamStatMetric | "none">("none");
+  const [quadrants, setQuadrants] = useState<PlotQuadrants>({
+    ...DEFAULT_PLOT_QUADRANTS,
+  });
+  const [highlighting, setHighlighting] = useState(false);
   const [filters, setFilters] = useState<PlayerSearchFilters>({
     ...EMPTY_PLAYER_FILTERS,
   });
@@ -134,6 +145,9 @@ export function PlotComposerApp() {
     setSeason(draft.season || everyTeamCurrentSeason());
     setPoints(draft.points);
     setPinnedIds(draft.pinnedIds);
+    setHighlightedIds(draft.highlightedIds ?? []);
+    setSizeMetric(parsePlotSizeMetric(draft.sizeMetric));
+    setQuadrants(draft.quadrants ?? { ...DEFAULT_PLOT_QUADRANTS });
     setFilters(draft.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(draft.showBa !== false);
     setShowNames(draft.showNames !== false);
@@ -161,6 +175,9 @@ export function PlotComposerApp() {
       season,
       points,
       pinnedIds,
+      highlightedIds,
+      sizeMetric,
+      quadrants,
       showBa,
       showNames,
       filters,
@@ -174,6 +191,9 @@ export function PlotComposerApp() {
     season,
     points,
     pinnedIds,
+    highlightedIds,
+    sizeMetric,
+    quadrants,
     showBa,
     showNames,
     filters,
@@ -190,6 +210,9 @@ export function PlotComposerApp() {
     setSeason(next.season);
     setPoints(next.points);
     setPinnedIds(next.pinnedIds);
+    setHighlightedIds(next.highlightedIds ?? []);
+    setSizeMetric(parsePlotSizeMetric(next.sizeMetric));
+    setQuadrants(next.quadrants ?? { ...DEFAULT_PLOT_QUADRANTS });
     setFilters(next.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(next.showBa !== false);
     setShowNames(next.showNames !== false);
@@ -204,6 +227,7 @@ export function PlotComposerApp() {
       filters,
       pinnedIds,
       statsSample,
+      sizeMetric,
     );
     const labelX = plotMetricLabel(xMetric);
     const labelY = plotMetricLabel(yMetric);
@@ -243,6 +267,8 @@ export function PlotComposerApp() {
     xMetric,
     yMetric,
     points,
+    highlightedIds,
+    quadrants,
     look,
     purpleFlair,
     showBa,
@@ -392,6 +418,23 @@ export function PlotComposerApp() {
             ))}
           </select>
         </label>
+        <label className="sc-field">
+          Size
+          <select
+            value={sizeMetric}
+            aria-label="Size dots by a third stat"
+            onChange={(event) =>
+              setSizeMetric(parsePlotSizeMetric(event.target.value))
+            }
+          >
+            <option value="none">Off</option>
+            {EVERY_TEAM_STAT_METRICS.map((metric) => (
+              <option key={`size-${metric.id}`} value={metric.id}>
+                {metric.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           type="button"
           className="sc-chip"
@@ -457,6 +500,42 @@ export function PlotComposerApp() {
             ))}
           </div>
         ) : null}
+        <div className="sc-look" role="group" aria-label="Highlight dots">
+          <span className="sc-look__label">Glow</span>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => setHighlighting(true)}
+          >
+            Highlight {subject === "teams" ? "teams" : "players"}
+          </button>
+          {highlightedIds.length ? (
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => setHighlightedIds([])}
+            >
+              Clear glow
+            </button>
+          ) : null}
+        </div>
+        {highlightedIds.length ? (
+          <div className="sc-look" role="list" aria-label="Highlighted dots">
+            {highlightedIds.map((id) => (
+              <button
+                key={`hot-${id}`}
+                type="button"
+                className="sc-chip is-on"
+                role="listitem"
+                onClick={() =>
+                  setHighlightedIds((current) => togglePlotId(current, id))
+                }
+              >
+                {getPlayer(id)?.name ?? id} ×
+              </button>
+            ))}
+          </div>
+        ) : null}
           </>
         }
         board={
@@ -470,6 +549,50 @@ export function PlotComposerApp() {
           label="Labels"
           ariaLabel="Show names on the plot"
         />
+        <label className="sc-field">
+          TL
+          <input
+            value={quadrants.tl}
+            maxLength={18}
+            aria-label="Top-left quadrant"
+            onChange={(event) =>
+              setQuadrants((current) => ({ ...current, tl: event.target.value }))
+            }
+          />
+        </label>
+        <label className="sc-field">
+          TR
+          <input
+            value={quadrants.tr}
+            maxLength={18}
+            aria-label="Top-right quadrant"
+            onChange={(event) =>
+              setQuadrants((current) => ({ ...current, tr: event.target.value }))
+            }
+          />
+        </label>
+        <label className="sc-field">
+          BL
+          <input
+            value={quadrants.bl}
+            maxLength={18}
+            aria-label="Bottom-left quadrant"
+            onChange={(event) =>
+              setQuadrants((current) => ({ ...current, bl: event.target.value }))
+            }
+          />
+        </label>
+        <label className="sc-field">
+          BR
+          <input
+            value={quadrants.br}
+            maxLength={18}
+            aria-label="Bottom-right quadrant"
+            onChange={(event) =>
+              setQuadrants((current) => ({ ...current, br: event.target.value }))
+            }
+          />
+        </label>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">9:16 crop</span>
           <button
@@ -496,6 +619,9 @@ export function PlotComposerApp() {
             season,
             points,
             pinnedIds,
+            highlightedIds,
+            sizeMetric,
+            quadrants,
             showBa,
             showNames,
             filters,
@@ -631,6 +757,8 @@ export function PlotComposerApp() {
               xMetric={xMetric}
               yMetric={yMetric}
               points={points}
+              highlightedIds={highlightedIds}
+              quadrants={quadrants}
               look={look}
               purpleFlair={purpleFlair}
               showBa={showBa}
@@ -644,7 +772,8 @@ export function PlotComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Scatter of teams or players on two season stats. Empty until you
-            Populate. Pin players to plot only those names. Downloads a 4:5
+            Populate. Highlight several players or teams so they glow. Size-by
+            is optional. Quadrant labels sit in the corners. Downloads a 4:5
             Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
@@ -668,6 +797,38 @@ export function PlotComposerApp() {
             }
           }}
           onClose={closePin}
+        />
+      ) : null}
+      {highlighting && subject === "players" ? (
+        <PlayerPicker
+          heading="Highlight players"
+          hint="Highlighted players glow on the plot. Pin several — not only one."
+          currentId={null}
+          usedLabels={Object.fromEntries(
+            highlightedIds.map((id) => [id, "Glowing"]),
+          )}
+          onPick={(playerId) => {
+            setHighlightedIds((current) => togglePlotId(current, playerId));
+            const player = getPlayer(playerId);
+            setStatus(`Highlighted ${player?.name ?? "player"}.`);
+          }}
+          onClear={() => setHighlightedIds([])}
+          onClose={() => setHighlighting(false)}
+        />
+      ) : null}
+      {highlighting && subject === "teams" ? (
+        <TeamPicker
+          heading="Highlight teams"
+          hint="Highlighted teams glow on the plot. Pin several."
+          currentId={null}
+          usedLabels={Object.fromEntries(
+            highlightedIds.map((id) => [id, "Glowing"]),
+          )}
+          onPick={(teamId) => {
+            setHighlightedIds((current) => togglePlotId(current, teamId));
+            setStatus(`Highlighted ${teamId}.`);
+          }}
+          onClose={() => setHighlighting(false)}
         />
       ) : null}
     </div>

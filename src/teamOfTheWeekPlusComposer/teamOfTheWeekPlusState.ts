@@ -261,3 +261,39 @@ export const fillPlusFromStandouts = (
   }
   return next;
 };
+
+/** 2G / 2F / 1C into a five-strip TOTW board. */
+export const fillStartersFromStandouts = (
+  strips: TotwStrip[],
+  rows: NightStandout[],
+): TotwStrip[] => {
+  const previousById = new Map<string, TotwStrip>();
+  for (const slot of strips) {
+    if (slot.playerId) {
+      previousById.set(slot.playerId, slot);
+    }
+  }
+  const starters = selectPlusStarters(rows);
+  let next = strips.map(() => createEmptyStrip());
+  while (next.length < PLUS_STARTER_COUNT) {
+    next.push(createEmptyStrip());
+  }
+  next = next.slice(0, Math.max(strips.length, PLUS_STARTER_COUNT));
+  starters.forEach((row, index) => {
+    if (index >= strips.length) {
+      return;
+    }
+    const player = getPlayer(row.athleteId);
+    if (!player) {
+      return;
+    }
+    const previous = previousById.get(player.id);
+    next = applyPlayerPick(
+      next,
+      index,
+      player,
+      Boolean(previous && hasCustomPhoto(previous)),
+    );
+  });
+  return next.slice(0, strips.length);
+};

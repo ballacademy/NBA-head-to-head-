@@ -20,13 +20,15 @@ import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import { rangeWeekLine } from "../instagramComposer/composerDateRange";
 import {
+  parseCoverSlotCount,
   SCC_SLOT_COUNT,
   SCC_TITLE_MAX_EM,
   SCC_TITLE_TRACK,
 } from "./statCardCoverLayout";
 
-export { clampPan, type PhotoPan, SCC_SLOT_COUNT };
+export { clampPan, type PhotoPan, parseCoverSlotCount, SCC_SLOT_COUNT };
 
 export const SCC_TITLE_MAX = 48;
 export const SCC_DATE_MAX = 24;
@@ -72,6 +74,7 @@ export interface StatCardCoverDraft {
   showBa?: boolean;
   showGold?: boolean;
   watermark?: ComposerWatermark;
+  portraitCount?: number;
 }
 
 const isNullableString = (value: unknown) =>
@@ -114,8 +117,8 @@ export const emptyCoverSlot = (): CoverSlot => ({
   pan: { ...DEFAULT_HEADSHOT_PAN },
 });
 
-export const emptyCoverSlots = (): CoverSlot[] =>
-  Array.from({ length: SCC_SLOT_COUNT }, emptyCoverSlot);
+export const emptyCoverSlots = (count = SCC_SLOT_COUNT): CoverSlot[] =>
+  Array.from({ length: parseCoverSlotCount(count) }, emptyCoverSlot);
 
 export const coverTitleForNight = (
   _date?: string,
@@ -171,8 +174,9 @@ export const defaultStatCardCoverDraft = (
 export const normalizeStatCardCoverDraft = (
   draft: StatCardCoverDraft,
 ): StatCardCoverDraft => {
-  const slots = [...draft.slots.slice(0, SCC_SLOT_COUNT)];
-  while (slots.length < SCC_SLOT_COUNT) {
+  const portraitCount = parseCoverSlotCount(draft.portraitCount ?? draft.slots.length);
+  const slots = [...draft.slots.slice(0, portraitCount)];
+  while (slots.length < portraitCount) {
     slots.push(emptyCoverSlot());
   }
   return {
@@ -185,6 +189,7 @@ export const normalizeStatCardCoverDraft = (
     dateLine: draft.dateLine.replace(/\s+/g, " ").trim().slice(0, SCC_DATE_MAX),
     gameDate: isoDateOnly(draft.gameDate) || nbaTodayIso(),
     slots,
+    portraitCount,
     showBa: draft.showBa !== false,
     showGold: draft.showGold !== false,
     watermark: parseComposerWatermark(draft.watermark),
@@ -255,6 +260,15 @@ export const coverPasteSlotIndex = (
   return Math.min(SCC_SLOT_COUNT - 1, Math.max(0, index));
 };
 
+export const coverPasteSlotIndexFor = (
+  lastClicked: number,
+  count: number,
+  pickerIndex: number | null = null,
+) => {
+  const index = pickerIndex ?? lastClicked;
+  return Math.min(parseCoverSlotCount(count) - 1, Math.max(0, index));
+};
+
 export const setCoverSlotPhotoAt = (
   slots: CoverSlot[],
   index: number,
@@ -301,7 +315,7 @@ export const applyCoverNight = (
   draft: StatCardCoverDraft,
   iso: string,
   todayIso = nbaTodayIso(),
-  yesterdayIso = shiftIsoDate(todayIso, -1),
+  _yesterdayIso = shiftIsoDate(todayIso, -1),
 ): StatCardCoverDraft => {
   const nextDate = isoDateOnly(iso) || todayIso;
   const autoTitle = isAutoCoverTitle(draft.title);
@@ -316,6 +330,30 @@ export const applyCoverNight = (
   };
 };
 
+export const applyCoverRange = (
+  draft: StatCardCoverDraft,
+  from: string,
+  to: string,
+): StatCardCoverDraft => {
+  const start = isoDateOnly(from) || nbaTodayIso();
+  const end = isoDateOnly(to) || start;
+  const autoTitle = isAutoCoverTitle(draft.title);
+  const previousLine = coverDateLine(draft.gameDate);
+  const previousRange = rangeWeekLine(draft.gameDate, draft.gameDate);
+  const autoDate =
+    !draft.dateLine.trim() ||
+    draft.dateLine.trim().toUpperCase() === previousLine ||
+    draft.dateLine.trim().toUpperCase() === previousRange.toUpperCase();
+  const dateLine =
+    start === end ? coverDateLine(end) : rangeWeekLine(start, end);
+  return {
+    ...draft,
+    gameDate: end,
+    title: autoTitle ? DEFAULT_COVER_TITLE : draft.title,
+    dateLine: autoDate ? dateLine.slice(0, SCC_DATE_MAX) : draft.dateLine,
+  };
+};
+
 /** Ranked standouts already sorted — take the first three faces. */
 export const fillCoverFromStandouts = (
   draft: StatCardCoverDraft,
@@ -327,7 +365,8 @@ export const fillCoverFromStandouts = (
       previousById.set(slot.playerId, slot);
     }
   }
-  const slots = Array.from({ length: SCC_SLOT_COUNT }, (_, index) => {
+  const count = parseCoverSlotCount(draft.portraitCount ?? draft.slots.length);
+  const slots = Array.from({ length: count }, (_, index) => {
     const row = rows[index];
     if (!row) {
       return emptyCoverSlot();

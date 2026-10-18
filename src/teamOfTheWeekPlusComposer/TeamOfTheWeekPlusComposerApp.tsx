@@ -29,11 +29,15 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
-import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
-import { useComposerNight } from "../instagramComposer/composerNight";
+import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
+import {
+  isAutoWeekLine,
+  rangeWeekLine,
+  useComposerDateRange,
+} from "../instagramComposer/composerDateRange";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
-import { fetchWeekStandouts } from "../playerOfTheDayComposer/nightStandouts";
+import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { exportTeamOfTheWeekPlusPng } from "./exportTeamOfTheWeekPlusPng";
@@ -116,16 +120,25 @@ export function TeamOfTheWeekPlusComposerApp() {
     playerName: string;
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<TotwStrip[]>();
-  const night = useComposerNight();
+  const { range, setRange } = useComposerDateRange();
 
   useEffect(() => {
     document.title = "Team of the Week Plus graphic";
   }, []);
 
-  const fillLastWeek = useCallback(async (force = false, endIso = night.date) => {
-    setStatus("Loading this week’s box scores…");
+  const fillLastWeek = useCallback(async (
+    force = false,
+    fromIso = range.from,
+    toIso = range.to,
+  ) => {
+    setStatus("Loading box scores for this range…");
     try {
-      const rows = await fetchWeekStandouts(endIso, 7);
+      const rows = await fetchStandoutsInRange(fromIso, toIso);
+      setWeek((current) =>
+        isAutoWeekLine(current, fromIso, toIso)
+          ? rangeWeekLine(fromIso, toIso)
+          : current,
+      );
       setSlots((current) => {
         if (!force && !plusBoardEmpty(current)) {
           return current;
@@ -146,15 +159,15 @@ export function TeamOfTheWeekPlusComposerApp() {
         setStatus(
           starters.length
             ? `Filled ${groups.G}G / ${groups.F}F / ${groups.C}C and ${standouts.length} surprise standouts.`
-            : "No box scores for this week yet — pick players for the empty slots.",
+            : "No box scores for this range yet — pick players for the empty slots.",
         );
         return next;
       });
     } catch (error) {
       console.error(error);
-      setStatus("Could not load this week’s standouts.");
+      setStatus("Could not load this range’s standouts.");
     }
-  }, [night.date]);
+  }, [range.from, range.to]);
 
   useEffect(() => {
     const draft = loadDraft();
@@ -376,30 +389,24 @@ export function TeamOfTheWeekPlusComposerApp() {
           Week
           <input
             value={week}
-            maxLength={32}
-            onChange={(event) => setWeek(event.target.value.slice(0, 32))}
+            maxLength={40}
+            onChange={(event) => setWeek(event.target.value.slice(0, 40))}
           />
         </label>
           </>
         }
         data={
           <>
-          <ComposerNightDate
-            date={night.date}
-            todayIso={night.todayIso}
-            yesterdayIso={night.yesterdayIso}
-            onChange={(iso) => {
-              night.setDate(iso);
-              void fillLastWeek(false, iso);
+          <ComposerDateRange
+            from={range.from}
+            to={range.to}
+            onChange={(next) => {
+              const written = setRange(next);
+              void fillLastWeek(false, written.from, written.to);
             }}
+            onFill={() => void fillLastWeek(true)}
+            fillLabel="Fill range"
           />
-          <button
-            type="button"
-            className="sc-chip"
-            onClick={() => void fillLastWeek(true)}
-          >
-            Fill last week
-          </button>
           </>
         }
         board={

@@ -3,6 +3,7 @@ import {
   playerRowForSeason,
 } from "../everyTeamComposer/historicalRosters";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { datesInInclusiveRange } from "../instagramComposer/composerDateRange";
 import {
   emptyStats,
   formatDateLabel,
@@ -500,17 +501,14 @@ export const mergeWeekStandouts = (nights: NightStandout[][]) => {
   return [...best.values()].sort((a, b) => b.score - a.score);
 };
 
-export const fetchWeekStandouts = async (
-  endIso: string,
-  nights = 7,
+export const fetchStandoutsInRange = async (
+  fromIso: string,
+  toIso: string,
 ): Promise<NightStandout[]> => {
-  const end = isoDateOnly(endIso);
-  if (!end || nights < 1) {
+  const dates = datesInInclusiveRange(fromIso, toIso);
+  if (!dates.length) {
     return [];
   }
-  const dates = Array.from({ length: nights }, (_, index) =>
-    shiftIsoDate(end, -index),
-  );
   const batches: NightStandout[][] = [];
   for (let index = 0; index < dates.length; index += 2) {
     const slice = dates.slice(index, index + 2);
@@ -519,4 +517,16 @@ export const fetchWeekStandouts = async (
     );
   }
   return mergeWeekStandouts(batches);
+};
+
+export const fetchWeekStandouts = async (
+  endIso: string,
+  nights = 7,
+): Promise<NightStandout[]> => {
+  const end = isoDateOnly(endIso);
+  if (!end || nights < 1) {
+    return [];
+  }
+  const from = shiftIsoDate(end, -(nights - 1));
+  return fetchStandoutsInRange(from, end);
 };

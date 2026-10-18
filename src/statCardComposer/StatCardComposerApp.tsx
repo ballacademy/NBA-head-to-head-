@@ -15,7 +15,8 @@ import {
   useComposerLook,
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
-import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
+import { useComposerDateRange } from "../instagramComposer/composerDateRange";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import {
@@ -37,10 +38,15 @@ import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import {
+  aggregateLastGames,
   fetchLastGame,
+  fetchRecentGames,
+  gamesInInclusiveRange,
   isoDateOnly,
   type LastGame,
 } from "../playerOfTheDayComposer/lastGame";
+import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
+import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
 import {
   everyTeamCurrentSeason,
   everyTeamSeasons,
@@ -61,6 +67,7 @@ import {
   fillStatCardFromGame,
   fillStatCardFromPlayer,
   fillStatCardFromSeason,
+  applyStatCardHighs,
   fillStatCardFromStandout,
   formatStatCardMatchup,
   hasCustomPhoto,
@@ -118,10 +125,12 @@ export function StatCardComposerApp() {
   const lastGameRef = useRef<LastGame | null>(null);
   const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
   const night = useComposerNight();
+  const { range, setRange } = useComposerDateRange();
+  const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
   const source = parseStatCardSource(draft.source);
   const todayIso = night.todayIso;
   const yesterdayIso = night.yesterdayIso;
-  const gameDate = night.date;
+  const gameDate = range.to;
 
   useEffect(() => {
     document.title = "Stat card graphic";
@@ -162,13 +171,19 @@ export function StatCardComposerApp() {
         );
         return;
       }
-      const game = await fetchLastGame(
-        next.playerId,
-        sample,
-        parseStatCardSource(next.source) === "last-game"
-          ? next.gameDate
-          : null,
-      );
+      const recent = await fetchRecentGames(next.playerId, sample);
+      const inRange = gamesInInclusiveRange(recent, range.from, range.to);
+      const game =
+        inRange.length > 1
+          ? aggregateLastGames(inRange)
+          : inRange[0] ??
+            (await fetchLastGame(
+              next.playerId,
+              sample,
+              parseStatCardSource(next.source) === "last-game"
+                ? next.gameDate || range.to
+                : null,
+            ));
       lastGameRef.current = game;
       setDraft((current) => {
         if (current.playerId !== next.playerId) {
@@ -178,10 +193,14 @@ export function StatCardComposerApp() {
           return {
             ...current,
             matchup: "",
-            stats: current.stats.map((line) => ({ ...line, value: "" })),
+            stats: current.stats.map((line) => ({ ...line, value: "", high: null })),
           };
         }
-        return fillStatCardFromStandout(current, game);
+        return applyStatCardHighs(
+          fillStatCardFromStandout(current, game),
+          recent,
+          recent,
+        );
       });
     } catch {
       /* still editable */
@@ -206,23 +225,23 @@ export function StatCardComposerApp() {
     if (!hydrated || source !== "last-game") {
       return;
     }
-    if (draft.gameDate !== night.date) {
+    if (draft.gameDate !== range.to) {
       const next = {
         ...draft,
-        gameDate: night.date,
-        statsLeft: peekStatCardStatsLeft(night.date),
+        gameDate: range.to,
+        statsLeft: peekStatCardStatsLeft(range.to),
       };
       setDraft(next);
       void fillStats(next);
     }
-  }, [hydrated, night.date, source]);
+  }, [hydrated, range.from, range.to, source]);
 
   useEffect(() => {
     if (!pickerOpen || source !== "last-game") {
       return;
     }
-    void night.ensureStandouts(night.date);
-  }, [pickerOpen, source, night.date, night.ensureStandouts]);
+    void fetchStandoutsInRange(range.from, range.to).then(setRangeStandouts);
+  }, [pickerOpen, source, range.from, range.to]);
 
   const handleExport = async (
     filename?: string,
@@ -274,7 +293,7 @@ export function StatCardComposerApp() {
     }
     push(draft);
     let next = fillStatCardFromPlayer(player, draft, keepCustomPhoto);
-    const standout = night.standouts.find((row) => row.athleteId === playerId);
+    const standout = rangeStandouts.find((row) => row.athleteId === playerId);
     if (standout && parseStatCardSource(next.source) === "last-game") {
       lastGameRef.current = standout.game;
       next = fillStatCardFromStandout(next, standout.game);
@@ -378,11 +397,13 @@ export function StatCardComposerApp() {
           }}
         />
         {source === "last-game" ? (
-        <ComposerNightDate
-          date={gameDate}
-          todayIso={todayIso}
-          yesterdayIso={yesterdayIso}
-          onChange={setGameDate}
+        <ComposerDateRange
+          from={range.from}
+          to={range.to}
+          onChange={(next) => {
+            const written = setRange(next);
+            setGameDate(written.to);
+          }}
         />
         ) : (
         <label className="sc-field">
@@ -530,6 +551,25 @@ export function StatCardComposerApp() {
                 }}
               >
                 {draft.showMatchup ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">High pip</span>
+              <button
+                type="button"
+                className={draft.showHighPip ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={Boolean(draft.showHighPip)}
+                aria-label="Season or career high pip"
+                onClick={() => {
+                  const next = {
+                    ...draft,
+                    showHighPip: !draft.showHighPip,
+                  };
+                  setDraft(next);
+                  void fillStats(next);
+                }}
+              >
+                {draft.showHighPip ? "On" : "Off"}
               </button>
             </label>
             <BaMarkToggle
@@ -785,11 +825,11 @@ export function StatCardComposerApp() {
           usedLabels={draft.playerId ? { [draft.playerId]: "Stat card" } : {}}
           suggested={
             source === "last-game"
-              ? nightStandoutPickerRows(night.standouts)
+              ? nightStandoutPickerRows(rangeStandouts)
               : []
           }
-          suggestedHeading={night.heading}
-          suggestedLoading={night.loading}
+          suggestedHeading="Range standouts"
+          suggestedLoading={false}
           onPick={handlePick}
           onClear={() => {
             push(draft);

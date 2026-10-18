@@ -163,6 +163,114 @@ export const todayDateLabel = (now = new Date()) => {
   return `${Number(month)}/${Number(day)}`;
 };
 
+const addMakes = (left: string, right: string) => {
+  const [lm, la] = String(left).split("-").map((part) => Number(part) || 0);
+  const [rm, ra] = String(right).split("-").map((part) => Number(part) || 0);
+  return `${lm + rm}-${la + ra}`;
+};
+
+const sumStat = (games: LastGame[], key: keyof LastGameStats) =>
+  games.reduce((total, game) => total + (Number(game.stats[key]) || 0), 0);
+
+export const gamesInInclusiveRange = (
+  games: LastGame[],
+  from: string,
+  to: string,
+) => {
+  const start = nbaSlateDate(from) || isoDateOnly(from);
+  const end = nbaSlateDate(to) || isoDateOnly(to);
+  if (!start || !end) {
+    return games;
+  }
+  const lo = start <= end ? start : end;
+  const hi = start <= end ? end : start;
+  return games.filter((game) => {
+    const date = nbaSlateDate(game.gameDate) || isoDateOnly(game.gameDate);
+    return Boolean(date && date >= lo && date <= hi);
+  });
+};
+
+/** Sum box-score counting stats across a week-in-review window. */
+export const aggregateLastGames = (games: LastGame[]): LastGame | null => {
+  if (!games.length) {
+    return null;
+  }
+  if (games.length === 1) {
+    return games[0] ?? null;
+  }
+  const first = games[games.length - 1]!;
+  const last = games[0]!;
+  const stats: LastGameStats = {
+    pts: String(sumStat(games, "pts")),
+    reb: String(sumStat(games, "reb")),
+    ast: String(sumStat(games, "ast")),
+    stl: String(sumStat(games, "stl")),
+    blk: String(sumStat(games, "blk")),
+    tov: String(sumStat(games, "tov")),
+    min: String(sumStat(games, "min")),
+    fg: games.reduce((total, game) => addMakes(total, game.stats.fg), "0-0"),
+    three: games.reduce(
+      (total, game) => addMakes(total, game.stats.three),
+      "0-0",
+    ),
+    ft: games.reduce(
+      (total, game) => addMakes(total, game.stats.ft ?? "0-0"),
+      "0-0",
+    ),
+  };
+  return {
+    ...last,
+    eventId: games.map((game) => game.eventId).filter(Boolean).join(","),
+    gameDate: last.gameDate,
+    resultLine: `${games.length} GP`,
+    dateLabel: `${games.length} GP`,
+    stats,
+    opponentAbbrev: first.opponentAbbrev,
+  };
+};
+
+export const averageLastGames = (games: LastGame[], count = 5): LastGame | null => {
+  const slice = games.slice(0, Math.max(1, count));
+  const summed = aggregateLastGames(slice);
+  if (!summed || slice.length <= 1) {
+    return summed;
+  }
+  const n = slice.length;
+  const avg = (value: string) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      return value;
+    }
+    const mean = parsed / n;
+    return Number.isInteger(mean) ? String(mean) : mean.toFixed(1);
+  };
+  const avgMakes = (value: string) => {
+    const [made, attempted] = value.split("-").map((part) => Number(part) || 0);
+    const meanMade = made / n;
+    const meanAtt = attempted / n;
+    const fmt = (part: number) =>
+      Number.isInteger(part) ? String(part) : part.toFixed(1);
+    return `${fmt(meanMade)}-${fmt(meanAtt)}`;
+  };
+  return {
+    ...summed,
+    resultLine: `LAST ${n}`,
+    dateLabel: `LAST ${n}`,
+    stats: {
+      pts: avg(summed.stats.pts),
+      reb: avg(summed.stats.reb),
+      ast: avg(summed.stats.ast),
+      stl: avg(summed.stats.stl),
+      blk: avg(summed.stats.blk),
+      tov: avg(summed.stats.tov),
+      min: avg(summed.stats.min),
+      fg: avgMakes(summed.stats.fg),
+      three: avgMakes(summed.stats.three),
+      ft: avgMakes(summed.stats.ft ?? "0-0"),
+    },
+  };
+};
+
 export const gameOnDate = (games: LastGame[], iso: string) => {
   const want = nbaSlateDate(iso) || isoDateOnly(iso);
   if (!want) {

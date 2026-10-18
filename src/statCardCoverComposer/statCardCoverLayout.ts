@@ -6,9 +6,19 @@ import {
 
 export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
-/** Three even full-bleed columns — one row, no hero stack. */
+/** Default three even full-bleed columns — one row, no hero stack. */
 export const SCC_SLOT_COUNT = 3;
+export const SCC_SLOT_MIN = 2;
+export const SCC_SLOT_MAX = 4;
 export const SCC_COL_W = GRAPHIC_WIDTH / SCC_SLOT_COUNT;
+
+export const parseCoverSlotCount = (value: unknown) => {
+  const n = typeof value === "number" ? value : Number(value);
+  if (n === 2 || n === 4) {
+    return n;
+  }
+  return SCC_SLOT_COUNT;
+};
 export const SCC_FADE_H = 620;
 /** Extra dark pooled under the title lockup — not a recrop. */
 export const SCC_LOCKUP_SCRIM_H = 400;
@@ -44,12 +54,14 @@ export const SCC_GOLD = "#facc15";
 export const SCC_GOLD_DEEP = "#d4af37";
 export const SCC_GOLD_HAIR = 2;
 
-export const coverCellRect = (index: number) => {
-  const col = Math.max(0, Math.min(index, SCC_SLOT_COUNT - 1));
+export const coverCellRect = (index: number, count = SCC_SLOT_COUNT) => {
+  const n = parseCoverSlotCount(count);
+  const colW = GRAPHIC_WIDTH / n;
+  const col = Math.max(0, Math.min(index, n - 1));
   return {
-    x: col * SCC_COL_W,
+    x: col * colW,
     y: 0,
-    w: SCC_COL_W,
+    w: colW,
     h: GRAPHIC_HEIGHT,
   };
 };
@@ -61,5 +73,8 @@ export const coverNameMetrics = (_index?: number) => ({
   given: SCC_GIVEN_SIZE,
 });
 
-export const coverSeamXs = () =>
-  Array.from({ length: SCC_SLOT_COUNT - 1 }, (_, index) => (index + 1) * SCC_COL_W);
+export const coverSeamXs = (count = SCC_SLOT_COUNT) => {
+  const n = parseCoverSlotCount(count);
+  const colW = GRAPHIC_WIDTH / n;
+  return Array.from({ length: n - 1 }, (_, index) => (index + 1) * colW);
+};

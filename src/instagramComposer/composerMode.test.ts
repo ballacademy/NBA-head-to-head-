@@ -96,18 +96,21 @@ describe("composer mode", () => {
       "potd-leaderboard",
       "team-of-the-week",
       "team-of-the-week-plus",
+      "shot-chart",
     ]);
     expect(COMPOSER_TAB_GROUPS[2]!.tabs.map((tab) => tab.mode)).toEqual([
       "headline",
       "quote",
       "mock-trade",
       "play-in",
+      "injury",
+      "schedule",
     ]);
     const modes = COMPOSER_TAB_GROUPS.flatMap((group) =>
       group.tabs.map((tab) => tab.mode),
     );
     expect(new Set(modes).size).toBe(modes.length);
-    expect(modes).toHaveLength(18);
+    expect(modes).toHaveLength(21);
   });
 
   it("opens pyramid and headline from path or query", () => {
@@ -145,6 +148,14 @@ describe("composer mode", () => {
     expect(readComposerMode("", "/scatter")).toBe("plot");
     expect(readComposerMode("?composer=plot", "/")).toBe("plot");
     expect(composerHref("plot")).toBe("/plot");
+    expect(readComposerMode("", "/injury")).toBe("injury");
+    expect(readComposerMode("?composer=injury-report", "/")).toBe("injury");
+    expect(composerHref("injury")).toBe("/injury");
+    expect(readComposerMode("", "/schedule")).toBe("schedule");
+    expect(composerHref("schedule")).toBe("/schedule");
+    expect(readComposerMode("", "/shot-chart")).toBe("shot-chart");
+    expect(readComposerMode("?composer=shots", "/")).toBe("shot-chart");
+    expect(composerHref("shot-chart")).toBe("/shot-chart");
   });
 
   it("opens ranked lineups from path or query", () => {

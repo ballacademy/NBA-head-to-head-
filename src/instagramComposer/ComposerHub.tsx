@@ -16,11 +16,15 @@ import { StatCardComposerApp } from "../statCardComposer/StatCardComposerApp";
 import { StatCardCoverComposerApp } from "../statCardCoverComposer/StatCardCoverComposerApp";
 import { MockTradeComposerApp } from "../mockTradeComposer/MockTradeComposerApp";
 import { PlotComposerApp } from "../plotComposer/PlotComposerApp";
+import { InjuryComposerApp } from "../injuryComposer/InjuryComposerApp";
+import { ScheduleComposerApp } from "../scheduleComposer/ScheduleComposerApp";
+import { ShotChartComposerApp } from "../shotChartComposer/ShotChartComposerApp";
 import {
   composerHref,
   readComposerMode,
   type ComposerMode,
 } from "./composerMode";
+import { useComposerHudMode } from "./composerHudMode";
 import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
@@ -43,10 +47,14 @@ import "../statCardComposer/statCardComposer.css";
 import "../statCardCoverComposer/statCardCoverComposer.css";
 import "../mockTradeComposer/mockTradeComposer.css";
 import "../plotComposer/plotComposer.css";
+import "../injuryComposer/injuryComposer.css";
+import "../scheduleComposer/scheduleComposer.css";
+import "../shotChartComposer/shotChartComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
   const [photoEdit, setPhotoEdit] = useComposerPhotoEdit();
+  const [hudMode] = useComposerHudMode();
   const [persistReady, setPersistReady] = useState(false);
 
   useEffect(() => {
@@ -92,7 +100,13 @@ export function ComposerHub() {
 
   return (
     <div
-      className={["sc-root", photoEdit ? "is-photo-edit" : ""].filter(Boolean).join(" ")}
+      className={[
+        "sc-root",
+        photoEdit ? "is-photo-edit" : "",
+        hudMode === "simple" ? "is-hud-simple" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       data-scroller="page"
     >
       <ComposerTabs
@@ -135,6 +149,12 @@ export function ComposerHub() {
         <MockTradeComposerApp />
       ) : mode === "plot" ? (
         <PlotComposerApp />
+      ) : mode === "injury" ? (
+        <InjuryComposerApp />
+      ) : mode === "schedule" ? (
+        <ScheduleComposerApp />
+      ) : mode === "shot-chart" ? (
+        <ShotChartComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

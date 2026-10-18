@@ -99,6 +99,20 @@ describe("stat card cover", () => {
     });
     expect(coverCellRect(2).x + coverCellRect(2).w).toBe(GRAPHIC_WIDTH);
     expect(coverSeamXs()).toEqual([400, 800]);
+    expect(coverCellRect(0, 2)).toEqual({
+      x: 0,
+      y: 0,
+      w: 600,
+      h: GRAPHIC_HEIGHT,
+    });
+    expect(coverCellRect(1, 2).x + coverCellRect(1, 2).w).toBe(GRAPHIC_WIDTH);
+    expect(coverCellRect(3, 4)).toEqual({
+      x: 900,
+      y: 0,
+      w: 300,
+      h: GRAPHIC_HEIGHT,
+    });
+    expect(coverSeamXs(4)).toEqual([300, 600, 900]);
     expect(SCC_GOLD.toLowerCase()).toBe("#facc15");
     expect(SCC_GOLD_DEEP.toLowerCase()).toBe("#d4af37");
   });
@@ -204,7 +218,7 @@ describe("stat card cover", () => {
     expect(next.slots[2]!.playerId).toBeNull();
   });
 
-  it("migrates stored LAST NIGHT titles to STARS AND STANDOUTS and drops a fourth slot", () => {
+  it("migrates stored LAST NIGHT titles to STARS AND STANDOUTS and keeps 2–4 portraits", () => {
     const draft = normalizeStatCardCoverDraft({
       ...defaultStatCardCoverDraft(),
       title: "LAST NIGHT",
@@ -216,9 +230,16 @@ describe("stat card cover", () => {
       ],
     });
     expect(draft.title).toBe(DEFAULT_COVER_TITLE);
-    expect(draft.slots).toHaveLength(3);
+    expect(draft.slots).toHaveLength(4);
+    expect(draft.portraitCount).toBe(4);
     expect(draft.slots[0]!.lastName.toUpperCase()).toContain("JOKIC");
     expect(JSON.stringify(draft.slots[0])).not.toMatch(/"pts"|"reb"|"ast"/);
+    expect(
+      normalizeStatCardCoverDraft({
+        ...defaultStatCardCoverDraft(),
+        slots: defaultStatCardCoverDraft().slots.slice(0, 2),
+      }).slots,
+    ).toHaveLength(2);
   });
 
   it("drops default portraits below the title fade and pastes into one slot", () => {

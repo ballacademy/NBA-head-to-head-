@@ -275,6 +275,11 @@
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.sc-root.is-hud-simple .sc-toolbar__filters,
+.sc-root.is-hud-simple .sc-grade {
+  display: none;
+}
+
 .sc-toolbar__brand {
   display: flex;
   flex-direction: column;

@@ -58,6 +58,7 @@ import {
   rankedFooterH,
   rankedHeaderH,
   rankedStripH,
+  rankedStripRect,
   rlStripX,
   type RankDisplay,
 } from "./rankedLineupsLayout";
@@ -409,10 +410,16 @@ export const renderRankedLineupsCanvas = async (
     setLetterSpacing(context, 0);
   }
 
-  const stripY = rankedHeaderH(rankDisplay) * s;
-  const stripH = rankedStripH(rankDisplay, input.showFade === true, boardH) * s;
+  const stripCount = input.strips.length || RANKED_LINEUP_STRIP_COUNT;
   const stripW = RL_STRIP_W * s;
-  for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
+  for (let index = 0; index < stripCount; index += 1) {
+    const rect = rankedStripRect(
+      index,
+      stripCount,
+      rankDisplay,
+      input.showFade === true,
+      boardH,
+    );
     const strip = input.strips[index] ?? {
       playerId: null,
       teamId: null,
@@ -425,10 +432,10 @@ export const renderRankedLineupsCanvas = async (
     await drawStripPhoto(
       context,
       strip,
-      rlStripX(index) * s,
-      stripY,
-      stripW,
-      stripH,
+      rect.x * s,
+      rect.y * s,
+      rect.w * s,
+      rect.h * s,
       s,
       input.look,
       input.showFade === true,
@@ -438,22 +445,26 @@ export const renderRankedLineupsCanvas = async (
     if (input.purpleFlair) {
       paintPurpleInnerHairline(
         context,
-        rlStripX(index) * s,
-        stripY,
-        stripW,
-        stripH,
+        rect.x * s,
+        rect.y * s,
+        rect.w * s,
+        rect.h * s,
         s,
         input.look,
       );
     }
   }
 
-  const footerY = (boardH - rankedFooterH(input.showFade === true)) * s;
-  const positionLabels = parsePositionLabels(input.positionLabels);
-  for (let index = 0; index < RANKED_LINEUP_STRIP_COUNT; index += 1) {
+  const footerUnit = rankedFooterH(input.showFade === true);
+  const footerRows = Math.max(1, Math.ceil(stripCount / 5));
+  const footerY = (boardH - footerUnit * footerRows) * s;
+  const positionLabels = parsePositionLabels(input.positionLabels, stripCount);
+  for (let index = 0; index < stripCount; index += 1) {
     const strip = input.strips[index];
+    const row = Math.floor(index / 5);
     const x = rlStripX(index) * s;
     const cx = x + stripW / 2;
+    const rowY = footerY + row * footerUnit * s;
     const pos = (positionLabels[index] ?? "").trim().toUpperCase();
     if (pos) {
       context.font = `900 ${16 * s}px ${POSTER_FONT}`;
@@ -466,7 +477,7 @@ export const renderRankedLineupsCanvas = async (
         Math.max(48 * s, context.measureText(pos).width + 20 * s),
       );
       const pillX = cx - pillW / 2;
-      const pillY = footerY + (RL_POS_H * s - pillH) / 2;
+      const pillY = rowY + (RL_POS_H * s - pillH) / 2;
       roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
       context.fillStyle = "#fff";
       context.fill();
@@ -480,7 +491,7 @@ export const renderRankedLineupsCanvas = async (
     }
     const given = (strip?.firstName ?? "").trim().toUpperCase();
     const family = (strip?.lastName ?? "").trim().toUpperCase();
-    const nameTop = footerY + RL_POS_H * s;
+    const nameTop = rowY + RL_POS_H * s;
     const nameW = stripW - 8 * s;
     if (given) {
       context.font = `900 ${RL_NAME_GIVEN_SIZE * s}px ${POSTER_FONT}`;

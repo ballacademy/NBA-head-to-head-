@@ -56,6 +56,7 @@ export interface MockTradeDraft {
   title: string;
   sides: MockTradeSide[];
   showBa?: boolean;
+  showSalaries?: boolean;
 }
 
 const isNullableString = (value: unknown) =>
@@ -217,6 +218,7 @@ export const defaultMockTradeDraft = (): MockTradeDraft => ({
   title: DEFAULT_MOCK_TRADE_TITLE,
   sides: [emptyMockTradeSide(), emptyMockTradeSide()],
   showBa: true,
+  showSalaries: false,
 });
 
 export const normalizeMockTradeDraft = (draft: MockTradeDraft): MockTradeDraft => {
@@ -230,6 +232,7 @@ export const normalizeMockTradeDraft = (draft: MockTradeDraft): MockTradeDraft =
     title: draft.title.trim() ? draft.title : DEFAULT_MOCK_TRADE_TITLE,
     sides: parsed.slice(0, MOCK_TRADE_TEAM_MAX),
     showBa: draft.showBa !== false,
+    showSalaries: draft.showSalaries === true,
   };
 };
 

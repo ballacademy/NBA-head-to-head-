@@ -801,24 +801,38 @@ export const matchingTeamIds = (
   }).map((item) => item.id);
 };
 
+export const pickSeasonLeaders = (
+  teamId: string,
+  season: string,
+  metric: EveryTeamStatMetric,
+  sample: ComposerStatsSample = "regular",
+  count = 1,
+): EveryTeamRosterPlayer[] => {
+  const ranked = listRosterPlayers(teamId, season, sample)
+    .map((player) => ({
+      player,
+      value: rosterStatValue(player, metric),
+    }))
+    .filter(
+      (row): row is { player: EveryTeamRosterPlayer; value: number } =>
+        row.value != null,
+    )
+    .sort(
+      (left, right) =>
+        right.value - left.value ||
+        left.player.depth - right.player.depth ||
+        left.player.name.localeCompare(right.player.name),
+    );
+  return ranked.slice(0, Math.max(0, count)).map((row) => row.player);
+};
+
 export const pickSeasonLeader = (
   teamId: string,
   season: string,
   metric: EveryTeamStatMetric,
   sample: ComposerStatsSample = "regular",
-): EveryTeamRosterPlayer | null => {
-  let best: EveryTeamRosterPlayer | null = null;
-  let bestValue = Number.NEGATIVE_INFINITY;
-  listRosterPlayers(teamId, season, sample).forEach((player) => {
-    const value = rosterStatValue(player, metric);
-    if (value == null || value < bestValue) {
-      return;
-    }
-    best = player;
-    bestValue = value;
-  });
-  return best;
-};
+): EveryTeamRosterPlayer | null =>
+  pickSeasonLeaders(teamId, season, metric, sample, 1)[0] ?? null;
 
 export const roundStat = (value: number) => Math.round(value * 10) / 10;
 

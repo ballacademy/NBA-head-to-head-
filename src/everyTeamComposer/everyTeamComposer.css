@@ -299,6 +299,21 @@
   z-index: 0;
 }
 
+.et-cell.is-duo .et-headshot--a {
+  inset: -8% auto -2% -10%;
+  width: 68%;
+  left: -10%;
+  right: auto;
+}
+
+.et-cell.is-duo .et-headshot--b {
+  inset: -8% -10% -2% auto;
+  width: 68%;
+  left: auto;
+  right: -10%;
+  z-index: 2;
+}
+
 .et-headshot {
   position: absolute;
   inset: -8% -4% -2%;

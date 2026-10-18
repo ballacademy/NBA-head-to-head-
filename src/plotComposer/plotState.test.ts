@@ -18,6 +18,7 @@ import {
   plotRectFor,
 } from "./plotLayout";
 import {
+  DEFAULT_PLOT_QUADRANTS,
   DEFAULT_PLOT_TITLE,
   autoPlotTitle,
   defaultPlotDraft,
@@ -26,6 +27,8 @@ import {
   populatePlotPlayers,
   populatePlotTeams,
   splitPlotTitle,
+  parsePlotQuadrants,
+  togglePlotId,
   unpinPlotPlayer,
 } from "./plotState";
 
@@ -239,5 +242,18 @@ describe("plot composer", () => {
     expect(league.length).toBeGreaterThan(40);
     expect(Math.max(...league.map((point) => point.x))).toBeGreaterThan(0.05);
     expect(Math.max(...league.map((point) => point.y))).toBeGreaterThan(15);
+  });
+
+  it("highlights multiple players or teams and keeps editable quadrant labels", () => {
+    expect(togglePlotId([], "den")).toEqual(["den"]);
+    expect(togglePlotId(["den", "okc"], "bos")).toEqual(["den", "okc", "bos"]);
+    expect(togglePlotId(["den", "okc"], "den")).toEqual(["okc"]);
+    expect(parsePlotQuadrants(undefined)).toEqual(DEFAULT_PLOT_QUADRANTS);
+    expect(parsePlotQuadrants({ tl: "hot", tr: "ice", bl: "low", br: "right" })).toEqual({
+      tl: "hot",
+      tr: "ice",
+      bl: "low",
+      br: "right",
+    });
   });
 });

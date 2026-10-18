@@ -63,10 +63,13 @@ export type StatCardKey =
   | "fg";
 export type StatCardSource = "last-game" | "season";
 
+export type StatHighKind = "season" | "career";
+
 export interface StatCardLine {
   key: StatCardKey;
   label: string;
   value: string;
+  high?: StatHighKind | null;
 }
 
 export interface StatCardDraft {
@@ -87,6 +90,8 @@ export interface StatCardDraft {
   watermark?: ComposerWatermark;
   /** Stats column on the left, photo on the right. Default is stats on the right. */
   statsLeft?: boolean;
+  /** Career/season-high pip on a qualifying stat. Off by default. */
+  showHighPip?: boolean;
 }
 
 export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
@@ -206,6 +211,7 @@ export const defaultStatCardDraft = (): StatCardDraft => ({
   matchup: "",
   watermark: DEFAULT_COMPOSER_WATERMARK,
   statsLeft: false,
+  showHighPip: false,
 });
 
 export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => ({
@@ -224,6 +230,7 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
   matchup: clipStatMatchup(draft.matchup ?? ""),
   watermark: parseComposerWatermark(draft.watermark),
   statsLeft: parseStatsLeft(draft.statsLeft),
+  showHighPip: draft.showHighPip === true,
 });
 
 let memoryFlipByNight: Record<string, boolean> = {};
@@ -575,6 +582,65 @@ export const fillStatCardFromStandout = (
     source: "last-game",
     matchup: formatStatCardMatchup(game),
     stats: notableStatCardLines(game.stats, getPlayer(draft.playerId)),
+  };
+};
+
+const HIGH_FLOOR: Partial<Record<StatCardKey, number>> = {
+  pts: 20,
+  reb: 10,
+  ast: 8,
+  stl: 3,
+  blk: 3,
+};
+
+const maxStat = (games: LastGame[], key: StatCardKey) =>
+  games.reduce((best, game) => {
+    const raw = Number.parseFloat(String(game.stats[key as keyof LastGameStats] ?? ""));
+    return Number.isFinite(raw) && raw > best ? raw : best;
+  }, 0);
+
+export const statHighKind = (
+  key: StatCardKey,
+  value: string,
+  seasonGames: LastGame[],
+  careerGames: LastGame[] = seasonGames,
+): StatHighKind | null => {
+  const floor = HIGH_FLOOR[key];
+  if (floor == null) {
+    return null;
+  }
+  const n = Number.parseFloat(value);
+  if (!Number.isFinite(n) || n < floor) {
+    return null;
+  }
+  const seasonMax = maxStat(seasonGames, key);
+  const careerMax = maxStat(careerGames, key);
+  if (careerGames.length > seasonGames.length && n >= careerMax && careerMax > 0) {
+    return "career";
+  }
+  if (n >= seasonMax && seasonMax > 0) {
+    return "season";
+  }
+  return null;
+};
+
+export const applyStatCardHighs = (
+  draft: StatCardDraft,
+  seasonGames: LastGame[],
+  careerGames: LastGame[] = seasonGames,
+): StatCardDraft => {
+  if (!draft.showHighPip) {
+    return {
+      ...draft,
+      stats: draft.stats.map((line) => ({ ...line, high: null })),
+    };
+  }
+  return {
+    ...draft,
+    stats: draft.stats.map((line) => ({
+      ...line,
+      high: statHighKind(line.key, line.value, seasonGames, careerGames),
+    })),
   };
 };
 

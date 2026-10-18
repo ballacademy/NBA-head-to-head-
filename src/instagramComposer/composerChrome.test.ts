@@ -256,8 +256,8 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("plusLineupGroup");
     expect(totwPlusState).toMatch(/G:\s*2/);
     expect(totwPlusState).toContain("isPlusStar");
-    expect(totwPlusApp).toContain("ComposerNightDate");
-    expect(totwPlusApp).toContain("fetchWeekStandouts");
+    expect(totwPlusApp).toContain("ComposerDateRange");
+    expect(totwPlusApp).toContain("fetchStandoutsInRange");
     expect(totwPlusApp).not.toContain("totwStarterStrips");
     expect(totwPlusApp).not.toContain("ddgm:team-of-the-week-composer");
   });
@@ -573,5 +573,66 @@ describe("composer chrome", () => {
     expect(photoCss).not.toMatch(
       /\.pod-photo__tools \{\n(?:[^\n]+\n){0,8}\s*opacity:\s*0;/,
     );
+  });
+
+  it("ships the extras pack: range, multi-highlight, 2–4 cover, 6–10 lineup, duo, HUD Simple", () => {
+    const tabs = readFileSync(
+      join(root, "instagramComposer/ComposerTabs.tsx"),
+      "utf8",
+    );
+    const hub = readFileSync(
+      join(root, "instagramComposer/ComposerHub.tsx"),
+      "utf8",
+    );
+    const rankedApp = readFileSync(
+      join(root, "rankedLineupsComposer/RankedLineupsComposerApp.tsx"),
+      "utf8",
+    );
+    const plotApp = readFileSync(
+      join(root, "plotComposer/PlotComposerApp.tsx"),
+      "utf8",
+    );
+    const coverApp = readFileSync(
+      join(root, "statCardCoverComposer/StatCardCoverComposerApp.tsx"),
+      "utf8",
+    );
+    const etApp = readFileSync(
+      join(root, "everyTeamComposer/EveryTeamComposerApp.tsx"),
+      "utf8",
+    );
+    const compareApp = readFileSync(
+      join(root, "compareComposer/CompareComposerApp.tsx"),
+      "utf8",
+    );
+    const mockTradeApp = readFileSync(
+      join(root, "mockTradeComposer/MockTradeComposerApp.tsx"),
+      "utf8",
+    );
+    const totwApp = readFileSync(
+      join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),
+      "utf8",
+    );
+    expect(tabs).toContain("Simple");
+    expect(tabs).toContain("Full");
+    expect(tabs).toContain("Last {exports.length} PNGs");
+    expect(tabs).toContain('mode: "injury"');
+    expect(tabs).toContain('mode: "schedule"');
+    expect(tabs).toContain('mode: "shot-chart"');
+    expect(hub).toContain("is-hud-simple");
+    expect(hub).toContain("InjuryComposerApp");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__filters");
+    expect(totwApp).toContain("ComposerDateRange");
+    expect(coverApp).toContain("ComposerDateRange");
+    expect(statCardApp).toContain("ComposerDateRange");
+    expect(rankedApp).toContain("-man lineup");
+    expect(rankedApp).toContain("RANKED_LINEUP_STRIP_MAX");
+    expect(plotApp).toContain("togglePlotId");
+    expect(plotApp).toContain("highlightedIds");
+    expect(coverApp).toContain("portraitCount");
+    expect(etApp).toContain("Two players per team");
+    expect(compareApp).toContain("last-5");
+    expect(compareApp).toContain("this-week");
+    expect(mockTradeApp).toContain("showSalaries");
+    expect(statCardApp).toContain("showHighPip");
   });
 });

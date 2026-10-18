@@ -305,6 +305,16 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
                   Remove
                 </button>
               ) : null}
+              {line.high ? (
+                <span
+                  className={`stc-high is-${line.high}`}
+                  aria-label={
+                    line.high === "career" ? "Career high" : "Season high"
+                  }
+                >
+                  {line.high === "career" ? "CAREER" : "SZN"}
+                </span>
+              ) : null}
               <input
                 className="stc-value"
                 value={line.value}

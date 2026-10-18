@@ -4,6 +4,7 @@ import {
   EVERY_TEAM_CITY,
   EVERY_TEAM_COUNT,
   EVERY_TEAM_ORDER,
+  assignEveryTeamSeat,
   assignPlayer,
   assignPlayerToTeam,
   autoFillEveryTeamSlots,
@@ -120,6 +121,17 @@ describe("every-team order and slots", () => {
     expect(assignPlayer(filled, 0, "3945274")[13]).toBeNull();
     expect(assignPlayer(filled, 0, "3945274")[0]).toBe("3945274");
     expect(clearEveryTeamSlot(filled, 13)[13]).toBeNull();
+  });
+
+  it("pins a second player on the same franchise for duo cells", () => {
+    const empty = createEmptyEveryTeamSlots();
+    const first = assignEveryTeamSeat(empty, empty, "LAL", "1966", "a");
+    const duo = assignEveryTeamSeat(first.slots, first.partners, "LAL", "3945274", "b");
+    expect(duo.slots[slotIndexForTeam("LAL")]).toBe("1966");
+    expect(duo.partners[slotIndexForTeam("LAL")]).toBe("3945274");
+    const moved = assignEveryTeamSeat(duo.slots, duo.partners, "LAL", "1966", "b");
+    expect(moved.slots[slotIndexForTeam("LAL")]).toBeNull();
+    expect(moved.partners[slotIndexForTeam("LAL")]).toBe("1966");
   });
 
   it("splits titles into two balanced lines and names the PNG", () => {

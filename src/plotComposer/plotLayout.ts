@@ -238,6 +238,22 @@ export const nudgePlotLabels = (
   return next;
 };
 
+export const sizeScaleFor = (values: Array<number | undefined>) => {
+  const nums = values.filter((value): value is number => typeof value === "number");
+  if (nums.length < 2) {
+    return () => 1;
+  }
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const span = max - min || 1;
+  return (value?: number) => {
+    if (value == null) {
+      return 1;
+    }
+    return 0.72 + ((value - min) / span) * 1.15;
+  };
+};
+
 export const placePlotPoints = (
   points: Array<{
     id: string;
@@ -245,18 +261,24 @@ export const placePlotPoints = (
     y: number;
     label: string;
     kind: "team" | "player";
+    size?: number;
   }>,
   xAxis: PlotAxis,
   yAxis: PlotAxis,
   boardH = GRAPHIC_HEIGHT,
   showNames = true,
+  highlightedIds: string[] = [],
 ): PlotPlacedPoint[] => {
   const plot = plotRectFor(boardH);
-  const mark = plotMarkSize(points[0]?.kind ?? "team", points.length);
+  const base = plotMarkSize(points[0]?.kind ?? "team", points.length);
+  const scale = sizeScaleFor(points.map((point) => point.size));
+  const hot = new Set(highlightedIds.filter(Boolean));
   const labeled = showNames
     ? labelsToShow(points, points.length <= PLOT_LABEL_MAX)
     : new Set<string>();
+  hot.forEach((id) => labeled.add(id));
   const placed: PlotPlacedPoint[] = points.map((point) => {
+    const mark = Math.max(8, Math.round(base * scale(point.size)));
     const px = projectPlot(point.x, xAxis, plot.x, plot.w);
     const py = projectPlot(point.y, yAxis, plot.y, plot.h, true);
     const lw = labelWidth(point.label);

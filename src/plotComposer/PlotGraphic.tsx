@@ -26,6 +26,7 @@ import {
   plotMetricLabel,
   splitPlotTitle,
   type PlotPoint,
+  type PlotQuadrants,
   type PlotSubject,
 } from "./plotState";
 
@@ -36,6 +37,8 @@ interface PlotGraphicProps {
   xMetric: EveryTeamStatMetric;
   yMetric: EveryTeamStatMetric;
   points: PlotPoint[];
+  highlightedIds?: string[];
+  quadrants?: PlotQuadrants;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -55,6 +58,8 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
       xMetric,
       yMetric,
       points,
+      highlightedIds = [],
+      quadrants,
       look = "white",
       purpleFlair = false,
       showBa = true,
@@ -87,13 +92,15 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
             y: point.y,
             label: point.shortLabel || point.label,
             kind: point.kind,
+            size: point.size,
           })),
           xAxis,
           yAxis,
           boardH,
           showNames,
+          highlightedIds,
         ),
-      [points, xAxis, yAxis, boardH, showNames],
+      [points, xAxis, yAxis, boardH, showNames, highlightedIds],
     );
 
     const setRefs = (node: HTMLElement | null) => {
@@ -218,6 +225,18 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
           </svg>
           <p className="plt-axis-title is-x">{xLabel}</p>
           <p className="plt-axis-title is-y">{yLabel}</p>
+          {quadrants?.tl ? (
+            <p className="plt-quad is-tl">{quadrants.tl}</p>
+          ) : null}
+          {quadrants?.tr ? (
+            <p className="plt-quad is-tr">{quadrants.tr}</p>
+          ) : null}
+          {quadrants?.bl ? (
+            <p className="plt-quad is-bl">{quadrants.bl}</p>
+          ) : null}
+          {quadrants?.br ? (
+            <p className="plt-quad is-br">{quadrants.br}</p>
+          ) : null}
           {empty ? (
             <p className="plt-empty">Empty — populate to plot</p>
           ) : (
@@ -229,7 +248,12 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
               return (
                 <div key={point.id}>
                   <span
-                    className="plt-mark"
+                    className={[
+                      "plt-mark",
+                      highlightedIds.includes(point.id) ? "is-hot" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     style={
                       {
                         left: `calc(${mark.px - plot.x} * var(--u))`,

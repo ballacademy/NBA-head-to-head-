@@ -43,7 +43,34 @@ export interface PlotPoint {
   x: number;
   y: number;
   photoSrc: string | null;
+  size?: number;
 }
+
+export interface PlotQuadrants {
+  tl: string;
+  tr: string;
+  bl: string;
+  br: string;
+}
+
+export const DEFAULT_PLOT_QUADRANTS: PlotQuadrants = {
+  tl: "HIGH VOLUME",
+  tr: "EFFICIENT",
+  bl: "",
+  br: "",
+};
+
+export const parsePlotQuadrants = (value: unknown): PlotQuadrants => {
+  const rec = value && typeof value === "object" ? (value as Partial<PlotQuadrants>) : {};
+  const clip = (text: unknown) =>
+    typeof text === "string" ? text.replace(/\s+/g, " ").trim().slice(0, 18) : "";
+  return {
+    tl: clip(rec.tl) || DEFAULT_PLOT_QUADRANTS.tl,
+    tr: clip(rec.tr) || DEFAULT_PLOT_QUADRANTS.tr,
+    bl: clip(rec.bl),
+    br: clip(rec.br),
+  };
+};
 
 export interface PlotDraft {
   brand: string;
@@ -54,6 +81,9 @@ export interface PlotDraft {
   season: string;
   points: PlotPoint[];
   pinnedIds: string[];
+  highlightedIds?: string[];
+  sizeMetric?: EveryTeamStatMetric | "none";
+  quadrants?: PlotQuadrants;
   showBa?: boolean;
   showNames?: boolean;
   filters?: PlayerSearchFilters;
@@ -97,6 +127,9 @@ export const defaultPlotDraft = (season = "2026-27"): PlotDraft => ({
   season,
   points: [],
   pinnedIds: [],
+  highlightedIds: [],
+  sizeMetric: "none",
+  quadrants: { ...DEFAULT_PLOT_QUADRANTS },
   showBa: true,
   showNames: true,
   filters: { ...EMPTY_PLAYER_FILTERS },
@@ -117,6 +150,15 @@ const isPlotPoint = (value: unknown): value is PlotPoint =>
       (typeof (value as PlotPoint).photoSrc === "string" ||
         (value as PlotPoint).photoSrc === null),
   );
+
+export const parsePlotSizeMetric = (
+  value: unknown,
+): EveryTeamStatMetric | "none" => {
+  if (value === "none" || value == null || value === "") {
+    return "none";
+  }
+  return parseEveryTeamStatMetric(value);
+};
 
 export const isPlotDraft = (value: unknown): value is PlotDraft =>
   Boolean(
@@ -149,6 +191,11 @@ export const normalizePlotDraft = (
     pinnedIds: Array.isArray(draft.pinnedIds)
       ? draft.pinnedIds.filter((id): id is string => typeof id === "string")
       : [],
+    highlightedIds: Array.isArray(draft.highlightedIds)
+      ? draft.highlightedIds.filter((id): id is string => typeof id === "string")
+      : [],
+    sizeMetric: parsePlotSizeMetric(draft.sizeMetric),
+    quadrants: parsePlotQuadrants(draft.quadrants),
     showBa: draft.showBa !== false,
     showNames: draft.showNames !== false,
     filters: parsePlayerSearchFilters(draft.filters),
@@ -174,6 +221,7 @@ export const populatePlotTeams = (
   yMetric: EveryTeamStatMetric,
   filters: PlayerSearchFilters,
   sample: ComposerStatsSample = "regular",
+  sizeMetric: EveryTeamStatMetric | "none" = "none",
 ): PlotPoint[] => {
   const ids = matchingTeamIds({
     team: filters.team,
@@ -192,6 +240,12 @@ export const populatePlotTeams = (
     if (x == null || y == null || !team) {
       return;
     }
+    const size =
+      sizeMetric === "none"
+        ? undefined
+        : officialTeamStatValue(teamId, season, sizeMetric, sample) ??
+          teamStatValue(teamId, season, sizeMetric, sample) ??
+          undefined;
     next.push({
       id: teamId,
       kind: "team",
@@ -201,6 +255,7 @@ export const populatePlotTeams = (
       x,
       y,
       photoSrc: teamLogoSrc(teamId, season, true),
+      size: size ?? undefined,
     });
   });
   return next;
@@ -272,6 +327,7 @@ export const populatePlotPlayers = (
   filters: PlayerSearchFilters,
   pinnedIds: string[],
   sample: ComposerStatsSample = "regular",
+  sizeMetric: EveryTeamStatMetric | "none" = "none",
 ): PlotPoint[] => {
   const pool = uniqueRosterPool(season, sample);
   const pinned = new Set(pinnedIds.filter(Boolean));
@@ -301,6 +357,16 @@ export const populatePlotPlayers = (
       return;
     }
     const names = splitPlayerName(row.player.name);
+    const size =
+      sizeMetric === "none"
+        ? undefined
+        : playerStatValue(
+            row.player.id,
+            season,
+            sizeMetric,
+            row.teamId,
+            sample,
+          ) ?? undefined;
     next.push({
       id: row.player.id,
       kind: "player",
@@ -310,6 +376,7 @@ export const populatePlotPlayers = (
       x,
       y,
       photoSrc: row.player.headshotUrl || null,
+      size,
     });
   });
   return next;
@@ -323,13 +390,25 @@ export const populatePlotPoints = (
   filters: PlayerSearchFilters,
   pinnedIds: string[] = [],
   sample: ComposerStatsSample = "regular",
+  sizeMetric: EveryTeamStatMetric | "none" = "none",
 ) =>
   subject === "teams"
-    ? populatePlotTeams(season, xMetric, yMetric, filters, sample)
-    : populatePlotPlayers(season, xMetric, yMetric, filters, pinnedIds, sample);
+    ? populatePlotTeams(season, xMetric, yMetric, filters, sample, sizeMetric)
+    : populatePlotPlayers(
+        season,
+        xMetric,
+        yMetric,
+        filters,
+        pinnedIds,
+        sample,
+        sizeMetric,
+      );
 
 export const pinPlotPlayer = (ids: string[], playerId: string) =>
   ids.includes(playerId) ? ids : [...ids, playerId];
+
+export const togglePlotId = (ids: string[], id: string) =>
+  ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
 
 export const unpinPlotPlayer = (ids: string[], playerId: string) =>
   ids.filter((id) => id !== playerId);

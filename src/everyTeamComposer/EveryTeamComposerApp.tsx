@@ -41,7 +41,8 @@ import {
 import { EveryTeamGraphic } from "./EveryTeamGraphic";
 import { exportEveryTeamPng } from "./exportEveryTeamPng";
 import {
-  assignPlayerToTeam,
+  assignEveryTeamSeat,
+  autoFillEveryTeamPartners,
   autoFillEveryTeamSlots,
   autoSortMetricLabel,
   autoSortRankedOrder,
@@ -52,7 +53,9 @@ import {
   DEFAULT_EVERY_TEAM_TITLE,
   everyTeamCaptionNames,
   fillEveryTeamFromNight,
+  fillEveryTeamPartnersFromNight,
   isEveryTeamDraft,
+  isEveryTeamSlots,
   nextEmptyEveryTeamSlot,
   normalizeRankedOrder,
   insertRankedOrder,
@@ -61,6 +64,7 @@ import {
   teamAtSlot,
   usedEveryTeamLabels,
   type EveryTeamNightMetric,
+  type EveryTeamSeat,
   type EveryTeamSlots,
 } from "./everyTeamState";
 import {
@@ -90,6 +94,7 @@ const STORAGE_KEY = "ddgm:every-team-composer";
 
 interface EveryTeamBoardSnapshot {
   slots: EveryTeamSlots;
+  partners: EveryTeamSlots;
   rankedOrder: string[];
   season: string;
   cellSeasons: Record<string, string>;
@@ -106,6 +111,8 @@ interface EveryTeamComposerDraft {
   showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
+  duo?: boolean;
+  partners?: EveryTeamSlots;
 }
 
 const loadDraft = (): EveryTeamComposerDraft => {
@@ -126,6 +133,10 @@ const loadDraft = (): EveryTeamComposerDraft => {
     showHistoricalLogos: stored?.showHistoricalLogos === true,
     season,
     cellSeasons,
+    duo: stored?.duo === true,
+    partners: isEveryTeamSlots(stored?.partners)
+      ? pruneSlotsToSeasons(stored.partners, season, cellSeasons)
+      : createEmptyEveryTeamSlots(),
   };
 };
 
@@ -149,6 +160,9 @@ export function EveryTeamComposerApp() {
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
   const [showHistoricalLogos, setShowHistoricalLogos] = useState(false);
+  const [duo, setDuo] = useState(false);
+  const [partners, setPartners] = useState<EveryTeamSlots>(createEmptyEveryTeamSlots);
+  const [duoSeat, setDuoSeat] = useState<EveryTeamSeat>("a");
   const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
   const [sortMetric, setSortMetric] = useState<EveryTeamStatMetric>("pra");
   const [nightMetric, setNightMetric] = useState<EveryTeamNightMetric>("pts");
@@ -176,6 +190,12 @@ export function EveryTeamComposerApp() {
         setShowHistoricalLogos(draft.showHistoricalLogos === true);
         setSeason(draft.season ?? everyTeamCurrentSeason());
         setCellSeasons(draft.cellSeasons ?? {});
+        setDuo(draft.duo === true);
+        setPartners(
+          isEveryTeamSlots(draft.partners)
+            ? draft.partners
+            : createEmptyEveryTeamSlots(),
+        );
         setHydrated(true);
       })
       .catch((error: unknown) => {
@@ -200,6 +220,8 @@ export function EveryTeamComposerApp() {
       showHistoricalLogos,
       season,
       cellSeasons,
+      duo,
+      partners,
     });
   }, [
     brand,
@@ -212,6 +234,8 @@ export function EveryTeamComposerApp() {
     showHistoricalLogos,
     season,
     cellSeasons,
+    duo,
+    partners,
     hydrated,
   ]);
 
@@ -219,6 +243,7 @@ export function EveryTeamComposerApp() {
 
   const snapshot = (): EveryTeamBoardSnapshot => ({
     slots,
+    partners,
     rankedOrder,
     season,
     cellSeasons,
@@ -254,6 +279,8 @@ export function EveryTeamComposerApp() {
           showHistoricalLogos,
           season,
           cellSeasons,
+          duo,
+          partners,
         },
         story,
         square,
@@ -286,6 +313,8 @@ export function EveryTeamComposerApp() {
     setBrand(DEFAULT_BRAND);
     setTitle(DEFAULT_EVERY_TEAM_TITLE);
     setSlots(createEmptyEveryTeamSlots());
+    setPartners(createEmptyEveryTeamSlots());
+    setDuo(false);
     setRankedOrder(createDefaultRankedOrder());
     setSeason(everyTeamCurrentSeason());
     setCellSeasons({});
@@ -307,6 +336,7 @@ export function EveryTeamComposerApp() {
     setSeason(nextSeason);
     setCellSeasons(nextCells);
     setSlots((current) => pruneSlotsToSeasons(current, nextSeason, nextCells));
+    setPartners((current) => pruneSlotsToSeasons(current, nextSeason, nextCells));
     setStatus(`Board year ${nextSeason}. Cells without that roster cleared.`);
   };
 
@@ -362,6 +392,11 @@ export function EveryTeamComposerApp() {
     );
     push(snapshot());
     setSlots(next);
+    if (duo) {
+      setPartners(
+        autoFillEveryTeamPartners(next, season, cellSeasons, metric, statsSample),
+      );
+    }
     setRanked(true);
     setRankedOrder(result.order);
     setStatus(
@@ -381,6 +416,15 @@ export function EveryTeamComposerApp() {
     }
     push(snapshot());
     setSlots(result.slots);
+    if (duo) {
+      const second = fillEveryTeamPartnersFromNight(
+        partners,
+        result.slots,
+        rows,
+        metric,
+      );
+      setPartners(second.partners);
+    }
     setStatus(
       `Filled ${result.filled} teams with last night’s ${metric === "pra" ? "PRA" : "PTS"} leader.`,
     );
@@ -406,7 +450,9 @@ export function EveryTeamComposerApp() {
     : season;
   const currentId =
     activeTeam != null
-      ? (slots[slotIndexForTeam(activeTeam.id)] ?? null)
+      ? duo && duoSeat === "b"
+        ? (partners[slotIndexForTeam(activeTeam.id)] ?? null)
+        : (slots[slotIndexForTeam(activeTeam.id)] ?? null)
       : null;
   const lockedFilters =
     samePosition && fillPosition !== ALL_PLAYER_FILTER
@@ -606,6 +652,40 @@ export function EveryTeamComposerApp() {
           onChange={setShowNames}
           ariaLabel="Show player names on cells"
         />
+        <div className="sc-look" role="group" aria-label="Two-player cells">
+          <span className="sc-look__label">Duo</span>
+          <button
+            type="button"
+            className={duo ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={duo}
+            aria-label="Two players per team"
+            onClick={() => setDuo((on) => !on)}
+          >
+            {duo ? "On" : "Off"}
+          </button>
+          {duo ? (
+            <>
+              <button
+                type="button"
+                className={duoSeat === "a" ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={duoSeat === "a"}
+                aria-label="Pick first player"
+                onClick={() => setDuoSeat("a")}
+              >
+                Player 1
+              </button>
+              <button
+                type="button"
+                className={duoSeat === "b" ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={duoSeat === "b"}
+                aria-label="Pick second player"
+                onClick={() => setDuoSeat("b")}
+              >
+                Player 2
+              </button>
+            </>
+          ) : null}
+        </div>
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Historical logos</span>
           <button
@@ -637,6 +717,8 @@ export function EveryTeamComposerApp() {
             showHistoricalLogos,
             season,
             cellSeasons,
+            duo,
+            partners,
           }}
           onLoad={(next) => {
             const nextSeason = parseEveryTeamSeason(next.season);
@@ -651,6 +733,12 @@ export function EveryTeamComposerApp() {
             setShowHistoricalLogos(next.showHistoricalLogos === true);
             setSeason(nextSeason);
             setCellSeasons(nextCells);
+            setDuo(next.duo === true);
+            setPartners(
+              isEveryTeamSlots(next.partners)
+                ? pruneSlotsToSeasons(next.partners, nextSeason, nextCells)
+                : createEmptyEveryTeamSlots(),
+            );
             setStatus("Loaded named graphic.");
           }}
         />
@@ -664,6 +752,7 @@ export function EveryTeamComposerApp() {
               const previous = pop();
               if (previous) {
                 setSlots(previous.slots);
+                setPartners(previous.partners);
                 setRankedOrder(normalizeRankedOrder(previous.rankedOrder));
                 setSeason(previous.season);
                 setCellSeasons(previous.cellSeasons);
@@ -693,6 +782,7 @@ export function EveryTeamComposerApp() {
                     cellSeasons,
                     ranked,
                     rankedOrder,
+                    duo ? partners : undefined,
                   ),
                 ),
               ).then(
@@ -740,6 +830,8 @@ export function EveryTeamComposerApp() {
             brand={brand}
             title={title}
             slots={slots}
+            partners={partners}
+            duo={duo}
             look={look}
             purpleFlair={purpleFlair}
             showBa={showBa}
@@ -761,6 +853,7 @@ export function EveryTeamComposerApp() {
               }
               push(snapshot());
               setSlots((current) => clearEveryTeamTeam(current, team.id));
+              setPartners((current) => clearEveryTeamTeam(current, team.id));
             }}
             onMoveSlots={
               ranked
@@ -804,7 +897,13 @@ export function EveryTeamComposerApp() {
                 : `The ${activeSeason} ${historyLabel(activeTeam.id, activeSeason)} full roster (camp / two-way / end of bench included). Depth-chart sort is starter PG–C, then backups, then everyone else.`
           }
           currentId={currentId}
-          usedLabels={usedEveryTeamLabels(slots, activeIndex, ranked, rankedOrder)}
+          usedLabels={usedEveryTeamLabels(
+            slots,
+            activeIndex,
+            ranked,
+            rankedOrder,
+            duo ? partners : undefined,
+          )}
           lockedTeam={activeTeam.id}
           lockedFilters={lockedFilters}
           rosterPlayers={rosterPlayers}
@@ -820,11 +919,19 @@ export function EveryTeamComposerApp() {
             }
             const player = getRosterPlayer(activeTeam.id, activeSeason, playerId);
             push(snapshot());
-            const nextSlots = assignPlayerToTeam(slots, activeTeam.id, playerId);
-            setSlots(nextSlots);
+            const seat = duo ? duoSeat : "a";
+            const assigned = assignEveryTeamSeat(
+              slots,
+              partners,
+              activeTeam.id,
+              playerId,
+              seat,
+            );
+            setSlots(assigned.slots);
+            setPartners(assigned.partners);
             if (samePosition) {
               const nextIndex = nextEmptyEveryTeamSlot(
-                nextSlots,
+                assigned.slots,
                 activeIndex,
                 ranked,
                 rankedOrder,
@@ -841,7 +948,13 @@ export function EveryTeamComposerApp() {
           }}
           onClear={() => {
             push(snapshot());
-            setSlots((current) => clearEveryTeamTeam(current, activeTeam.id));
+            if (duo && duoSeat === "b") {
+              setPartners((current) =>
+                clearEveryTeamTeam(current, activeTeam.id),
+              );
+            } else {
+              setSlots((current) => clearEveryTeamTeam(current, activeTeam.id));
+            }
             setActiveIndex(null);
           }}
           onClose={closePicker}
@@ -862,11 +975,20 @@ export function EveryTeamComposerApp() {
                   push(snapshot());
                   setCellSeasons(nextCells);
                   const playerId = slots[slotIndexForTeam(activeTeam.id)];
+                  const partnerId = partners[slotIndexForTeam(activeTeam.id)];
                   if (
                     playerId &&
                     !rosterHasPlayer(activeTeam.id, nextSeason, playerId)
                   ) {
                     setSlots((current) =>
+                      clearEveryTeamTeam(current, activeTeam.id),
+                    );
+                  }
+                  if (
+                    partnerId &&
+                    !rosterHasPlayer(activeTeam.id, nextSeason, partnerId)
+                  ) {
+                    setPartners((current) =>
                       clearEveryTeamTeam(current, activeTeam.id),
                     );
                   }

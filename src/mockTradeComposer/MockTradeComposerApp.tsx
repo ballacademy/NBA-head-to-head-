@@ -567,6 +567,23 @@ export function MockTradeComposerApp() {
               onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
             />
             <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Salaries</span>
+              <button
+                type="button"
+                className={draft.showSalaries ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={Boolean(draft.showSalaries)}
+                aria-label="Show cap numbers"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showSalaries: !current.showSalaries,
+                  }))
+                }
+              >
+                {draft.showSalaries ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
               <span className="sc-toolbar__eyebrow">9:16 crop</span>
               <button
                 type="button"

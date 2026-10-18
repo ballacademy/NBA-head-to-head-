@@ -210,6 +210,55 @@
   transform: translate(-50%, -50%);
 }
 
+.plt-mark.is-hot {
+  z-index: 5;
+}
+
+.plt-mark.is-hot .plt-dot,
+.plt-mark.is-hot .plt-face,
+.plt-mark.is-hot .plt-logo {
+  box-shadow:
+    0 0 0 calc(3 * var(--u)) #facc15,
+    0 0 calc(18 * var(--u)) calc(4 * var(--u)) rgba(250, 204, 21, 0.55);
+}
+
+.plt-quad {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  max-width: 42%;
+  color: rgba(250, 204, 21, 0.88);
+  font-family: var(--ig-poster);
+  font-size: calc(13 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  pointer-events: none;
+  text-shadow: 0 0 calc(8 * var(--u)) rgba(0, 0, 0, 0.85);
+}
+
+.plt-quad.is-tl {
+  top: calc(8 * var(--u));
+  left: calc(8 * var(--u));
+}
+
+.plt-quad.is-tr {
+  top: calc(8 * var(--u));
+  right: calc(8 * var(--u));
+  text-align: right;
+}
+
+.plt-quad.is-bl {
+  bottom: calc(8 * var(--u));
+  left: calc(8 * var(--u));
+}
+
+.plt-quad.is-br {
+  bottom: calc(8 * var(--u));
+  right: calc(8 * var(--u));
+  text-align: right;
+}
+
 .plt-face,
 .plt-face img,
 .plt-dot {

@@ -12,6 +12,7 @@ import type { RankDisplay } from "./rankedLineupsLayout";
 import {
   applyPlayerPick,
   clearStrip,
+  createEmptyStrip,
   createEmptyStrips,
   hasCustomPhoto,
   isTotwStrip,
@@ -36,6 +37,22 @@ export {
 };
 
 export const RANKED_LINEUP_STRIP_COUNT = 5;
+export const RANKED_LINEUP_STRIP_MIN = 5;
+export const RANKED_LINEUP_STRIP_MAX = 10;
+
+export const parseStripCount = (
+  value: unknown,
+  fallback = RANKED_LINEUP_STRIP_COUNT,
+) => {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) {
+    return fallback;
+  }
+  return Math.min(
+    RANKED_LINEUP_STRIP_MAX,
+    Math.max(RANKED_LINEUP_STRIP_MIN, Math.round(n)),
+  );
+};
 export const LINEUP_POSITIONS = ["PG", "SG", "SF", "PF", "C"] as const;
 export type LineupPosition = (typeof LINEUP_POSITIONS)[number];
 export const DEFAULT_POSITION_LABELS = [...LINEUP_POSITIONS];
@@ -82,10 +99,29 @@ export interface RankedLineupsDraft {
   rankDisplay?: RankDisplay;
   positionLabels?: string[];
   season?: string;
+  stripCount?: number;
 }
 
-export const lineupPosition = (index: number): LineupPosition =>
-  LINEUP_POSITIONS[index] ?? "PG";
+export const lineupPosition = (index: number): string =>
+  LINEUP_POSITIONS[index] ?? `${index + 1}`;
+
+export const extraPositionLabel = (index: number) => {
+  const n = index + 1;
+  const teen = n % 100;
+  if (teen >= 11 && teen <= 13) {
+    return `${n}TH`;
+  }
+  switch (n % 10) {
+    case 1:
+      return `${n}ST`;
+    case 2:
+      return `${n}ND`;
+    case 3:
+      return `${n}RD`;
+    default:
+      return `${n}TH`;
+  }
+};
 
 export const splitRankedLineupTitle = (title: string): string[] =>
   splitBalancedTitle(
@@ -104,8 +140,8 @@ export const isRankedLineupsDraft = (
       typeof (value as RankedLineupsDraft).title === "string" &&
       typeof (value as RankedLineupsDraft).rank === "string" &&
       Array.isArray((value as RankedLineupsDraft).strips) &&
-      (value as RankedLineupsDraft).strips.length ===
-        RANKED_LINEUP_STRIP_COUNT &&
+      (value as RankedLineupsDraft).strips.length >= RANKED_LINEUP_STRIP_MIN &&
+      (value as RankedLineupsDraft).strips.length <= RANKED_LINEUP_STRIP_MAX &&
       (value as RankedLineupsDraft).strips.every(isTotwStrip),
   );
 
@@ -224,9 +260,20 @@ export const fillLineupByStatLeaders = (
   rank = 1,
 ): { strips: TotwStrip[]; filled: number } => {
   const leaders = pickLineupStatLeaders(season, metric, sample, rank);
+  const extras =
+    strips.length > LINEUP_POSITIONS.length
+      ? listLineupStatPool(season, metric, sample)
+          .filter(
+            (row) =>
+              !leaders.some((leader) => leader?.player.id === row.player.id),
+          )
+          .sort(compareLineupLeaders)
+          .slice(0, strips.length - LINEUP_POSITIONS.length)
+      : [];
+  const picks = [...leaders, ...extras];
   let next = strips.slice();
   let filled = 0;
-  leaders.forEach((leader, index) => {
+  picks.forEach((leader, index) => {
     if (!leader) {
       return;
     }
@@ -260,16 +307,24 @@ export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
     showTeamHairline: true,
     rankDisplay: DEFAULT_RANK_DISPLAY,
     positionLabels: [...DEFAULT_POSITION_LABELS],
+    stripCount: RANKED_LINEUP_STRIP_COUNT,
   };
 };
 
-export const parsePositionLabels = (value: unknown): string[] => {
-  if (!Array.isArray(value) || value.length !== RANKED_LINEUP_STRIP_COUNT) {
-    return [...DEFAULT_POSITION_LABELS];
+export const parsePositionLabels = (
+  value: unknown,
+  count = RANKED_LINEUP_STRIP_COUNT,
+): string[] => {
+  const n = parseStripCount(count);
+  const fallback = (index: number) =>
+    DEFAULT_POSITION_LABELS[index] ?? extraPositionLabel(index);
+  if (!Array.isArray(value)) {
+    return Array.from({ length: n }, (_, index) => fallback(index));
   }
-  return value.map((item, index) => {
+  return Array.from({ length: n }, (_, index) => {
+    const item = value[index];
     if (typeof item !== "string") {
-      return DEFAULT_POSITION_LABELS[index]!;
+      return fallback(index);
     }
     return item.replace(/\s+/g, " ").trim().slice(0, POSITION_LABEL_MAX);
   });
@@ -315,7 +370,8 @@ export const isRankedLineupSlide = (value: unknown): value is RankedLineupSlide 
       typeof value === "object" &&
       typeof (value as RankedLineupSlide).rank === "string" &&
       Array.isArray((value as RankedLineupSlide).strips) &&
-      (value as RankedLineupSlide).strips.length === RANKED_LINEUP_STRIP_COUNT &&
+      (value as RankedLineupSlide).strips.length >= RANKED_LINEUP_STRIP_MIN &&
+      (value as RankedLineupSlide).strips.length <= RANKED_LINEUP_STRIP_MAX &&
       (value as RankedLineupSlide).strips.every(isTotwStrip),
   );
 
@@ -354,10 +410,22 @@ export const swipeRankCue = (rank: string) => {
   return `${current} → ${nextRankPill(current)}`;
 };
 
-export const emptyLineupSlide = (rank = DEFAULT_RANK_PILL): RankedLineupSlide => ({
+export const emptyLineupSlide = (
+  rank = DEFAULT_RANK_PILL,
+  stripCount = RANKED_LINEUP_STRIP_COUNT,
+): RankedLineupSlide => ({
   rank,
-  strips: createEmptyStrips(),
+  strips: Array.from({ length: parseStripCount(stripCount) }, createEmptyStrip),
 });
+
+export const resizeRankedStrips = (strips: TotwStrip[], count: number) => {
+  const n = parseStripCount(count);
+  const next = strips.slice(0, n);
+  while (next.length < n) {
+    next.push(createEmptyStrip());
+  }
+  return next;
+};
 
 export const slidesFromDraft = (
   draft: Pick<RankedLineupsDraft, "rank" | "strips" | "slides">,

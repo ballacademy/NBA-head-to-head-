@@ -9,6 +9,12 @@ import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
+import {
+  isAutoWeekLine,
+  rangeWeekLine,
+  useComposerDateRange,
+} from "../instagramComposer/composerDateRange";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -31,6 +37,8 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
+import { fillStartersFromStandouts } from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
 import {
   TOTW_TITLE_PRESETS,
   exportFilenameFromTitle,
@@ -103,6 +111,40 @@ export function TeamOfTheWeekComposerApp() {
     playerName: string;
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<TotwStrip[]>();
+  const { range, setRange } = useComposerDateRange();
+  const totwEmpty = (slots: TotwStrip[]) => slots.every((slot) => !slot.playerId);
+
+  const fillRange = useCallback(async (
+    force = false,
+    fromIso = range.from,
+    toIso = range.to,
+  ) => {
+    setStatus("Loading box scores for this range…");
+    try {
+      const rows = await fetchStandoutsInRange(fromIso, toIso);
+      setWeek((current) =>
+        isAutoWeekLine(current, fromIso, toIso)
+          ? rangeWeekLine(fromIso, toIso)
+          : current,
+      );
+      setStrips((current) => {
+        if (!force && !totwEmpty(current)) {
+          return current;
+        }
+        const next = fillStartersFromStandouts(current, rows);
+        const filled = next.filter((slot) => slot.playerId).length;
+        setStatus(
+          filled
+            ? `Filled ${filled} TOTW strips from this range.`
+            : "No box scores for this range yet — pick players for the empty slots.",
+        );
+        return next;
+      });
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not load this range’s standouts.");
+    }
+  }, [range.from, range.to]);
 
   useEffect(() => {
     document.title = "Team of the Week graphic";
@@ -295,13 +337,24 @@ export function TeamOfTheWeekComposerApp() {
           Week
           <input
             value={week}
-            maxLength={32}
-            onChange={(event) => setWeek(event.target.value.slice(0, 32))}
+            maxLength={40}
+            onChange={(event) => setWeek(event.target.value.slice(0, 40))}
           />
         </label>
           </>
         }
         data={
+          <>
+          <ComposerDateRange
+            from={range.from}
+            to={range.to}
+            onChange={(next) => {
+              const written = setRange(next);
+              void fillRange(false, written.from, written.to);
+            }}
+            onFill={() => void fillRange(true)}
+            fillLabel="Fill range"
+          />
           <ComposerPhotoHud
             onPick={() => {
               const index = activeIndex ?? photoTarget;
@@ -324,6 +377,7 @@ export function TeamOfTheWeekComposerApp() {
               });
             }}
           />
+          </>
         }
         board={
           <>

@@ -12,13 +12,13 @@ import {
   useComposerLook,
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
-import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
+import { useComposerDateRange } from "../instagramComposer/composerDateRange";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
-import {
-  nightStandoutPickerRows,
-  useComposerNight,
-} from "../instagramComposer/composerNight";
+import { nightStandoutPickerRows } from "../instagramComposer/composerNight";
+import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
+import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
 import { bytesFromBlob, downloadZip } from "../instagramComposer/downloadZip";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { renderStatCardCanvas } from "../statCardComposer/renderStatCardCanvas";
@@ -49,7 +49,8 @@ import {
   DEFAULT_COVER_TITLE,
   SCC_DATE_MAX,
   SCC_TITLE_MAX,
-  applyCoverNight,
+  applyCoverRange,
+  parseCoverSlotCount,
   clearCoverSlot,
   coverDraftOccupied,
   coverPasteSlotIndex,
@@ -101,7 +102,8 @@ export function StatCardCoverComposerApp() {
   const filledKey = useRef("");
   const autoFill = useRef(true);
   const { push, pop, canUndo } = useComposerUndo<StatCardCoverDraft>();
-  const night = useComposerNight();
+  const { range, setRange } = useComposerDateRange();
+  const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
 
   useEffect(() => {
     document.title = "Stat card cover";
@@ -128,52 +130,42 @@ export function StatCardCoverComposerApp() {
     if (!hydrated || !autoFill.current) {
       return;
     }
-    const fillDate = night.date;
-    void night.ensureStandouts(fillDate).then(async (rows) => {
+    const from = range.from;
+    const to = range.to;
+    void fetchStandoutsInRange(from, to).then((rows) => {
       if (!autoFill.current) {
         return;
       }
-      let date = fillDate;
-      let standouts = rows;
-      if (
-        standouts.length === 0 &&
-        fillDate === night.todayIso
-      ) {
-        standouts = await night.ensureStandouts(night.yesterdayIso);
-        date = night.yesterdayIso;
-        night.setDate(date);
-      }
-      if (!autoFill.current) {
-        return;
-      }
-      const key = `${date}:${standouts.map((row) => row.athleteId).join(",")}`;
+      setRangeStandouts(rows);
+      const key = `${from}:${to}:${rows.map((row) => row.athleteId).join(",")}`;
       if (filledKey.current === key) {
         return;
       }
       filledKey.current = key;
       setDraft((current) =>
-        fillCoverFromStandouts(applyCoverNight(current, date), standouts),
+        fillCoverFromStandouts(applyCoverRange(current, from, to), rows),
       );
     });
-  }, [hydrated, night.date, night.ensureStandouts, night.todayIso, night.yesterdayIso, night.setDate]);
+  }, [hydrated, range.from, range.to]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
   const fillFromNight = () => {
     autoFill.current = true;
-    void night.ensureStandouts(night.date).then((rows) => {
-      const key = `${night.date}:${rows.map((row) => row.athleteId).join(",")}`;
+    void fetchStandoutsInRange(range.from, range.to).then((rows) => {
+      const key = `${range.from}:${range.to}:${rows.map((row) => row.athleteId).join(",")}`;
       filledKey.current = key;
+      setRangeStandouts(rows);
       setDraft((current) => {
         const next = fillCoverFromStandouts(
-          applyCoverNight(current, night.date),
+          applyCoverRange(current, range.from, range.to),
           rows,
         );
         const filled = next.slots.filter((slot) => slot.playerId).length;
         setStatus(
           filled
             ? `Cover filled with ${filled} standout${filled === 1 ? "" : "s"}.`
-            : "No standouts for that night yet — pick players for the empty slots.",
+            : "No standouts for that range yet — pick players for the empty slots.",
         );
         return next;
       });
@@ -352,19 +344,40 @@ export function StatCardCoverComposerApp() {
         }
         data={
           <>
-            <ComposerNightDate
-              date={night.date}
-              todayIso={night.todayIso}
-              yesterdayIso={night.yesterdayIso}
-              onChange={(iso) => night.setDate(iso)}
+            <ComposerDateRange
+              from={range.from}
+              to={range.to}
+              onChange={(next) => {
+                setRange(next);
+              }}
+              onFill={fillFromNight}
+              fillLabel="Fill cover"
             />
-            <button
-              type="button"
-              className="sc-chip"
-              onClick={fillFromNight}
-            >
-              Fill cover
-            </button>
+            <div className="sc-look" role="group" aria-label="Portraits">
+              <span className="sc-look__label">Portraits</span>
+              {[2, 3, 4].map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  className={
+                    parseCoverSlotCount(draft.portraitCount) === count
+                      ? "sc-chip is-on"
+                      : "sc-chip"
+                  }
+                  aria-pressed={parseCoverSlotCount(draft.portraitCount) === count}
+                  onClick={() =>
+                    setDraft((current) =>
+                      normalizeStatCardCoverDraft({
+                        ...current,
+                        portraitCount: count,
+                      }),
+                    )
+                  }
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
           </>
         }
         filters={
@@ -556,9 +569,12 @@ export function StatCardCoverComposerApp() {
                   setExporting(true);
                   setStatus("Rendering cover pack…");
                   try {
-                    await night.ensureStandouts(night.date);
+                    const rows =
+                      rangeStandouts.length
+                        ? rangeStandouts
+                        : await fetchStandoutsInRange(range.from, range.to);
                     const standoutsById = new Map(
-                      night.standouts.map((row) => [row.athleteId, row]),
+                      rows.map((row) => [row.athleteId, row]),
                     );
                     const files: Array<{ name: string; bytes: Uint8Array }> = [];
                     const coverCanvas = await renderStatCardCoverCanvas(
@@ -699,10 +715,10 @@ export function StatCardCoverComposerApp() {
             <StoryCropGuide on={storyCrop} />
           </div>
           <p className="sc-hint">
-            Stars and standouts cover for that night’s stat cards — three
-            full-bleed faces in one row, no individual stats. Export pack zips
-            the cover plus a Stat card for each standout (empty photo until you
-            paste). Downloads a 4:5 Instagram PNG — nothing is posted.
+            Stars and standouts cover — 2, 3, or 4 full-bleed faces in one row,
+            no individual stats. Fill from a date range. Export pack zips the
+            cover plus a Stat card for each standout. Downloads a 4:5 Instagram
+            PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -711,12 +727,12 @@ export function StatCardCoverComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={`Pick cover player ${activeIndex + 1}`}
-          hint="Leads with that night’s standouts. Headshot drops in — upload or paste an action photo to replace it."
+          hint="Leads with standouts from the selected range. Headshot drops in — upload or paste an action photo to replace it."
           currentId={currentId}
           usedLabels={usedCoverPlayerIds(draft.slots)}
-          suggested={nightStandoutPickerRows(night.standouts)}
-          suggestedHeading={night.heading}
-          suggestedLoading={night.loading}
+          suggested={nightStandoutPickerRows(rangeStandouts)}
+          suggestedHeading="Range standouts"
+          suggestedLoading={false}
           onPick={handlePick}
           onClear={() => {
             push(draft);

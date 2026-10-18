@@ -16,7 +16,10 @@ export type ComposerMode =
   | "stat-card"
   | "stat-card-cover"
   | "mock-trade"
-  | "plot";
+  | "plot"
+  | "injury"
+  | "schedule"
+  | "shot-chart";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -118,6 +121,12 @@ const MOCK_TRADE_QUERY = new Set([
 ]);
 const PLOT_PATHS = new Set(["/plot", "/scatter", "/xy"]);
 const PLOT_QUERY = new Set(["plot", "scatter", "xy"]);
+const INJURY_PATHS = new Set(["/injury", "/injuries", "/injury-report"]);
+const INJURY_QUERY = new Set(["injury", "injuries", "injury-report"]);
+const SCHEDULE_PATHS = new Set(["/schedule", "/schedule-poster", "/this-week"]);
+const SCHEDULE_QUERY = new Set(["schedule", "schedule-poster", "this-week"]);
+const SHOT_CHART_PATHS = new Set(["/shot-chart", "/shotchart", "/shots"]);
+const SHOT_CHART_QUERY = new Set(["shot-chart", "shotchart", "shots"]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -310,6 +319,24 @@ export const isPlotPath = (pathname: string) =>
 export const isPlotQuery = (search: string) =>
   PLOT_QUERY.has(queryToken(search));
 
+export const isInjuryPath = (pathname: string) =>
+  INJURY_PATHS.has(normalizePath(pathname));
+
+export const isInjuryQuery = (search: string) =>
+  INJURY_QUERY.has(queryToken(search));
+
+export const isSchedulePath = (pathname: string) =>
+  SCHEDULE_PATHS.has(normalizePath(pathname));
+
+export const isScheduleQuery = (search: string) =>
+  SCHEDULE_QUERY.has(queryToken(search));
+
+export const isShotChartPath = (pathname: string) =>
+  SHOT_CHART_PATHS.has(normalizePath(pathname));
+
+export const isShotChartQuery = (search: string) =>
+  SHOT_CHART_QUERY.has(queryToken(search));
+
 export const isMockTradeQuery = (search: string) =>
   MOCK_TRADE_QUERY.has(queryToken(search));
 
@@ -317,6 +344,15 @@ export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isShotChartPath(pathname)) {
+    return "shot-chart";
+  }
+  if (isSchedulePath(pathname)) {
+    return "schedule";
+  }
+  if (isInjuryPath(pathname)) {
+    return "injury";
+  }
   if (isPlotPath(pathname)) {
     return "plot";
   }
@@ -367,6 +403,15 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isShotChartQuery(search)) {
+    return "shot-chart";
+  }
+  if (isScheduleQuery(search)) {
+    return "schedule";
+  }
+  if (isInjuryQuery(search)) {
+    return "injury";
   }
   if (isPlotQuery(search)) {
     return "plot";
@@ -452,6 +497,15 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "plot") {
     return "/plot";
+  }
+  if (mode === "injury") {
+    return "/injury";
+  }
+  if (mode === "schedule") {
+    return "/schedule";
+  }
+  if (mode === "shot-chart") {
+    return "/shot-chart";
   }
   if (mode === "mock-trade") {
     return "/mock-trade";

@@ -23,7 +23,7 @@
   grid-template-rows:
     calc(var(--header-h, 162) * var(--u))
     minmax(0, 1fr)
-    calc(var(--footer-h, 126) * var(--u));
+    auto;
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");
   background-size: cover;

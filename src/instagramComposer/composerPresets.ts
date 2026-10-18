@@ -122,6 +122,24 @@ export const PLAY_IN_TITLE_PRESETS = [
   "PLAY-IN TOURNAMENT",
 ];
 
+export const INJURY_TITLE_PRESETS = [
+  "INJURY REPORT",
+  "OUT AND GTD",
+  "WHO’S OUT",
+];
+
+export const SCHEDULE_TITLE_PRESETS = [
+  "THIS WEEK",
+  "UPCOMING GAMES",
+  "SEVEN NIGHTS",
+];
+
+export const SHOT_CHART_TITLE_PRESETS = [
+  "SHOT CHART",
+  "LAST GAME SHOTS",
+  "HOT ZONES",
+];
+
 export const MOCK_TRADE_TITLE_PRESETS = [
   "MOCK TRADE",
   "3-TEAM TRADE",

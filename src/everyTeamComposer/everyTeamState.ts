@@ -6,6 +6,7 @@ import {
   EVERY_TEAM_STAT_METRICS,
   getRosterPlayer,
   pickSeasonLeader,
+  pickSeasonLeaders,
   rosterHasPlayer,
   rosterStatValue,
   seasonForTeam,
@@ -84,6 +85,8 @@ export interface EveryTeamDraft {
   showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
+  duo?: boolean;
+  partners?: EveryTeamSlots;
 }
 
 export const createDefaultRankedOrder = (): string[] =>
@@ -267,20 +270,69 @@ export const usedEveryTeamLabels = (
   activeIndex: number | null,
   ranked = false,
   rankedOrder: string[] = createDefaultRankedOrder(),
+  partners?: EveryTeamSlots,
 ): Record<string, string> => {
   const labels: Record<string, string> = {};
   const teams = displayedTeams(ranked, rankedOrder);
   const activeTeamId =
     activeIndex != null ? teams[activeIndex]?.id ?? null : null;
-  slots.forEach((id, index) => {
+  const mark = (id: string | null, index: number, seat: "a" | "b") => {
     if (!id) {
       return;
     }
     const team = EVERY_TEAM_ORDER[index];
+    const tag = seat === "b" ? "Duo" : team?.id ?? "Used";
     labels[id] =
-      team?.id && team.id === activeTeamId ? "This slot" : team?.id ?? "Used";
-  });
+      team?.id && team.id === activeTeamId
+        ? seat === "b"
+          ? "This duo"
+          : "This slot"
+        : tag;
+  };
+  slots.forEach((id, index) => mark(id, index, "a"));
+  partners?.forEach((id, index) => mark(id, index, "b"));
   return labels;
+};
+
+export type EveryTeamSeat = "a" | "b";
+
+export const assignEveryTeamSeat = (
+  slots: EveryTeamSlots,
+  partners: EveryTeamSlots,
+  teamId: string,
+  playerId: string,
+  seat: EveryTeamSeat = "a",
+): { slots: EveryTeamSlots; partners: EveryTeamSlots } => {
+  const index = slotIndexForTeam(teamId);
+  if (index < 0 || !playerId) {
+    return { slots, partners };
+  }
+  const nextSlots = slots.map((id) => (id === playerId ? null : id));
+  const nextPartners = partners.map((id) => (id === playerId ? null : id));
+  if (seat === "b") {
+    nextPartners[index] = playerId;
+  } else {
+    nextSlots[index] = playerId;
+  }
+  return { slots: nextSlots, partners: nextPartners };
+};
+
+export const clearEveryTeamSeat = (
+  slots: EveryTeamSlots,
+  partners: EveryTeamSlots,
+  teamId: string,
+  seat: EveryTeamSeat = "a",
+): { slots: EveryTeamSlots; partners: EveryTeamSlots } => {
+  if (seat === "b") {
+    return {
+      slots,
+      partners: clearEveryTeamTeam(partners, teamId),
+    };
+  }
+  return {
+    slots: clearEveryTeamTeam(slots, teamId),
+    partners,
+  };
 };
 
 export const pruneSlotsToSeasons = (
@@ -365,6 +417,25 @@ export const autoFillEveryTeamSlots = (
       )?.id ?? null,
   );
 
+export const autoFillEveryTeamPartners = (
+  occupied: EveryTeamSlots,
+  boardSeason: string,
+  cellSeasons: Record<string, string> = {},
+  metric: EveryTeamStatMetric = "points",
+  sample: ComposerStatsSample = "regular",
+): EveryTeamSlots =>
+  EVERY_TEAM_ORDER.map((team, index) => {
+    const skip = occupied[index];
+    const leaders = pickSeasonLeaders(
+      team.id,
+      seasonForTeam(team.id, boardSeason, cellSeasons),
+      metric,
+      sample,
+      2,
+    );
+    return leaders.find((player) => player.id !== skip)?.id ?? null;
+  });
+
 export type EveryTeamNightMetric = "pts" | "pra";
 
 const nightScore = (
@@ -409,12 +480,46 @@ export const fillEveryTeamFromNight = (
   return { slots: next, filled };
 };
 
+export const fillEveryTeamPartnersFromNight = (
+  partners: EveryTeamSlots,
+  occupied: EveryTeamSlots,
+  standouts: Array<{
+    athleteId: string;
+    teamId: string;
+    game: { stats: { pts: string; reb: string; ast: string } };
+  }>,
+  metric: EveryTeamNightMetric = "pts",
+): { partners: EveryTeamSlots; filled: number } => {
+  const ranked = new Map<string, Array<{ id: string; score: number }>>();
+  for (const row of standouts) {
+    const score = nightScore(row.game.stats, metric);
+    const list = ranked.get(row.teamId) ?? [];
+    list.push({ id: row.athleteId, score });
+    ranked.set(row.teamId, list);
+  }
+  let filled = 0;
+  const next = partners.slice();
+  EVERY_TEAM_ORDER.forEach((team, index) => {
+    const skip = occupied[index];
+    const pick = (ranked.get(team.id) ?? [])
+      .sort((left, right) => right.score - left.score)
+      .find((row) => row.id !== skip);
+    if (!pick) {
+      return;
+    }
+    next[index] = pick.id;
+    filled += 1;
+  });
+  return { partners: next, filled };
+};
+
 export const everyTeamCaptionNames = (
   slots: EveryTeamSlots,
   season: string,
   cellSeasons: Record<string, string> | undefined,
   ranked: boolean,
   rankedOrder: string[],
+  partners?: EveryTeamSlots,
 ) =>
   displayedTeams(ranked, rankedOrder)
     .map((team) => {
@@ -423,7 +528,15 @@ export const everyTeamCaptionNames = (
         seasonForTeam(team.id, season, cellSeasons),
         slots[slotIndexForTeam(team.id)] ?? null,
       );
-      return shown?.name ?? "";
+      const partner = getRosterPlayer(
+        team.id,
+        seasonForTeam(team.id, season, cellSeasons),
+        partners?.[slotIndexForTeam(team.id)] ?? null,
+      );
+      if (shown && partner) {
+        return `${shown.name} / ${partner.name}`;
+      }
+      return shown?.name ?? partner?.name ?? "";
     })
     .filter(Boolean);
 

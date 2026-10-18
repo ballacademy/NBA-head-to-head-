@@ -125,7 +125,8 @@
   box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
 }
 
-.mt-name {
+.mt-name,
+.mt-salary {
   position: absolute;
   z-index: 4;
   margin: 0;
@@ -140,6 +141,12 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.7);
+}
+
+.mt-salary {
+  font-size: calc(12 * var(--u));
+  letter-spacing: 0.08em;
+  color: rgba(250, 204, 21, 0.92);
 }
 
 .mt-chip {

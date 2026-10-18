@@ -143,9 +143,9 @@ export const StatCardCoverGraphic = forwardRef<
       }
       aria-label="Instagram stat card cover"
     >
-      {Array.from({ length: SCC_SLOT_COUNT }, (_, index) => {
+      {Array.from({ length: draft.slots.length }, (_, index) => {
         const slot = draft.slots[index]!;
-        const cell = coverCellRect(index);
+        const cell = coverCellRect(index, draft.slots.length);
         const empty = !slot.photoSrc;
         const named = Boolean(slot.playerId || coverSlotName(slot));
         const team = getTeam(slot.teamId);

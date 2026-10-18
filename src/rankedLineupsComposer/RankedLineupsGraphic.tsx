@@ -99,7 +99,7 @@ export const RankedLineupsGraphic = forwardRef<
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
   const titleLines = splitRankedLineupTitle(title);
-  const labels = parsePositionLabels(positionLabels);
+  const labels = parsePositionLabels(positionLabels, strips.length);
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -213,8 +213,7 @@ export const RankedLineupsGraphic = forwardRef<
         )}
       </header>
       <div className="rl-strips">
-        {Array.from({ length: RANKED_LINEUP_STRIP_COUNT }, (_, index) => {
-          const strip = strips[index]!;
+        {strips.map((strip, index) => {
           const empty = !strip.photoSrc;
           const position = lineupPosition(index);
           const label = strip.lastName || position;
@@ -223,7 +222,7 @@ export const RankedLineupsGraphic = forwardRef<
             : null;
           return (
             <section
-              key={`rl-strip-${position}`}
+              key={`rl-strip-${index}-${position}`}
               className={["rl-strip", hair ? "has-hairline" : ""]
                 .filter(Boolean)
                 .join(" ")}
@@ -271,8 +270,7 @@ export const RankedLineupsGraphic = forwardRef<
         })}
       </div>
       <footer className="rl-footer">
-        {Array.from({ length: RANKED_LINEUP_STRIP_COUNT }, (_, index) => {
-          const strip = strips[index]!;
+        {strips.map((strip, index) => {
           const empty = !strip.photoSrc;
           const position = lineupPosition(index);
           const posLabel = labels[index] ?? "";

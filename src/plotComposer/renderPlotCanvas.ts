@@ -38,6 +38,7 @@ import {
   plotMetricLabel,
   splitPlotTitle,
   type PlotPoint,
+  type PlotQuadrants,
   type PlotSubject,
 } from "./plotState";
 
@@ -58,6 +59,8 @@ export interface PlotRenderInput {
   xMetric: EveryTeamStatMetric;
   yMetric: EveryTeamStatMetric;
   points: PlotPoint[];
+  highlightedIds?: string[];
+  quadrants?: PlotQuadrants;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -117,11 +120,13 @@ export const renderPlotCanvas = async (
       y: point.y,
       label: point.shortLabel || point.label,
       kind: point.kind,
+      size: point.size,
     })),
     xAxis,
     yAxis,
     boardH,
     input.showNames !== false,
+    input.highlightedIds ?? [],
   );
   const xLabel = plotMetricLabel(input.xMetric);
   const yLabel = plotMetricLabel(input.yMetric);
@@ -279,6 +284,16 @@ export const renderPlotCanvas = async (
       context.strokeStyle = "rgba(0,0,0,0.55)";
       context.stroke();
     }
+    if ((input.highlightedIds ?? []).includes(point.id)) {
+      context.beginPath();
+      context.arc(cx, cy, size / 2 + 3 * s, 0, Math.PI * 2);
+      context.strokeStyle = "#facc15";
+      context.lineWidth = 3 * s;
+      context.shadowColor = "rgba(250, 204, 21, 0.55)";
+      context.shadowBlur = 14 * s;
+      context.stroke();
+      context.shadowBlur = 0;
+    }
   }
 
   context.font = `900 ${PLOT_LABEL_SIZE * s}px ${POSTER_FONT}`;
@@ -290,6 +305,30 @@ export const renderPlotCanvas = async (
     }
     strokeFill(context, mark.label, mark.lx * s, mark.ly * s, 2.2 * s);
   });
+
+  const quads = input.quadrants;
+  if (quads) {
+    context.font = `900 ${13 * s}px ${POSTER_FONT}`;
+    context.fillStyle = "rgba(250, 204, 21, 0.88)";
+    context.textBaseline = "top";
+    if (quads.tl) {
+      context.textAlign = "left";
+      context.fillText(quads.tl.toUpperCase(), left + 8 * s, top + 8 * s);
+    }
+    if (quads.tr) {
+      context.textAlign = "right";
+      context.fillText(quads.tr.toUpperCase(), left + pw - 8 * s, top + 8 * s);
+    }
+    context.textBaseline = "bottom";
+    if (quads.bl) {
+      context.textAlign = "left";
+      context.fillText(quads.bl.toUpperCase(), left + 8 * s, top + ph - 8 * s);
+    }
+    if (quads.br) {
+      context.textAlign = "right";
+      context.fillText(quads.br.toUpperCase(), left + pw - 8 * s, top + ph - 8 * s);
+    }
+  }
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 

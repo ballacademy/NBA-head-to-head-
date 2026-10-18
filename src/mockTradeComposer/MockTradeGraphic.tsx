@@ -10,6 +10,7 @@ import { headlinePanelHex } from "../headlineComposer/headlineLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
+import { salaryLabelForPlayer } from "../lib/playerSalaries";
 import { getTeam } from "../standingsComposer/teams";
 import { mockTradeLayout } from "./mockTradeLayout";
 import {
@@ -201,6 +202,18 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                         )
                       }
                     />
+                    {draft.showSalaries && person.playerId ? (
+                      <p
+                        className="mt-salary"
+                        style={boxStyle({
+                          ...local(slot.name),
+                          y: local(slot.name).y + local(slot.name).h - 2,
+                          h: 16,
+                        })}
+                      >
+                        {salaryLabelForPlayer(undefined, person.playerId) || "—"}
+                      </p>
+                    ) : null}
                   </div>
                 );
               })}

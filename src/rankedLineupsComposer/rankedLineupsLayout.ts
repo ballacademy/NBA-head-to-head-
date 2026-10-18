@@ -85,4 +85,31 @@ export const rankedStripH = (
 export const RL_STRIP_H = rankedStripH("pill", false);
 
 export const rlStripX = (index: number) =>
-  RL_PAD_X + index * (RL_STRIP_W + RL_STRIP_GAP);
+  RL_PAD_X + (index % 5) * (RL_STRIP_W + RL_STRIP_GAP);
+
+export const rankedStripRect = (
+  index: number,
+  count = RANKED_LINEUP_STRIP_COUNT,
+  display: RankDisplay = "pill",
+  showFade = false,
+  boardH = GRAPHIC_HEIGHT,
+) => {
+  const cols = 5;
+  const rows = Math.max(1, Math.ceil(count / cols));
+  const col = index % cols;
+  const row = Math.floor(index / cols);
+  const header = rankedHeaderH(display);
+  const footerRows = rows;
+  const footer = rankedFooterH(showFade) * rows;
+  const available = boardH - header - footer;
+  const stripH =
+    (available - RL_STRIP_GAP * (rows - 1)) / rows;
+  return {
+    x: RL_PAD_X + col * (RL_STRIP_W + RL_STRIP_GAP),
+    y: header + row * (stripH + RL_STRIP_GAP),
+    w: RL_STRIP_W,
+    h: stripH,
+    rows,
+    footerRows,
+  };
+};

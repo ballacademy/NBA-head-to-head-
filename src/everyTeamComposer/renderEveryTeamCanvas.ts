@@ -144,6 +144,8 @@ export interface EveryTeamRenderInput {
   showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
+  duo?: boolean;
+  partners?: EveryTeamSlots;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -259,6 +261,14 @@ export const renderEveryTeamCanvas = async (
         cellSeason,
         input.slots[slotIndexForTeam(team.id)] ?? null,
       );
+      const partner =
+        input.duo === true
+          ? getRosterPlayer(
+              team.id,
+              cellSeason,
+              input.partners?.[slotIndexForTeam(team.id)] ?? null,
+            )
+          : null;
       const overridden = Boolean(input.cellSeasons?.[team.id]);
       const showYear =
         overridden || cellSeason !== everyTeamCurrentSeason();
@@ -267,15 +277,18 @@ export const renderEveryTeamCanvas = async (
         cellSeason,
         input.showHistoricalLogos === true,
       );
-      const [logo, headshot] = await Promise.all([
+      const [logo, headshot, partnerShot] = await Promise.all([
         loadImage(logoSrc),
         shown ? loadCorsImage(shown.headshotUrl) : Promise.resolve(null),
+        partner ? loadCorsImage(partner.headshotUrl) : Promise.resolve(null),
       ]);
       return {
         team,
         logo,
         logoSrc,
         headshot,
+        partnerShot,
+        partner,
         shown,
         missing,
         cellSeason,
@@ -329,20 +342,34 @@ export const renderEveryTeamCanvas = async (
       }
       context.restore();
     }
-    if (cell.headshot) {
-      const hx = inner.x - inner.w * 0.04;
-      const hy = inner.y - inner.h * 0.08;
+    if (cell.headshot && cell.partnerShot) {
       drawCoverHeadshot(
         context,
         cell.headshot,
-        hx,
-        hy,
-        inner.w * 1.08,
+        inner.x - inner.w * 0.08,
+        inner.y - inner.h * 0.08,
+        inner.w * 0.72,
         inner.h * 1.1,
-        {
-          silhouette: true,
-        },
+        { silhouette: true },
       );
+      drawCoverHeadshot(
+        context,
+        cell.partnerShot,
+        inner.x + inner.w * 0.36,
+        inner.y - inner.h * 0.08,
+        inner.w * 0.72,
+        inner.h * 1.1,
+        { silhouette: true },
+      );
+    } else if (cell.headshot || cell.partnerShot) {
+      const shot = cell.headshot ?? cell.partnerShot;
+      if (shot) {
+        const hx = inner.x - inner.w * 0.04;
+        const hy = inner.y - inner.h * 0.08;
+        drawCoverHeadshot(context, shot, hx, hy, inner.w * 1.08, inner.h * 1.1, {
+          silhouette: true,
+        });
+      }
     }
     context.restore();
     paintCellFrame(context, x, y, size, size, input.look, scale);
@@ -403,14 +430,29 @@ export const renderEveryTeamCanvas = async (
       );
       context.restore();
     }
-    if (input.showNames === true && cell.shown) {
-      const names = splitPlayerName(cell.shown.name);
+    if (input.showNames === true && (cell.shown || cell.partner)) {
+      const names = cell.shown ? splitPlayerName(cell.shown.name) : null;
+      const partnerNames = cell.partner
+        ? splitPlayerName(cell.partner.name)
+        : null;
+      const given =
+        cell.shown && cell.partner
+          ? ""
+          : names?.firstName || partnerNames?.firstName || "";
+      const family =
+        cell.shown && cell.partner
+          ? `${names?.lastName || cell.shown.name} / ${partnerNames?.lastName || cell.partner.name}`
+          : names?.lastName ||
+            cell.shown?.name ||
+            partnerNames?.lastName ||
+            cell.partner?.name ||
+            "";
       const fadeH = size * 0.38;
       paintNameFadeRect(context, x, y + size - fadeH, size, fadeH);
       drawNameStack(
         context,
-        names.firstName,
-        names.lastName || cell.shown.name,
+        given,
+        family,
         x + size / 2,
         y + size - size * 0.06,
         size * 0.84,

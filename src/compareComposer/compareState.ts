@@ -49,7 +49,7 @@ export const isAutoCompareSubtitle = (value: string) =>
 export const COMPARE_STAT_COUNT = 5;
 export const COMPARE_STAT_MAX = 10;
 
-export type CompareStatsMode = "season" | "game";
+export type CompareStatsMode = "season" | "game" | "last-5" | "this-week";
 export type CompareStatKey =
   | "pts"
   | "fgPct"
@@ -159,8 +159,12 @@ export const emptyCompareStat = (key: CompareStatKey): CompareStat => {
 export const defaultCompareStats = (): CompareStat[] =>
   DEFAULT_COMPARE_STAT_KEYS.map((key) => emptyCompareStat(key));
 
-export const parseCompareStatsMode = (value: unknown): CompareStatsMode =>
-  value === "game" ? "game" : "season";
+export const parseCompareStatsMode = (value: unknown): CompareStatsMode => {
+  if (value === "game" || value === "last-5" || value === "this-week") {
+    return value;
+  }
+  return "season";
+};
 
 export const parseSideSeasons = (
   value: unknown,
@@ -240,6 +244,12 @@ export const autoCompareStatsLabel = (
 ) => {
   if (mode === "game") {
     return "LAST GAME";
+  }
+  if (mode === "last-5") {
+    return "LAST 5";
+  }
+  if (mode === "this-week") {
+    return "THIS WEEK";
   }
   return `${statsSeasonFor(season)} AVG`;
 };

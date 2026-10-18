@@ -351,9 +351,10 @@ export const renderStatCardCoverCanvas = async (
     input.photoGrade,
   );
 
-  for (let index = 0; index < SCC_SLOT_COUNT; index += 1) {
+  const slotCount = input.slots.length || SCC_SLOT_COUNT;
+  for (let index = 0; index < slotCount; index += 1) {
     const slot = input.slots[index]!;
-    const cell = coverCellRect(index);
+    const cell = coverCellRect(index, slotCount);
     await drawCellPhoto(
       context,
       slot,
@@ -369,7 +370,7 @@ export const renderStatCardCoverCanvas = async (
   }
 
   const goldOn = input.showGold !== false;
-  for (const seamX of coverSeamXs()) {
+  for (const seamX of coverSeamXs(slotCount)) {
     paintSeam(
       context,
       (seamX - SCC_SEAM_W / 2) * s,

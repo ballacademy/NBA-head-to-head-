@@ -22,6 +22,7 @@ import {
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
+import { salaryLabelForPlayer } from "../lib/playerSalaries";
 import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_WIDTH,
@@ -235,6 +236,21 @@ export const renderMockTradeCanvas = async (
           slot.name.w * s,
         );
         setLetterSpacing(context, 0);
+      }
+      if (input.showSalaries && person.playerId) {
+        const cap = salaryLabelForPlayer(undefined, person.playerId);
+        if (cap) {
+          context.font = `900 ${12 * s}px ${POSTER_FONT}`;
+          context.fillStyle = "rgba(250, 204, 21, 0.92)";
+          context.textAlign = "center";
+          context.textBaseline = "top";
+          context.fillText(
+            cap,
+            (slot.name.x + slot.name.w / 2) * s,
+            (slot.name.y + slot.name.h) * s,
+            slot.name.w * s,
+          );
+        }
       }
     }
 

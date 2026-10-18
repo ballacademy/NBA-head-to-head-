@@ -8,6 +8,7 @@ import {
   paintComposerStamp,
   readComposerStamp,
 } from "./composerStamp";
+import { recordComposerExport } from "./composerExportHistory";
 import {
   getComposerExportContext,
   recordComposerRecentFromExport,
@@ -73,6 +74,7 @@ export const downloadCanvasPng = async (
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
   }
   recordComposerRecentFromExport(filename);
+  void recordComposerExport(filename, blob);
 };
 
 export const STORY_SAFE_INSET = 56;

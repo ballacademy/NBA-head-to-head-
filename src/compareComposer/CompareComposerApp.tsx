@@ -34,7 +34,13 @@ import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
-import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
+import { thisWeekRange } from "../instagramComposer/composerDateRange";
+import {
+  averageLastGames,
+  fetchLastGame,
+  fetchRecentGames,
+  gamesInInclusiveRange,
+} from "../playerOfTheDayComposer/lastGame";
 import {
   everyTeamCurrentSeason,
   everyTeamSeasons,
@@ -156,6 +162,25 @@ export function CompareComposerApp() {
       }
       if (mode === "game") {
         const game = await fetchLastGame(id, sample, onDate);
+        nextStats = applySideStatValues(
+          nextStats,
+          index,
+          statsFromLastGame(game, nextStats),
+        );
+      } else if (mode === "last-5" || mode === "this-week") {
+        const recent = await fetchRecentGames(id, sample);
+        const windowed =
+          mode === "this-week"
+            ? gamesInInclusiveRange(
+                recent,
+                thisWeekRange().from,
+                thisWeekRange().to,
+              )
+            : recent.slice(0, 5);
+        const game = averageLastGames(
+          windowed,
+          mode === "last-5" ? 5 : windowed.length || 1,
+        );
         nextStats = applySideStatValues(
           nextStats,
           index,
@@ -377,6 +402,22 @@ export function CompareComposerApp() {
             onClick={() => setStatsMode("game")}
           >
             Last game
+          </button>
+          <button
+            type="button"
+            className={mode === "last-5" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "last-5"}
+            onClick={() => setStatsMode("last-5")}
+          >
+            Last 5
+          </button>
+          <button
+            type="button"
+            className={mode === "this-week" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "this-week"}
+            onClick={() => setStatsMode("this-week")}
+          >
+            This week
           </button>
         </div>
         <ComposerStatsSampleToggle

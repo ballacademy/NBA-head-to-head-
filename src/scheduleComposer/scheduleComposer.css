@@ -1,0 +1,139 @@
+.sch-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: calc(16 * var(--u)) calc(32 * var(--u)) calc(24 * var(--u));
+  box-sizing: border-box;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
+
+.sch-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.sch-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.sch-board.is-none {
+  box-shadow: none;
+}
+
+.sch-brand,
+.sch-week,
+.sch-title-input {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.sch-brand {
+  height: calc(36 * var(--u));
+  letter-spacing: 0.18em;
+  font-size: calc(22 * var(--u));
+}
+
+.sch-title-block {
+  min-height: calc(88 * var(--u));
+}
+
+.sch-title-line {
+  font-size: calc(52 * var(--u));
+  letter-spacing: 0.06em;
+  line-height: 1.05;
+}
+
+.sch-week {
+  height: calc(28 * var(--u));
+  font-size: calc(16 * var(--u));
+  letter-spacing: 0.22em;
+  opacity: 0.9;
+}
+
+.sch-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: calc(12 * var(--u));
+  display: flex;
+  flex-direction: column;
+  gap: calc(10 * var(--u));
+  overflow: hidden;
+}
+
+.sch-day__label {
+  margin: 0 0 calc(6 * var(--u));
+  font-family: var(--ig-poster);
+  font-size: calc(14 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #facc15;
+}
+
+.sch-game {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) calc(28 * var(--u)) minmax(0, 1fr) minmax(110px, 0.7fr);
+  align-items: center;
+  gap: calc(6 * var(--u));
+  min-height: calc(44 * var(--u));
+}
+
+.sch-game__side {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  min-width: 0;
+  font-family: var(--ig-poster);
+  font-size: calc(16 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.sch-game__side canvas,
+.sch-game__side .ig-slot__logo {
+  width: calc(36 * var(--u));
+  height: calc(36 * var(--u));
+  flex: 0 0 calc(36 * var(--u));
+}
+
+.sch-game__at {
+  text-align: center;
+  font-weight: 900;
+  opacity: 0.55;
+}
+
+.sch-game__time {
+  text-align: right;
+  font-family: var(--ig-poster);
+  font-size: calc(14 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.sch-empty {
+  margin: auto;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}

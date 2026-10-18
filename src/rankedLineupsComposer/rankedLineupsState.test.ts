@@ -15,6 +15,7 @@ import {
   rankedFooterH,
   rankedHeaderH,
   rankedStripH,
+  rankedStripRect,
   RL_FOOTER_H,
   RL_HEADER_H,
   RL_PAD_X,
@@ -49,6 +50,9 @@ import {
   pickLineupStatLeaders,
   RANK_PILL_PRESETS,
   RANKED_LINEUP_STRIP_COUNT,
+  extraPositionLabel,
+  parseStripCount,
+  resizeRankedStrips,
   setStripPhoto,
   slidesFromDraft,
   splitRankedLineupTitle,
@@ -266,5 +270,20 @@ describe("ranked lineups", () => {
 
   it("paints a light vignette over five-strip photos", () => {
     expect(typeof paintPhotoVignette).toBe("function");
+  });
+
+  it("wraps 6–10 man lineups onto extra rows instead of a wider strip", () => {
+    expect(parseStripCount(8)).toBe(8);
+    expect(parseStripCount(2)).toBe(5);
+    expect(parseStripCount(12)).toBe(10);
+    expect(resizeRankedStrips(createEmptyStrips(), 8)).toHaveLength(8);
+    expect(parsePositionLabels(undefined, 7)[5]).toBe("6TH");
+    expect(extraPositionLabel(5)).toBe("6TH");
+    const sixth = rankedStripRect(5, 8);
+    const first = rankedStripRect(0, 8);
+    expect(sixth.y).toBeGreaterThan(first.y);
+    expect(sixth.x).toBe(first.x);
+    expect(rankedStripRect(4, 8).y).toBe(first.y);
+    expect(fillLineupByStatLeaders(resizeRankedStrips(createEmptyStrips(), 8), "2012-13", "points").strips).toHaveLength(8);
   });
 });

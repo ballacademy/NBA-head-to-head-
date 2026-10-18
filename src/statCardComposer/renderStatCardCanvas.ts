@@ -222,6 +222,17 @@ export const renderStatCardCanvas = async (
     context.textBaseline = "middle";
     context.fillStyle = STC_INK;
     context.fillText(line.value.trim() || "—", cx, valueY, maxW);
+    if (line.high) {
+      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+      context.fillStyle = "#facc15";
+      context.textAlign = "center";
+      context.fillText(
+        line.high === "career" ? "CAREER" : "SZN",
+        cx,
+        valueY - type.value * s * 0.42,
+      );
+      context.fillStyle = STC_INK;
+    }
     context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
     context.fillStyle = STC_MUTED;
     context.fillText(line.label.trim().toUpperCase() || "STAT", cx, labelY);

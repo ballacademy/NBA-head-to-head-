@@ -45,6 +45,8 @@ interface EveryTeamGraphicProps {
   brand: string;
   title: string;
   slots: EveryTeamSlots;
+  partners?: EveryTeamSlots;
+  duo?: boolean;
   look?: ComposerLook;
   purpleFlair?: boolean;
   showBa?: boolean;
@@ -93,6 +95,8 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       brand,
       title,
       slots,
+      partners,
+      duo = false,
       look = "white",
       purpleFlair = false,
       showBa = false,
@@ -329,6 +333,8 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
         <div className="et-grid">
           {teams.map((team, index) => {
             const stored = slots[slotIndexForTeam(team.id)] ?? null;
+            const partnerId =
+              duo ? partners?.[slotIndexForTeam(team.id)] ?? null : null;
             const cellSeason = seasonForTeam(
               team.id,
               season ?? everyTeamCurrentSeason(),
@@ -336,8 +342,18 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             );
             const missing = isMissingSeason(team.id, cellSeason);
             const shown = getRosterPlayer(team.id, cellSeason, stored);
+            const partner = getRosterPlayer(team.id, cellSeason, partnerId);
             const names = shown ? splitPlayerName(shown.name) : null;
-            const caption = names
+            const partnerNames = partner ? splitPlayerName(partner.name) : null;
+            const caption = shown && partner
+              ? fittedCellNames(
+                  "",
+                  `${names?.lastName || shown.name} / ${partnerNames?.lastName || partner.name}`,
+                  grid.cell * 0.84,
+                  14,
+                  11,
+                )
+              : names
               ? fittedCellNames(
                   names.firstName,
                   names.lastName || shown!.name,
@@ -345,7 +361,15 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                   14,
                   11,
                 )
-              : null;
+              : partnerNames
+                ? fittedCellNames(
+                    partnerNames.firstName,
+                    partnerNames.lastName || partner!.name,
+                    grid.cell * 0.84,
+                    14,
+                    11,
+                  )
+                : null;
             const rank = index + 1;
             const overridden = Boolean(cellSeasons?.[team.id]);
             const showYear =
@@ -358,7 +382,8 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 data-team={team.id}
                 className={[
                   "et-cell",
-                  shown ? "et-cell--filled" : "",
+                  shown || partner ? "et-cell--filled" : "",
+                  duo ? "is-duo" : "",
                   missing ? "et-cell--missing" : "",
                   ranked ? "et-cell--ranked" : "",
                   dragEnabled ? "et-cell--movable" : "",
@@ -407,9 +432,16 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                 </div>
                 {shown ? (
                   <PlayerHeadshot
-                    className="et-headshot"
+                    className={duo && partner ? "et-headshot et-headshot--a" : "et-headshot"}
                     src={shown.headshotUrl}
                     label={shown.id}
+                  />
+                ) : null}
+                {duo && partner ? (
+                  <PlayerHeadshot
+                    className="et-headshot et-headshot--b"
+                    src={partner.headshotUrl}
+                    label={partner.id}
                   />
                 ) : null}
                 {ranked ? (

@@ -73,7 +73,16 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/trade-machine" ||
     path === "/plot" ||
     path === "/scatter" ||
-    path === "/xy"
+    path === "/xy" ||
+    path === "/injury" ||
+    path === "/injuries" ||
+    path === "/injury-report" ||
+    path === "/schedule" ||
+    path === "/schedule-poster" ||
+    path === "/this-week" ||
+    path === "/shot-chart" ||
+    path === "/shotchart" ||
+    path === "/shots"
   );
 };
 

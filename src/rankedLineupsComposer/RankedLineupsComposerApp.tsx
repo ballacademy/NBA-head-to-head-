@@ -72,10 +72,14 @@ import {
   DEFAULT_RANK_DISPLAY,
   parsePositionLabels,
   parseRankDisplay,
+  parseStripCount,
   POSITION_LABEL_MAX,
   RANK_PILL_MAX,
   RANK_PILL_PRESETS,
+  RANKED_LINEUP_STRIP_MAX,
+  RANKED_LINEUP_STRIP_MIN,
   rankOrdinalNumber,
+  resizeRankedStrips,
   setStripPhoto,
   slidesFromDraft,
   usedLineupPlayerIds,
@@ -116,7 +120,10 @@ const loadDraft = (unranked: boolean): RankedLineupsDraft => {
           stored.rankDisplay,
           unranked ? "none" : "pill",
         ),
-        positionLabels: parsePositionLabels(stored.positionLabels),
+        positionLabels: parsePositionLabels(
+          stored.positionLabels,
+          stored.strips.length,
+        ),
         season:
           typeof stored.season === "string" && stored.season
             ? stored.season
@@ -141,7 +148,10 @@ const loadDraft = (unranked: boolean): RankedLineupsDraft => {
       stored?.rankDisplay,
       unranked ? "none" : "pill",
     ),
-    positionLabels: parsePositionLabels(stored?.positionLabels),
+    positionLabels: parsePositionLabels(
+      stored?.positionLabels,
+      stored?.strips?.length,
+    ),
     season:
       typeof stored?.season === "string" && stored.season
         ? stored.season
@@ -231,7 +241,9 @@ export function RankedLineupsComposerApp({
     setRankDisplay(
       parseRankDisplay(draft.rankDisplay, unranked ? "none" : "pill"),
     );
-    setPositionLabels(parsePositionLabels(draft.positionLabels));
+    setPositionLabels(
+      parsePositionLabels(draft.positionLabels, draft.strips.length),
+    );
     setSeason(draft.season || everyTeamCurrentSeason());
     setHydrated(true);
     void loadEveryTeamRosters()
@@ -282,7 +294,9 @@ export function RankedLineupsComposerApp({
     setShowFade(next.showFade === true);
     setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setRankDisplay(parseRankDisplay(next.rankDisplay));
-    setPositionLabels(parsePositionLabels(next.positionLabels));
+    setPositionLabels(
+      parsePositionLabels(next.positionLabels, next.strips.length),
+    );
     setSeason(parseEveryTeamSeason(next.season));
     setActiveIndex(null);
   };
@@ -432,7 +446,7 @@ export function RankedLineupsComposerApp({
 
   const handleNextSlide = () => {
     const nextRank = nextRankPill(rank);
-    const next = emptyLineupSlide(nextRank);
+    const next = emptyLineupSlide(nextRank, strips.length);
     const nextSlides = [
       ...slides.slice(0, activeSlide),
       { rank, strips },
@@ -641,6 +655,42 @@ export function RankedLineupsComposerApp({
         </label>
         </>
         )}
+        <div className="sc-look" role="group" aria-label="Lineup size">
+          <span className="sc-look__label">Players</span>
+          {Array.from(
+            { length: RANKED_LINEUP_STRIP_MAX - RANKED_LINEUP_STRIP_MIN + 1 },
+            (_, offset) => RANKED_LINEUP_STRIP_MIN + offset,
+          ).map((count) => (
+            <button
+              key={count}
+              type="button"
+              className={strips.length === count ? "sc-chip is-on" : "sc-chip"}
+              aria-pressed={strips.length === count}
+              aria-label={`${count}-man lineup`}
+              onClick={() => {
+                const n = parseStripCount(count);
+                if (n === strips.length) {
+                  return;
+                }
+                push(strips);
+                const next = resizeRankedStrips(strips, n);
+                setStrips(next);
+                setPositionLabels(parsePositionLabels(positionLabels, n));
+                setSlides((current) =>
+                  current.map((slide, index) => ({
+                    rank: index === activeSlide ? rank : slide.rank,
+                    strips:
+                      index === activeSlide
+                        ? next
+                        : resizeRankedStrips(slide.strips, n),
+                  })),
+                );
+              }}
+            >
+              {count}
+            </button>
+          ))}
+        </div>
           </>
         }
         data={
