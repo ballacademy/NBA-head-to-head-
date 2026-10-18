@@ -84,10 +84,7 @@ export const composerNameLines = (
     return { given: "", family: last || first };
   }
   if (style === "initial") {
-    if (first && last) {
-      return { given: `${first.charAt(0).toUpperCase()}.`, family: last };
-    }
-    return { given: "", family: last || first };
+    return { given: "", family: formatComposerName(first, last, "initial") };
   }
   return { given: first, family: last };
 };

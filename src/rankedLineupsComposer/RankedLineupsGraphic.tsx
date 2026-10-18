@@ -88,7 +88,7 @@ function RankedMetaName({
   const [givenFocus, setGivenFocus] = useState(false);
   const [familyFocus, setFamilyFocus] = useState(false);
   const lines = composerNameLines(firstName, lastName, style);
-  const hideGiven = style === "last" && !givenFocus && !lines.given;
+  const hideGiven = !givenFocus && !lines.given;
   return (
     <>
       {hideGiven ? null : (

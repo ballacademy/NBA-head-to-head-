@@ -44,7 +44,7 @@ export function PlayerNameFade({
   const [givenFocus, setGivenFocus] = useState(false);
   const givenValue = givenFocus ? firstName : lines.given;
   const familySource = familyFocus ? lastName : lines.family;
-  const hideGiven = style === "last" && !givenFocus && !lines.given;
+  const hideGiven = !givenFocus && !lines.given;
 
   useLayoutEffect(() => {
     const node = familyRef.current;

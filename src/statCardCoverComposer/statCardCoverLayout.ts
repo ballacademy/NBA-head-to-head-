@@ -41,7 +41,7 @@ export const SCC_BA_INSET = 24;
 export const SCC_NAME_H = 168;
 export const SCC_NAME_LOGO = 44;
 export const SCC_FAMILY_SIZE = 28;
-export const SCC_GIVEN_SIZE = 13;
+export const SCC_GIVEN_SIZE = 20;
 export const SCC_MARK = 140;
 /** Large enough to read at 2400×3000 — still pinned to the right edge. */
 export const SCC_SWIPE_SIZE = 88;

@@ -118,6 +118,7 @@ describe("stat card cover", () => {
     expect(coverFittedLastName("Wembanyama", 4)).not.toMatch(/\s/);
     expect(coverFittedLastName("Wembanyama", 4)).not.toBe("WEMBANYAMA");
     expect(coverFittedLastName("Jokic", 4)).toBe("JOKIC");
+    expect(coverFittedLastName("N. Jokic", 4)).toMatch(/^N\./);
     expect(SCC_GOLD.toLowerCase()).toBe("#facc15");
     expect(SCC_GOLD_DEEP.toLowerCase()).toBe("#d4af37");
   });

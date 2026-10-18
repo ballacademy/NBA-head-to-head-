@@ -344,6 +344,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             }
           />
         ) : null}
+        {givenShown || givenFocus ? (
         <textarea
           className="hl-given"
           value={givenShown}
@@ -359,6 +360,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             onComposerTextChange(event, onFirstNameChange, HEADLINE_NAME_MAX)
           }
         />
+        ) : null}
         <textarea
           className="hl-family"
           value={familyShown}

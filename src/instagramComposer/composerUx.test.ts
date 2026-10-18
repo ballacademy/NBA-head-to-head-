@@ -32,8 +32,8 @@ describe("composer UX extras", () => {
       family: "Edwards",
     });
     expect(composerNameLines("Anthony", "Edwards", "initial")).toEqual({
-      given: "A.",
-      family: "Edwards",
+      given: "",
+      family: "A. Edwards",
     });
     expect(formatComposerPersonName("Nikola Jokic", "initial")).toBe("N. Jokic");
     expect(COMPOSER_NAME_STYLE_EVENT).toBe("ddgm:composer-name-style");
