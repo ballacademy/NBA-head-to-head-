@@ -129,6 +129,7 @@
 }
 
 .inj-team__logo {
+  position: relative;
   width: calc(44 * var(--u));
   height: calc(44 * var(--u));
   flex: 0 0 calc(44 * var(--u));

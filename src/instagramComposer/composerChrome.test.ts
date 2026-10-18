@@ -648,7 +648,9 @@ describe("composer chrome", () => {
     expect(injuryGraphic).toContain("inj-team__logo");
     expect(scheduleGraphic).toContain("sch-game__logo");
     expect(injuryCss).toContain("align-content: start");
+    expect(injuryCss).toMatch(/\.inj-team__logo \{[\s\S]*?position:\s*relative/);
     expect(scheduleCss).toContain(".sch-list.is-split");
+    expect(scheduleCss).toMatch(/\.sch-game__logo \{[\s\S]*?position:\s*relative/);
     expect(etApp).toContain("Two players per team");
     expect(compareApp).toContain("last-5");
     expect(compareApp).toContain("this-week");

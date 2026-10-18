@@ -127,6 +127,7 @@
 }
 
 .sch-game__logo {
+  position: relative;
   width: calc(28 * var(--u));
   height: calc(28 * var(--u));
   flex: 0 0 calc(28 * var(--u));
