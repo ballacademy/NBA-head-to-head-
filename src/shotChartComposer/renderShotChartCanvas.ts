@@ -4,6 +4,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
+  composerNameLines,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
+import {
   FIELD_TEXTURE_SRC,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
@@ -105,10 +109,21 @@ export const renderShotChartCanvas = async (
   lines.forEach((line, index) => {
     context.fillText(line, width / 2, (86 + index * 46) * s);
   });
-  context.font = `900 ${14 * s}px ${POSTER_FONT}`;
-  context.fillText((input.firstName || "PICK").toUpperCase(), width / 2, 168 * s);
+  const nameLines = composerNameLines(
+    input.firstName,
+    input.lastName,
+    readComposerNameStyle(),
+  );
+  if (nameLines.given) {
+    context.font = `900 ${14 * s}px ${POSTER_FONT}`;
+    context.fillText(nameLines.given.toUpperCase(), width / 2, 168 * s);
+  }
   context.font = `900 ${42 * s}px ${POSTER_FONT}`;
-  context.fillText((input.lastName || "PLAYER").toUpperCase(), width / 2, 206 * s);
+  context.fillText(
+    (nameLines.family || input.lastName || "PLAYER").toUpperCase(),
+    width / 2,
+    206 * s,
+  );
   context.fillStyle = "#facc15";
   context.font = `900 ${14 * s}px ${POSTER_FONT}`;
   context.fillText(

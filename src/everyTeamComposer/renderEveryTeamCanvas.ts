@@ -25,6 +25,11 @@ import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
+import {
+  composerNameLines,
+  formatComposerName,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { paintNameFadeRect, drawNameStack } from "../instagramComposer/drawPlayerNameFade";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
@@ -435,16 +440,29 @@ export const renderEveryTeamCanvas = async (
       const partnerNames = cell.partner
         ? splitPlayerName(cell.partner.name)
         : null;
+      const style = readComposerNameStyle();
+      const lines = names
+        ? composerNameLines(
+            names.firstName,
+            names.lastName || cell.shown?.name || "",
+            style,
+          )
+        : partnerNames
+          ? composerNameLines(
+              partnerNames.firstName,
+              partnerNames.lastName || cell.partner?.name || "",
+              style,
+            )
+          : { given: "", family: "" };
       const given =
         cell.shown && cell.partner
           ? ""
-          : names?.firstName || partnerNames?.firstName || "";
+          : lines.given;
       const family =
         cell.shown && cell.partner
-          ? `${names?.lastName || cell.shown.name} / ${partnerNames?.lastName || cell.partner.name}`
-          : names?.lastName ||
+          ? `${formatComposerName(names?.firstName || "", names?.lastName || cell.shown.name, style)} / ${formatComposerName(partnerNames?.firstName || "", partnerNames?.lastName || cell.partner.name, style)}`
+          : lines.family ||
             cell.shown?.name ||
-            partnerNames?.lastName ||
             cell.partner?.name ||
             "";
       const fadeH = size * 0.38;

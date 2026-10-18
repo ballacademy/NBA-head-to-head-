@@ -25,6 +25,7 @@ import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
+import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { NBA_TEAMS } from "../standingsComposer/teams";
@@ -764,15 +765,22 @@ export function MockTradeComposerApp() {
               onTitleChange={(title) =>
                 setDraft((current) => ({ ...current, title }))
               }
-              onPlayerNameChange={(side, player, lastName) =>
-                setDraft((current) =>
-                  patchMockTradeSide(current, side, {
+              onPlayerNameChange={(side, player, value) =>
+                setDraft((current) => {
+                  const names = splitPlayerName(value);
+                  return patchMockTradeSide(current, side, {
                     ...current.sides[side]!,
                     players: current.sides[side]!.players.map((slot, index) =>
-                      index === player ? { ...slot, lastName } : slot,
+                      index === player
+                        ? {
+                            ...slot,
+                            firstName: names.firstName,
+                            lastName: names.lastName,
+                          }
+                        : slot,
                     ),
-                  }),
-                )
+                  });
+                })
               }
               onPickPlayer={(side, player) => {
                 setFocus({ side, player });

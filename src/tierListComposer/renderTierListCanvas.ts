@@ -21,6 +21,10 @@ import { GRAPHIC_BG } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
+import {
+  composerNameLines,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { paintNameFadeRect, drawNameStack } from "../instagramComposer/drawPlayerNameFade";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "./nbaActivePlayers";
@@ -374,12 +378,19 @@ export const renderTierListCanvas = async (
             : null;
         const family = names?.lastName || player?.name || team?.name || "";
         if (names && family) {
+          const styled = player
+            ? composerNameLines(
+                names.firstName,
+                family,
+                readComposerNameStyle(),
+              )
+            : { given: names.firstName, family };
           const fadeH = Math.min(cellW, cellH) * 0.38;
           paintNameFadeRect(context, x, cellY + cellH - fadeH, cellW, fadeH);
           drawNameStack(
             context,
-            names.firstName,
-            family,
+            styled.given,
+            styled.family,
             x + cellW / 2,
             cellY + cellH - Math.min(cellW, cellH) * 0.06,
             cellW * 0.84,

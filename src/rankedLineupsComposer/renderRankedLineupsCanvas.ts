@@ -10,6 +10,10 @@ import {
   paintTeamHairline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerNameLines,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { wrapNameToWidth } from "../instagramComposer/nameFit";
 import {
@@ -489,8 +493,13 @@ export const renderRankedLineupsCanvas = async (
     if (input.showFade) {
       continue;
     }
-    const given = (strip?.firstName ?? "").trim().toUpperCase();
-    const family = (strip?.lastName ?? "").trim().toUpperCase();
+    const styled = composerNameLines(
+      strip?.firstName ?? "",
+      strip?.lastName ?? "",
+      readComposerNameStyle(),
+    );
+    const given = styled.given.trim().toUpperCase();
+    const family = styled.family.trim().toUpperCase();
     const nameTop = rowY + RL_POS_H * s;
     const nameW = stripW - 8 * s;
     if (given) {

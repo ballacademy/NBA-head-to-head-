@@ -1,4 +1,10 @@
 import {
+  formatComposerName,
+  readComposerNameStyle,
+  splitComposerPersonName,
+  type ComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
+import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -30,10 +36,18 @@ export const QT_SOURCE_TRACK = 0.16;
 export const QT_SOURCE_BOTTOM = 44;
 export const QT_LONG_QUOTE_WORDS = 8;
 
-export const quoteLastName = (attribution: string) => {
-  const parts = attribution.replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-  return (parts.at(-1) ?? "").toUpperCase();
+export const quoteLastName = (
+  attribution: string,
+  style: ComposerNameStyle = "last",
+) => {
+  const names = splitComposerPersonName(attribution);
+  return formatComposerName(names.firstName, names.lastName, style).toUpperCase();
 };
+
+export const quoteStyledName = (
+  attribution: string,
+  style: ComposerNameStyle = readComposerNameStyle(),
+) => quoteLastName(attribution, style);
 
 export const quoteWordCount = (quote: string) =>
   quote.replace(/\s+/g, " ").trim().split(" ").filter(Boolean).length;

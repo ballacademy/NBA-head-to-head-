@@ -4,6 +4,7 @@ import {
   paintPurpleCornerBloom,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { getTeamColors } from "../lib/teamColors";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -166,7 +167,7 @@ export const renderQuoteCanvas = async (
   context.fillStyle = fade;
   context.fillRect(0, height - QT_FADE_H * s, width, QT_FADE_H * s);
 
-  const last = quoteLastName(input.attribution);
+  const last = quoteLastName(input.attribution, readComposerNameStyle());
   if (last) {
     const size = quoteLastNameSize(last, input.quote);
     context.font = `900 ${size * s}px ${POSTER_FONT}`;

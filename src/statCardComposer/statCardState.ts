@@ -1,4 +1,7 @@
-import { formatComposerName } from "../instagramComposer/composerNameStyle";
+import {
+  formatComposerName,
+  type ComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import {
   DEFAULT_COMPOSER_WATERMARK,
   parseComposerWatermark,
@@ -280,8 +283,10 @@ export const persistStatCardStatsLeft = (
 export const hasCustomPhoto = (draft: StatCardDraft) =>
   stripHasCustomPhoto(draft as unknown as TotwStrip);
 
-export const playerName = (draft: Pick<StatCardDraft, "firstName" | "lastName">) =>
-  formatComposerName(draft.firstName, draft.lastName);
+export const playerName = (
+  draft: Pick<StatCardDraft, "firstName" | "lastName">,
+  style?: ComposerNameStyle,
+) => formatComposerName(draft.firstName, draft.lastName, style);
 
 export const applyPlayerName = (draft: StatCardDraft, value: string): StatCardDraft => {
   const names = splitPlayerName(value.slice(0, STC_NAME_MAX));

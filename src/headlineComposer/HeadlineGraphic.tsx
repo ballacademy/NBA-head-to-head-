@@ -4,6 +4,10 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerNameLines,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -20,9 +24,11 @@ import {
   headlinePanelHex,
   headlineSplitLayout,
   parseHeadlineBoardMode,
+  parseHeadlineNameScope,
   parseHeadlineNameStack,
   parseHeadlinePanelLeft,
   type HeadlineBoardMode,
+  type HeadlineNameScope,
   type HeadlineNameStack,
 } from "./headlineLayout";
 import {
@@ -44,6 +50,7 @@ interface HeadlineGraphicProps {
   secondTeamId?: string | null;
   firstName?: string;
   lastName?: string;
+  nameScope?: HeadlineNameScope;
   photoSrc: string | null;
   customPhoto: boolean;
   pan: PhotoPan;
@@ -82,6 +89,7 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       secondTeamId = null,
       firstName = "",
       lastName = "",
+      nameScope = "player",
       photoSrc,
       customPhoto,
       pan,
@@ -114,6 +122,15 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const [nameStyle] = useComposerNameStyle();
+    const [givenFocus, setGivenFocus] = useState(false);
+    const [familyFocus, setFamilyFocus] = useState(false);
+    const styledNames =
+      parseHeadlineNameScope(nameScope) === "player"
+        ? composerNameLines(firstName, lastName, nameStyle)
+        : { given: firstName, family: lastName };
+    const givenShown = givenFocus ? firstName : styledNames.given;
+    const familyShown = familyFocus ? lastName : styledNames.family;
     const team = getTeam(teamId);
     const teamB = getTeam(secondTeamId);
     const marks = splitTeamWordmark(team);
@@ -122,8 +139,8 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
     const layout = headlineSplitLayout({
       headline,
       body,
-      firstName,
-      lastName,
+      firstName: givenShown,
+      lastName: familyShown,
       city: marks.city,
       nick: marks.nick,
       shortName: teamShortLockup(team),
@@ -329,26 +346,30 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
         ) : null}
         <textarea
           className="hl-given"
-          value={firstName}
+          value={givenShown}
           rows={Math.max(1, layout.given.lines.length)}
           maxLength={HEADLINE_NAME_MAX}
           spellCheck={false}
           aria-label="Stacked name line 1"
           placeholder={layout.given.text || "First name"}
           data-hl-box="given"
+          onFocus={() => setGivenFocus(true)}
+          onBlur={() => setGivenFocus(false)}
           onChange={(event) =>
             onComposerTextChange(event, onFirstNameChange, HEADLINE_NAME_MAX)
           }
         />
         <textarea
           className="hl-family"
-          value={lastName}
+          value={familyShown}
           rows={Math.max(1, layout.family.lines.length)}
           maxLength={HEADLINE_NAME_MAX}
           spellCheck={false}
           aria-label="Stacked name line 2"
           placeholder={layout.family.text || "Last name"}
           data-hl-box="family"
+          onFocus={() => setFamilyFocus(true)}
+          onBlur={() => setFamilyFocus(false)}
           onChange={(event) =>
             onComposerTextChange(event, onLastNameChange, HEADLINE_NAME_MAX)
           }

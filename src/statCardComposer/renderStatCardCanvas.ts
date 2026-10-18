@@ -54,6 +54,7 @@ import {
   statCardStoryType,
   statCardType,
 } from "./statCardLayout";
+import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { playerName, visibleStatCardLines, type StatCardDraft } from "./statCardState";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
@@ -322,7 +323,7 @@ export const renderStatCardCanvas = async (
 
   const team = getTeam(input.teamId);
   const colors = getTeamColors(input.teamId ?? "");
-  const name = playerName(input).toUpperCase() || "PLAYER";
+  const name = playerName(input, readComposerNameStyle()).toUpperCase() || "PLAYER";
   if (story) {
     const nameX = storyRects.name.x * s;
     const nameY = storyRects.name.y * s;

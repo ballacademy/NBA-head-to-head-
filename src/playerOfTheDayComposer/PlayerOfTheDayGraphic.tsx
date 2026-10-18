@@ -5,6 +5,10 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerNameLines,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
@@ -79,6 +83,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
+  const [nameStyle] = useComposerNameStyle();
   const titleLines = splitPotdTitle(title);
 
   const setRefs = (node: HTMLElement | null) => {
@@ -166,6 +171,11 @@ export const PlayerOfTheDayGraphic = forwardRef<
         {cards.map((card, index) => {
           const team = getTeam(card.teamId);
           const empty = !card.photoSrc;
+          const lines = composerNameLines(
+            card.firstName,
+            card.lastName,
+            nameStyle,
+          );
           return (
             <section
               key={`pod-card-${index}`}
@@ -251,8 +261,10 @@ export const PlayerOfTheDayGraphic = forwardRef<
                 ) : null}
                 {card.lastName || card.firstName ? (
                   <>
-                    <p className="pod-name__line">{card.firstName}</p>
-                    <p className="pod-name__line">{card.lastName}</p>
+                    {lines.given ? (
+                      <p className="pod-name__line">{lines.given}</p>
+                    ) : null}
+                    <p className="pod-name__line">{lines.family}</p>
                   </>
                 ) : (
                   <span className="pod-name__empty" />

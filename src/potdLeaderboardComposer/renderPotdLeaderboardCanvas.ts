@@ -7,6 +7,10 @@ import {
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  formatComposerPersonName,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 import {
   FIELD_TEXTURE_SRC,
@@ -350,7 +354,10 @@ export const renderPotdLeaderboardCanvas = async (
     context.fillStyle = PLB_YELLOW;
     context.font = `900 ${size}px ${POSTER_FONT}`;
     setLetterSpacing(context, PLB_ROW_TRACK * size);
-    const lines = entry.displayLines.filter(Boolean);
+    const nameStyle = readComposerNameStyle();
+    const styledName = formatComposerPersonName(entry.name, nameStyle).toUpperCase();
+    const lines =
+      nameStyle === "full" ? entry.displayLines.filter(Boolean) : [];
     if (lines.length > 1) {
       const step = size * 0.95;
       lines.forEach((line, lineIndex) => {
@@ -361,7 +368,11 @@ export const renderPotdLeaderboardCanvas = async (
         );
       });
     } else {
-      context.fillText(entry.displayName || entry.name.toUpperCase(), nameX, y);
+      context.fillText(
+        styledName || entry.displayName || entry.name.toUpperCase(),
+        nameX,
+        y,
+      );
     }
     context.font = `900 ${meta}px ${POSTER_FONT}`;
     setLetterSpacing(context, PLB_ROW_TRACK * meta);

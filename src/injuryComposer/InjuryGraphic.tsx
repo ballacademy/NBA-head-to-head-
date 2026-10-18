@@ -11,6 +11,10 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  formatComposerPersonName,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
@@ -53,6 +57,7 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const [nameStyle] = useComposerNameStyle();
     const titleLines = splitInjuryTitle(draft.title);
     const fill = injuryFillLayout(draft.teams.length);
 
@@ -187,7 +192,10 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
                         >
                           {player.status}
                         </span>
-                        <span className="inj-name">{player.shortName}</span>
+                        <span className="inj-name">
+                          {formatComposerPersonName(player.name, nameStyle) ||
+                            player.shortName}
+                        </span>
                       </div>
                     ))}
                   </div>

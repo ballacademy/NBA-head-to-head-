@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { EXAMPLE_PLAYER_IDS, searchPlayers } from "../tierListComposer/nbaActivePlayers";
 import {
+  COMPOSER_NAME_STYLE_EVENT,
+  composerNameLines,
   formatComposerName,
+  formatComposerPersonName,
   parseComposerNameStyle,
 } from "./composerNameStyle";
 import {
@@ -20,6 +23,20 @@ describe("composer UX extras", () => {
       "Anthony Edwards",
     );
     expect(formatComposerName("Anthony", "Edwards", "initial")).toBe("A. Edwards");
+    expect(composerNameLines("Anthony", "Edwards", "last")).toEqual({
+      given: "",
+      family: "Edwards",
+    });
+    expect(composerNameLines("Anthony", "Edwards", "full")).toEqual({
+      given: "Anthony",
+      family: "Edwards",
+    });
+    expect(composerNameLines("Anthony", "Edwards", "initial")).toEqual({
+      given: "A.",
+      family: "Edwards",
+    });
+    expect(formatComposerPersonName("Nikola Jokic", "initial")).toBe("N. Jokic");
+    expect(COMPOSER_NAME_STYLE_EVENT).toBe("ddgm:composer-name-style");
   });
 
   it("keeps the last five exported graphics", () => {

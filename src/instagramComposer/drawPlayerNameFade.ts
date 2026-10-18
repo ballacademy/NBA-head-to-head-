@@ -1,4 +1,9 @@
 import { drawCoveredLogo } from "../standingsComposer/logoDraw";
+import {
+  composerNameLines,
+  readComposerNameStyle,
+  type ComposerNameStyle,
+} from "./composerNameStyle";
 import { abbreviateOverflowName } from "./nameFit";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
@@ -106,9 +111,15 @@ export const drawPlayerNameFade = (
     givenSize: number;
     scale: number;
     pad?: number;
+    nameStyle?: ComposerNameStyle;
   },
 ) => {
   const pad = input.pad ?? 6 * input.scale;
+  const lines = composerNameLines(
+    input.given,
+    input.family,
+    input.nameStyle ?? readComposerNameStyle(),
+  );
   paintNameFadeRect(context, input.x, input.y, input.w, input.h);
   let textX = input.x + 4 * input.scale;
   if (input.logo) {
@@ -127,8 +138,8 @@ export const drawPlayerNameFade = (
   }
   drawNameStack(
     context,
-    input.given,
-    input.family,
+    lines.given,
+    lines.family,
     textX,
     input.y + input.h - pad - 2 * input.scale,
     input.x + input.w - pad - textX,

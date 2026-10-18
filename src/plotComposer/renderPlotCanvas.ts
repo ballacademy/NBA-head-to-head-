@@ -33,9 +33,11 @@ import {
   plotRectFor,
   shouldDrawHeadshot,
 } from "./plotLayout";
+import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import {
   plotKicker,
   plotMetricLabel,
+  plotPointLabel,
   splitPlotTitle,
   type PlotPoint,
   type PlotQuadrants,
@@ -118,7 +120,7 @@ export const renderPlotCanvas = async (
       id: point.id,
       x: point.x,
       y: point.y,
-      label: point.shortLabel || point.label,
+      label: plotPointLabel(point, readComposerNameStyle()),
       kind: point.kind,
       size: point.size,
     })),

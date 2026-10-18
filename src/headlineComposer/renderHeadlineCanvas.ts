@@ -32,11 +32,17 @@ import {
   headlinePanelHex,
   headlineSplitLayout,
   parseHeadlineBoardMode,
+  parseHeadlineNameScope,
   parseHeadlineNameStack,
   parseHeadlinePanelLeft,
   type HeadlineBoardMode,
+  type HeadlineNameScope,
   type HeadlineNameStack,
 } from "./headlineLayout";
+import {
+  composerNameLines,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import {
   headlineLabel,
   splitTeamWordmark,
@@ -155,6 +161,7 @@ export interface HeadlineRenderInput {
   secondTeamId?: string | null;
   firstName?: string;
   lastName?: string;
+  nameScope?: HeadlineNameScope;
   photoSrc: string | null;
   pan: HeadlineDraft["pan"];
   boardMode?: HeadlineBoardMode;
@@ -190,11 +197,19 @@ export const renderHeadlineCanvas = async (
   const team = getTeam(input.teamId);
   const teamB = getTeam(input.secondTeamId ?? null);
   const marks = splitTeamWordmark(team);
+  const stacked =
+    parseHeadlineNameScope(input.nameScope) === "player"
+      ? composerNameLines(
+          input.firstName ?? "",
+          input.lastName ?? "",
+          readComposerNameStyle(),
+        )
+      : { given: input.firstName ?? "", family: input.lastName ?? "" };
   const layout = headlineSplitLayout({
     headline,
     body: input.body,
-    firstName: input.firstName ?? "",
-    lastName: input.lastName ?? "",
+    firstName: stacked.given,
+    lastName: stacked.family,
     city: marks.city,
     nick: marks.nick,
     shortName: teamShortLockup(team),

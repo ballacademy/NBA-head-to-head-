@@ -5,6 +5,10 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  formatComposerPersonName,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
@@ -56,6 +60,8 @@ export const PotdLeaderboardGraphic = forwardRef<
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
+  const [nameStyle] = useComposerNameStyle();
+  const [nameFocus, setNameFocus] = useState<string | null>(null);
   const ranked = rankLeaderboard(entries);
 
   const setRefs = (node: HTMLElement | null) => {
@@ -174,13 +180,20 @@ export const PotdLeaderboardGraphic = forwardRef<
                 <textarea
                   className="plb-name"
                   rows={wrap ? 2 : 1}
-                  value={entry.name}
+                  value={
+                    nameFocus === entry.id
+                      ? entry.name
+                      : formatComposerPersonName(entry.name, nameStyle) ||
+                        entry.name
+                  }
                   maxLength={40}
                   spellCheck={false}
                   aria-label="Player name"
                   style={{
                     fontSize: `calc(${42 * entry.nameScale} * var(--u))`,
                   }}
+                  onFocus={() => setNameFocus(entry.id)}
+                  onBlur={() => setNameFocus(null)}
                   onChange={(event) =>
                     onNameChange(
                       entry.id,

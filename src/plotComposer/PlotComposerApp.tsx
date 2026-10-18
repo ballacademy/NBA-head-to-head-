@@ -111,6 +111,7 @@ export function PlotComposerApp() {
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [highlightedIds, setHighlightedIds] = useState<string[]>([]);
   const [sizeMetric, setSizeMetric] = useState<EveryTeamStatMetric | "none">("none");
+  const [populated, setPopulated] = useState(false);
   const [quadrants, setQuadrants] = useState<PlotQuadrants>({
     ...DEFAULT_PLOT_QUADRANTS,
   });
@@ -151,6 +152,7 @@ export function PlotComposerApp() {
     setFilters(draft.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(draft.showBa !== false);
     setShowNames(draft.showNames !== false);
+    setPopulated(draft.points.length > 0);
     setHydrated(true);
     void loadEveryTeamRosters()
       .then(() => {
@@ -216,10 +218,48 @@ export function PlotComposerApp() {
     setFilters(next.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(next.showBa !== false);
     setShowNames(next.showNames !== false);
+    setPopulated(next.points.length > 0);
   };
 
-  const handlePopulate = () => {
-    const next = populatePlotPoints(
+  const skipLivePlot = useRef(true);
+
+  const applyPlot = useCallback(
+    (announce: boolean) => {
+      const next = populatePlotPoints(
+        subject,
+        season,
+        xMetric,
+        yMetric,
+        filters,
+        pinnedIds,
+        statsSample,
+        sizeMetric,
+      );
+      const labelX = plotMetricLabel(xMetric);
+      const labelY = plotMetricLabel(yMetric);
+      if (next.length === 0) {
+        setPoints([]);
+        if (announce) {
+          setStatus(`No ${labelX}/${labelY} for ${season}.`);
+        }
+        return next;
+      }
+      setPoints(next);
+      setTitle((current) =>
+        isAutoTitle(current) ? autoPlotTitle(xMetric, yMetric, subject) : current,
+      );
+      if (announce) {
+        const pinNote =
+          subject === "players" && pinnedIds.length
+            ? ` (${pinnedIds.length} pinned)`
+            : "";
+        setStatus(
+          `Plotted ${next.length} ${subject}${pinNote} on ${labelX} vs ${labelY}.`,
+        );
+      }
+      return next;
+    },
+    [
       subject,
       season,
       xMetric,
@@ -228,23 +268,25 @@ export function PlotComposerApp() {
       pinnedIds,
       statsSample,
       sizeMetric,
-    );
-    const labelX = plotMetricLabel(xMetric);
-    const labelY = plotMetricLabel(yMetric);
-    if (next.length === 0) {
-      setStatus(`No ${labelX}/${labelY} for ${season}.`);
+    ],
+  );
+
+  useEffect(() => {
+    if (!hydrated || !rostersReady || !populated) {
       return;
     }
+    if (skipLivePlot.current) {
+      skipLivePlot.current = false;
+      return;
+    }
+    applyPlot(false);
+  }, [hydrated, rostersReady, populated, applyPlot]);
+
+  const handlePopulate = () => {
+    setPopulated(true);
+    skipLivePlot.current = false;
     push(points);
-    setPoints(next);
-    setTitle((current) =>
-      isAutoTitle(current) ? autoPlotTitle(xMetric, yMetric, subject) : current,
-    );
-    const pinNote =
-      subject === "players" && pinnedIds.length
-        ? ` (${pinnedIds.length} pinned)`
-        : "";
-    setStatus(`Plotted ${next.length} ${subject}${pinNote} on ${labelX} vs ${labelY}.`);
+    applyPlot(true);
   };
 
   const swapAxes = () => {
@@ -252,9 +294,6 @@ export function PlotComposerApp() {
     const nextY = xMetric;
     setXMetric(nextX);
     setYMetric(nextY);
-    setPoints((current) =>
-      current.map((point) => ({ ...point, x: point.y, y: point.x })),
-    );
     setTitle((current) =>
       isAutoTitle(current) ? autoPlotTitle(nextX, nextY, subject) : current,
     );
@@ -653,6 +692,8 @@ export function PlotComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               push(points);
+              skipLivePlot.current = true;
+              setPopulated(false);
               applyDraft(
                 defaultPlotDraft(season),
               );
@@ -772,9 +813,10 @@ export function PlotComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Scatter of teams or players on two season stats. Empty until you
-            Populate. Highlight several players or teams so they glow. Size-by
-            is optional. Quadrant labels sit in the corners. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            Populate; after that, X/Y, season, size-by, filters, pins, and Swap
+            re-plot live. Highlight several players or teams so they glow.
+            Quadrant labels sit in the corners. Downloads a 4:5 Instagram PNG —
+            nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -789,7 +831,11 @@ export function PlotComposerApp() {
           onPick={(playerId) => {
             setPinnedIds((current) => pinPlotPlayer(current, playerId));
             const player = getPlayer(playerId);
-            setStatus(`Pinned ${player?.name ?? "player"}. Populate to plot.`);
+            setStatus(
+              populated
+                ? `Pinned ${player?.name ?? "player"}.`
+                : `Pinned ${player?.name ?? "player"}. Populate to plot.`,
+            );
           }}
           onClear={() => {
             if (pinnedIds[0]) {

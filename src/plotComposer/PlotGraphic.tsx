@@ -1,4 +1,5 @@
 import { forwardRef, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerFlairClass,
@@ -24,6 +25,7 @@ import {
 import {
   plotKicker,
   plotMetricLabel,
+  plotPointLabel,
   splitPlotTitle,
   type PlotPoint,
   type PlotQuadrants,
@@ -73,6 +75,7 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const [nameStyle] = useComposerNameStyle();
     const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
     const plot = plotRectFor(boardH);
     const xAxis = useMemo(
@@ -90,7 +93,7 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
             id: point.id,
             x: point.x,
             y: point.y,
-            label: point.shortLabel || point.label,
+            label: plotPointLabel(point, nameStyle),
             kind: point.kind,
             size: point.size,
           })),
@@ -100,7 +103,7 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
           showNames,
           highlightedIds,
         ),
-      [points, xAxis, yAxis, boardH, showNames, highlightedIds],
+      [points, xAxis, yAxis, boardH, showNames, highlightedIds, nameStyle],
     );
 
     const setRefs = (node: HTMLElement | null) => {

@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { headlinePanelHex } from "../headlineComposer/headlineLayout";
@@ -19,6 +20,7 @@ import {
   compactMockTradeDraft,
   mockTradePickLabel,
   mockTradePlayerLockup,
+  mockTradePlayerName,
   mockTradeTeamCount,
   type MockTradeDraft,
   type PhotoPan,
@@ -71,6 +73,8 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const [nameStyle] = useComposerNameStyle();
+    const [nameFocus, setNameFocus] = useState<string | null>(null);
     const board = exporting ? compactMockTradeDraft(draft) : draft;
     const teamCount = mockTradeTeamCount(board);
     const layout = mockTradeLayout(
@@ -162,7 +166,11 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
               </p>
               {column.players.map((slot, playerIndex) => {
                 const person = side.players[playerIndex]!;
-                const lockup = mockTradePlayerLockup(person);
+                const lockupKey = `${sideIndex}-${playerIndex}`;
+                const lockup =
+                  nameFocus === lockupKey
+                    ? mockTradePlayerName(person)
+                    : mockTradePlayerLockup(person, nameStyle);
                 return (
                   <div key={`mt-player-${sideIndex}-${playerIndex}`}>
                     <div
@@ -193,6 +201,8 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                       spellCheck={false}
                       aria-label={`Team ${sideIndex + 1} player ${playerIndex + 1} name`}
                       placeholder="NAME"
+                      onFocus={() => setNameFocus(lockupKey)}
+                      onBlur={() => setNameFocus(null)}
                       onChange={(event) =>
                         onComposerTextChange(
                           event,

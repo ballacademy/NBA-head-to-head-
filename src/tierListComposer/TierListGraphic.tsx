@@ -27,6 +27,10 @@ import {
   TIER_TITLE_SIZE,
   tierBoardLayout,
 } from "./tierLayout";
+import {
+  composerNameLines,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { fittedCellNames } from "../instagramComposer/nameFit";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
@@ -107,6 +111,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
+    const [nameStyle] = useComposerNameStyle();
     const [unit, setUnit] = useState(0.4);
     const [dropKey, setDropKey] = useState<string | null>(null);
     const titleLines = splitTierTitle(title);
@@ -290,10 +295,22 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       : team
                         ? splitTeamCellName(team.name, team.shortName)
                         : null;
-                    const caption = names
+                    const captionNames = names
+                      ? player
+                        ? composerNameLines(
+                            names.firstName,
+                            names.lastName || labelName,
+                            nameStyle,
+                          )
+                        : {
+                            given: names.firstName,
+                            family: names.lastName || labelName,
+                          }
+                      : null;
+                    const caption = captionNames
                       ? fittedCellNames(
-                          names.firstName,
-                          names.lastName || labelName,
+                          captionNames.given,
+                          captionNames.family,
                           layout.cellW * 0.84,
                           14,
                           11,

@@ -14,6 +14,10 @@ import {
   type FrameEdge,
 } from "../instagramComposer/composerLook";
 import {
+  formatComposerName,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
+import {
   applyPhotoGrade,
   canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
@@ -549,7 +553,11 @@ export const renderPyramidCanvas = async (
   if (input.showNames) {
     for (let index = 0; index < slotCount; index += 1) {
       const slot = input.slots[index]!;
-      const name = `${slot.firstName} ${slot.lastName}`.replace(/\s+/g, " ").trim();
+      const name = formatComposerName(
+        slot.firstName,
+        slot.lastName,
+        readComposerNameStyle(),
+      );
       if (!name) {
         continue;
       }

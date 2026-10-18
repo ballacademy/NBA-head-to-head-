@@ -7,6 +7,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
+import {
+  composerNameLines,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { NAME_FIRST_MAX, NAME_LAST_MAX } from "../instagramComposer/nameFit";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
@@ -63,6 +67,73 @@ interface RankedLineupsGraphicProps {
     names: { firstName?: string; lastName?: string },
   ) => void;
   onPositionChange: (index: number, label: string) => void;
+}
+
+function RankedMetaName({
+  firstName,
+  lastName,
+  empty,
+  position,
+  onNameChange,
+  onPick,
+}: {
+  firstName: string;
+  lastName: string;
+  empty: boolean;
+  position: string;
+  onNameChange: (names: { firstName?: string; lastName?: string }) => void;
+  onPick: () => void;
+}) {
+  const [style] = useComposerNameStyle();
+  const [givenFocus, setGivenFocus] = useState(false);
+  const [familyFocus, setFamilyFocus] = useState(false);
+  const lines = composerNameLines(firstName, lastName, style);
+  const hideGiven = style === "last" && !givenFocus && !lines.given;
+  return (
+    <>
+      {hideGiven ? null : (
+        <input
+          className="rl-given"
+          value={givenFocus ? firstName : lines.given}
+          maxLength={NAME_FIRST_MAX}
+          placeholder={empty ? "" : "FIRST"}
+          aria-label={`${position} first name`}
+          onFocus={() => setGivenFocus(true)}
+          onBlur={() => setGivenFocus(false)}
+          onChange={(event) =>
+            onNameChange({
+              firstName: event.target.value.slice(0, NAME_FIRST_MAX),
+            })
+          }
+          onClick={() => {
+            if (empty) {
+              onPick();
+            }
+          }}
+        />
+      )}
+      <textarea
+        className="rl-family"
+        value={familyFocus ? lastName : lines.family}
+        maxLength={NAME_LAST_MAX}
+        rows={2}
+        placeholder={empty ? "" : "LAST"}
+        aria-label={`${position} last name`}
+        onFocus={() => setFamilyFocus(true)}
+        onBlur={() => setFamilyFocus(false)}
+        onChange={(event) =>
+          onNameChange({
+            lastName: event.target.value.slice(0, NAME_LAST_MAX),
+          })
+        }
+        onClick={() => {
+          if (empty) {
+            onPick();
+          }
+        }}
+      />
+    </>
+  );
 }
 
 export const RankedLineupsGraphic = forwardRef<
@@ -305,43 +376,14 @@ export const RankedLineupsGraphic = forwardRef<
                 </div>
               </div>
               {showFade ? null : (
-                <>
-                  <input
-                    className="rl-given"
-                    value={strip.firstName}
-                    maxLength={NAME_FIRST_MAX}
-                    placeholder={empty ? "" : "FIRST"}
-                    aria-label={`${position} first name`}
-                    onChange={(event) =>
-                      onNameChange(index, {
-                        firstName: event.target.value.slice(0, NAME_FIRST_MAX),
-                      })
-                    }
-                    onClick={() => {
-                      if (empty) {
-                        onPick(index);
-                      }
-                    }}
-                  />
-                  <textarea
-                    className="rl-family"
-                    value={strip.lastName}
-                    maxLength={NAME_LAST_MAX}
-                    rows={2}
-                    placeholder={empty ? "" : "LAST"}
-                    aria-label={`${position} last name`}
-                    onChange={(event) =>
-                      onNameChange(index, {
-                        lastName: event.target.value.slice(0, NAME_LAST_MAX),
-                      })
-                    }
-                    onClick={() => {
-                      if (empty) {
-                        onPick(index);
-                      }
-                    }}
-                  />
-                </>
+                <RankedMetaName
+                  firstName={strip.firstName}
+                  lastName={strip.lastName}
+                  empty={empty}
+                  position={position}
+                  onNameChange={(names) => onNameChange(index, names)}
+                  onPick={() => onPick(index)}
+                />
               )}
             </div>
           );

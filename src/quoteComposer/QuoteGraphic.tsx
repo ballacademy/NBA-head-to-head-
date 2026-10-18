@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -49,7 +50,8 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
-    const last = quoteLastName(draft.attribution);
+    const [nameStyle] = useComposerNameStyle();
+    const last = quoteLastName(draft.attribution, nameStyle);
     const long = isLongQuote(draft.quote);
     const lastSize = quoteLastNameSize(last, draft.quote);
     const quoteSize = quoteTypeSize(draft.quote);

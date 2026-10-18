@@ -18,6 +18,7 @@ import {
   composerWatermarkOpacity,
   parseComposerWatermark,
 } from "../instagramComposer/composerWatermark";
+import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
@@ -90,6 +91,8 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
     const [unit, setUnit] = useState(1);
     const [dropIndex, setDropIndex] = useState<number | null>(null);
     const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
+    const [nameStyle] = useComposerNameStyle();
+    const [nameFocus, setNameFocus] = useState(false);
     const stats = visibleStatCardLines(draft.stats, exporting);
     const dragEnabled =
       !exporting && Boolean(onMoveStat) && draft.stats.length > 1;
@@ -245,7 +248,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
         <div className="stc-photo">
           <PhotoFrame
             src={draft.photoSrc}
-            label={playerName(draft) || "stat card photo"}
+            label={playerName(draft, nameStyle) || "stat card photo"}
             pan={draft.pan}
             custom={draft.customPhoto}
             empty={!draft.photoSrc}
@@ -354,10 +357,16 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
         <div className="stc-name-bar">
           <input
             className="stc-name"
-            value={playerName(draft)}
+            value={
+              nameFocus
+                ? playerName(draft, "full")
+                : playerName(draft, nameStyle)
+            }
             maxLength={STC_NAME_MAX}
             placeholder="PLAYER"
             aria-label="Player name"
+            onFocus={() => setNameFocus(true)}
+            onBlur={() => setNameFocus(false)}
             onChange={(event) => onNameChange(event.target.value)}
           />
           {team ? (

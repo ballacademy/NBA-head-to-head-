@@ -256,4 +256,27 @@ describe("plot composer", () => {
       br: "right",
     });
   });
+
+  it("stores player first names and sizes dots by a third stat", () => {
+    const pins = ["3945274", "4278073"];
+    const players = populatePlotPlayers(
+      "2026-27",
+      "points",
+      "assists",
+      EMPTY_PLAYER_FILTERS,
+      pins,
+      "regular",
+      "minutes",
+    );
+    expect(players.every((point) => point.firstName)).toBe(true);
+    expect(players.every((point) => (point.size ?? 0) > 0)).toBe(true);
+    const plain = populatePlotPlayers(
+      "2026-27",
+      "points",
+      "assists",
+      EMPTY_PLAYER_FILTERS,
+      pins,
+    );
+    expect(plain.every((point) => point.size == null)).toBe(true);
+  });
 });

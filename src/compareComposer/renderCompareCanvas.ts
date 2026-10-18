@@ -4,6 +4,7 @@ import {
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import {
   composerWatermarkOpacity,
   parseComposerWatermark,
@@ -275,7 +276,7 @@ export const renderCompareCanvas = async (
       context.fillText("W", x + photoW - 30 * s, photoY + 30 * s);
       context.restore();
     }
-    const caption = compareSideCaption(person);
+    const caption = compareSideCaption(person, readComposerNameStyle());
     if (caption) {
       const fadeH = 96 * s;
       const fade = context.createLinearGradient(

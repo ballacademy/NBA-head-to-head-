@@ -20,6 +20,11 @@ import {
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
+import {
+  composerNameLines,
+  formatComposerName,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { fittedCellNames } from "../instagramComposer/nameFit";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
@@ -117,6 +122,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
+    const [nameStyle] = useComposerNameStyle();
     const dragRef = useRef<{
       from: number;
       x: number;
@@ -348,23 +354,39 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             const caption = shown && partner
               ? fittedCellNames(
                   "",
-                  `${names?.lastName || shown.name} / ${partnerNames?.lastName || partner.name}`,
+                  `${formatComposerName(names?.firstName || "", names?.lastName || shown.name, nameStyle)} / ${formatComposerName(partnerNames?.firstName || "", partnerNames?.lastName || partner.name, nameStyle)}`,
                   grid.cell * 0.84,
                   14,
                   11,
                 )
               : names
               ? fittedCellNames(
-                  names.firstName,
-                  names.lastName || shown!.name,
+                  composerNameLines(
+                    names.firstName,
+                    names.lastName || shown!.name,
+                    nameStyle,
+                  ).given,
+                  composerNameLines(
+                    names.firstName,
+                    names.lastName || shown!.name,
+                    nameStyle,
+                  ).family,
                   grid.cell * 0.84,
                   14,
                   11,
                 )
               : partnerNames
                 ? fittedCellNames(
-                    partnerNames.firstName,
-                    partnerNames.lastName || partner!.name,
+                    composerNameLines(
+                      partnerNames.firstName,
+                      partnerNames.lastName || partner!.name,
+                      nameStyle,
+                    ).given,
+                    composerNameLines(
+                      partnerNames.firstName,
+                      partnerNames.lastName || partner!.name,
+                      nameStyle,
+                    ).family,
                     grid.cell * 0.84,
                     14,
                     11,

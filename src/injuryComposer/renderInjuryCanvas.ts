@@ -4,6 +4,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
+  formatComposerPersonName,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
+import {
   FIELD_TEXTURE_SRC,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
@@ -129,7 +133,10 @@ export const renderInjuryCanvas = async (
       context.fillStyle = "#fff";
       context.font = `900 ${nameSize}px ${POSTER_FONT}`;
       context.fillText(
-        player.shortName.toUpperCase(),
+        (
+          formatComposerPersonName(player.name, readComposerNameStyle()) ||
+          player.shortName
+        ).toUpperCase(),
         x + logoSize + 90 * s,
         py + pipH / 2,
       );

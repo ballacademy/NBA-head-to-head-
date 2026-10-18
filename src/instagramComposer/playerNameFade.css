@@ -28,6 +28,10 @@
   left: 0;
 }
 
+.ig-name-fade.is-last-only .ig-name-fade__family {
+  min-height: calc(22 * var(--u));
+}
+
 .ig-name-fade__logo {
   flex: 0 0 calc(var(--name-logo, 30) * var(--u));
   height: calc(var(--name-logo, 30) * var(--u));

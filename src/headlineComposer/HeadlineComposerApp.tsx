@@ -106,6 +106,9 @@ const renderInput = (
   teamId: draft.teamId,
   firstName: draft.firstName,
   lastName: draft.lastName,
+  nameScope: parseHeadlineNameScope(
+    draft.nameScope ?? (draft.subjectMode === "team" ? "auto" : "player"),
+  ),
   photoSrc: draft.photoSrc,
   pan: draft.pan,
   secondTeamId: draft.secondTeamId ?? null,
@@ -849,6 +852,7 @@ export function HeadlineComposerApp() {
             secondTeamId={draft.secondTeamId ?? null}
             firstName={draft.firstName}
             lastName={draft.lastName}
+            nameScope={nameScope}
             photoSrc={draft.photoSrc}
             customPhoto={draft.customPhoto}
             pan={draft.pan}

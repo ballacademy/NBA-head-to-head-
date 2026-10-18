@@ -4,6 +4,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { formatComposerName, useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
@@ -59,6 +60,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
+    const [nameStyle] = useComposerNameStyle();
     const [unit, setUnit] = useState(0.4);
     const metrics = pyramidMetrics(
       rows,
@@ -166,8 +168,11 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                   }
                   const empty = !slot.photoSrc;
                   const pops = pyramidSlotPops(slot);
-                  const name =
-                    `${slot.firstName} ${slot.lastName}`.trim();
+                  const name = formatComposerName(
+                    slot.firstName,
+                    slot.lastName,
+                    nameStyle,
+                  );
                   const label = name || `slot ${index + 1}`;
                   const team = getTeam(slot.teamId);
                   return (

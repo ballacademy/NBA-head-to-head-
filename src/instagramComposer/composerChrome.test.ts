@@ -628,6 +628,21 @@ describe("composer chrome", () => {
     expect(rankedApp).toContain("RANKED_LINEUP_STRIP_MAX");
     expect(plotApp).toContain("togglePlotId");
     expect(plotApp).toContain("highlightedIds");
+    expect(plotApp).toContain("applyPlot");
+    expect(plotApp).toContain("skipLivePlot");
+    expect(plotApp).toContain("setPopulated");
+    const nameStyle = readFileSync(
+      join(root, "instagramComposer/composerNameStyle.ts"),
+      "utf8",
+    );
+    const nameFade = readFileSync(
+      join(root, "instagramComposer/PlayerNameFade.tsx"),
+      "utf8",
+    );
+    expect(nameStyle).toContain("COMPOSER_NAME_STYLE_EVENT");
+    expect(nameStyle).toContain("composerNameLines");
+    expect(nameFade).toContain("useComposerNameStyle");
+    expect(nameFade).toContain("composerNameLines");
     expect(coverApp).toContain("portraitCount");
     const injuryGraphic = readFileSync(
       join(root, "injuryComposer/InjuryGraphic.tsx"),

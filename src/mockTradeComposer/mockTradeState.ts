@@ -1,3 +1,7 @@
+import {
+  formatComposerName,
+  type ComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { graphicCaption } from "../instagramComposer/graphicCaption";
 import {
   clampPan,
@@ -355,7 +359,11 @@ export const clearMockTradePlayer = (player: MockTradePlayer): MockTradePlayer =
 export const mockTradePlayerName = (player: MockTradePlayer) =>
   `${player.firstName} ${player.lastName}`.replace(/\s+/g, " ").trim();
 
-export const mockTradePlayerLockup = (player: MockTradePlayer) =>
+export const mockTradePlayerLockup = (
+  player: MockTradePlayer,
+  style?: ComposerNameStyle,
+) =>
+  formatComposerName(player.firstName, player.lastName, style) ||
   (player.lastName || player.firstName).replace(/\s+/g, " ").trim();
 
 export const mockTradePickLabel = (pick: MockTradePick) => {

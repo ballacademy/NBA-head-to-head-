@@ -1,3 +1,8 @@
+import {
+  formatComposerName,
+  readComposerNameStyle,
+  type ComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
@@ -39,6 +44,7 @@ export interface PlotPoint {
   kind: "team" | "player";
   label: string;
   shortLabel: string;
+  firstName?: string;
   teamId: string;
   x: number;
   y: number;
@@ -372,6 +378,7 @@ export const populatePlotPlayers = (
       kind: "player",
       label: names.lastName || row.player.name,
       shortLabel: names.lastName || row.player.name,
+      firstName: names.firstName,
       teamId: row.teamId,
       x,
       y,
@@ -413,5 +420,27 @@ export const togglePlotId = (ids: string[], id: string) =>
 export const unpinPlotPlayer = (ids: string[], playerId: string) =>
   ids.filter((id) => id !== playerId);
 
+export const plotPointLabel = (
+  point: PlotPoint,
+  style: ComposerNameStyle = readComposerNameStyle(),
+) => {
+  if (point.kind === "team") {
+    return point.shortLabel || point.label;
+  }
+  if (point.firstName) {
+    return formatComposerName(
+      point.firstName,
+      point.shortLabel || point.label,
+      style,
+    );
+  }
+  const live = getPlayer(point.id);
+  if (live) {
+    const names = splitPlayerName(live.name);
+    return formatComposerName(names.firstName, names.lastName, style);
+  }
+  return formatComposerName("", point.shortLabel || point.label, style);
+};
+
 export const plotCaptionNames = (points: PlotPoint[]) =>
-  points.slice(0, 12).map((point) => point.label);
+  points.slice(0, 12).map((point) => plotPointLabel(point));

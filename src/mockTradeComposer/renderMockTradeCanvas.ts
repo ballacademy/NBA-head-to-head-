@@ -6,6 +6,7 @@ import {
   paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import {
   applyPhotoGrade,
   canvasGradeFilter,
@@ -222,7 +223,10 @@ export const renderMockTradeCanvas = async (
       }
       context.restore();
       paintCellFrame(context, px, py, pw, ph, input.look, s);
-      const name = mockTradePlayerLockup(person).toUpperCase();
+      const name = mockTradePlayerLockup(
+        person,
+        readComposerNameStyle(),
+      ).toUpperCase();
       if (name) {
         context.font = `900 ${16 * s}px ${POSTER_FONT}`;
         context.textAlign = "center";

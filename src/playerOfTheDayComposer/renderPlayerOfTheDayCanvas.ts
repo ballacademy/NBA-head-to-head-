@@ -8,6 +8,10 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
+  composerNameLines,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
+import {
   applyPhotoGrade,
   canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
@@ -450,10 +454,25 @@ export const renderPlayerOfTheDayCanvas = async (
     context.lineWidth = 4.2 * s;
     context.fillStyle = "#fff";
     if (card.firstName || card.lastName) {
-      context.strokeText(card.firstName.toUpperCase(), nameCX, nameY + nameH * 0.36);
-      context.fillText(card.firstName.toUpperCase(), nameCX, nameY + nameH * 0.36);
-      context.strokeText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.7);
-      context.fillText(card.lastName.toUpperCase(), nameCX, nameY + nameH * 0.7);
+      const lines = composerNameLines(
+        card.firstName,
+        card.lastName,
+        readComposerNameStyle(),
+      );
+      if (lines.given) {
+        context.strokeText(lines.given.toUpperCase(), nameCX, nameY + nameH * 0.36);
+        context.fillText(lines.given.toUpperCase(), nameCX, nameY + nameH * 0.36);
+      }
+      context.strokeText(
+        lines.family.toUpperCase(),
+        nameCX,
+        nameY + nameH * (lines.given ? 0.7 : 0.55),
+      );
+      context.fillText(
+        lines.family.toUpperCase(),
+        nameCX,
+        nameY + nameH * (lines.given ? 0.7 : 0.55),
+      );
     }
     setLetterSpacing(context, 0);
     context.restore();

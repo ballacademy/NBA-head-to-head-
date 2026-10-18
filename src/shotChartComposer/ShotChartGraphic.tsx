@@ -5,6 +5,10 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import {
+  composerNameLines,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { courtPoint, shotLine, splitShotChartTitle, type ShotChartDraft } from "./shotChartState";
@@ -36,6 +40,12 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const [nameStyle] = useComposerNameStyle();
+    const nameLines = composerNameLines(
+      draft.firstName,
+      draft.lastName,
+      nameStyle,
+    );
     const titleLines = splitShotChartTitle(draft.title);
     const courtW = 500;
     const courtH = 470;
@@ -113,8 +123,14 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
           />
         </div>
         <button type="button" className="shc-player" onClick={onPick}>
-          <span className="shc-player__given">{draft.firstName || "PICK"}</span>
-          <span className="shc-player__family">{draft.lastName || "PLAYER"}</span>
+          {nameLines.given ? (
+            <span className="shc-player__given">
+              {nameLines.given || "PICK"}
+            </span>
+          ) : null}
+          <span className="shc-player__family">
+            {nameLines.family || draft.lastName || "PLAYER"}
+          </span>
           <span className="shc-player__line">
             {draft.gameLabel || "LAST GAME"} · {shotLine(draft.makes, draft.attempts)}
           </span>
