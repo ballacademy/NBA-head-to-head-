@@ -38,7 +38,10 @@ import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
-import { fillStartersFromStandouts } from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
+import {
+  fillStartersFromStandouts,
+  plusLineupGroup,
+} from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
 import {
   TOTW_TITLE_PRESETS,
   exportFilenameFromTitle,
@@ -132,10 +135,20 @@ export function TeamOfTheWeekComposerApp() {
           return current;
         }
         const next = fillStartersFromStandouts(current, rows);
-        const filled = next.filter((slot) => slot.playerId).length;
+        const filled = next.filter((slot) => slot.playerId);
+        const groups = filled.reduce(
+          (counts, slot) => {
+            const group = plusLineupGroup(getPlayer(slot.playerId));
+            if (group) {
+              counts[group] += 1;
+            }
+            return counts;
+          },
+          { G: 0, F: 0, C: 0 },
+        );
         setStatus(
-          filled
-            ? `Filled ${filled} TOTW strips from this range.`
+          filled.length
+            ? `Filled the week’s best ${groups.G}G / ${groups.F}F / ${groups.C}C.`
             : "No box scores for this range yet — pick players for the empty slots.",
         );
         return next;
@@ -532,9 +545,11 @@ export function TeamOfTheWeekComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Pick a player for each strip, then upload or paste a photo. Drag to
-            pan, pinch or scroll to zoom — same as Player of the Day. +/− still
-            work. Downloads a 4:5 Instagram PNG — nothing is posted.
+            Fill range picks the week’s best five with a rough 2 guards / 2
+            forwards / 1 center mix — stars belong here, not surprise
+            over-expectation nights. Then upload or paste a photo. Drag to pan,
+            pinch or scroll to zoom — same as Player of the Day. Downloads a
+            4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

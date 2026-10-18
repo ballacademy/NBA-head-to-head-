@@ -28,13 +28,16 @@ import {
 } from "./teamOfTheWeekPlusLayout";
 import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
 import { emptyStats } from "../playerOfTheDayComposer/lastGame";
+import { createEmptyStrips } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import {
   applyPlayerPick,
   createEmptyPlusSlots,
   fillPlusFromStandouts,
+  fillStartersFromStandouts,
   isPlusStar,
   plusBoardEmpty,
   plusLineupGroup,
+  totwProductionScore,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   DEFAULT_PLUS_STARTER_CAPTION,
   defaultTotwPlusDraft,
@@ -302,5 +305,38 @@ describe("team of the week plus", () => {
     expect(
       loose.every((row) => plusLineupGroup(getPlayer(row.athleteId)) === "G"),
     ).toBe(true);
+
+    const surpriseGuard = game(bouyea, 999, {
+      pts: "16",
+      reb: "4",
+      ast: "8",
+      min: "28",
+    });
+    const quietStar = game(luka, 10, { pts: "38", reb: "8", ast: "11" });
+    expect(surpriseGuard.score).toBeGreaterThan(quietStar.score);
+    expect(totwProductionScore(quietStar)).toBeGreaterThan(
+      totwProductionScore(surpriseGuard),
+    );
+    const bestFive = selectPlusStarters([
+      surpriseGuard,
+      quietStar,
+      game(sga, 11, { pts: "36", reb: "5", ast: "7" }),
+      game(lebron, 12, { pts: "31", reb: "8", ast: "9" }),
+      game(tatum, 13, { pts: "33", reb: "9", ast: "6" }),
+      game(jokic, 14, { pts: "28", reb: "14", ast: "12" }),
+    ]);
+    const bestIds = bestFive.map((row) => row.athleteId);
+    expect(bestIds).toContain(luka);
+    expect(bestIds).toContain(jokic);
+    expect(bestIds).not.toContain(bouyea);
+    const totwStrips = fillStartersFromStandouts(createEmptyStrips(), [
+      surpriseGuard,
+      quietStar,
+      game(sga, 11, { pts: "36", reb: "5", ast: "7" }),
+      game(lebron, 12, { pts: "31", reb: "8", ast: "9" }),
+      game(tatum, 13, { pts: "33", reb: "9", ast: "6" }),
+      game(jokic, 14, { pts: "28", reb: "14", ast: "12" }),
+    ]);
+    expect(totwStrips.map((slot) => slot.playerId)).toEqual(bestIds);
   });
 });

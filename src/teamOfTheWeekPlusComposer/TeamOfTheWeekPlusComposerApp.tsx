@@ -158,7 +158,7 @@ export function TeamOfTheWeekPlusComposerApp() {
         );
         setStatus(
           starters.length
-            ? `Filled ${groups.G}G / ${groups.F}F / ${groups.C}C and ${standouts.length} surprise standouts.`
+            ? `Filled the week’s best ${groups.G}G / ${groups.F}F / ${groups.C}C and ${standouts.length} surprise standouts.`
             : "No box scores for this range yet — pick players for the empty slots.",
         );
         return next;
@@ -583,11 +583,11 @@ export function TeamOfTheWeekPlusComposerApp() {
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
-            Top row is the week’s best 2 guards / 2 forwards / 1 center — close
-            enough if the slate isn’t clean. Standouts are surprise non-stars
-            who aren’t already on TOTW. Empty photo until you paste. Tonight /
-            Last night uses the same week window as the Stat card. Downloads a
-            4:5 Instagram PNG — nothing is posted.
+            Top row is the week’s best five — roughly 2 guards / 2 forwards / 1
+            center, including stars. Standouts (bottom row only) are surprise /
+            over-expectation nights, not the TOTW five. Empty photo until you
+            paste. Date range matches Cover / Stat / TOTW. Downloads a 4:5
+            Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

@@ -160,6 +160,23 @@ export const plusOverExpectation = (row: NightStandout) => {
   return surpriseBonus(extra, usual) + extra.score * 0.15;
 };
 
+/** Raw box-score production — no surprise / over-expectation bump. */
+export const totwProductionScore = (row: NightStandout) =>
+  nightFlagsFor(row.game.stats).score;
+
+const rankTotwBest = (left: NightStandout, right: NightStandout) => {
+  const production = totwProductionScore(right) - totwProductionScore(left);
+  if (production) {
+    return production;
+  }
+  const star =
+    Number(isPlusStar(right.athleteId)) - Number(isPlusStar(left.athleteId));
+  if (star) {
+    return star;
+  }
+  return right.score - left.score;
+};
+
 export const orderPlusStarters = (rows: NightStandout[]) =>
   [...rows].sort((left, right) => {
     const a = getPlayer(left.athleteId);
@@ -170,12 +187,12 @@ export const orderPlusStarters = (rows: NightStandout[]) =>
     if (rank) {
       return rank;
     }
-    return right.score - left.score;
+    return rankTotwBest(left, right);
   });
 
 /** Best week, ideally 2 guards / 2 forwards / 1 center. Soft-fill if the slate isn’t clean. */
 export const selectPlusStarters = (rows: NightStandout[]) => {
-  const ranked = [...rows].sort((left, right) => right.score - left.score);
+  const ranked = [...rows].sort(rankTotwBest);
   const counts: Record<PlayerPositionGroup, number> = { G: 0, F: 0, C: 0 };
   const picked: NightStandout[] = [];
   const used = new Set<string>();
@@ -203,7 +220,7 @@ export const selectPlusStarters = (rows: NightStandout[]) => {
   return orderPlusStarters(picked);
 };
 
-/** Non-stars / non-All-Stars with the best week or the biggest over-expectation. */
+/** Surprise / over-expectation non-stars who are not already on the TOTW five. */
 export const selectPlusStandouts = (
   rows: NightStandout[],
   starterIds: ReadonlySet<string>,
@@ -262,7 +279,7 @@ export const fillPlusFromStandouts = (
   return next;
 };
 
-/** 2G / 2F / 1C into a five-strip TOTW board. */
+/** Week’s best five (~2G / 2F / 1C) into a five-strip TOTW board. Stars belong here. */
 export const fillStartersFromStandouts = (
   strips: TotwStrip[],
   rows: NightStandout[],

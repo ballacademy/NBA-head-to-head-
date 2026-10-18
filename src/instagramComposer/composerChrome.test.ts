@@ -254,6 +254,7 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("selectPlusStarters");
     expect(totwPlusState).toContain("selectPlusStandouts");
     expect(totwPlusState).toContain("plusLineupGroup");
+    expect(totwPlusState).toContain("totwProductionScore");
     expect(totwPlusState).toMatch(/G:\s*2/);
     expect(totwPlusState).toContain("isPlusStar");
     expect(totwPlusApp).toContain("ComposerDateRange");
@@ -622,6 +623,8 @@ describe("composer chrome", () => {
     expect(hub).toContain("InjuryComposerApp");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__filters");
     expect(totwApp).toContain("ComposerDateRange");
+    expect(totwApp).toContain("fillStartersFromStandouts");
+    expect(totwApp).toContain("week’s best");
     expect(coverApp).toContain("ComposerDateRange");
     expect(statCardApp).toContain("ComposerDateRange");
     expect(rankedApp).toContain("-man lineup");
