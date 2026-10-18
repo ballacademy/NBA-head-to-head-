@@ -86,47 +86,63 @@ export const renderScheduleCanvas = async (
     }),
   );
 
-  let y = 240 * s;
-  const rowH = Math.min(
-    52 * s,
-    (height - y - 28 * s) / Math.max(1, input.games.length + groups.length),
-  );
-  groups.forEach((group) => {
+  const split = groups.length > 2;
+  const cols = split ? 2 : 1;
+  const gutter = 20 * s;
+  const listLeft = 32 * s;
+  const listRight = width - 32 * s;
+  const colW = (listRight - listLeft - (cols - 1) * gutter) / cols;
+  const rowH = 28 * s;
+  const colY = Array.from({ length: cols }, () => 240 * s);
+  groups.forEach((group, index) => {
+    const col = index % cols;
+    const x0 = listLeft + col * (colW + gutter);
+    let y = colY[col];
     context.textAlign = "left";
     context.fillStyle = "#facc15";
-    context.font = `900 ${14 * s}px ${POSTER_FONT}`;
-    context.fillText(group.label, 40 * s, y);
-    y += rowH * 0.7;
+    context.font = `900 ${12 * s}px ${POSTER_FONT}`;
+    context.fillText(group.label, x0, y);
+    y += 16 * s;
     group.games.forEach((game) => {
       const away = logos.get(game.awayId);
       const home = logos.get(game.homeId);
+      const logo = 24 * s;
       if (away) {
-        drawCenteredLogo(context, away, 40 * s, y - 18 * s, 36 * s, 36 * s, {
+        drawCenteredLogo(context, away, x0, y - 12 * s, logo, logo, {
           cacheKey: `${game.awayId}-sch`,
           shadow: 0,
         });
       }
       if (home) {
-        drawCenteredLogo(context, home, 430 * s, y - 18 * s, 36 * s, 36 * s, {
-          cacheKey: `${game.homeId}-sch`,
-          shadow: 0,
-        });
+        drawCenteredLogo(
+          context,
+          home,
+          x0 + colW * 0.46,
+          y - 12 * s,
+          logo,
+          logo,
+          {
+            cacheKey: `${game.homeId}-sch`,
+            shadow: 0,
+          },
+        );
       }
       context.fillStyle = "#fff";
-      context.font = `900 ${16 * s}px ${POSTER_FONT}`;
+      context.font = `900 ${13 * s}px ${POSTER_FONT}`;
       context.textAlign = "left";
-      context.fillText(game.awayId, 84 * s, y);
+      context.fillText(game.awayId, x0 + logo + 6 * s, y);
       context.textAlign = "center";
       context.fillStyle = "rgba(255,255,255,0.55)";
-      context.fillText("@", 390 * s, y);
+      context.fillText("@", x0 + colW * 0.42, y);
       context.textAlign = "left";
       context.fillStyle = "#fff";
-      context.fillText(game.homeId, 474 * s, y);
+      context.fillText(game.homeId, x0 + colW * 0.46 + logo + 6 * s, y);
       context.textAlign = "right";
-      context.font = `900 ${14 * s}px ${POSTER_FONT}`;
-      context.fillText(game.timeLabel, width - 40 * s, y);
+      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+      context.fillText(game.timeLabel, x0 + colW, y);
       y += rowH;
     });
+    colY[col] = y + 8 * s;
   });
 
   if (input.showBa) {

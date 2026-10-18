@@ -629,6 +629,26 @@ describe("composer chrome", () => {
     expect(plotApp).toContain("togglePlotId");
     expect(plotApp).toContain("highlightedIds");
     expect(coverApp).toContain("portraitCount");
+    const injuryGraphic = readFileSync(
+      join(root, "injuryComposer/InjuryGraphic.tsx"),
+      "utf8",
+    );
+    const scheduleGraphic = readFileSync(
+      join(root, "scheduleComposer/ScheduleGraphic.tsx"),
+      "utf8",
+    );
+    const injuryCss = readFileSync(
+      join(root, "injuryComposer/injuryComposer.css"),
+      "utf8",
+    );
+    const scheduleCss = readFileSync(
+      join(root, "scheduleComposer/scheduleComposer.css"),
+      "utf8",
+    );
+    expect(injuryGraphic).toContain("inj-team__logo");
+    expect(scheduleGraphic).toContain("sch-game__logo");
+    expect(injuryCss).toContain("align-content: start");
+    expect(scheduleCss).toContain(".sch-list.is-split");
     expect(etApp).toContain("Two players per team");
     expect(compareApp).toContain("last-5");
     expect(compareApp).toContain("this-week");

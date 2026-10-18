@@ -127,7 +127,7 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
             onWeekLineChange(event.target.value.slice(0, 40))
           }
         />
-        <div className="sch-list">
+        <div className={groups.length > 2 ? "sch-list is-split" : "sch-list"}>
           {groups.length ? (
             groups.map((group) => (
               <section key={group.date} className="sch-day">
@@ -138,16 +138,20 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
                   return (
                     <div key={game.eventId || `${game.awayId}-${game.homeId}-${game.timeLabel}`} className="sch-game">
                       <div className="sch-game__side">
-                        {away ? (
-                          <TeamLogo src={away.logoSrc} label={away.id} shadow={0} />
-                        ) : null}
+                        <span className="sch-game__logo">
+                          {away ? (
+                            <TeamLogo src={away.logoSrc} label={away.id} shadow={0} />
+                          ) : null}
+                        </span>
                         <span>{game.awayId}</span>
                       </div>
                       <span className="sch-game__at">@</span>
                       <div className="sch-game__side">
-                        {home ? (
-                          <TeamLogo src={home.logoSrc} label={home.id} shadow={0} />
-                        ) : null}
+                        <span className="sch-game__logo">
+                          {home ? (
+                            <TeamLogo src={home.logoSrc} label={home.id} shadow={0} />
+                          ) : null}
+                        </span>
                         <span>{game.homeId}</span>
                       </div>
                       <span className="sch-game__time">{game.timeLabel}</span>

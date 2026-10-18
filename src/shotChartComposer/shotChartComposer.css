@@ -52,13 +52,28 @@
 }
 
 .shc-title-block {
+  position: relative;
   min-height: calc(72 * var(--u));
   width: 100%;
 }
 
 .shc-title-line {
+  display: block;
   font-size: calc(44 * var(--u));
   letter-spacing: 0.06em;
+}
+
+.shc-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  color: transparent;
+  caret-color: #fff;
 }
 
 .shc-player {

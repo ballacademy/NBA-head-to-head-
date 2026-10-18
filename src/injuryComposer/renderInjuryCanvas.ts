@@ -92,14 +92,13 @@ export const renderInjuryCanvas = async (
 
   const cols = 2;
   const listTop = 272 * s;
-  const listH = height - listTop - 28 * s;
   const colW = (width - 56 * s) / cols;
-  const rowH = Math.min(76 * s, listH / Math.ceil(Math.max(1, input.teams.length) / cols));
+  const colY = [listTop, listTop];
   input.teams.forEach((block, index) => {
     const col = index % cols;
-    const row = Math.floor(index / cols);
     const x = 28 * s + col * (colW + 12 * s);
-    const y = listTop + row * rowH;
+    const y = colY[col];
+    colY[col] += Math.max(56 * s, 22 * s + block.players.slice(0, 4).length * 16 * s);
     const logo = logos[index];
     if (logo) {
       drawCenteredLogo(context, logo, x, y, 44 * s, 44 * s, {

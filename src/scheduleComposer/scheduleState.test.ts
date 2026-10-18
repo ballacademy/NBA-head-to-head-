@@ -29,4 +29,32 @@ describe("schedule poster", () => {
     expect(games[0]?.timeLabel).toContain("7:30");
     expect(scheduleGroups(games)[0]?.games).toHaveLength(1);
   });
+
+  it("groups late ET tips on the Eastern date, not UTC midnight", () => {
+    const games = parseScoreboardGames(
+      {
+        events: [
+          {
+            id: "402",
+            date: "2026-10-21T02:30:00Z",
+            competitions: [
+              {
+                competitors: [
+                  { homeAway: "away", score: "0", team: { abbreviation: "DEN" } },
+                  { homeAway: "home", score: "0", team: { abbreviation: "LAL" } },
+                ],
+              },
+            ],
+            status: {
+              type: { shortDetail: "10/20 - 10:30 PM ET", name: "STATUS_SCHEDULED" },
+            },
+          },
+        ],
+      },
+      "2026-10-20",
+    );
+    expect(games[0]?.date).toBe("2026-10-20");
+    expect(games[0]?.timeLabel).toBe("10:30 PM ET");
+    expect(games[0]?.dateLabel).toContain("OCT 20");
+  });
 });

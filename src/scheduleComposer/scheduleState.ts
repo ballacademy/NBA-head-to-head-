@@ -61,17 +61,38 @@ const resolveTeam = (abbrev: string) => {
   return ESPN_ABBREV_TO_TEAM[token] ?? "";
 };
 
+export const etDateOnly = (iso: string, fallback = "") => {
+  const date = new Date(iso);
+  if (!Number.isNaN(date.getTime()) && iso.includes("T")) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date);
+    const year = parts.find((part) => part.type === "year")?.value;
+    const month = parts.find((part) => part.type === "month")?.value;
+    const day = parts.find((part) => part.type === "day")?.value;
+    if (year && month && day) {
+      return `${year}-${month}-${day}`;
+    }
+  }
+  return isoDateOnly(iso) || isoDateOnly(fallback);
+};
+
 const formatTimeLabel = (iso: string, shortDetail: string) => {
-  if (/\d/.test(shortDetail) && /AM|PM/i.test(shortDetail)) {
-    return shortDetail
-      .replace(/\s*(EDT|EST|ET)\s*$/i, " ET")
-      .replace(/\s+/g, " ")
-      .trim()
-      .toUpperCase();
+  const cleaned = shortDetail
+    .replace(/^\d{1,2}\/\d{1,2}\s*[-–]\s*/u, "")
+    .replace(/\s*(EDT|EST|ET)\s*$/i, " ET")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+  if (/\d/.test(cleaned) && /AM|PM/i.test(cleaned)) {
+    return cleaned;
   }
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {
-    return shortDetail.toUpperCase();
+    return cleaned;
   }
   return new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
@@ -86,7 +107,7 @@ const formatTimeLabel = (iso: string, shortDetail: string) => {
 };
 
 const formatDateLabel = (iso: string) => {
-  const token = isoDateOnly(iso);
+  const token = etDateOnly(iso) || isoDateOnly(iso);
   if (!token) {
     return "";
   }
@@ -136,7 +157,9 @@ export const parseScoreboardGames = (
       }
     });
     const status = rec(rec(item?.status)?.type);
-    const date = isoDateOnly(textOf(item?.date)) || slateDate;
+    const date =
+      etDateOnly(textOf(item?.date) || textOf(competition?.date), slateDate) ||
+      slateDate;
     if (!homeId || !awayId) {
       return;
     }

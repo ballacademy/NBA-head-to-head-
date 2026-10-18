@@ -147,9 +147,11 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
               return (
                 <section key={block.teamId} className="inj-team">
                   <div className="inj-team__mark">
-                    {team ? (
-                      <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
-                    ) : null}
+                    <span className="inj-team__logo">
+                      {team ? (
+                        <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
+                      ) : null}
+                    </span>
                     <span>{block.teamId}</span>
                   </div>
                   <div className="inj-team__rows">

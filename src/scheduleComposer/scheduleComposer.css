@@ -52,13 +52,28 @@
 }
 
 .sch-title-block {
+  position: relative;
   min-height: calc(88 * var(--u));
 }
 
 .sch-title-line {
+  display: block;
   font-size: calc(52 * var(--u));
   letter-spacing: 0.06em;
   line-height: 1.05;
+}
+
+.sch-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  color: transparent;
+  caret-color: #fff;
 }
 
 .sch-week {
@@ -72,16 +87,21 @@
   flex: 1 1 auto;
   min-height: 0;
   margin-top: calc(12 * var(--u));
-  display: flex;
-  flex-direction: column;
-  gap: calc(10 * var(--u));
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: start;
+  gap: calc(8 * var(--u)) calc(18 * var(--u));
   overflow: hidden;
 }
 
+.sch-list.is-split {
+  grid-template-columns: 1fr 1fr;
+}
+
 .sch-day__label {
-  margin: 0 0 calc(6 * var(--u));
+  margin: 0 0 calc(4 * var(--u));
   font-family: var(--ig-poster);
-  font-size: calc(14 * var(--u));
+  font-size: calc(12 * var(--u));
   font-weight: 900;
   letter-spacing: 0.2em;
   color: #facc15;
@@ -89,28 +109,33 @@
 
 .sch-game {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) calc(28 * var(--u)) minmax(0, 1fr) minmax(110px, 0.7fr);
+  grid-template-columns: minmax(0, 1fr) calc(18 * var(--u)) minmax(0, 1fr) auto;
   align-items: center;
-  gap: calc(6 * var(--u));
-  min-height: calc(44 * var(--u));
+  gap: calc(4 * var(--u));
+  min-height: calc(28 * var(--u));
 }
 
 .sch-game__side {
   display: flex;
   align-items: center;
-  gap: calc(8 * var(--u));
+  gap: calc(6 * var(--u));
   min-width: 0;
   font-family: var(--ig-poster);
-  font-size: calc(16 * var(--u));
+  font-size: calc(13 * var(--u));
   font-weight: 900;
   letter-spacing: 0.06em;
 }
 
-.sch-game__side canvas,
-.sch-game__side .ig-slot__logo {
-  width: calc(36 * var(--u));
-  height: calc(36 * var(--u));
-  flex: 0 0 calc(36 * var(--u));
+.sch-game__logo {
+  width: calc(28 * var(--u));
+  height: calc(28 * var(--u));
+  flex: 0 0 calc(28 * var(--u));
+}
+
+.sch-game__logo canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .sch-game__at {
@@ -122,9 +147,9 @@
 .sch-game__time {
   text-align: right;
   font-family: var(--ig-poster);
-  font-size: calc(14 * var(--u));
+  font-size: calc(11 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 
