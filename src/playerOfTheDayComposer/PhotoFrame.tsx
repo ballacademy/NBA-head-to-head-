@@ -13,6 +13,11 @@ import {
   imageFilesFromList,
 } from "../instagramComposer/composerPhotoDrop";
 import {
+  COMPOSER_SLOT_ATTR,
+  COMPOSER_SLOT_SWAP_THRESHOLD,
+  composerSlotFromPoint,
+} from "../instagramComposer/composerSlotSwap";
+import {
   clampPan,
   DEFAULT_CUSTOM_PAN,
   DEFAULT_HEADSHOT_PAN,
@@ -36,6 +41,7 @@ interface PhotoFrameProps {
   onUpload: (dataUrl: string) => void;
   onUploadMany?: (dataUrls: string[]) => void;
   onPick: () => void;
+  slotSwapEnabled?: boolean;
 }
 
 const PHOTO_CHROME_CLASSES = [
@@ -110,6 +116,7 @@ export function PhotoFrame({
   onUpload,
   onUploadMany,
   onPick,
+  slotSwapEnabled = false,
 }: PhotoFrameProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const panRef = useRef(pan);
@@ -119,6 +126,8 @@ export function PhotoFrame({
   const pointers = useRef(new Map<number, PhotoPoint>());
   const gesture = useRef<Gesture | null>(null);
   const gestureScale = useRef(photoZoom(pan));
+  const swapMode = useRef(false);
+  const originPan = useRef(pan);
   const zoom = photoZoom(pan);
   const rotate = photoRotate(pan);
   const filled = photoFrameFilled(src);
@@ -288,6 +297,8 @@ export function PhotoFrame({
           x: event.clientX,
           y: event.clientY,
         });
+        swapMode.current = false;
+        originPan.current = { ...panRef.current };
         beginGesture();
       }}
       onPointerMove={(event) => {
@@ -298,6 +309,37 @@ export function PhotoFrame({
           x: event.clientX,
           y: event.clientY,
         });
+        const current = gesture.current;
+        if (
+          slotSwapEnabled &&
+          current?.type === "pan" &&
+          pointers.current.size < 2
+        ) {
+          const over = composerSlotFromPoint(event.clientX, event.clientY);
+          const homeRaw = rootRef.current
+            ?.closest(`[${COMPOSER_SLOT_ATTR}]`)
+            ?.getAttribute(COMPOSER_SLOT_ATTR);
+          const home = Number.parseInt(homeRaw ?? "", 10);
+          const traveled = Math.hypot(
+            event.clientX - current.x,
+            event.clientY - current.y,
+          );
+          if (
+            over != null &&
+            Number.isInteger(home) &&
+            over !== home &&
+            traveled > COMPOSER_SLOT_SWAP_THRESHOLD
+          ) {
+            if (!swapMode.current) {
+              swapMode.current = true;
+              onPanRef.current({ ...originPan.current });
+            }
+            return;
+          }
+        }
+        if (swapMode.current) {
+          return;
+        }
         applyMove(event.currentTarget);
       }}
       onPointerUp={(event) => {
@@ -305,10 +347,12 @@ export function PhotoFrame({
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId);
         }
+        swapMode.current = false;
         beginGesture();
       }}
       onPointerCancel={(event) => {
         pointers.current.delete(event.pointerId);
+        swapMode.current = false;
         beginGesture();
       }}
       onDragOver={(event) => {

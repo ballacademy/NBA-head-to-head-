@@ -1,4 +1,5 @@
 import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
+import { swapItems } from "../instagramComposer/composerSlotSwap";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
@@ -187,6 +188,12 @@ export const applyPlayerPick = (
     return strip;
   });
 };
+
+export const swapStrips = (
+  strips: TotwStrip[],
+  from: number,
+  to: number,
+): TotwStrip[] => swapItems(strips, from, to);
 
 export const clearStrip = (strips: TotwStrip[], index: number): TotwStrip[] => {
   if (index < 0 || index >= strips.length) {

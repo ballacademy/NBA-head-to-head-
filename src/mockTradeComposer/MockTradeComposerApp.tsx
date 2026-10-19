@@ -57,6 +57,7 @@ import {
   removeMockTradeTeam,
   setMockTradePhoto,
   setMockTradeSideTeam,
+  swapMockTradePlayers,
   swapMockTradeSides,
   type MockTradeDraft,
 } from "./mockTradeState";
@@ -808,11 +809,17 @@ export function MockTradeComposerApp() {
                 );
                 setStatus("Photo cropped inside the frame.");
               }}
+              onSwap={(from, to) => {
+                push(draft);
+                setDraft((current) => swapMockTradePlayers(current, from, to));
+                setStatus("Swapped player slots.");
+              }}
             />
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Each column is what that team gets — players first, then pick chips.
+            Drag a player on the preview to swap slots, including across teams.
             Default two teams; add a third when you need it. Empty photo-first.
             Downloads a 4:5 Instagram PNG at 2400×3000 — nothing is posted.
           </p>

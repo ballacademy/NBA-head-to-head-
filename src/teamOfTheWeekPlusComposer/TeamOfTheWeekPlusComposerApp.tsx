@@ -59,6 +59,7 @@ import {
   slotLabel,
   standoutSlots,
   starterSlots,
+  swapStrips,
   totwPickerEmpty,
   totwPickerHeading,
   totwPickerSuggestions,
@@ -598,6 +599,11 @@ export function TeamOfTheWeekPlusComposerApp() {
             onNameChange={(index, names) =>
               setSlots((current) => patchStrip(current, index, names))
             }
+            onSwap={(from, to) => {
+              push(slots);
+              setSlots((current) => swapStrips(current, from, to));
+              setStatus("Swapped player slots.");
+            }}
           />
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
@@ -607,7 +613,8 @@ export function TeamOfTheWeekPlusComposerApp() {
             TS%/eFG% and docked for turnovers, including stars. Mix is rough,
             not a 2G quota.
             Standouts (bottom row only) are surprise / over-expectation nights,
-            packed PG → C the same way — a big cannot sit in slot 1. Empty photo until you
+            packed PG → C the same way — a big cannot sit in slot 1. Drag a
+            player on the preview to swap slots across either row. Empty photo until you
             paste. Date range matches Cover / Stat / TOTW. Downloads a 4:5
             Instagram PNG — nothing is posted.
           </p>

@@ -538,7 +538,8 @@ describe("composer chrome", () => {
     );
     expect(coverApp).toContain("coverPasteSlotIndex(photoTarget, activeIndex)");
     expect(coverApp).toContain('target.closest(".pod-photo")');
-    expect(coverGraphic).toContain("onPointerDown={() => onHover?.(index)}");
+    expect(coverGraphic).toContain("onHover?.(index)");
+    expect(coverGraphic).toContain("onPointerDown=");
     expect(coverGraphic).not.toContain("onPointerEnter={() => onHover?.(index)}");
     expect(coverState).toContain("coverPasteSlotIndex");
     expect(photoFrame).toMatch(
@@ -736,5 +737,70 @@ describe("composer chrome", () => {
     expect(compareApp).toContain("this-week");
     expect(mockTradeApp).toContain("showSalaries");
     expect(statCardApp).toContain("showHighPip");
+  });
+
+  it("lets Andrew drag-swap player slots on the preview", () => {
+    const totwGraphic = readFileSync(
+      join(root, "teamOfTheWeekComposer/TeamOfTheWeekGraphic.tsx"),
+      "utf8",
+    );
+    const totwApp = readFileSync(
+      join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),
+      "utf8",
+    );
+    const totwPlusGraphic = readFileSync(
+      join(root, "teamOfTheWeekPlusComposer/TeamOfTheWeekPlusGraphic.tsx"),
+      "utf8",
+    );
+    const rankedGraphic = readFileSync(
+      join(root, "rankedLineupsComposer/RankedLineupsGraphic.tsx"),
+      "utf8",
+    );
+    const rankedState = readFileSync(
+      join(root, "rankedLineupsComposer/rankedLineupsState.ts"),
+      "utf8",
+    );
+    const rankedApp = readFileSync(
+      join(root, "rankedLineupsComposer/RankedLineupsComposerApp.tsx"),
+      "utf8",
+    );
+    const photoFrame = readFileSync(
+      join(root, "playerOfTheDayComposer/PhotoFrame.tsx"),
+      "utf8",
+    );
+    const coverGraphic = readFileSync(
+      join(root, "statCardCoverComposer/StatCardCoverGraphic.tsx"),
+      "utf8",
+    );
+    const pyramidGraphic = readFileSync(
+      join(root, "pyramidComposer/PyramidGraphic.tsx"),
+      "utf8",
+    );
+    const compareGraphic = readFileSync(
+      join(root, "compareComposer/CompareGraphic.tsx"),
+      "utf8",
+    );
+    const mockTradeGraphic = readFileSync(
+      join(root, "mockTradeComposer/MockTradeGraphic.tsx"),
+      "utf8",
+    );
+    expect(totwGraphic).toContain("data-composer-slot");
+    expect(totwGraphic).toContain("useComposerSlotSwap");
+    expect(totwGraphic).toContain("slotSwapEnabled");
+    expect(totwApp).toContain("swapStrips");
+    expect(totwPlusGraphic).toContain("data-composer-slot");
+    expect(totwPlusGraphic).toContain("onSwapStart={slotSwap.startDrag}");
+    expect(totwPlusApp).toContain("swapStrips");
+    expect(rankedGraphic).toContain("data-composer-slot");
+    expect(rankedGraphic).toContain("useComposerSlotSwap");
+    expect(rankedState).toContain("swapRankedLineup");
+    expect(rankedApp).toContain("swapRankedLineup");
+    expect(photoFrame).toContain("slotSwapEnabled");
+    expect(coverGraphic).toContain("data-composer-slot");
+    expect(coverGraphic).toContain("onHover?.(index)");
+    expect(pyramidGraphic).toContain("data-composer-slot");
+    expect(compareGraphic).toContain("data-composer-slot");
+    expect(mockTradeGraphic).toContain("mockTradePlayerSlot");
+    expect(mockTradeGraphic).toContain("data-composer-slot");
   });
 });

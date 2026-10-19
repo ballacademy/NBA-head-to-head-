@@ -30,6 +30,7 @@ import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
 import { hydrateJsonStorage } from "../lib/browserStorage";
 import { chainHudWheel } from "./chainHudWheel";
+import "./composerSlotSwap.css";
 import "../standingsComposer/standingsComposer.css";
 import "../tierListComposer/tierListComposer.css";
 import "../everyTeamComposer/everyTeamComposer.css";

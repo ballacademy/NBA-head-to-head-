@@ -82,6 +82,7 @@ import {
   resizeRankedStrips,
   setStripPhoto,
   slidesFromDraft,
+  swapRankedLineup,
   usedLineupPlayerIds,
   withActiveSlide,
   type RankedLineupSlide,
@@ -208,7 +209,14 @@ export function RankedLineupsComposerApp({
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<RankedLineupStrip[]>();
+  const { push, pop, canUndo } = useComposerUndo<{
+    strips: RankedLineupStrip[];
+    positionLabels: string[];
+  }>();
+  const snapshotBoard = () => ({
+    strips,
+    positionLabels: parsePositionLabels(positionLabels, strips.length),
+  });
 
   const persistSlide = useCallback(
     (nextStrips: RankedLineupStrip[], nextRank = rank, index = activeSlide) => {
@@ -418,7 +426,7 @@ export function RankedLineupsComposerApp({
 
   const handleResetKeepPhotos = () => {
     const blank = defaultRankedLineupsDraft();
-    push(strips);
+    push(snapshotBoard());
     applyDraft(
       keepComposerPhotos(blank, {
         ...blank,
@@ -439,7 +447,7 @@ export function RankedLineupsComposerApp({
 
   const handleReset = () => {
     const next = defaultRankedLineupsDraft();
-    push(strips);
+    push(snapshotBoard());
     applyDraft(next);
     setStatus("Blank post.");
   };
@@ -452,7 +460,7 @@ export function RankedLineupsComposerApp({
       { rank, strips },
       next,
     ];
-    push(strips);
+    push(snapshotBoard());
     setSlides(nextSlides);
     setActiveSlide(nextSlides.length - 1);
     setRank(next.rank);
@@ -477,7 +485,7 @@ export function RankedLineupsComposerApp({
       );
       return;
     }
-    push(strips);
+    push(snapshotBoard());
     setStrips(result.strips);
     persistSlide(result.strips);
     setPositionLabels(parsePositionLabels(undefined, result.strips.length));
@@ -500,7 +508,7 @@ export function RankedLineupsComposerApp({
     if (!player) {
       return;
     }
-    push(strips);
+    push(snapshotBoard());
     setStrips((current) => {
       const next = applyPlayerPick(current, index, player, keepCustomPhoto);
       persistSlide(next);
@@ -673,7 +681,7 @@ export function RankedLineupsComposerApp({
                 if (n === strips.length) {
                   return;
                 }
-                push(strips);
+                push(snapshotBoard());
                 const next = resizeRankedStrips(strips, n);
                 setStrips(next);
                 setPositionLabels(parsePositionLabels(positionLabels, n));
@@ -817,8 +825,14 @@ export function RankedLineupsComposerApp({
             onClick={() => {
               const previous = pop();
               if (previous) {
-                setStrips(previous);
-                persistSlide(previous);
+                setStrips(previous.strips);
+                setPositionLabels(
+                  parsePositionLabels(
+                    previous.positionLabels,
+                    previous.strips.length,
+                  ),
+                );
+                persistSlide(previous.strips);
                 setStatus("Undid last change.");
               }
             }}
@@ -1055,6 +1069,16 @@ export function RankedLineupsComposerApp({
                 return next;
               });
             }}
+            onSwap={(from, to) => {
+              push(snapshotBoard());
+              const next = swapRankedLineup(strips, positionLabels, from, to);
+              setStrips(next.strips);
+              setPositionLabels(
+                parsePositionLabels(next.positionLabels, next.strips.length),
+              );
+              persistSlide(next.strips);
+              setStatus("Swapped player slots.");
+            }}
           />
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
@@ -1092,8 +1116,8 @@ export function RankedLineupsComposerApp({
           )}
           <p className="sc-hint">
             {unranked
-              ? "Five PG–C strips with no rank pill. Populate fills the season-stat leader at each position. Positions are editable or removable. Custom photos, frames, purple, and named saves. Downloads a 4:5 Instagram PNG — nothing is posted."
-              : "Five PG–C strips for one carousel part. Populate fills that rank’s season-stat leader at each position. Next slide keeps the title, bumps BEST to 2ND, and clears players. Paste or drop a photo onto a strip. Downloads a 4:5 Instagram PNG — nothing is posted."}
+              ? "Five PG–C strips with no rank pill. Populate fills the season-stat leader at each position. Drag a player on the preview to swap slots — photos, names, logos, and position labels move together. Positions are editable or removable. Custom photos, frames, purple, and named saves. Downloads a 4:5 Instagram PNG — nothing is posted."
+              : "Five PG–C strips for one carousel part. Populate fills that rank’s season-stat leader at each position. Drag a player on the preview to swap slots — photos, names, logos, and position labels move together. Next slide keeps the title, bumps BEST to 2ND, and clears players. Paste or drop a photo onto a strip. Downloads a 4:5 Instagram PNG — nothing is posted."}
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>
@@ -1107,7 +1131,7 @@ export function RankedLineupsComposerApp({
           usedLabels={usedLineupPlayerIds(strips)}
           onPick={handlePick}
           onClear={() => {
-            push(strips);
+            push(snapshotBoard());
             setStrips((current) => {
               const next = clearStrip(current, activeIndex);
               persistSlide(next);

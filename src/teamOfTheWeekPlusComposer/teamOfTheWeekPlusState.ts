@@ -25,6 +25,7 @@ import {
   setStripPhoto,
   splitPlayerName,
   stripPlayerName,
+  swapStrips,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 
@@ -38,6 +39,7 @@ export {
   setStripPhoto,
   splitPlayerName,
   stripPlayerName,
+  swapStrips,
   type TotwStrip,
 };
 

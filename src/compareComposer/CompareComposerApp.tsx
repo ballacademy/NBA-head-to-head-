@@ -786,12 +786,21 @@ export function CompareComposerApp() {
                   return { ...current, sides };
                 })
               }
+              onSwap={(from, to) => {
+                if (from === to) {
+                  return;
+                }
+                push(draft);
+                setDraft((current) => swapCompareSides(current));
+                setStatus("Swapped sides.");
+              }}
             />
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Empty photos first — pick two players for this-season averages,
-            then upload action shots. Number + label stack on each side; the
+            then upload action shots. Drag a photo on the preview to swap sides
+            (stats come with them). Number + label stack on each side; the
             leader highlights. Toggle last-game or a per-side season. Downloads
             a 4:5 Instagram PNG — nothing is posted.
           </p>

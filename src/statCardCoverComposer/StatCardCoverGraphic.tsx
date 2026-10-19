@@ -1,5 +1,9 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
+import {
   composerFlairClass,
   composerLookClass,
   type ComposerLook,
@@ -58,6 +62,7 @@ interface StatCardCoverGraphicProps {
     index: number,
     names: { firstName?: string; lastName?: string },
   ) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 export const StatCardCoverGraphic = forwardRef<
@@ -77,11 +82,16 @@ export const StatCardCoverGraphic = forwardRef<
     onPan,
     onUpload,
     onNameChange,
+    onSwap,
   },
   ref,
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
+  const slotSwap = useComposerSlotSwap({
+    enabled: !exporting,
+    onSwap,
+  });
   const watermark = parseComposerWatermark(draft.watermark);
   const titleLines = splitCoverTitle(draft.title);
   const slotCount = draft.slots.length;
@@ -157,7 +167,10 @@ export const StatCardCoverGraphic = forwardRef<
         return (
           <section
             key={`scc-cell-${index}`}
-            className="scc-cell"
+            className={["scc-cell", composerSlotClass(index, slotSwap.draggingFrom, slotSwap.dropIndex)]
+              .filter(Boolean)
+              .join(" ")}
+            data-composer-slot={index}
             style={{
               left: `calc(${cell.x} * var(--u))`,
               top: `calc(${cell.y} * var(--u))`,
@@ -165,7 +178,10 @@ export const StatCardCoverGraphic = forwardRef<
               height: `calc(${cell.h} * var(--u))`,
             }}
             aria-label={`Cover player ${index + 1}`}
-            onPointerDown={() => onHover?.(index)}
+            onPointerDown={(event) => {
+              onHover?.(index);
+              slotSwap.startDrag(index, event);
+            }}
           >
             <PhotoFrame
               src={slot.photoSrc}
@@ -174,6 +190,7 @@ export const StatCardCoverGraphic = forwardRef<
               custom={slot.customPhoto}
               empty={empty}
               vignette
+              slotSwapEnabled={!exporting && Boolean(onSwap)}
               onPan={(pan) => onPan(index, pan)}
               onUpload={(dataUrl) => onUpload(index, dataUrl)}
               onUploadMany={(urls) =>

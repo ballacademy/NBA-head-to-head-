@@ -15,6 +15,7 @@ import {
   isTotwStrip,
   patchStrip,
   setStripPhoto,
+  swapStrips,
   usedPlayerIds,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
@@ -36,6 +37,7 @@ export {
   hasCustomPhoto,
   patchStrip,
   setStripPhoto,
+  swapStrips,
   type TotwStrip as PyramidSlot,
 };
 

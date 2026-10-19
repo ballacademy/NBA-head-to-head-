@@ -65,6 +65,7 @@ import {
   PYR_MAX_ROWS,
   PYR_MIN_ROWS,
   resizePyramidSlots,
+  swapStrips,
   setStripPhoto,
   usedPyramidPlayerIds,
   type PyramidDraft,
@@ -643,6 +644,11 @@ export function PyramidComposerApp() {
                 "Photo cropped in the square — heads pop out the top. Pinch, scroll, or +/− to scale, drag to pan.",
               );
             }}
+            onSwap={(from, to) => {
+              push({ slots, rows });
+              setSlots((current) => swapStrips(current, from, to));
+              setStatus("Swapped pyramid cells.");
+            }}
             />
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
@@ -650,8 +656,8 @@ export function PyramidComposerApp() {
             Photo squares in a 1–2–3–4 (or 5 / 6) stack. A small gap under the
             title keeps popped heads clear of the letters; the bottom row keeps
             its inset. Stock headshots pop out of the top; custom photos stay
-            in the box. Names off by default. Downloads a 4:5 Instagram PNG —
-            nothing is posted.
+            in the box. Drag a cell on the preview to swap players. Names off by
+            default. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

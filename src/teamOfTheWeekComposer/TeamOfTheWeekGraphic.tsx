@@ -1,4 +1,8 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerFlairClass,
@@ -42,6 +46,7 @@ interface TeamOfTheWeekGraphicProps {
     index: number,
     names: { firstName?: string; lastName?: string },
   ) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 export const TeamOfTheWeekGraphic = forwardRef<
@@ -68,12 +73,17 @@ export const TeamOfTheWeekGraphic = forwardRef<
     onPan,
     onUpload,
     onNameChange,
+    onSwap,
   },
   ref,
 ) {
   const localRef = useRef<HTMLElement | null>(null);
   const [unit, setUnit] = useState(0.4);
   const titleLines = splitTotwTitle(title);
+  const slotSwap = useComposerSlotSwap({
+    enabled: !exporting,
+    onSwap,
+  });
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -158,7 +168,12 @@ export const TeamOfTheWeekGraphic = forwardRef<
           return (
             <section
               key={`totw-strip-${index}`}
-              className={["totw-strip", hair ? "has-hairline" : ""]
+              data-composer-slot={index}
+              className={[
+                "totw-strip",
+                hair ? "has-hairline" : "",
+                composerSlotClass(index, slotSwap.draggingFrom, slotSwap.dropIndex),
+              ]
                 .filter(Boolean)
                 .join(" ")}
               style={
@@ -168,6 +183,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
               }
               aria-label={`Player strip ${index + 1}`}
               onPointerEnter={() => onHover?.(index)}
+              onPointerDown={(event) => slotSwap.startDrag(index, event)}
             >
               <PhotoFrame
                 src={strip.photoSrc}
@@ -176,6 +192,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
                 custom={strip.customPhoto}
                 empty={empty}
                 vignette
+                slotSwapEnabled={!exporting && Boolean(onSwap)}
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onUploadMany={(urls) =>

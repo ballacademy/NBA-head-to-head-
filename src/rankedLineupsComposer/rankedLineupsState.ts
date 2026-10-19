@@ -9,6 +9,7 @@ import {
   type EveryTeamStatMetric,
 } from "../everyTeamComposer/historicalRosters";
 import type { RankDisplay } from "./rankedLineupsLayout";
+import { swapItems } from "../instagramComposer/composerSlotSwap";
 import {
   applyPlayerPick,
   clearStrip,
@@ -20,6 +21,7 @@ import {
   setStripPhoto,
   splitPlayerName,
   stripPlayerName,
+  swapStrips,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 
@@ -104,6 +106,17 @@ export interface RankedLineupsDraft {
 
 export const lineupPosition = (index: number): string =>
   LINEUP_POSITIONS[index] ?? `${index + 1}`;
+
+/** Player graphic, name, logo, and the position label under that strip all move. */
+export const swapRankedLineup = (
+  strips: TotwStrip[],
+  positionLabels: string[],
+  from: number,
+  to: number,
+) => ({
+  strips: swapStrips(strips, from, to),
+  positionLabels: swapItems(positionLabels, from, to),
+});
 
 export const extraPositionLabel = (index: number) => {
   const n = index + 1;

@@ -1,4 +1,8 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerFlairClass,
@@ -67,6 +71,7 @@ interface RankedLineupsGraphicProps {
     names: { firstName?: string; lastName?: string },
   ) => void;
   onPositionChange: (index: number, label: string) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 function RankedMetaName({
@@ -164,6 +169,7 @@ export const RankedLineupsGraphic = forwardRef<
     onUpload,
     onNameChange,
     onPositionChange,
+    onSwap,
   },
   ref,
 ) {
@@ -171,6 +177,10 @@ export const RankedLineupsGraphic = forwardRef<
   const [unit, setUnit] = useState(0.4);
   const titleLines = splitRankedLineupTitle(title);
   const labels = parsePositionLabels(positionLabels, strips.length);
+  const slotSwap = useComposerSlotSwap({
+    enabled: !exporting,
+    onSwap,
+  });
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -294,7 +304,12 @@ export const RankedLineupsGraphic = forwardRef<
           return (
             <section
               key={`rl-strip-${index}-${position}`}
-              className={["rl-strip", hair ? "has-hairline" : ""]
+              data-composer-slot={index}
+              className={[
+                "rl-strip",
+                hair ? "has-hairline" : "",
+                composerSlotClass(index, slotSwap.draggingFrom, slotSwap.dropIndex),
+              ]
                 .filter(Boolean)
                 .join(" ")}
               style={
@@ -302,8 +317,9 @@ export const RankedLineupsGraphic = forwardRef<
                   ? ({ ["--team-hairline" as string]: hair } as React.CSSProperties)
                   : undefined
               }
-              aria-label={`${position} strip`}
+              aria-label={`${labels[index] || position} strip`}
               onPointerEnter={() => onHover?.(index)}
+              onPointerDown={(event) => slotSwap.startDrag(index, event)}
             >
               <PhotoFrame
                 src={strip.photoSrc}
@@ -312,6 +328,7 @@ export const RankedLineupsGraphic = forwardRef<
                 custom={strip.customPhoto}
                 empty={empty}
                 vignette
+                slotSwapEnabled={!exporting && Boolean(onSwap)}
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onUploadMany={(urls) =>
@@ -346,7 +363,17 @@ export const RankedLineupsGraphic = forwardRef<
           const position = lineupPosition(index);
           const posLabel = labels[index] ?? "";
           return (
-            <div key={`rl-meta-${position}`} className="rl-meta">
+            <div
+              key={`rl-meta-${position}`}
+              data-composer-slot={index}
+              className={[
+                "rl-meta",
+                composerSlotClass(index, slotSwap.draggingFrom, slotSwap.dropIndex),
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onPointerDown={(event) => slotSwap.startDrag(index, event)}
+            >
               <div className="rl-pos-slot">
                 <div className="rl-pos-wrap">
                   <input

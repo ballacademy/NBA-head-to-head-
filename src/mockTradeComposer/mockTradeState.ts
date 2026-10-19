@@ -389,6 +389,43 @@ export const mockTradePickLabel = (pick: MockTradePick) => {
   return bits.join(" · ");
 };
 
+export const mockTradePlayerSlot = (side: number, player: number) =>
+  side * MOCK_TRADE_PLAYER_MAX + player;
+
+export const parseMockTradePlayerSlot = (index: number) => ({
+  side: Math.floor(index / MOCK_TRADE_PLAYER_MAX),
+  player: index % MOCK_TRADE_PLAYER_MAX,
+});
+
+export const swapMockTradePlayers = (
+  draft: MockTradeDraft,
+  fromIndex: number,
+  toIndex: number,
+): MockTradeDraft => {
+  const from = parseMockTradePlayerSlot(fromIndex);
+  const to = parseMockTradePlayerSlot(toIndex);
+  const left = draft.sides[from.side];
+  const right = draft.sides[to.side];
+  if (
+    !left ||
+    !right ||
+    from.player < 0 ||
+    to.player < 0 ||
+    from.player >= left.players.length ||
+    to.player >= right.players.length
+  ) {
+    return draft;
+  }
+  const sides = draft.sides.map((side) => ({
+    ...side,
+    players: side.players.slice(),
+  }));
+  const held = sides[from.side]!.players[from.player]!;
+  sides[from.side]!.players[from.player] = sides[to.side]!.players[to.player]!;
+  sides[to.side]!.players[to.player] = held;
+  return { ...draft, sides };
+};
+
 export const swapMockTradeSides = (draft: MockTradeDraft): MockTradeDraft => {
   if (draft.sides.length < 2) {
     return draft;

@@ -6,6 +6,10 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
+import {
   composerFlairClass,
   composerLookClass,
   type ComposerLook,
@@ -51,6 +55,7 @@ interface CompareGraphicProps {
   onUpload: (side: 0 | 1, dataUrl: string) => void;
   onRemoveStat?: (index: number) => void;
   onMoveStat?: (fromIndex: number, toIndex: number) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 const sideLabel = (side: CompareSide, fallback: string) =>
@@ -74,6 +79,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
       onUpload,
       onRemoveStat,
       onMoveStat,
+      onSwap,
     },
     ref,
   ) {
@@ -100,6 +106,10 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
       draft.showWinner === true ? compareWinner(draft.stats) : null;
     const dragEnabled =
       !exporting && Boolean(onMoveStat) && draft.stats.length > 1;
+    const slotSwap = useComposerSlotSwap({
+      enabled: !exporting,
+      onSwap,
+    });
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -270,11 +280,14 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                   "cmp-photo",
                   side === 0 ? "is-left" : "is-right",
                   winner === side ? "is-winner" : "",
+                  composerSlotClass(side, slotSwap.draggingFrom, slotSwap.dropIndex),
                 ]
                   .filter(Boolean)
                   .join(" ")}
+                data-composer-slot={side}
                 aria-label={side === 0 ? "Left photo" : "Right photo"}
                 style={{ gridColumn: side === 0 ? 1 : 3 }}
+                onPointerDown={(event) => slotSwap.startDrag(side, event)}
               >
                 {team && watermark !== "off" ? (
                   <div
@@ -292,6 +305,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                   custom={person.customPhoto}
                   empty={!person.photoSrc}
                   vignette
+                  slotSwapEnabled={!exporting && Boolean(onSwap)}
                   onPan={(pan) => onPan(side, pan)}
                   onUpload={(dataUrl) => onUpload(side, dataUrl)}
                   onPick={() => onPick(side)}

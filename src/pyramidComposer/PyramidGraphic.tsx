@@ -1,5 +1,9 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
+import {
   composerFlairClass,
   composerLookClass,
   type ComposerLook,
@@ -35,6 +39,7 @@ interface PyramidGraphicProps {
   onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
@@ -56,12 +61,17 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
       onHover,
       onPan,
       onUpload,
+      onSwap,
     },
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [nameStyle] = useComposerNameStyle();
     const [unit, setUnit] = useState(0.4);
+    const slotSwap = useComposerSlotSwap({
+      enabled: !exporting,
+      onSwap,
+    });
     const metrics = pyramidMetrics(
       rows,
       story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
@@ -178,9 +188,18 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                   return (
                     <section
                       key={`pyr-cell-${index}`}
-                      className={["pyr-cell", team ? "has-team" : ""]
+                      className={[
+                        "pyr-cell",
+                        team ? "has-team" : "",
+                        composerSlotClass(
+                          index,
+                          slotSwap.draggingFrom,
+                          slotSwap.dropIndex,
+                        ),
+                      ]
                         .filter(Boolean)
                         .join(" ")}
+                      data-composer-slot={index}
                       style={
                         team
                           ? ({
@@ -191,6 +210,9 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                       }
                       aria-label={`Pyramid slot ${index + 1}`}
                       onPointerEnter={() => onHover?.(index)}
+                      onPointerDown={(event) =>
+                        slotSwap.startDrag(index, event)
+                      }
                     >
                       <PhotoFrame
                         src={slot.photoSrc}
@@ -199,6 +221,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                         custom={slot.customPhoto}
                         empty={empty}
                         pop={pops}
+                        slotSwapEnabled={!exporting && Boolean(onSwap)}
                         onPan={(pan) => onPan(index, pan)}
                         onUpload={(dataUrl) => onUpload(index, dataUrl)}
                         onUploadMany={(urls) =>

@@ -1,5 +1,9 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
+import {
   composerFlairClass,
   composerLookClass,
   type ComposerLook,
@@ -21,6 +25,7 @@ import {
   mockTradePickLabel,
   mockTradePlayerLockup,
   mockTradePlayerName,
+  mockTradePlayerSlot,
   mockTradeTeamCount,
   type MockTradeDraft,
   type PhotoPan,
@@ -42,6 +47,7 @@ interface MockTradeGraphicProps {
   onPickPlayer: (side: number, player: number) => void;
   onPan: (side: number, player: number, pan: PhotoPan) => void;
   onUpload: (side: number, player: number, dataUrl: string) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 const u = (value: number) => `calc(${value} * var(--u))`;
@@ -68,11 +74,16 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
       onPickPlayer,
       onPan,
       onUpload,
+      onSwap,
     },
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
+    const slotSwap = useComposerSlotSwap({
+      enabled: !exporting,
+      onSwap,
+    });
     const [nameStyle] = useComposerNameStyle();
     const [nameFocus, setNameFocus] = useState<string | null>(null);
     const board = exporting ? compactMockTradeDraft(draft) : draft;
@@ -167,6 +178,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
               {column.players.map((slot, playerIndex) => {
                 const person = side.players[playerIndex]!;
                 const lockupKey = `${sideIndex}-${playerIndex}`;
+                const slotIndex = mockTradePlayerSlot(sideIndex, playerIndex);
                 const lockup =
                   nameFocus === lockupKey
                     ? mockTradePlayerName(person)
@@ -174,8 +186,21 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                 return (
                   <div key={`mt-player-${sideIndex}-${playerIndex}`}>
                     <div
-                      className="mt-player"
+                      className={[
+                        "mt-player",
+                        composerSlotClass(
+                          slotIndex,
+                          slotSwap.draggingFrom,
+                          slotSwap.dropIndex,
+                        ),
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      data-composer-slot={slotIndex}
                       style={boxStyle(local(slot.photo))}
+                      onPointerDown={(event) =>
+                        slotSwap.startDrag(slotIndex, event)
+                      }
                     >
                       <PhotoFrame
                         src={person.photoSrc}
@@ -186,6 +211,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                         vignette
                         pickLabel="Pick player"
                         changeLabel="Change player"
+                        slotSwapEnabled={!exporting && Boolean(onSwap)}
                         onPan={(pan) => onPan(sideIndex, playerIndex, pan)}
                         onUpload={(dataUrl) =>
                           onUpload(sideIndex, playerIndex, dataUrl)

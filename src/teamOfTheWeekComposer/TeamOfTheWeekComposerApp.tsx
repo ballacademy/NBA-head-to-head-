@@ -63,6 +63,7 @@ import {
   isTotwDraft,
   patchStrip,
   setStripPhoto,
+  swapStrips,
   usedPlayerIds,
   type TotwDraft,
   type TotwStrip,
@@ -561,6 +562,11 @@ export function TeamOfTheWeekComposerApp() {
             onNameChange={(index, names) => {
               setStrips((current) => patchStrip(current, index, names));
             }}
+            onSwap={(from, to) => {
+              push(strips);
+              setStrips((current) => swapStrips(current, from, to));
+              setStatus("Swapped player slots.");
+            }}
           />
           </ComposerBoard>
           <p className="sc-hint">
@@ -568,8 +574,9 @@ export function TeamOfTheWeekComposerApp() {
             among whoever made it — 2+ games (extra GP can break a close call), counting mixed
             with TS%/eFG% and docked for turnovers. Mix is rough, not a 2G quota.
             Stars belong here, not surprise over-expectation nights.
-            Then upload or paste a photo. Drag to pan,
-            pinch or scroll to zoom — same as Player of the Day. Downloads a
+            Then upload or paste a photo. Drag a player on the preview to swap
+            slots — photos, names, and logos move together. Drag inside a photo
+            to pan, pinch or scroll to zoom — same as Player of the Day. Downloads a
             4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

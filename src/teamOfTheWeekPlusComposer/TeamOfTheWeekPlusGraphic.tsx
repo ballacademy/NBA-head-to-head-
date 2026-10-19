@@ -1,5 +1,9 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
+import {
   composerFlairClass,
   composerLookClass,
   type ComposerLook,
@@ -64,21 +68,31 @@ interface TeamOfTheWeekPlusGraphicProps {
     index: number,
     names: { firstName?: string; lastName?: string },
   ) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 const PortraitCell = ({
   slot,
   index,
   showNames,
+  exporting,
+  draggingFrom,
+  dropIndex,
+  slotSwapEnabled,
   onPick,
   onHover,
   onPan,
   onUpload,
   onNameChange,
+  onSwapStart,
 }: {
   slot: TotwStrip;
   index: number;
   showNames: boolean;
+  exporting: boolean;
+  draggingFrom: number | null;
+  dropIndex: number | null;
+  slotSwapEnabled: boolean;
   onPick: (index: number) => void;
   onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
@@ -87,14 +101,19 @@ const PortraitCell = ({
     index: number,
     names: { firstName?: string; lastName?: string },
   ) => void;
+  onSwapStart: (index: number, event: React.PointerEvent) => void;
 }) => {
   const empty = !slot.photoSrc;
   const label = stripPlayerName(slot) || slotLabel(index);
   return (
     <section
-      className="twp-cell"
+      className={["twp-cell", composerSlotClass(index, draggingFrom, dropIndex)]
+        .filter(Boolean)
+        .join(" ")}
+      data-composer-slot={index}
       aria-label={slotLabel(index)}
       onPointerEnter={() => onHover?.(index)}
+      onPointerDown={(event) => onSwapStart(index, event)}
     >
       <PhotoFrame
         src={slot.photoSrc}
@@ -103,6 +122,7 @@ const PortraitCell = ({
         custom={slot.customPhoto}
         empty={empty}
         zoomStep={PLUS_ZOOM_STEP}
+        slotSwapEnabled={slotSwapEnabled}
         onPan={(pan) => onPan(index, pan)}
         onUpload={(dataUrl) => onUpload(index, dataUrl)}
         onUploadMany={(urls) =>
@@ -155,6 +175,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
     onPan,
     onUpload,
     onNameChange,
+    onSwap,
   },
   ref,
 ) {
@@ -162,6 +183,11 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
   const [unit, setUnit] = useState(0.4);
   const starters = starterSlots(slots);
   const standouts = standoutSlots(slots);
+  const slotSwap = useComposerSlotSwap({
+    enabled: !exporting,
+    onSwap,
+  });
+  const slotSwapEnabled = !exporting && Boolean(onSwap);
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -277,11 +303,16 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             slot={starters[index]!}
             index={index}
             showNames={showNames}
+            exporting={exporting}
+            draggingFrom={slotSwap.draggingFrom}
+            dropIndex={slotSwap.dropIndex}
+            slotSwapEnabled={slotSwapEnabled}
             onPick={onPick}
             onHover={onHover}
             onPan={onPan}
             onUpload={onUpload}
             onNameChange={onNameChange}
+            onSwapStart={slotSwap.startDrag}
           />
         ))}
       </div>
@@ -319,11 +350,16 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             slot={standouts[index]!}
             index={PLUS_STARTER_COUNT + index}
             showNames={showNames}
+            exporting={exporting}
+            draggingFrom={slotSwap.draggingFrom}
+            dropIndex={slotSwap.dropIndex}
+            slotSwapEnabled={slotSwapEnabled}
             onPick={onPick}
             onHover={onHover}
             onPan={onPan}
             onUpload={onUpload}
             onNameChange={onNameChange}
+            onSwapStart={slotSwap.startDrag}
           />
         ))}
       </div>
