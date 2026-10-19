@@ -308,8 +308,18 @@ const slotOrder = (row: NightStandout) => {
   return slot ? PLUS_LINEUP_SLOTS.indexOf(slot) : 9;
 };
 
-/** Guards, then forwards, then center — PG before SG, SF before PF. Never a forward left of a guard. */
-export const orderPlusStarters = (rows: NightStandout[]) => {
+type RowCompare = (left: NightStandout, right: NightStandout) => number;
+
+const rankStandoutBest: RowCompare = (left, right) =>
+  plusOverExpectation(right) - plusOverExpectation(left) ||
+  right.score - left.score;
+
+/** Guards, then forwards, then center — PG before SG, SF before PF. Never a big in slot 1 when a guard remains. */
+export const orderPlusLineup = (
+  rows: NightStandout[],
+  compare: RowCompare = rankTotwBest,
+  count = PLUS_STARTER_COUNT,
+) => {
   const byGroup: Record<PlayerPositionGroup, NightStandout[]> = {
     G: [],
     F: [],
@@ -327,25 +337,24 @@ export const orderPlusStarters = (rows: NightStandout[]) => {
     if (rank) {
       return rank;
     }
-    return rankTotwBest(left, right);
+    return compare(left, right);
   };
   byGroup.G.sort(byListedSlot);
   byGroup.F.sort(byListedSlot);
-  byGroup.C.sort(rankTotwBest);
-  return [...byGroup.G, ...byGroup.F, ...byGroup.C].slice(
-    0,
-    PLUS_STARTER_COUNT,
-  );
+  byGroup.C.sort(compare);
+  return [...byGroup.G, ...byGroup.F, ...byGroup.C].slice(0, count);
 };
 
-/** Best week (~2G / 2F / 1C), then lined up PG → C — not best-to-worst left to right. */
-export const selectPlusStarters = (rows: NightStandout[]) => {
-  const pool = qualifyTotwRows(rows);
+const pickQuotaThenOrder = (
+  rows: NightStandout[],
+  compare: RowCompare,
+  count = PLUS_STARTER_COUNT,
+) => {
   const counts: Record<PlayerPositionGroup, number> = { G: 0, F: 0, C: 0 };
   const picked: NightStandout[] = [];
   const used = new Set<string>();
   const take = (row: NightStandout, honorQuota: boolean) => {
-    if (picked.length >= PLUS_STARTER_COUNT || used.has(row.athleteId)) {
+    if (picked.length >= count || used.has(row.athleteId)) {
       return;
     }
     const group = plusLineupGroup(getPlayer(row.athleteId));
@@ -359,36 +368,40 @@ export const selectPlusStarters = (rows: NightStandout[]) => {
     used.add(row.athleteId);
     counts[group] += 1;
   };
-  const fillFrom = (candidates: NightStandout[], honorQuota: boolean) => {
-    const ranked = [...candidates].sort(rankTotwBest);
-    for (const row of ranked) {
+  const fillFrom = (honorQuota: boolean) => {
+    for (const row of [...rows].sort(compare)) {
       take(row, honorQuota);
     }
   };
-  fillFrom(pool, true);
-  fillFrom(pool, false);
-  return orderPlusStarters(picked);
+  fillFrom(true);
+  fillFrom(false);
+  return orderPlusLineup(picked, compare, count);
 };
 
-/** Surprise / over-expectation non-stars who are not already on the TOTW five. */
+/** Guards, then forwards, then center — PG before SG, SF before PF. Never a forward left of a guard. */
+export const orderPlusStarters = (rows: NightStandout[]) =>
+  orderPlusLineup(rows, rankTotwBest);
+
+/** Best week (~2G / 2F / 1C), then lined up PG → C — not best-to-worst left to right. */
+export const selectPlusStarters = (rows: NightStandout[]) =>
+  pickQuotaThenOrder(qualifyTotwRows(rows), rankTotwBest);
+
+/** Surprise / over-expectation non-stars, then packed PG → C — a C cannot sit in slot 1. */
 export const selectPlusStandouts = (
   rows: NightStandout[],
   starterIds: ReadonlySet<string>,
 ) =>
-  qualifyTotwRows(rows)
-    .filter((row) => {
+  pickQuotaThenOrder(
+    qualifyTotwRows(rows).filter((row) => {
       if (starterIds.has(row.athleteId) || isPlusStar(row.athleteId)) {
         return false;
       }
       const extra = nightFlagsFor(row.game.stats);
       return isSurpriseNight(extra, usualLineFor(row.athleteId));
-    })
-    .sort(
-      (left, right) =>
-        plusOverExpectation(right) - plusOverExpectation(left) ||
-        right.score - left.score,
-    )
-    .slice(0, PLUS_STANDOUT_COUNT);
+    }),
+    rankStandoutBest,
+    PLUS_STANDOUT_COUNT,
+  );
 
 export const fillPlusFromStandouts = (
   slots: TotwStrip[],
@@ -481,12 +494,11 @@ const totwPickerMeta = (row: NightStandout) => {
   return bits.join(" · ");
 };
 
-export const totwPickerSlotLabel = (slotIndex: number) => {
-  if (slotIndex >= PLUS_STARTER_COUNT) {
-    return "Standouts";
-  }
-  return PLUS_LINEUP_SLOTS[slotIndex] ?? "PG";
-};
+export const totwPickerSlotLabel = (slotIndex: number) =>
+  PLUS_LINEUP_SLOTS[slotIndex % PLUS_STARTER_COUNT] ?? "PG";
+
+const isStandoutPickerSlot = (slotIndex: number) =>
+  slotIndex >= PLUS_STARTER_COUNT;
 
 /** Remaining players ranked the same way as Fill, positional on PG–C slots. */
 export const totwPickerSuggestions = (
@@ -494,28 +506,33 @@ export const totwPickerSuggestions = (
   slotIndex: number,
   usedIds: ReadonlySet<string>,
 ) => {
-  const eligible = qualifyTotwRows(rows).filter(
-    (row) => !usedIds.has(row.athleteId),
+  const slot = totwPickerSlotLabel(slotIndex);
+  const standoutSlot = isStandoutPickerSlot(slotIndex);
+  const starterIds = new Set(
+    selectPlusStarters(rows).map((row) => row.athleteId),
   );
-  if (slotIndex >= PLUS_STARTER_COUNT) {
-    const starterIds = new Set(
-      selectPlusStarters(rows).map((row) => row.athleteId),
+  const eligible = qualifyTotwRows(rows).filter((row) => {
+    if (usedIds.has(row.athleteId)) {
+      return false;
+    }
+    if (!standoutSlot) {
+      return true;
+    }
+    if (starterIds.has(row.athleteId) || isPlusStar(row.athleteId)) {
+      return false;
+    }
+    return isSurpriseNight(
+      nightFlagsFor(row.game.stats),
+      usualLineFor(row.athleteId),
     );
-    return selectPlusStandouts(eligible, starterIds)
-      .slice(0, TOTW_PICKER_LIMIT)
-      .map((row) => ({
-        id: row.athleteId,
-        badge: "Standout",
-        meta: totwPickerMeta(row),
-      }));
-  }
-  const slot = PLUS_LINEUP_SLOTS[slotIndex] ?? "PG";
+  });
+  const compare = standoutSlot ? rankStandoutBest : rankTotwBest;
   const take = (loose: boolean) =>
     eligible
       .filter((row) =>
         plusLineupSlotMatches(getPlayer(row.athleteId), slot, loose),
       )
-      .sort(rankTotwBest);
+      .sort(compare);
   const picked: NightStandout[] = [];
   const seen = new Set<string>();
   for (const row of [...take(false), ...take(true)]) {
@@ -537,16 +554,16 @@ export const totwPickerSuggestions = (
 
 export const totwPickerHeading = (slotIndex: number) => {
   const label = totwPickerSlotLabel(slotIndex);
-  if (slotIndex >= PLUS_STARTER_COUNT) {
-    return "Best remaining standouts";
+  if (isStandoutPickerSlot(slotIndex)) {
+    return `Best remaining standout ${label}`;
   }
   return `Best remaining for ${label}`;
 };
 
 export const totwPickerEmpty = (slotIndex: number) => {
   const label = totwPickerSlotLabel(slotIndex);
-  if (slotIndex >= PLUS_STARTER_COUNT) {
-    return "No other surprise standouts with 2+ games in this range.";
+  if (isStandoutPickerSlot(slotIndex)) {
+    return `No other surprise ${label}s with 2+ games in this range.`;
   }
   return `No other ${label}s with 2+ games in this range.`;
 };

@@ -253,6 +253,8 @@ describe("composer chrome", () => {
   it("fills TOTW Plus as PG–C plus surprise non-stars", () => {
     expect(totwPlusState).toContain("selectPlusStarters");
     expect(totwPlusState).toContain("selectPlusStandouts");
+    expect(totwPlusState).toContain("orderPlusLineup");
+    expect(totwPlusState).toContain("a C cannot sit in slot 1");
     expect(totwPlusState).toContain("plusLineupGroup");
     expect(totwPlusState).toContain("PLUS_LINEUP_SLOTS");
     expect(totwPlusState).toContain("plusLineupSlotMatches");

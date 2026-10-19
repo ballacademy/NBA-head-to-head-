@@ -336,6 +336,31 @@ describe("team of the week plus", () => {
     expect(standoutIds.every((id) => !isPlusStar(id))).toBe(true);
     expect(standoutIds).not.toContain(extraStar);
     expect(standoutIds).not.toContain(tatum);
+    expect(
+      standoutIds.map((id) => plusLineupGroup(getPlayer(id))),
+    ).toEqual(["G", "G", "G", "F", "F"]);
+    const tjd = "4431684";
+    expect(getPlayer(tjd)?.name).toMatch(/Jackson-Davis/);
+    expect(getPlayer(tjd)?.position).toBe("C");
+    expect(plusLineupGroup(getPlayer(tjd))).toBe("C");
+    const loudCenter = game(tjd, 999, {
+      pts: "24",
+      reb: "14",
+      ast: "3",
+      blk: "5",
+      min: "32",
+    });
+    const packedStandouts = selectPlusStandouts(
+      [...rows, loudCenter],
+      new Set(starterIds),
+    );
+    expect(packedStandouts[0]?.athleteId).not.toBe(tjd);
+    expect(plusLineupGroup(getPlayer(packedStandouts[0]?.athleteId))).toBe("G");
+    expect(packedStandouts.map((row) => row.athleteId)).toContain(tjd);
+    expect(packedStandouts.at(-1)?.athleteId).toBe(tjd);
+    expect(
+      packedStandouts.map((row) => plusLineupGroup(getPlayer(row.athleteId))),
+    ).toEqual(["G", "G", "F", "F", "C"]);
 
     const filled = fillPlusFromStandouts(createEmptyPlusSlots(), rows);
     expect(starterSlots(filled).map((slot) => slot.playerId)).toEqual(starterIds);
@@ -552,7 +577,8 @@ describe("team of the week plus", () => {
     expect(pgSuggestions[0]?.badge).toBe("Best PG");
     expect(pgSuggestions.every((row) => row.id !== luka)).toBe(true);
     expect(totwPickerHeading(0)).toBe("Best remaining for PG");
-    expect(totwPickerHeading(6)).toBe("Best remaining standouts");
+    expect(totwPickerHeading(5)).toBe("Best remaining standout PG");
+    expect(totwPickerHeading(6)).toBe("Best remaining standout SG");
     const sfSuggestions = totwPickerSuggestions(twoGameSupport, 2, new Set([brown]));
     expect(sfSuggestions.every((row) => row.id !== brown)).toBe(true);
     expect(sfSuggestions[0]?.badge).toMatch(/SF/);

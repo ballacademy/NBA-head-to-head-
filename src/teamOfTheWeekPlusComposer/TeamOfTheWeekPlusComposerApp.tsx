@@ -605,7 +605,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             Top row is the week’s best five as PG, SG, SF, PF, C left to right,
             2+ games, ranked on TS%/eFG% times production, including stars.
             Standouts (bottom row only) are surprise / over-expectation nights,
-            not the TOTW five. Empty photo until you
+            packed PG → C the same way — a big cannot sit in slot 1. Empty photo until you
             paste. Date range matches Cover / Stat / TOTW. Downloads a 4:5
             Instagram PNG — nothing is posted.
           </p>
