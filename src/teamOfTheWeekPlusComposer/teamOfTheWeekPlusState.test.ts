@@ -441,7 +441,7 @@ describe("team of the week plus", () => {
     expect(terryStandouts.map((row) => row.athleteId)).not.toContain(terry);
   });
 
-  it("needs 2 games, ranks on TS%/eFG% times production, and highlights remaining PGs", () => {
+  it("needs 2 games, ranks a mix of counting and TS%/eFG%, and highlights remaining PGs", () => {
     const game = (
       athleteId: string,
       stats: Partial<NightStandout["game"]["stats"]>,
@@ -532,6 +532,50 @@ describe("team of the week plus", () => {
       ft: "0-0",
     });
     expect(totwWeekScore(starWeek)).toBeGreaterThan(totwWeekScore(heater));
+
+    const volumeStar = game(tatum, {
+      pts: "21",
+      reb: "6.5",
+      ast: "5",
+      stl: "1.5",
+      blk: "0",
+      fg: "8.5-18",
+      three: "3.5-9",
+      ft: "0.5-0.5",
+    });
+    const quietHeater = game("5174563", {
+      pts: "15.3",
+      reb: "3.5",
+      ast: "2.5",
+      stl: "1.3",
+      blk: "1.5",
+      fg: "4.75-7.25",
+      three: "2-3.25",
+      ft: "3.75-4",
+    });
+    expect(totwCountingScore(volumeStar.game.stats)).toBeGreaterThan(
+      totwCountingScore(quietHeater.game.stats),
+    );
+    expect(totwWeekScore(volumeStar)).toBeGreaterThan(totwWeekScore(quietHeater));
+    const volumeStarters = selectPlusStarters([
+      volumeStar,
+      quietHeater,
+      game("4278104", {
+        pts: "21.7",
+        reb: "3.3",
+        ast: "1",
+        stl: "1.3",
+        blk: "0.3",
+        fg: "7.7-13",
+        three: "3.3-7",
+        ft: "3-3.7",
+      }),
+      game(sga, { pts: "16", reb: "2", ast: "5", fg: "5-8", three: "2-3", ft: "4-4" }),
+      game(luka, { pts: "16", reb: "3", ast: "3", fg: "5-11", three: "2-6", ft: "4-5" }),
+      game(jokic, { pts: "19", reb: "8", ast: "4", fg: "7-11", three: "0-1", ft: "5-6" }),
+    ]).map((row) => row.athleteId);
+    expect(volumeStarters).toContain(tatum);
+    expect(volumeStarters).not.toContain("5174563");
 
     const oneGame = game(
       luka,

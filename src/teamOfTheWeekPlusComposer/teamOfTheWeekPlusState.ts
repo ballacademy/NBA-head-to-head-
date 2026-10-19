@@ -225,8 +225,11 @@ export const TOTW_TS_REF = 0.55;
 export const TOTW_EFG_REF = 0.52;
 export const TOTW_TS_SHARE = 0.75;
 export const TOTW_EFG_SHARE = 0.25;
-export const TOTW_EFF_MIN = 0.6;
-export const TOTW_EFF_MAX = 1.4;
+/** Modest mix — ±40% heaters were dropping 21-point star weeks like Tatum. */
+export const TOTW_EFF_MIN = 0.88;
+export const TOTW_EFF_MAX = 1.12;
+/** Full efficiency swing at this FGA; quieter samples shrink toward 1.0. */
+export const TOTW_EFF_FGA_REF = 12;
 export const TOTW_MIN_FGA = 5;
 export const TOTW_STOCKS_WEIGHT = 4;
 export const TOTW_TENS_WEIGHT = 10;
@@ -265,8 +268,9 @@ export const totwCountingScore = (stats: LastGameStats) => {
 
 /**
  * Blend TS% vs 55% and eFG% vs 52%. Tiny shooting samples stay neutral.
- * Clamped so a heater cannot erase a 30-point week, and empty volume cannot
- * ignore efficiency.
+ * Clamped ±12% so counting still carries: a 7-shot 85% TS heater cannot
+ * outrank a 21-point star week. Below 12 FGA the bump/haircut shrinks
+ * toward 1.0 — efficient volume ranks, empty volume still pays.
  */
 export const totwEfficiencyIndex = (stats: LastGameStats) => {
   const { efg, ts, fga } = totwShooting(stats);
@@ -275,10 +279,12 @@ export const totwEfficiencyIndex = (stats: LastGameStats) => {
   }
   const raw =
     TOTW_TS_SHARE * (ts / TOTW_TS_REF) + TOTW_EFG_SHARE * (efg / TOTW_EFG_REF);
-  return Math.min(TOTW_EFF_MAX, Math.max(TOTW_EFF_MIN, raw));
+  const clamped = Math.min(TOTW_EFF_MAX, Math.max(TOTW_EFF_MIN, raw));
+  const volume = Math.min(1, fga / TOTW_EFF_FGA_REF);
+  return 1 + (clamped - 1) * volume;
 };
 
-/** production × efficiency — TOTW ranking, not Cover/POTD night score. */
+/** Counting production mixed with a modest TS%/eFG% index. */
 export const totwWeekScore = (row: NightStandout) =>
   totwCountingScore(row.game.stats) * totwEfficiencyIndex(row.game.stats);
 

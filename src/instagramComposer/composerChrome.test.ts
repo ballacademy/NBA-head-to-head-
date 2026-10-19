@@ -265,6 +265,8 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("totwEfficiencyIndex");
     expect(totwPlusState).toContain("TOTW_MIN_GAMES");
     expect(totwPlusState).toContain("TOTW_TS_REF");
+    expect(totwPlusState).toContain("TOTW_EFF_MAX");
+    expect(totwPlusState).toContain("TOTW_EFF_FGA_REF");
     expect(totwPlusState).toContain("totwPickerSuggestions");
     expect(totwPlusState).toContain('"PG", "SG", "SF", "PF", "C"');
     expect(totwPlusState).toMatch(/G:\s*2/);
