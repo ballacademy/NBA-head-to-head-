@@ -571,7 +571,7 @@ const addBoxStats = (left: LastGameStats, right: LastGameStats): LastGameStats =
 
 const averageBoxStats = (stats: LastGameStats, games: number): LastGameStats => {
   const gp = Math.max(1, games);
-  const avg = (value: string) => String(n(value) / gp);
+  const avg = (value: string) => String(Math.round((n(value) / gp) * 10) / 10);
   return {
     pts: avg(stats.pts),
     reb: avg(stats.reb),

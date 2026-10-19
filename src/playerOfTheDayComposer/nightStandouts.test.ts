@@ -422,5 +422,6 @@ describe("night standouts", () => {
     expect(merged[0]!.game.stats.fg).toBe("7-20");
     expect(merged[0]!.game.stats.three).toBe("1-9");
     expect(merged[0]!.game.stats.ft).toBe("5-6");
+    expect(merged[0]!.game.stats.pts).toBe("20");
   });
 });
