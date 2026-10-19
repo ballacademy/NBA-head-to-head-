@@ -238,6 +238,10 @@ export const TOTW_STOCKS_WEIGHT = 4;
 export const TOTW_TENS_WEIGHT = 10;
 export const TOTW_PRA_WEIGHT = 0.35;
 export const TOTW_TOV_WEIGHT = 2.5;
+/** 2 GP is 1.0; each extra game (capped at +2) adds this fraction. */
+export const TOTW_GP_REF = TOTW_MIN_GAMES;
+export const TOTW_GP_BONUS = 0.1;
+export const TOTW_GP_EXTRA_CAP = 2;
 export const TOTW_PICKER_LIMIT = 8;
 
 export const qualifyTotwRows = (rows: NightStandout[]) =>
@@ -292,9 +296,20 @@ export const totwEfficiencyIndex = (stats: LastGameStats) => {
   return 1 + (clamped - 1) * volume;
 };
 
-/** Counting production mixed with a modest TS%/eFG% index. */
+/** Extra games in the window count; 2 GP is 1.0, 3 GP +10%, 4+ GP +20%. */
+export const totwAvailabilityIndex = (row: NightStandout) => {
+  const extra = Math.min(
+    TOTW_GP_EXTRA_CAP,
+    Math.max(0, totwGames(row) - TOTW_GP_REF),
+  );
+  return 1 + TOTW_GP_BONUS * extra;
+};
+
+/** Counting × TS%/eFG% × availability — extra GP beats a slightly hotter 2-game. */
 export const totwWeekScore = (row: NightStandout) =>
-  totwCountingScore(row.game.stats) * totwEfficiencyIndex(row.game.stats);
+  totwCountingScore(row.game.stats) *
+  totwEfficiencyIndex(row.game.stats) *
+  totwAvailabilityIndex(row);
 
 /** @deprecated alias — same as totwWeekScore so existing calls rank on efficiency. */
 export const totwProductionScore = totwWeekScore;

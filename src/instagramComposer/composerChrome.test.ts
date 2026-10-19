@@ -269,6 +269,9 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("TOTW_EFF_FGA_REF");
     expect(totwPlusState).toContain("TOTW_GROUP_SOFT_MAX");
     expect(totwPlusState).toContain("TOTW_TOV_WEIGHT");
+    expect(totwPlusState).toContain("totwAvailabilityIndex");
+    expect(totwPlusState).toContain("TOTW_GP_BONUS");
+    expect(totwPlusState).toContain("TOTW_GP_EXTRA_CAP");
     expect(totwPlusState).toContain("not a 2G/2F/1C quota");
     expect(totwPlusState).toContain("totwPickerSuggestions");
     expect(totwPlusState).toContain('"PG", "SG", "SF", "PF", "C"');

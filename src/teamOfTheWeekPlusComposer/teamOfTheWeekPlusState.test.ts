@@ -43,6 +43,7 @@ import {
   plusBoardEmpty,
   plusLineupGroup,
   PLUS_LINEUP_SLOTS,
+  totwAvailabilityIndex,
   totwCountingScore,
   totwEfficiencyIndex,
   totwPickerHeading,
@@ -639,47 +640,74 @@ describe("team of the week plus", () => {
     expect(mixStarters).toContain(tatum);
     expect(mixStarters).not.toContain(white);
 
-    const emptyLuka = game(luka, {
-      pts: "19.7",
-      reb: "3",
-      ast: "2.7",
-      stl: "1.3",
-      blk: "0.3",
-      tov: "5",
-      fg: "5-12.7",
-      three: "2.7-7.3",
-      ft: "7-7.7",
-    });
-    const brownWeek = game(brown, {
-      pts: "20",
-      reb: "4",
-      ast: "2.3",
-      stl: "0.3",
-      blk: "1",
-      tov: "0.7",
-      fg: "7-12",
-      three: "1.7-4.3",
-      ft: "4.3-5.7",
-    });
-    const barrettWeek = game("4395625", {
-      pts: "18.3",
-      reb: "5",
-      ast: "3.3",
-      stl: "0.5",
-      blk: "0",
-      tov: "1.3",
-      fg: "5.5-11",
-      three: "2-5",
-      ft: "5-6.5",
-    });
+    const emptyLuka = game(
+      luka,
+      {
+        pts: "19.7",
+        reb: "3",
+        ast: "2.7",
+        stl: "1.3",
+        blk: "0.3",
+        tov: "5",
+        fg: "5-12.7",
+        three: "2.7-7.3",
+        ft: "7-7.7",
+      },
+      3,
+    );
+    const brownWeek = game(
+      brown,
+      {
+        pts: "20",
+        reb: "4",
+        ast: "2.3",
+        stl: "0.3",
+        blk: "1",
+        tov: "0.7",
+        fg: "7-12",
+        three: "1.7-4.3",
+        ft: "4.3-5.7",
+      },
+      3,
+    );
+    const barrettWeek = game(
+      "4395625",
+      {
+        pts: "18.3",
+        reb: "5",
+        ast: "3.3",
+        stl: "0.5",
+        blk: "0",
+        tov: "1.3",
+        fg: "5.5-11",
+        three: "2-5",
+        ft: "5-6.5",
+      },
+      4,
+    );
+    const georgeWeek = game(
+      "5174563",
+      {
+        pts: "15.3",
+        reb: "3.5",
+        ast: "2.5",
+        stl: "1.3",
+        blk: "1.5",
+        tov: "2.3",
+        fg: "4.75-7.25",
+        three: "2-3.25",
+        ft: "3.75-4",
+      },
+      4,
+    );
     expect(totwWeekScore(brownWeek)).toBeGreaterThan(totwWeekScore(emptyLuka));
     expect(totwWeekScore(barrettWeek)).toBeGreaterThan(totwWeekScore(emptyLuka));
-    expect(totwWeekScore(quietHeater)).toBeGreaterThan(totwWeekScore(emptyLuka));
+    expect(totwWeekScore(georgeWeek)).toBeGreaterThan(totwWeekScore(emptyLuka));
     const noEmptyLuka = selectPlusStarters([
       emptyLuka,
       brownWeek,
       barrettWeek,
-      quietHeater,
+      georgeWeek,
       volumeStar,
       game("4278104", {
         pts: "21.7",
@@ -708,6 +736,29 @@ describe("team of the week plus", () => {
     expect(noEmptyLuka.some((id) => ["3917376", "4395625", "5174563"].includes(id))).toBe(
       true,
     );
+
+    const quieterFour = game(
+      "4433134",
+      {
+        pts: "16.3",
+        reb: "5.3",
+        ast: "3.3",
+        stl: "1.3",
+        blk: "1.3",
+        tov: "2",
+        fg: "6.5-11.5",
+        three: "1.3-2.5",
+        ft: "2-2.8",
+      },
+      4,
+    );
+    expect(totwCountingScore(volumeStar.game.stats)).toBeGreaterThan(
+      totwCountingScore(quieterFour.game.stats),
+    );
+    expect(totwAvailabilityIndex(quieterFour)).toBeGreaterThan(
+      totwAvailabilityIndex(volumeStar),
+    );
+    expect(totwWeekScore(quieterFour)).toBeGreaterThan(totwWeekScore(volumeStar));
 
     const oneGame = game(
       luka,
