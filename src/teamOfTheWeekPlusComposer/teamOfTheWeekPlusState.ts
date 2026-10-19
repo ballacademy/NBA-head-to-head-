@@ -117,8 +117,8 @@ const PLUS_STARTER_QUOTA: Record<PlayerPositionGroup, number> = {
   C: 1,
 };
 
-/** TOTW can keep a 3rd F (or G) when they outrank the 2nd of another group. */
-export const TOTW_GROUP_SOFT_MAX = 3;
+/** TOTW can keep a 4th F (or G) when they outrank the next group. */
+export const TOTW_GROUP_SOFT_MAX = 4;
 
 export const PLUS_LINEUP_SLOTS = ["PG", "SG", "SF", "PF", "C"] as const;
 export type PlusLineupSlot = (typeof PLUS_LINEUP_SLOTS)[number];
@@ -237,6 +237,7 @@ export const TOTW_MIN_FGA = 5;
 export const TOTW_STOCKS_WEIGHT = 4;
 export const TOTW_TENS_WEIGHT = 10;
 export const TOTW_PRA_WEIGHT = 0.35;
+export const TOTW_TOV_WEIGHT = 2.5;
 export const TOTW_PICKER_LIMIT = 8;
 
 export const qualifyTotwRows = (rows: NightStandout[]) =>
@@ -257,15 +258,19 @@ export const totwShooting = (stats: LastGameStats) => {
 
 /**
  * Counting line for the window (per-game averages). Quieter tens/stocks than
- * Cover’s single-night score so empty-calorie volume is not the whole ranking.
+ * Cover’s single-night score. Turnovers dock empty-calorie scoring volume
+ * that doesn’t bring AST/REB with it.
  */
 export const totwCountingScore = (stats: LastGameStats) => {
   const extra = nightFlagsFor(stats);
+  const tov = Number.parseFloat(stats.tov);
+  const turnovers = Number.isFinite(tov) ? tov : 0;
   return (
     extra.pts +
     extra.pra * TOTW_PRA_WEIGHT +
     extra.stocks * TOTW_STOCKS_WEIGHT +
-    extra.tens * TOTW_TENS_WEIGHT
+    extra.tens * TOTW_TENS_WEIGHT -
+    turnovers * TOTW_TOV_WEIGHT
   );
 };
 
@@ -388,9 +393,9 @@ const pickQuotaThenOrder = (
 };
 
 /**
- * Best week score, rough mix — not a 2G/2F/1C quota. A 3rd forward can
- * beat a 2nd guard (White cannot take Tatum’s seat just to fill 2G). Then
- * pack G → F → C among whoever made the five.
+ * Best week score, rough mix — not a 2G/2F/1C quota. Never swap a worse
+ * guard over a better forward just to have a G (Luka/White cannot take
+ * Tatum or Brown’s seat). Then pack G → F → C among whoever made the five.
  */
 const pickRoughMixThenOrder = (
   rows: NightStandout[],
@@ -431,43 +436,36 @@ const pickRoughMixThenOrder = (
     }
     take(row);
   }
-  const groups: PlayerPositionGroup[] = ["G", "F", "C"];
-  for (const missing of groups) {
-    if (counts[missing] > 0) {
-      continue;
-    }
+  if (counts.C === 0) {
     const candidate = ranked.find(
-      (row) => !used.has(row.athleteId) && groupOf(row) === missing,
+      (row) => !used.has(row.athleteId) && groupOf(row) === "C",
     );
-    if (!candidate) {
-      continue;
-    }
     let victimIndex = -1;
-    for (let index = 0; index < picked.length; index += 1) {
-      const group = groupOf(picked[index]!);
-      if (!group || counts[group] < 2) {
-        continue;
+    if (candidate) {
+      for (let index = 0; index < picked.length; index += 1) {
+        const group = groupOf(picked[index]!);
+        if (!group || counts[group] < 2) {
+          continue;
+        }
+        if (
+          victimIndex < 0 ||
+          compare(picked[index]!, picked[victimIndex]!) > 0
+        ) {
+          victimIndex = index;
+        }
       }
-      if (
-        victimIndex < 0 ||
-        compare(picked[index]!, picked[victimIndex]!) > 0
-      ) {
-        victimIndex = index;
+    }
+    if (candidate && victimIndex >= 0) {
+      const victim = picked[victimIndex]!;
+      const victimGroup = groupOf(victim);
+      if (victimGroup) {
+        picked[victimIndex] = candidate;
+        used.delete(victim.athleteId);
+        used.add(candidate.athleteId);
+        counts[victimGroup] -= 1;
+        counts.C += 1;
       }
     }
-    if (victimIndex < 0) {
-      continue;
-    }
-    const victim = picked[victimIndex]!;
-    const victimGroup = groupOf(victim);
-    if (!victimGroup) {
-      continue;
-    }
-    picked[victimIndex] = candidate;
-    used.delete(victim.athleteId);
-    used.add(candidate.athleteId);
-    counts[victimGroup] -= 1;
-    counts[missing] += 1;
   }
   return orderPlusLineup(picked, compare, count);
 };

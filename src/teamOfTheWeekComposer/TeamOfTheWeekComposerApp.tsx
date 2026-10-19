@@ -565,8 +565,8 @@ export function TeamOfTheWeekComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Fill range picks the week’s best five, packed PG, SG, SF, PF, C
-            among whoever made it — 2+ games, counting mixed with TS%/eFG%. Mix
-            is rough, not a 2G quota.
+            among whoever made it — 2+ games, counting mixed with TS%/eFG% and
+            docked for turnovers. Mix is rough, not a 2G quota.
             Stars belong here, not surprise over-expectation nights.
             Then upload or paste a photo. Drag to pan,
             pinch or scroll to zoom — same as Player of the Day. Downloads a
