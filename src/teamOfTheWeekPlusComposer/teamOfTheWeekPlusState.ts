@@ -221,6 +221,41 @@ export const plusOverExpectation = (row: NightStandout) => {
   return surpriseBonus(extra, usual) + extra.score * 0.15;
 };
 
+/** Camp / two-way usual lines (~0–4 PPG) that were beating rotation guys. */
+export const STANDOUT_CAMP_PPG = 5;
+export const STANDOUT_CAMP_HAIRCUT = 0.82;
+export const STANDOUT_ROOKIE_PTS = 12;
+
+/** Two-way/camp 10-point weeks, not lottery rookies with real production. */
+export const isCampStandout = (row: NightStandout) => {
+  const player = getPlayer(row.athleteId);
+  const usual = usualLineFor(row.athleteId).pts;
+  const pts = Number.parseFloat(row.game.stats.pts);
+  const weekPts = Number.isFinite(pts) ? pts : 0;
+  if ((player?.experienceYears ?? 99) === 0 && weekPts >= STANDOUT_ROOKIE_PTS) {
+    return false;
+  }
+  return usual < STANDOUT_CAMP_PPG && (player?.ppg ?? 0) < STANDOUT_CAMP_PPG;
+};
+
+/**
+ * Same week production as TOTW among non-stars. Camp haircut so Barnhizer /
+ * Mogbo 10-point two-way weeks cannot clear da Silva / Miller. Rookies with
+ * real lines (Yaxel) keep their production. isSurpriseNight is a small bump,
+ * not a gate — a solid role week still qualifies.
+ */
+export const totwStandoutScore = (row: NightStandout) => {
+  const week = totwWeekScore(row);
+  if (isCampStandout(row)) {
+    return week * STANDOUT_CAMP_HAIRCUT;
+  }
+  const extra = nightFlagsFor(row.game.stats);
+  const surprise = isSurpriseNight(extra, usualLineFor(row.athleteId))
+    ? 1.04
+    : 1;
+  return week * surprise;
+};
+
 /** Appearances with minutes in the selected range. */
 export const totwGames = (row: NightStandout) =>
   Math.max(1, Math.round(row.games ?? 1));
@@ -346,7 +381,8 @@ const slotOrder = (row: NightStandout) => {
 type RowCompare = (left: NightStandout, right: NightStandout) => number;
 
 const rankStandoutBest: RowCompare = (left, right) =>
-  plusOverExpectation(right) - plusOverExpectation(left) ||
+  totwStandoutScore(right) - totwStandoutScore(left) ||
+  totwWeekScore(right) - totwWeekScore(left) ||
   right.score - left.score;
 
 /** Guards, then forwards, then center — PG before SG, SF before PF. Never a big in slot 1 when a guard remains. */
@@ -499,21 +535,21 @@ export const orderPlusStarters = (rows: NightStandout[]) =>
 export const selectPlusStarters = (rows: NightStandout[]) =>
   pickRoughMixThenOrder(qualifyTotwRows(rows), rankTotwBest);
 
-/** Surprise / over-expectation non-stars, then packed PG → C — a C cannot sit in slot 1. */
+/** Non-stars left after TOTW — rotation/role over-expectation, not camp. */
+export const isStandoutCandidate = (
+  row: NightStandout,
+  starterIds: ReadonlySet<string>,
+) =>
+  !starterIds.has(row.athleteId) && !isPlusStar(row.athleteId);
+
+/** Role-player standouts (not camp/two-way), rough mix, packed PG → C — a C cannot sit in slot 1. */
 export const selectPlusStandouts = (
   rows: NightStandout[],
   starterIds: ReadonlySet<string>,
 ) =>
-  pickQuotaThenOrder(
-    qualifyTotwRows(rows).filter((row) => {
-      if (starterIds.has(row.athleteId) || isPlusStar(row.athleteId)) {
-        return false;
-      }
-      const extra = nightFlagsFor(row.game.stats);
-      return isSurpriseNight(extra, usualLineFor(row.athleteId));
-    }),
+  pickRoughMixThenOrder(
+    qualifyTotwRows(rows).filter((row) => isStandoutCandidate(row, starterIds)),
     rankStandoutBest,
-    PLUS_STANDOUT_COUNT,
   );
 
 export const fillPlusFromStandouts = (
@@ -631,13 +667,7 @@ export const totwPickerSuggestions = (
     if (!standoutSlot) {
       return true;
     }
-    if (starterIds.has(row.athleteId) || isPlusStar(row.athleteId)) {
-      return false;
-    }
-    return isSurpriseNight(
-      nightFlagsFor(row.game.stats),
-      usualLineFor(row.athleteId),
-    );
+    return isStandoutCandidate(row, starterIds);
   });
   const compare = standoutSlot ? rankStandoutBest : rankTotwBest;
   const take = (loose: boolean) =>
@@ -676,7 +706,7 @@ export const totwPickerHeading = (slotIndex: number) => {
 export const totwPickerEmpty = (slotIndex: number) => {
   const label = totwPickerSlotLabel(slotIndex);
   if (isStandoutPickerSlot(slotIndex)) {
-    return `No other surprise ${label}s with 2+ games in this range.`;
+    return `No other standout ${label}s with 2+ games in this range.`;
   }
   return `No other ${label}s with 2+ games in this range.`;
 };

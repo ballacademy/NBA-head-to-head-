@@ -50,6 +50,8 @@ import {
   totwPickerSuggestions,
   totwProductionScore,
   totwWeekScore,
+  totwStandoutScore,
+  isCampStandout,
   TOTW_MIN_GAMES,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   DEFAULT_PLUS_STARTER_CAPTION,
@@ -443,6 +445,117 @@ describe("team of the week plus", () => {
       new Set(terryStarters.map((row) => row.athleteId)),
     );
     expect(terryStandouts.map((row) => row.athleteId)).not.toContain(terry);
+  });
+
+  it("ranks rotation standouts over camp/two-way 10-point weeks", () => {
+    const game = (
+      athleteId: string,
+      stats: Partial<NightStandout["game"]["stats"]>,
+      games = 4,
+    ): NightStandout => {
+      const player = getPlayer(athleteId)!;
+      return {
+        athleteId,
+        name: player.name,
+        teamId: player.team,
+        badge: "Standout",
+        flags: [],
+        line: `${stats.pts ?? "10"} PTS`,
+        score: Number.parseFloat(stats.pts ?? "10") || 10,
+        games,
+        game: {
+          eventId: "1",
+          gameDate: "2026-10-14",
+          teamId: player.team,
+          opponentId: "SAS",
+          opponentAbbrev: "SAS",
+          result: "W",
+          playerScore: "110",
+          opponentScore: "100",
+          resultLine: "W",
+          dateLabel: "10/14",
+          stats: {
+            ...emptyStats(),
+            pts: "10",
+            reb: "4",
+            ast: "2",
+            stl: "1",
+            blk: "0",
+            fg: "4-9",
+            three: "1-3",
+            tov: "1",
+            min: "20",
+            ft: "1-1",
+            ...stats,
+          },
+        },
+      };
+    };
+    const daSilva = "4702382";
+    const miller = "5044385";
+    const yaxel = "5175737";
+    const barnhizer = "4684208";
+    const mogbo = "5107897";
+    const kelly = "4696317";
+    const rui = "4066648";
+    const garza = "4277951";
+    const porter = "4278104";
+    const brown = "3917376";
+    const flagg = "5041939";
+    const barnes = "4433134";
+    const wemby = "5104157";
+    expect(getPlayer(daSilva)?.name).toMatch(/da Silva/);
+    expect(getPlayer(miller)?.name).toMatch(/Miller/);
+    expect(getPlayer(yaxel)?.name).toMatch(/Lendeborg/);
+    expect(getPlayer(barnhizer)?.name).toMatch(/Barnhizer/);
+    expect(getPlayer(mogbo)?.name).toMatch(/Mogbo/);
+    expect(getPlayer(kelly)?.name).toMatch(/Kelly/);
+    const totw = [
+      game(porter, { pts: "21.7", reb: "3.3", ast: "1", fg: "8-14", three: "3-7", ft: "3-3" }, 3),
+      game(brown, { pts: "20", reb: "4", ast: "2.3", fg: "7-15", three: "2-6", ft: "4-5" }, 3),
+      game(flagg, { pts: "19.7", reb: "7.3", ast: "4.7", stl: "1.7", blk: "1", fg: "7-14", three: "2-5", ft: "4-5" }, 3),
+      game(barnes, { pts: "16.3", reb: "5.3", ast: "3.3", stl: "1.3", blk: "1.3", fg: "6-12", three: "1-4", ft: "3-4" }, 4),
+      game(wemby, { pts: "13.8", reb: "6.3", ast: "3", stl: "1.3", blk: "2.3", fg: "5-11", three: "1-4", ft: "3-4" }, 4),
+    ];
+    const role = [
+      game(daSilva, { pts: "16.5", reb: "3.8", ast: "2.8", stl: "1", blk: "0.3", fg: "6-12", three: "2-5", ft: "2-2", min: "21.8" }, 4),
+      game(miller, { pts: "16.4", reb: "6.4", ast: "2", stl: "1", blk: "0.4", fg: "6-11", three: "2-4", ft: "2-3", min: "19.8" }, 5),
+      game(yaxel, { pts: "15.6", reb: "7.4", ast: "4", stl: "1.2", blk: "0.8", fg: "6-12", three: "1-3", ft: "3-4", min: "23.2" }, 5),
+      game(rui, { pts: "17", reb: "4.3", ast: "0.7", stl: "1", blk: "0.3", fg: "6-12", three: "2-5", ft: "3-3", min: "19.3" }, 3),
+      game(garza, { pts: "14.3", reb: "6", ast: "0.8", stl: "1", blk: "1.3", fg: "6-10", three: "0-1", ft: "2-3", min: "17.5" }, 4),
+    ];
+    const camp = [
+      game(barnhizer, { pts: "10.8", reb: "4", ast: "2", stl: "0.2", blk: "0.6", fg: "4-10", three: "1-4", ft: "2-2", min: "23.6" }, 5),
+      game(mogbo, { pts: "10.8", reb: "7.3", ast: "2", stl: "2.3", blk: "0.3", fg: "4-8", three: "0-1", ft: "3-4", min: "21.3" }, 4),
+      game(kelly, { pts: "10.7", reb: "2.3", ast: "2.3", stl: "0.3", blk: "0.7", fg: "4-10", three: "2-6", ft: "1-1", min: "13.7" }, 3),
+    ];
+    expect(isCampStandout(camp[0]!)).toBe(true);
+    expect(isCampStandout(camp[1]!)).toBe(true);
+    expect(isCampStandout(camp[2]!)).toBe(true);
+    expect(isCampStandout(role[0]!)).toBe(false);
+    expect(isCampStandout(role[1]!)).toBe(false);
+    expect(isCampStandout(role[2]!)).toBe(false);
+    for (const row of role.slice(0, 3)) {
+      for (const other of camp) {
+        expect(totwStandoutScore(row)).toBeGreaterThan(totwStandoutScore(other));
+      }
+    }
+    const starterIds = new Set(totw.map((row) => row.athleteId));
+    expect(new Set(selectPlusStarters(totw).map((row) => row.athleteId))).toEqual(
+      starterIds,
+    );
+    const standouts = selectPlusStandouts([...totw, ...role, ...camp], starterIds);
+    const standoutIds = standouts.map((row) => row.athleteId);
+    expect(standoutIds).toContain(daSilva);
+    expect(standoutIds).toContain(miller);
+    expect(standoutIds).toContain(yaxel);
+    expect(standoutIds).not.toContain(barnhizer);
+    expect(standoutIds).not.toContain(mogbo);
+    expect(standoutIds).not.toContain(kelly);
+    expect(standoutIds.every((id) => !totw.some((row) => row.athleteId === id))).toBe(
+      true,
+    );
+    expect(plusLineupGroup(getPlayer(standouts[0]?.athleteId))).not.toBe("C");
   });
 
   it("needs 2 games, ranks a mix of counting and TS%/eFG%, and highlights remaining PGs", () => {

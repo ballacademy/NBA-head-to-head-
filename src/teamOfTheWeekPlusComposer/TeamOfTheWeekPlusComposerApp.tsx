@@ -167,7 +167,7 @@ export function TeamOfTheWeekPlusComposerApp() {
         const standouts = standoutSlots(next).filter((slot) => slot.playerId);
         setStatus(
           starters.length
-            ? `Filled PG–C and ${standouts.length} surprise standouts.`
+            ? `Filled PG–C and ${standouts.length} role-player standouts.`
             : "No box scores for this range yet — pick players for the empty slots.",
         );
         return next;
@@ -612,8 +612,9 @@ export function TeamOfTheWeekPlusComposerApp() {
             whoever made it — 2+ games (extra GP can break a close call), counting mixed with
             TS%/eFG% and docked for turnovers, including stars. Mix is rough,
             not a 2G quota.
-            Standouts (bottom row only) are surprise / over-expectation nights,
-            packed PG → C the same way — a big cannot sit in slot 1. Drag a
+            Standouts (bottom row only) are rotation/role players who beat
+            their usual line — not two-way/camp 10-point weeks. Packed PG → C
+            the same way; a big cannot sit in slot 1. Drag a
             player on the preview to swap slots across either row. Empty photo until you
             paste. Date range matches Cover / Stat / TOTW. Downloads a 4:5
             Instagram PNG — nothing is posted.

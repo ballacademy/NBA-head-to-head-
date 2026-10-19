@@ -250,7 +250,7 @@ describe("composer chrome", () => {
     expect(headlineApp).not.toContain("aria-label=\"Team watermark\"");
   });
 
-  it("fills TOTW Plus as PG–C plus surprise non-stars", () => {
+  it("fills TOTW Plus as PG–C plus role-player standouts", () => {
     expect(totwPlusState).toContain("selectPlusStarters");
     expect(totwPlusState).toContain("selectPlusStandouts");
     expect(totwPlusState).toContain("orderPlusLineup");
@@ -278,11 +278,19 @@ describe("composer chrome", () => {
     expect(totwPlusState).toMatch(/G:\s*2/);
     expect(totwPlusState).toContain("isPlusStar");
     expect(totwPlusState).toContain("isSurpriseNight");
+    expect(totwPlusState).toContain("totwStandoutScore");
+    expect(totwPlusState).toContain("isCampStandout");
+    expect(totwPlusState).toContain("isStandoutCandidate");
+    expect(totwPlusState).toContain("STANDOUT_CAMP_PPG");
+    expect(totwPlusState).toContain("STANDOUT_CAMP_HAIRCUT");
     expect(totwPlusState).not.toContain("TOTW_USAGE_FLOOR");
     expect(totwPlusState).not.toContain("isTotwRegular");
     expect(totwPlusApp).toContain("ComposerDateRange");
     expect(totwPlusApp).toContain("fetchRangeProduction");
     expect(totwPlusApp).toContain("totwPickerSuggestions");
+    expect(totwPlusApp).toContain("role-player standouts");
+    expect(totwPlusApp).toContain("rotation/role players who beat");
+    expect(totwPlusApp).toContain("not two-way/camp 10-point weeks");
     expect(totwPlusApp).not.toContain("fetchStandoutsInRange");
     expect(totwPlusApp).not.toContain("totwStarterStrips");
     expect(totwPlusApp).not.toContain("ddgm:team-of-the-week-composer");
