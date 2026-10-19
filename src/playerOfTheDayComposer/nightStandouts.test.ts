@@ -401,5 +401,26 @@ describe("night standouts", () => {
     expect(merged).toHaveLength(1);
     expect(Number.parseFloat(merged[0]!.game.stats.pts)).toBeCloseTo(9, 0);
     expect(merged[0]!.score).toBeLessThan(blowup.score);
+    expect(merged[0]!.games).toBe(3);
+  });
+
+  it("sums shooting splits across the range so TS% is the week, not one night", () => {
+    const first = gameRow(
+      "3945274",
+      "Luka Doncic",
+      { pts: "30", reb: "8", ast: "9", min: "36", fg: "10-24", three: "2-10", ft: "8-10" },
+      40,
+    );
+    const second = gameRow(
+      "3945274",
+      "Luka Doncic",
+      { pts: "10", reb: "4", ast: "3", min: "28", fg: "4-16", three: "0-8", ft: "2-2" },
+      12,
+    );
+    const merged = mergeRangeProduction([[first, second]]);
+    expect(merged[0]!.games).toBe(2);
+    expect(merged[0]!.game.stats.fg).toBe("7-20");
+    expect(merged[0]!.game.stats.three).toBe("1-9");
+    expect(merged[0]!.game.stats.ft).toBe("5-6");
   });
 });

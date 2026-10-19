@@ -37,8 +37,16 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
-import { fetchRangeProduction } from "../playerOfTheDayComposer/nightStandouts";
-import { fillStartersFromStandouts } from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
+import {
+  fetchRangeProduction,
+  type NightStandout,
+} from "../playerOfTheDayComposer/nightStandouts";
+import {
+  fillStartersFromStandouts,
+  totwPickerEmpty,
+  totwPickerHeading,
+  totwPickerSuggestions,
+} from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
 import {
   TOTW_TITLE_PRESETS,
   exportFilenameFromTitle,
@@ -112,7 +120,20 @@ export function TeamOfTheWeekComposerApp() {
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<TotwStrip[]>();
   const { range, setRange } = useComposerDateRange();
+  const [weekRows, setWeekRows] = useState<NightStandout[]>([]);
+  const [weekLoading, setWeekLoading] = useState(false);
   const totwEmpty = (slots: TotwStrip[]) => slots.every((slot) => !slot.playerId);
+
+  const loadWeek = useCallback(async (fromIso: string, toIso: string) => {
+    setWeekLoading(true);
+    try {
+      const rows = await fetchRangeProduction(fromIso, toIso);
+      setWeekRows(rows);
+      return rows;
+    } finally {
+      setWeekLoading(false);
+    }
+  }, []);
 
   const fillRange = useCallback(async (
     force = false,
@@ -121,7 +142,7 @@ export function TeamOfTheWeekComposerApp() {
   ) => {
     setStatus("Loading box scores for this range…");
     try {
-      const rows = await fetchRangeProduction(fromIso, toIso);
+      const rows = await loadWeek(fromIso, toIso);
       setWeek((current) =>
         isAutoWeekLine(current, fromIso, toIso)
           ? rangeWeekLine(fromIso, toIso)
@@ -144,7 +165,7 @@ export function TeamOfTheWeekComposerApp() {
       console.error(error);
       setStatus("Could not load this range’s standouts.");
     }
-  }, [range.from, range.to]);
+  }, [loadWeek, range.from, range.to]);
 
   useEffect(() => {
     document.title = "Team of the Week graphic";
@@ -161,6 +182,13 @@ export function TeamOfTheWeekComposerApp() {
     setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    void loadWeek(range.from, range.to);
+  }, [hydrated, loadWeek, range.from, range.to]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -313,6 +341,10 @@ export function TeamOfTheWeekComposerApp() {
 
   const currentId =
     activeIndex != null ? strips[activeIndex]?.playerId ?? null : null;
+  const pickerUsed = usedPlayerIds(strips);
+  const pickerUsedIds = new Set(
+    Object.keys(pickerUsed).filter((id) => id !== currentId),
+  );
 
   return (
     <div className="sc-composer">
@@ -533,7 +565,8 @@ export function TeamOfTheWeekComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Fill range picks the week’s best five as PG, SG, SF, PF, C left to
-            right — stars belong here, not surprise over-expectation nights.
+            right — 2+ games in the range, ranked on TS%/eFG% times production.
+            Stars belong here, not surprise over-expectation nights.
             Then upload or paste a photo. Drag to pan,
             pinch or scroll to zoom — same as Player of the Day. Downloads a
             4:5 Instagram PNG — nothing is posted.
@@ -545,9 +578,13 @@ export function TeamOfTheWeekComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={`Pick player ${activeIndex + 1}`}
-          hint="Search a name. We’ll drop their headshot into this strip — upload your own photo to replace it."
+          hint="Gold cards are the most deserving remaining players for this slot — same ranking as Fill, by position. Search still lists everyone."
           currentId={currentId}
-          usedLabels={usedPlayerIds(strips)}
+          usedLabels={pickerUsed}
+          suggested={totwPickerSuggestions(weekRows, activeIndex, pickerUsedIds)}
+          suggestedHeading={totwPickerHeading(activeIndex)}
+          suggestedLoading={weekLoading}
+          suggestedEmpty={totwPickerEmpty(activeIndex)}
           onPick={handlePick}
           onClear={() => {
             push(strips);

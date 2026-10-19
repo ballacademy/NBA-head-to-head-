@@ -1516,24 +1516,25 @@ label.sc-chip {
 }
 
 .sc-picker__suggested {
-  flex: 1 1 48%;
-  min-height: 140px;
+  flex: 1 1 52%;
+  min-height: 180px;
   max-height: min(56vh, 480px);
   display: flex;
   flex-direction: column;
-  padding: 4px 16px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 16px 12px;
+  border-bottom: 2px solid #facc15;
+  background: linear-gradient(180deg, rgba(250, 204, 21, 0.12), transparent 72%);
   overflow: hidden;
 }
 
 .sc-picker__suggested-label,
 .sc-picker__suggested-status {
   margin: 0 0 8px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #d6c4ff;
+  color: #facc15;
 }
 
 .sc-picker__suggested-status {
@@ -1562,6 +1563,13 @@ label.sc-chip {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   padding: 0;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+}
+
+.sc-picker__grid--rest {
+  opacity: 0.62;
+  filter: saturate(0.55);
 }
 
 .sc-team {
@@ -1603,6 +1611,30 @@ label.sc-chip {
 .sc-team.is-current {
   border-color: #f4f4f5;
   box-shadow: inset 0 0 0 1px #f4f4f5;
+}
+
+.sc-team.is-deserving {
+  border: 2px solid #facc15;
+  background: #241c08;
+  box-shadow:
+    0 0 0 1px rgba(250, 204, 21, 0.5),
+    0 10px 22px rgba(0, 0, 0, 0.35);
+}
+
+.sc-team.is-deserving:hover,
+.sc-team.is-deserving:focus-visible {
+  border-color: #fde68a;
+  background: #2c2209;
+}
+
+.sc-team.is-deserving .sc-team__badge {
+  background: #facc15;
+  color: #111113;
+}
+
+.sc-team.is-deserving .sc-team__name {
+  color: #fffbeb;
+  font-weight: 800;
 }
 
 .sc-team.is-active {

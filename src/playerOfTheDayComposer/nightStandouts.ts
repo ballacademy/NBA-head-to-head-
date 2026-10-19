@@ -31,6 +31,8 @@ export interface NightStandout {
   line: string;
   score: number;
   game: LastGame;
+  /** Minute-played appearances in a merged range. One game if omitted. */
+  games?: number;
 }
 
 interface EspnCompetitor {
@@ -104,6 +106,31 @@ const BOX_KEY: Record<string, keyof LastGameStats> = {
 const n = (value: string) => {
   const parsed = Number.parseFloat(String(value).split("-")[0] ?? "");
   return Number.isFinite(parsed) ? parsed : 0;
+};
+
+export const parseMadeAttempted = (value: string | undefined) => {
+  const [madeRaw, attemptedRaw] = String(value ?? "0-0").split("-");
+  const made = Number.parseFloat(madeRaw ?? "");
+  const attempted = Number.parseFloat(attemptedRaw ?? "");
+  return {
+    made: Number.isFinite(made) ? made : 0,
+    attempted: Number.isFinite(attempted) ? attempted : 0,
+  };
+};
+
+const formatMadeAttempted = (made: number, attempted: number) =>
+  `${made}-${attempted}`;
+
+const addMadeAttempted = (left?: string, right?: string) => {
+  const a = parseMadeAttempted(left);
+  const b = parseMadeAttempted(right);
+  return formatMadeAttempted(a.made + b.made, a.attempted + b.attempted);
+};
+
+const averageMadeAttempted = (value: string | undefined, games: number) => {
+  const { made, attempted } = parseMadeAttempted(value);
+  const gp = Math.max(1, games);
+  return formatMadeAttempted(made / gp, attempted / gp);
 };
 
 const competitorScore = (item: EspnCompetitor | undefined) => {
@@ -537,9 +564,9 @@ const addBoxStats = (left: LastGameStats, right: LastGameStats): LastGameStats =
   blk: String(n(left.blk) + n(right.blk)),
   tov: String(n(left.tov) + n(right.tov)),
   min: String(n(left.min) + n(right.min)),
-  fg: left.fg,
-  three: left.three,
-  ft: left.ft,
+  fg: addMadeAttempted(left.fg, right.fg),
+  three: addMadeAttempted(left.three, right.three),
+  ft: addMadeAttempted(left.ft, right.ft),
 });
 
 const averageBoxStats = (stats: LastGameStats, games: number): LastGameStats => {
@@ -553,9 +580,9 @@ const averageBoxStats = (stats: LastGameStats, games: number): LastGameStats => 
     blk: avg(stats.blk),
     tov: avg(stats.tov),
     min: avg(stats.min),
-    fg: stats.fg,
-    three: stats.three,
-    ft: stats.ft,
+    fg: averageMadeAttempted(stats.fg, gp),
+    three: averageMadeAttempted(stats.three, gp),
+    ft: averageMadeAttempted(stats.ft, gp),
   };
 };
 
@@ -597,6 +624,7 @@ export const mergeRangeProduction = (nights: NightStandout[][]) => {
         ...row,
         line: standoutLine(averaged, extra),
         score: extra.score,
+        games,
         game: { ...row.game, stats: averaged },
       };
     })

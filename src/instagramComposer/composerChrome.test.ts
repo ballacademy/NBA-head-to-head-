@@ -259,6 +259,11 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("Brown SF ≠ G");
     expect(totwPlusState).toContain("Never a forward left of a guard");
     expect(totwPlusState).toContain("totwProductionScore");
+    expect(totwPlusState).toContain("totwWeekScore");
+    expect(totwPlusState).toContain("totwEfficiencyIndex");
+    expect(totwPlusState).toContain("TOTW_MIN_GAMES");
+    expect(totwPlusState).toContain("TOTW_TS_REF");
+    expect(totwPlusState).toContain("totwPickerSuggestions");
     expect(totwPlusState).toContain('"PG", "SG", "SF", "PF", "C"');
     expect(totwPlusState).toMatch(/G:\s*2/);
     expect(totwPlusState).toContain("isPlusStar");
@@ -267,6 +272,7 @@ describe("composer chrome", () => {
     expect(totwPlusState).not.toContain("isTotwRegular");
     expect(totwPlusApp).toContain("ComposerDateRange");
     expect(totwPlusApp).toContain("fetchRangeProduction");
+    expect(totwPlusApp).toContain("totwPickerSuggestions");
     expect(totwPlusApp).not.toContain("fetchStandoutsInRange");
     expect(totwPlusApp).not.toContain("totwStarterStrips");
     expect(totwPlusApp).not.toContain("ddgm:team-of-the-week-composer");
@@ -636,8 +642,16 @@ describe("composer chrome", () => {
     expect(totwApp).toContain("ComposerDateRange");
     expect(totwApp).toContain("fillStartersFromStandouts");
     expect(totwApp).toContain("fetchRangeProduction");
+    expect(totwApp).toContain("totwPickerSuggestions");
     expect(totwApp).not.toContain("fetchStandoutsInRange");
     expect(totwApp).toContain("PG, SG, SF, PF, C");
+    expect(sheet).toContain(".sc-team.is-deserving");
+    const picker = readFileSync(
+      join(root, "tierListComposer/PlayerPicker.tsx"),
+      "utf8",
+    );
+    expect(picker).toContain("deserving");
+    expect(picker).toContain("is-deserving");
     expect(totwPlusApp).toContain("PG, SG, SF, PF, C");
     expect(rankedApp).toContain("parsePositionLabels(undefined");
     expect(coverApp).toContain("ComposerDateRange");

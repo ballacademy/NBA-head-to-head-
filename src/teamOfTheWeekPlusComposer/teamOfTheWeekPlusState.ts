@@ -1,7 +1,9 @@
 import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
+import type { LastGameStats } from "../playerOfTheDayComposer/lastGame";
 import {
   isSurpriseNight,
   nightFlagsFor,
+  parseMadeAttempted,
   surpriseBonus,
   usualLineFor,
   type NightStandout,
@@ -214,14 +216,84 @@ export const plusOverExpectation = (row: NightStandout) => {
   return surpriseBonus(extra, usual) + extra.score * 0.15;
 };
 
-/** Raw box-score production — no surprise / over-expectation bump. */
-export const totwProductionScore = (row: NightStandout) =>
-  nightFlagsFor(row.game.stats).score;
+/** Appearances with minutes in the selected range. */
+export const totwGames = (row: NightStandout) =>
+  Math.max(1, Math.round(row.games ?? 1));
+
+export const TOTW_MIN_GAMES = 2;
+export const TOTW_TS_REF = 0.55;
+export const TOTW_EFG_REF = 0.52;
+export const TOTW_TS_SHARE = 0.75;
+export const TOTW_EFG_SHARE = 0.25;
+export const TOTW_EFF_MIN = 0.6;
+export const TOTW_EFF_MAX = 1.4;
+export const TOTW_MIN_FGA = 5;
+export const TOTW_STOCKS_WEIGHT = 4;
+export const TOTW_TENS_WEIGHT = 10;
+export const TOTW_PRA_WEIGHT = 0.35;
+export const TOTW_PICKER_LIMIT = 8;
+
+export const qualifyTotwRows = (rows: NightStandout[]) =>
+  rows.filter((row) => totwGames(row) >= TOTW_MIN_GAMES);
+
+export const totwShooting = (stats: LastGameStats) => {
+  const fg = parseMadeAttempted(stats.fg);
+  const three = parseMadeAttempted(stats.three);
+  const ft = parseMadeAttempted(stats.ft);
+  const pts = Number.parseFloat(stats.pts);
+  const efg =
+    fg.attempted > 0 ? (fg.made + 0.5 * three.made) / fg.attempted : null;
+  const tsDenom = 2 * (fg.attempted + 0.44 * ft.attempted);
+  const ts =
+    tsDenom > 0 && Number.isFinite(pts) ? pts / tsDenom : null;
+  return { fg, three, ft, efg, ts, fga: fg.attempted };
+};
+
+/**
+ * Counting line for the window (per-game averages). Quieter tens/stocks than
+ * Cover’s single-night score so empty-calorie volume is not the whole ranking.
+ */
+export const totwCountingScore = (stats: LastGameStats) => {
+  const extra = nightFlagsFor(stats);
+  return (
+    extra.pts +
+    extra.pra * TOTW_PRA_WEIGHT +
+    extra.stocks * TOTW_STOCKS_WEIGHT +
+    extra.tens * TOTW_TENS_WEIGHT
+  );
+};
+
+/**
+ * Blend TS% vs 55% and eFG% vs 52%. Tiny shooting samples stay neutral.
+ * Clamped so a heater cannot erase a 30-point week, and empty volume cannot
+ * ignore efficiency.
+ */
+export const totwEfficiencyIndex = (stats: LastGameStats) => {
+  const { efg, ts, fga } = totwShooting(stats);
+  if (fga < TOTW_MIN_FGA || ts == null || efg == null) {
+    return 1;
+  }
+  const raw =
+    TOTW_TS_SHARE * (ts / TOTW_TS_REF) + TOTW_EFG_SHARE * (efg / TOTW_EFG_REF);
+  return Math.min(TOTW_EFF_MAX, Math.max(TOTW_EFF_MIN, raw));
+};
+
+/** production × efficiency — TOTW ranking, not Cover/POTD night score. */
+export const totwWeekScore = (row: NightStandout) =>
+  totwCountingScore(row.game.stats) * totwEfficiencyIndex(row.game.stats);
+
+/** @deprecated alias — same as totwWeekScore so existing calls rank on efficiency. */
+export const totwProductionScore = totwWeekScore;
 
 const rankTotwBest = (left: NightStandout, right: NightStandout) => {
-  const production = totwProductionScore(right) - totwProductionScore(left);
-  if (production) {
-    return production;
+  const week = totwWeekScore(right) - totwWeekScore(left);
+  if (week) {
+    return week;
+  }
+  const counting =
+    totwCountingScore(right.game.stats) - totwCountingScore(left.game.stats);
+  if (counting) {
+    return counting;
   }
   const star =
     Number(isPlusStar(right.athleteId)) - Number(isPlusStar(left.athleteId));
@@ -268,6 +340,7 @@ export const orderPlusStarters = (rows: NightStandout[]) => {
 
 /** Best week (~2G / 2F / 1C), then lined up PG → C — not best-to-worst left to right. */
 export const selectPlusStarters = (rows: NightStandout[]) => {
+  const pool = qualifyTotwRows(rows);
   const counts: Record<PlayerPositionGroup, number> = { G: 0, F: 0, C: 0 };
   const picked: NightStandout[] = [];
   const used = new Set<string>();
@@ -286,14 +359,14 @@ export const selectPlusStarters = (rows: NightStandout[]) => {
     used.add(row.athleteId);
     counts[group] += 1;
   };
-  const fillFrom = (pool: NightStandout[], honorQuota: boolean) => {
-    const ranked = [...pool].sort(rankTotwBest);
+  const fillFrom = (candidates: NightStandout[], honorQuota: boolean) => {
+    const ranked = [...candidates].sort(rankTotwBest);
     for (const row of ranked) {
       take(row, honorQuota);
     }
   };
-  fillFrom(rows, true);
-  fillFrom(rows, false);
+  fillFrom(pool, true);
+  fillFrom(pool, false);
   return orderPlusStarters(picked);
 };
 
@@ -302,7 +375,7 @@ export const selectPlusStandouts = (
   rows: NightStandout[],
   starterIds: ReadonlySet<string>,
 ) =>
-  [...rows]
+  qualifyTotwRows(rows)
     .filter((row) => {
       if (starterIds.has(row.athleteId) || isPlusStar(row.athleteId)) {
         return false;
@@ -394,4 +467,86 @@ export const fillStartersFromStandouts = (
     );
   });
   return next.slice(0, strips.length);
+};
+
+const totwPickerMeta = (row: NightStandout) => {
+  const { ts, efg, fga } = totwShooting(row.game.stats);
+  const bits = [row.line];
+  if (fga >= TOTW_MIN_FGA && ts != null) {
+    bits.push(`${Math.round(ts * 100)}% TS`);
+  } else if (fga >= TOTW_MIN_FGA && efg != null) {
+    bits.push(`${Math.round(efg * 100)}% eFG`);
+  }
+  bits.push(`${totwGames(row)} GP`);
+  return bits.join(" · ");
+};
+
+export const totwPickerSlotLabel = (slotIndex: number) => {
+  if (slotIndex >= PLUS_STARTER_COUNT) {
+    return "Standouts";
+  }
+  return PLUS_LINEUP_SLOTS[slotIndex] ?? "PG";
+};
+
+/** Remaining players ranked the same way as Fill, positional on PG–C slots. */
+export const totwPickerSuggestions = (
+  rows: NightStandout[],
+  slotIndex: number,
+  usedIds: ReadonlySet<string>,
+) => {
+  const eligible = qualifyTotwRows(rows).filter(
+    (row) => !usedIds.has(row.athleteId),
+  );
+  if (slotIndex >= PLUS_STARTER_COUNT) {
+    const starterIds = new Set(
+      selectPlusStarters(rows).map((row) => row.athleteId),
+    );
+    return selectPlusStandouts(eligible, starterIds)
+      .slice(0, TOTW_PICKER_LIMIT)
+      .map((row) => ({
+        id: row.athleteId,
+        badge: "Standout",
+        meta: totwPickerMeta(row),
+      }));
+  }
+  const slot = PLUS_LINEUP_SLOTS[slotIndex] ?? "PG";
+  const take = (loose: boolean) =>
+    eligible
+      .filter((row) =>
+        plusLineupSlotMatches(getPlayer(row.athleteId), slot, loose),
+      )
+      .sort(rankTotwBest);
+  const picked: NightStandout[] = [];
+  const seen = new Set<string>();
+  for (const row of [...take(false), ...take(true)]) {
+    if (seen.has(row.athleteId)) {
+      continue;
+    }
+    seen.add(row.athleteId);
+    picked.push(row);
+    if (picked.length >= TOTW_PICKER_LIMIT) {
+      break;
+    }
+  }
+  return picked.map((row, index) => ({
+    id: row.athleteId,
+    badge: index === 0 ? `Best ${slot}` : slot,
+    meta: totwPickerMeta(row),
+  }));
+};
+
+export const totwPickerHeading = (slotIndex: number) => {
+  const label = totwPickerSlotLabel(slotIndex);
+  if (slotIndex >= PLUS_STARTER_COUNT) {
+    return "Best remaining standouts";
+  }
+  return `Best remaining for ${label}`;
+};
+
+export const totwPickerEmpty = (slotIndex: number) => {
+  const label = totwPickerSlotLabel(slotIndex);
+  if (slotIndex >= PLUS_STARTER_COUNT) {
+    return "No other surprise standouts with 2+ games in this range.";
+  }
+  return `No other ${label}s with 2+ games in this range.`;
 };

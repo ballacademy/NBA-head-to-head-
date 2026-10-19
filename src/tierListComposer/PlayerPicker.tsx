@@ -61,6 +61,7 @@ interface PlayerPickerProps {
   suggested?: Array<{ id: string; badge?: string; meta?: string }>;
   suggestedHeading?: string;
   suggestedLoading?: boolean;
+  suggestedEmpty?: string;
   onPick: (playerId: string) => void;
   onClear?: () => void;
   onClose: () => void;
@@ -85,6 +86,7 @@ export function PlayerPicker({
   suggested = [],
   suggestedHeading,
   suggestedLoading = false,
+  suggestedEmpty,
   onPick,
   onClear,
   onClose,
@@ -467,7 +469,7 @@ export function PlayerPicker({
               <p className="sc-picker__suggested-status">Loading box scores…</p>
             ) : suggestedRows.length === 0 ? (
               <p className="sc-picker__suggested-status">
-                No standouts for this night yet.
+                {suggestedEmpty ?? "No standouts for this night yet."}
               </p>
             ) : (
               <div
@@ -484,6 +486,7 @@ export function PlayerPicker({
                     showDepth={false}
                     badge={row.badge}
                     metaOverride={row.meta}
+                    deserving
                     highlighted={activeIndex === index}
                     onPick={onPick}
                   />
@@ -492,7 +495,13 @@ export function PlayerPicker({
             )}
           </div>
         ) : null}
-        <div className="sc-picker__grid">
+        <div
+          className={
+            showSuggested
+              ? "sc-picker__grid sc-picker__grid--rest"
+              : "sc-picker__grid"
+          }
+        >
           {restPlayers.map((player, index) => (
             <PlayerButton
               key={player.id}
@@ -538,6 +547,7 @@ function PlayerButton({
   ppgEmptyLabel,
   badge,
   metaOverride,
+  deserving = false,
   highlighted = false,
   onPick,
 }: {
@@ -549,6 +559,7 @@ function PlayerButton({
   ppgEmptyLabel?: string;
   badge?: string;
   metaOverride?: string;
+  deserving?: boolean;
   highlighted?: boolean;
   onPick: (playerId: string) => void;
 }) {
@@ -570,6 +581,7 @@ function PlayerButton({
         "sc-team",
         isUsed ? "is-used" : "",
         isCurrent ? "is-current" : "",
+        deserving ? "is-deserving" : "",
         highlighted ? "is-active" : "",
       ]
         .filter(Boolean)

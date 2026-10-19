@@ -43,7 +43,13 @@ import {
   plusBoardEmpty,
   plusLineupGroup,
   PLUS_LINEUP_SLOTS,
+  totwCountingScore,
+  totwEfficiencyIndex,
+  totwPickerHeading,
+  totwPickerSuggestions,
   totwProductionScore,
+  totwWeekScore,
+  TOTW_MIN_GAMES,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   DEFAULT_PLUS_STARTER_CAPTION,
   defaultTotwPlusDraft,
@@ -198,6 +204,7 @@ describe("team of the week plus", () => {
       athleteId: string,
       score: number,
       stats: Partial<NightStandout["game"]["stats"]> = {},
+      games = 2,
     ): NightStandout => {
       const player = getPlayer(athleteId)!;
       return {
@@ -208,6 +215,7 @@ describe("team of the week plus", () => {
         flags: [],
         line: `${stats.pts ?? "20"} PTS`,
         score,
+        games,
         game: {
           eventId: "1",
           gameDate: "2026-10-14",
@@ -230,6 +238,7 @@ describe("team of the week plus", () => {
             three: "2-6",
             tov: "2",
             min: "30",
+            ft: "4-5",
             ...stats,
           },
         },
@@ -397,7 +406,7 @@ describe("team of the week plus", () => {
     const terryWindow = mergeRangeProduction([terryNights]);
     expect(terryWindow).toHaveLength(1);
     expect(Number.parseFloat(terryWindow[0]!.game.stats.pts)).toBeLessThan(8);
-    const withTerry = mergeRangeProduction([[...rows, ...terryNights]]);
+    const withTerry = [...rows, ...terryWindow];
     const terryStarters = selectPlusStarters(withTerry);
     expect(terryStarters.map((row) => row.athleteId)).not.toContain(terry);
     const terryStandouts = selectPlusStandouts(
@@ -405,5 +414,147 @@ describe("team of the week plus", () => {
       new Set(terryStarters.map((row) => row.athleteId)),
     );
     expect(terryStandouts.map((row) => row.athleteId)).not.toContain(terry);
+  });
+
+  it("needs 2 games, ranks on TS%/eFG% times production, and highlights remaining PGs", () => {
+    const game = (
+      athleteId: string,
+      stats: Partial<NightStandout["game"]["stats"]>,
+      games = 2,
+    ): NightStandout => {
+      const player = getPlayer(athleteId)!;
+      return {
+        athleteId,
+        name: player.name,
+        teamId: player.team,
+        badge: "Standout",
+        flags: [],
+        line: `${stats.pts ?? "20"} PTS`,
+        score: 50,
+        games,
+        game: {
+          eventId: "1",
+          gameDate: "2026-10-14",
+          teamId: player.team,
+          opponentId: "SAS",
+          opponentAbbrev: "SAS",
+          result: "W",
+          playerScore: "110",
+          opponentScore: "100",
+          resultLine: "W",
+          dateLabel: "10/14",
+          stats: {
+            ...emptyStats(),
+            pts: "20",
+            reb: "5",
+            ast: "5",
+            stl: "1",
+            blk: "1",
+            fg: "8-16",
+            three: "2-6",
+            ft: "4-5",
+            tov: "2",
+            min: "30",
+            ...stats,
+          },
+        },
+      };
+    };
+    expect(TOTW_MIN_GAMES).toBe(2);
+    const luka = "3945274";
+    const sga = "4278073";
+    const brown = "3917376";
+    const tatum = "4065648";
+    const jokic = "3112335";
+    const emptyVolume = game(luka, {
+      pts: "28",
+      reb: "4",
+      ast: "4",
+      fg: "10-28",
+      three: "1-10",
+      ft: "7-10",
+    });
+    const efficient = game(sga, {
+      pts: "20",
+      reb: "6",
+      ast: "5",
+      fg: "8-12",
+      three: "4-6",
+      ft: "0-0",
+    });
+    expect(totwEfficiencyIndex(emptyVolume.game.stats)).toBeLessThan(1);
+    expect(totwEfficiencyIndex(efficient.game.stats)).toBeGreaterThan(1);
+    expect(totwCountingScore(emptyVolume.game.stats)).toBeGreaterThan(
+      totwCountingScore(efficient.game.stats),
+    );
+    expect(totwWeekScore(efficient)).toBeGreaterThan(totwWeekScore(emptyVolume));
+    expect(totwProductionScore(efficient)).toBe(totwWeekScore(efficient));
+
+    const starWeek = game(jokic, {
+      pts: "30",
+      reb: "12",
+      ast: "10",
+      fg: "12-22",
+      three: "1-3",
+      ft: "5-6",
+    });
+    const heater = game(brown, {
+      pts: "14",
+      reb: "3",
+      ast: "2",
+      fg: "6-7",
+      three: "2-2",
+      ft: "0-0",
+    });
+    expect(totwWeekScore(starWeek)).toBeGreaterThan(totwWeekScore(heater));
+
+    const oneGame = game(
+      luka,
+      {
+        pts: "50",
+        reb: "12",
+        ast: "11",
+        fg: "18-24",
+        three: "6-8",
+        ft: "8-8",
+      },
+      1,
+    );
+    const twoGameSupport = [
+      game(sga, { pts: "22", reb: "5", ast: "6", fg: "8-14", three: "3-6", ft: "3-3" }),
+      game(brown, { pts: "21", reb: "6", ast: "4", fg: "8-15", three: "2-5", ft: "3-3" }),
+      game(tatum, { pts: "20", reb: "7", ast: "5", fg: "7-14", three: "3-7", ft: "3-4" }),
+      game(jokic, { pts: "24", reb: "11", ast: "8", fg: "9-16", three: "1-3", ft: "5-6" }),
+      game("3032977", { pts: "23", reb: "10", ast: "6", fg: "8-15", three: "1-4", ft: "6-8" }),
+    ];
+    const starters = selectPlusStarters([oneGame, ...twoGameSupport]);
+    expect(starters.map((row) => row.athleteId)).not.toContain(luka);
+    expect(starters).toHaveLength(5);
+
+    const standoutOne = game(
+      "4280245",
+      { pts: "16", reb: "4", ast: "8", min: "28", fg: "6-10", three: "2-4", ft: "2-2" },
+      1,
+    );
+    expect(
+      selectPlusStandouts(
+        [standoutOne, ...twoGameSupport],
+        new Set(starters.map((row) => row.athleteId)),
+      ).map((row) => row.athleteId),
+    ).not.toContain("4280245");
+
+    const pgSuggestions = totwPickerSuggestions(
+      [oneGame, ...twoGameSupport],
+      0,
+      new Set(),
+    );
+    expect(pgSuggestions[0]?.id).toBe(sga);
+    expect(pgSuggestions[0]?.badge).toBe("Best PG");
+    expect(pgSuggestions.every((row) => row.id !== luka)).toBe(true);
+    expect(totwPickerHeading(0)).toBe("Best remaining for PG");
+    expect(totwPickerHeading(6)).toBe("Best remaining standouts");
+    const sfSuggestions = totwPickerSuggestions(twoGameSupport, 2, new Set([brown]));
+    expect(sfSuggestions.every((row) => row.id !== brown)).toBe(true);
+    expect(sfSuggestions[0]?.badge).toMatch(/SF/);
   });
 });
