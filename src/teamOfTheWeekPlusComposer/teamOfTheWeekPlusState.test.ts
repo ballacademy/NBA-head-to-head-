@@ -759,6 +759,84 @@ describe("team of the week plus", () => {
       totwAvailabilityIndex(volumeStar),
     );
     expect(totwWeekScore(quieterFour)).toBeGreaterThan(totwWeekScore(volumeStar));
+    expect(totwAvailabilityIndex(quieterFour)).toBeLessThanOrEqual(1.04);
+
+    const campFive = game(
+      "5175737",
+      {
+        pts: "15.6",
+        reb: "7.4",
+        ast: "4",
+        stl: "1.2",
+        blk: "0.8",
+        tov: "1.2",
+        fg: "5.8-10.2",
+        three: "1.4-3.2",
+        ft: "2.6-4",
+      },
+      5,
+    );
+    const mpjWeek = game(
+      "4278104",
+      {
+        pts: "21.7",
+        reb: "3.3",
+        ast: "1",
+        stl: "1.3",
+        blk: "0.3",
+        tov: "1.7",
+        fg: "7.7-13",
+        three: "3.3-7",
+        ft: "3-3.7",
+      },
+      3,
+    );
+    const flaggWeek = game(
+      "5041939",
+      {
+        pts: "19.7",
+        reb: "7.3",
+        ast: "4.7",
+        stl: "1.7",
+        blk: "1",
+        tov: "3",
+        fg: "6-14.7",
+        three: "1.3-5",
+        ft: "6.3-7",
+      },
+      3,
+    );
+    const wembyWeek = game(
+      "5104157",
+      {
+        pts: "13.8",
+        reb: "6.3",
+        ast: "3",
+        stl: "1.3",
+        blk: "2.3",
+        tov: "1.8",
+        fg: "5.75-10.75",
+        three: "0.25-3",
+        ft: "2-2.75",
+      },
+      4,
+    );
+    expect(totwWeekScore(volumeStar)).toBeGreaterThan(totwWeekScore(campFive));
+    expect(totwWeekScore(mpjWeek)).toBeGreaterThan(totwWeekScore(campFive));
+    expect(totwWeekScore(brownWeek)).toBeGreaterThan(totwWeekScore(campFive));
+    const noCampPg = selectPlusStarters([
+      campFive,
+      quieterFour,
+      volumeStar,
+      mpjWeek,
+      brownWeek,
+      flaggWeek,
+      wembyWeek,
+      whiteWeek,
+    ]);
+    expect(noCampPg.map((row) => row.athleteId)).not.toContain("5175737");
+    expect(noCampPg[0]?.athleteId).not.toBe("5175737");
+    expect(noCampPg.map((row) => row.athleteId)).not.toContain(white);
 
     const oneGame = game(
       luka,

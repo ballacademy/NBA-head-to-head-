@@ -603,7 +603,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Top row is the week’s best five, packed PG, SG, SF, PF, C among
-            whoever made it — 2+ games (extra GP counts), counting mixed with
+            whoever made it — 2+ games (extra GP can break a close call), counting mixed with
             TS%/eFG% and docked for turnovers, including stars. Mix is rough,
             not a 2G quota.
             Standouts (bottom row only) are surprise / over-expectation nights,
