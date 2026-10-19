@@ -1,4 +1,4 @@
-import { drawCoveredLogo } from "../standingsComposer/logoDraw";
+import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import {
   composerNameLines,
   readComposerNameStyle,
@@ -10,10 +10,9 @@ const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
 export const NAME_FADE_STOPS: Array<[number, string]> = [
   [0, "rgba(0, 0, 0, 0)"],
-  [0.16, "rgba(0, 0, 0, 0.28)"],
-  [0.36, "rgba(0, 0, 0, 0.62)"],
-  [0.58, "rgba(0, 0, 0, 0.88)"],
-  [0.78, "rgba(0, 0, 0, 0.95)"],
+  [0.22, "rgba(0, 0, 0, 0.42)"],
+  [0.48, "rgba(0, 0, 0, 0.78)"],
+  [0.72, "rgba(0, 0, 0, 0.94)"],
   [1, "rgba(0, 0, 0, 0.98)"],
 ];
 
@@ -114,34 +113,45 @@ export const drawPlayerNameFade = (
     nameStyle?: ComposerNameStyle;
   },
 ) => {
-  const pad = input.pad ?? 6 * input.scale;
+  const pad = input.pad ?? 5 * input.scale;
   const lines = composerNameLines(
     input.given,
     input.family,
     input.nameStyle ?? readComposerNameStyle(),
   );
   paintNameFadeRect(context, input.x, input.y, input.w, input.h);
+  const hasGiven = Boolean(lines.given.trim());
+  const stackH =
+    input.familySize + (hasGiven ? input.givenSize * 1.15 : 0);
+  const lockupH = Math.max(input.logo ? input.logoSize : 0, stackH);
+  const lockupBottom = input.y + input.h - pad;
+  const lockupTop = lockupBottom - lockupH;
   let textX = input.x + 4 * input.scale;
   if (input.logo) {
-    const logoX = input.x + 4 * input.scale;
-    const logoY = input.y + input.h - pad - input.logoSize;
-    drawCoveredLogo(
+    const logoX = textX;
+    const logoY = lockupTop + (lockupH - input.logoSize) / 2;
+    drawCenteredLogo(
       context,
       input.logo,
       logoX,
       logoY,
       input.logoSize,
       input.logoSize,
-      { cacheKey: `${input.logoSrc ?? ""}-fade-cover` },
+      {
+        cacheKey: `${input.logoSrc ?? ""}-fade-lockup`,
+        shadow: Math.max(1, Math.round(1.2 * input.scale)),
+        fitX: 0.9,
+        fitY: 0.9,
+      },
     );
-    textX = input.x + input.logoSize + 8 * input.scale;
+    textX = logoX + input.logoSize + 4 * input.scale;
   }
   drawNameStack(
     context,
     lines.given,
     lines.family,
     textX,
-    input.y + input.h - pad - 2 * input.scale,
+    lockupBottom,
     input.x + input.w - pad - textX,
     input.familySize,
     input.givenSize,

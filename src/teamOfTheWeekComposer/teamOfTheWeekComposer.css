@@ -81,8 +81,8 @@
   min-width: 0;
   min-height: 0;
   height: 100%;
-  --name-h: 120;
-  --name-logo: 32;
+  --name-h: 78;
+  --name-logo: 20;
 }
 
 .totw-board.is-hairline .totw-strip.has-hairline::after {
@@ -118,7 +118,8 @@
 .totw-strip .pod-photo__tools {
   left: calc(4 * var(--u));
   right: calc(4 * var(--u));
-  bottom: calc(6 * var(--u));
+  top: calc(8 * var(--u));
+  bottom: auto;
   gap: calc(4 * var(--u));
   pointer-events: none;
 }

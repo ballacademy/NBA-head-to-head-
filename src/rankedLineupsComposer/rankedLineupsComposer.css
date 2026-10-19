@@ -14,8 +14,8 @@
     #e879f9 72%,
     #f472b6 100%
   );
-  --name-h: 108;
-  --name-logo: 28;
+  --name-h: 76;
+  --name-logo: 20;
   position: relative;
   aspect-ratio: 4 / 5;
   width: 100%;
@@ -260,6 +260,11 @@
   right: calc(4 * var(--u));
   bottom: calc(6 * var(--u));
   gap: calc(4 * var(--u));
+}
+
+.rl-board.is-fade .rl-strip .pod-photo__tools {
+  top: calc(8 * var(--u));
+  bottom: auto;
 }
 
 .rl-strip .pod-photo__tool {

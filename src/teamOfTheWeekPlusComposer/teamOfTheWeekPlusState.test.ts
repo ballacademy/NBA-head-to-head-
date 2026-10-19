@@ -14,7 +14,9 @@ import {
   PLUS_HEADER_PAD_X,
   PLUS_SECTION_SIZE,
   PLUS_STARTER_SHARE,
+  PLUS_STANDOUT_LOGO,
   PLUS_STANDOUT_NAME_H,
+  PLUS_STARTER_LOGO,
   PLUS_STARTER_NAME_H,
   PLUS_TITLE_BAND_H,
   PLUS_TITLE_SIZE,
@@ -114,6 +116,8 @@ describe("team of the week plus", () => {
     expect(metrics.titleY).toBeLessThan(58);
     expect(PLUS_STARTER_NAME_H).toBeGreaterThan(38);
     expect(PLUS_STANDOUT_NAME_H).toBeGreaterThan(32);
+    expect(PLUS_STARTER_LOGO).toBeLessThan(PLUS_STARTER_NAME_H / 3);
+    expect(PLUS_STANDOUT_LOGO).toBeLessThan(PLUS_STANDOUT_NAME_H / 3);
     expect(draft.slots).toHaveLength(10);
     expect("title" in draft).toBe(false);
     expect(starterSlots(draft.slots)).toHaveLength(5);

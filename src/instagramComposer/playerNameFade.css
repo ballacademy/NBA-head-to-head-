@@ -4,10 +4,9 @@
   --name-fade: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.98) 0%,
-    rgba(0, 0, 0, 0.95) 22%,
-    rgba(0, 0, 0, 0.88) 42%,
-    rgba(0, 0, 0, 0.62) 64%,
-    rgba(0, 0, 0, 0.28) 84%,
+    rgba(0, 0, 0, 0.94) 28%,
+    rgba(0, 0, 0, 0.78) 52%,
+    rgba(0, 0, 0, 0.42) 78%,
     rgba(0, 0, 0, 0) 100%
   );
   position: absolute;
@@ -17,9 +16,9 @@
   bottom: var(--frame-w, 0px);
   display: flex;
   align-items: flex-end;
-  gap: calc(2 * var(--u));
-  height: calc(var(--name-h, 108) * var(--u) - var(--frame-w, 0px));
-  padding: 0 calc(4 * var(--u)) calc(6 * var(--u));
+  justify-content: flex-start;
+  height: calc(var(--name-h, 76) * var(--u) - var(--frame-w, 0px));
+  padding: 0 calc(5 * var(--u)) calc(5 * var(--u));
   background: var(--name-fade);
   pointer-events: auto;
 }
@@ -29,14 +28,22 @@
 }
 
 .ig-name-fade.is-last-only .ig-name-fade__family {
-  min-height: calc(22 * var(--u));
+  min-height: calc(16 * var(--u));
+}
+
+.ig-name-fade__lockup {
+  display: flex;
+  align-items: center;
+  gap: calc(3 * var(--u));
+  max-width: 100%;
+  min-width: 0;
 }
 
 .ig-name-fade__logo {
-  flex: 0 0 calc(var(--name-logo, 30) * var(--u));
-  height: calc(var(--name-logo, 30) * var(--u));
+  flex: 0 0 calc(var(--name-logo, 20) * var(--u));
+  width: calc(var(--name-logo, 20) * var(--u));
+  height: calc(var(--name-logo, 20) * var(--u));
   min-width: 0;
-  margin-bottom: calc(2 * var(--u));
   overflow: hidden;
   pointer-events: none;
 }

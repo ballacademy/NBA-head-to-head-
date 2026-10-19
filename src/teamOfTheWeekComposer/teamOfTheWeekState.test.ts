@@ -22,6 +22,9 @@ import {
   TOTW_STRIP_W,
   TOTW_TITLE_PAD,
   TOTW_TITLE_PLATE_H,
+  TOTW_NAME_H,
+  TOTW_NAME_LOGO,
+  TOTW_NAME_SIZE,
   TOTW_TITLE_SIZE,
   totwStripX,
 } from "./teamOfTheWeekLayout";
@@ -59,6 +62,9 @@ describe("team of the week state", () => {
     expect(TOTW_STRIP_W).toBeGreaterThan(200);
     expect(TOTW_STRIP_H).toBeGreaterThan(TOTW_STRIP_W * 4);
     expect(TOTW_BRAND_H + TOTW_STRIP_H + TOTW_FOOTER_H).toBe(GRAPHIC_HEIGHT);
+    expect(TOTW_NAME_LOGO).toBeLessThanOrEqual(TOTW_NAME_SIZE + 6);
+    expect(TOTW_NAME_H).toBeLessThan(100);
+    expect(TOTW_NAME_H).toBeGreaterThan(TOTW_NAME_LOGO * 2);
   });
 
   it("defaults the title, week line, and studded metal field", () => {

@@ -83,12 +83,13 @@ export function PlayerNameFade({
         .filter(Boolean)
         .join(" ")}
     >
-      {team ? (
-        <div className="ig-name-fade__logo">
-          <TeamLogo src={team.logoSrc} label="" />
-        </div>
-      ) : null}
-      <div className="ig-name-fade__stack">
+      <div className="ig-name-fade__lockup">
+        {team ? (
+          <div className="ig-name-fade__logo">
+            <TeamLogo src={team.logoSrc} label="" shadow={1} />
+          </div>
+        ) : null}
+        <div className="ig-name-fade__stack">
         {hideGiven ? null : (
           <input
             className="ig-name-fade__given"
@@ -108,25 +109,26 @@ export function PlayerNameFade({
             }}
           />
         )}
-        <textarea
-          ref={familyRef}
-          className="ig-name-fade__family"
-          value={familyFocus ? lastName : familyFit}
-          maxLength={NAME_LAST_MAX}
-          rows={1}
-          placeholder={empty ? "" : "LAST"}
-          aria-label={familyAria}
-          onFocus={() => setFamilyFocus(true)}
-          onBlur={() => setFamilyFocus(false)}
-          onChange={(event) =>
-            onLastChange(event.target.value.slice(0, NAME_LAST_MAX))
-          }
-          onClick={() => {
-            if (empty) {
-              onEmptyClick();
+          <textarea
+            ref={familyRef}
+            className="ig-name-fade__family"
+            value={familyFocus ? lastName : familyFit}
+            maxLength={NAME_LAST_MAX}
+            rows={1}
+            placeholder={empty ? "" : "LAST"}
+            aria-label={familyAria}
+            onFocus={() => setFamilyFocus(true)}
+            onBlur={() => setFamilyFocus(false)}
+            onChange={(event) =>
+              onLastChange(event.target.value.slice(0, NAME_LAST_MAX))
             }
-          }}
-        />
+            onClick={() => {
+              if (empty) {
+                onEmptyClick();
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   );

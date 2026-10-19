@@ -359,7 +359,9 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(etGraphic).toContain("showBa ? null");
-    expect(totwPlusLayout).toContain("PLUS_STARTER_LOGO = 22");
+    expect(totwPlusLayout).toContain("PLUS_STARTER_LOGO = 18");
+    expect(nameFade).toContain("ig-name-fade__lockup");
+    expect(nameFade).toContain("shadow={1}");
     expect(nameFade).not.toMatch(/TeamLogo[\s\S]*cover/);
   });
 
@@ -693,6 +695,14 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(coverNameFade).toContain("abbreviateOverflowName");
+    expect(nameFadeCss).toContain("ig-name-fade__lockup");
+    expect(nameFadeCss).toContain("align-items: center");
+    const fadeDraw = readFileSync(
+      join(root, "instagramComposer/drawPlayerNameFade.ts"),
+      "utf8",
+    );
+    expect(fadeDraw).toContain("drawCenteredLogo");
+    expect(fadeDraw).not.toContain("drawCoveredLogo");
     expect(nameFadeCss).toContain("white-space: nowrap");
     expect(coverCss).toContain("white-space: nowrap");
     expect(etApp).toContain("Two players per team");
