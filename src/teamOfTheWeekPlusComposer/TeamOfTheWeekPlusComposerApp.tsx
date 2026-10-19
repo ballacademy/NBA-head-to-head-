@@ -602,9 +602,9 @@ export function TeamOfTheWeekPlusComposerApp() {
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
-            Top row is the week’s best five as PG, SG, SF, PF, C left to right,
-            2+ games, ranked on counting production mixed with TS%/eFG%,
-            including stars.
+            Top row is the week’s best five, packed PG, SG, SF, PF, C among
+            whoever made it — 2+ games, counting mixed with TS%/eFG%, including
+            stars. Mix is rough, not a 2G quota.
             Standouts (bottom row only) are surprise / over-expectation nights,
             packed PG → C the same way — a big cannot sit in slot 1. Empty photo until you
             paste. Date range matches Cover / Stat / TOTW. Downloads a 4:5

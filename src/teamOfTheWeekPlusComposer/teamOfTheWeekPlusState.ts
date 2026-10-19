@@ -117,6 +117,9 @@ const PLUS_STARTER_QUOTA: Record<PlayerPositionGroup, number> = {
   C: 1,
 };
 
+/** TOTW can keep a 3rd F (or G) when they outrank the 2nd of another group. */
+export const TOTW_GROUP_SOFT_MAX = 3;
+
 export const PLUS_LINEUP_SLOTS = ["PG", "SG", "SF", "PF", "C"] as const;
 export type PlusLineupSlot = (typeof PLUS_LINEUP_SLOTS)[number];
 
@@ -384,13 +387,98 @@ const pickQuotaThenOrder = (
   return orderPlusLineup(picked, compare, count);
 };
 
+/**
+ * Best week score, rough mix — not a 2G/2F/1C quota. A 3rd forward can
+ * beat a 2nd guard (White cannot take Tatum’s seat just to fill 2G). Then
+ * pack G → F → C among whoever made the five.
+ */
+const pickRoughMixThenOrder = (
+  rows: NightStandout[],
+  compare: RowCompare,
+  count = PLUS_STARTER_COUNT,
+) => {
+  const ranked = [...rows].sort(compare);
+  const counts: Record<PlayerPositionGroup, number> = { G: 0, F: 0, C: 0 };
+  const picked: NightStandout[] = [];
+  const used = new Set<string>();
+  const groupOf = (row: NightStandout) =>
+    plusLineupGroup(getPlayer(row.athleteId));
+  const take = (row: NightStandout) => {
+    if (picked.length >= count || used.has(row.athleteId)) {
+      return;
+    }
+    const group = groupOf(row);
+    if (!group) {
+      return;
+    }
+    picked.push(row);
+    used.add(row.athleteId);
+    counts[group] += 1;
+  };
+  for (const row of ranked) {
+    const group = groupOf(row);
+    if (!group || counts[group] >= TOTW_GROUP_SOFT_MAX) {
+      continue;
+    }
+    take(row);
+    if (picked.length >= count) {
+      break;
+    }
+  }
+  for (const row of ranked) {
+    if (picked.length >= count) {
+      break;
+    }
+    take(row);
+  }
+  const groups: PlayerPositionGroup[] = ["G", "F", "C"];
+  for (const missing of groups) {
+    if (counts[missing] > 0) {
+      continue;
+    }
+    const candidate = ranked.find(
+      (row) => !used.has(row.athleteId) && groupOf(row) === missing,
+    );
+    if (!candidate) {
+      continue;
+    }
+    let victimIndex = -1;
+    for (let index = 0; index < picked.length; index += 1) {
+      const group = groupOf(picked[index]!);
+      if (!group || counts[group] < 2) {
+        continue;
+      }
+      if (
+        victimIndex < 0 ||
+        compare(picked[index]!, picked[victimIndex]!) > 0
+      ) {
+        victimIndex = index;
+      }
+    }
+    if (victimIndex < 0) {
+      continue;
+    }
+    const victim = picked[victimIndex]!;
+    const victimGroup = groupOf(victim);
+    if (!victimGroup) {
+      continue;
+    }
+    picked[victimIndex] = candidate;
+    used.delete(victim.athleteId);
+    used.add(candidate.athleteId);
+    counts[victimGroup] -= 1;
+    counts[missing] += 1;
+  }
+  return orderPlusLineup(picked, compare, count);
+};
+
 /** Guards, then forwards, then center — PG before SG, SF before PF. Never a forward left of a guard. */
 export const orderPlusStarters = (rows: NightStandout[]) =>
   orderPlusLineup(rows, rankTotwBest);
 
-/** Best week (~2G / 2F / 1C), then lined up PG → C — not best-to-worst left to right. */
+/** Best week by score, rough mix (not a 2G/2F/1C quota), then pack PG → C. */
 export const selectPlusStarters = (rows: NightStandout[]) =>
-  pickQuotaThenOrder(qualifyTotwRows(rows), rankTotwBest);
+  pickRoughMixThenOrder(qualifyTotwRows(rows), rankTotwBest);
 
 /** Surprise / over-expectation non-stars, then packed PG → C — a C cannot sit in slot 1. */
 export const selectPlusStandouts = (
