@@ -52,7 +52,6 @@ import {
   isTotwPlusDraft,
   patchStrip,
   plusBoardEmpty,
-  plusLineupGroup,
   setStripPhoto,
   slotLabel,
   standoutSlots,
@@ -146,19 +145,9 @@ export function TeamOfTheWeekPlusComposerApp() {
         const next = fillPlusFromStandouts(current, rows);
         const starters = starterSlots(next).filter((slot) => slot.playerId);
         const standouts = standoutSlots(next).filter((slot) => slot.playerId);
-        const groups = starters.reduce(
-          (counts, slot) => {
-            const group = plusLineupGroup(getPlayer(slot.playerId));
-            if (group) {
-              counts[group] += 1;
-            }
-            return counts;
-          },
-          { G: 0, F: 0, C: 0 },
-        );
         setStatus(
           starters.length
-            ? `Filled the week’s best ${groups.G}G / ${groups.F}F / ${groups.C}C and ${standouts.length} surprise standouts.`
+            ? `Filled PG–C and ${standouts.length} surprise standouts.`
             : "No box scores for this range yet — pick players for the empty slots.",
         );
         return next;
@@ -583,8 +572,8 @@ export function TeamOfTheWeekPlusComposerApp() {
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
-            Top row is the week’s best five — roughly 2 guards / 2 forwards / 1
-            center, including stars. Standouts (bottom row only) are surprise /
+            Top row is the week’s best five as PG, SG, SF, PF, C left to right,
+            including stars. Standouts (bottom row only) are surprise /
             over-expectation nights, not the TOTW five. Empty photo until you
             paste. Date range matches Cover / Stat / TOTW. Downloads a 4:5
             Instagram PNG — nothing is posted.

@@ -284,6 +284,35 @@ describe("ranked lineups", () => {
     expect(sixth.y).toBeGreaterThan(first.y);
     expect(sixth.x).toBe(first.x);
     expect(rankedStripRect(4, 8).y).toBe(first.y);
-    expect(fillLineupByStatLeaders(resizeRankedStrips(createEmptyStrips(), 8), "2012-13", "points").strips).toHaveLength(8);
+    const eight = fillLineupByStatLeaders(
+      resizeRankedStrips(createEmptyStrips(), 8),
+      "2012-13",
+      "points",
+    );
+    expect(eight.strips).toHaveLength(8);
+    expect(eight.strips.slice(0, 5).map((strip) => strip.lastName)).toEqual([
+      "Westbrook",
+      "Bryant",
+      "Anthony",
+      "Aldridge",
+      "Lopez",
+    ]);
+    const extraIds = eight.strips.slice(5).map((strip) => strip.playerId);
+    expect(extraIds.filter(Boolean)).toHaveLength(3);
+    expect(
+      extraIds.every(
+        (id) => !eight.strips.slice(0, 5).some((strip) => strip.playerId === id),
+      ),
+    ).toBe(true);
+    expect(parsePositionLabels(undefined, 8)).toEqual([
+      "PG",
+      "SG",
+      "SF",
+      "PF",
+      "C",
+      "6TH",
+      "7TH",
+      "8TH",
+    ]);
   });
 });

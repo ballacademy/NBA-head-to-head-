@@ -40,6 +40,7 @@ import {
   isPlusStar,
   plusBoardEmpty,
   plusLineupGroup,
+  PLUS_LINEUP_SLOTS,
   totwProductionScore,
   DEFAULT_PLUS_STANDOUT_CAPTION,
   DEFAULT_PLUS_STARTER_CAPTION,
@@ -188,7 +189,7 @@ describe("team of the week plus", () => {
     expect(kept[0]!.pan.rotate).toBe(180);
   });
 
-  it("auto-fills a 2/2/1 week and surprise non-stars who aren’t already on TOTW", () => {
+  it("auto-fills PG–C and surprise non-stars who aren’t already on TOTW", () => {
     const game = (
       athleteId: string,
       score: number,
@@ -247,6 +248,12 @@ describe("team of the week plus", () => {
     expect(plusLineupGroup(getPlayer(tatum))).toBe("F");
     expect(plusLineupGroup(getPlayer(jokic))).toBe("C");
     expect(plusLineupGroup(getPlayer("5104157"))).toBe("C");
+    expect([...PLUS_LINEUP_SLOTS]).toEqual(["PG", "SG", "SF", "PF", "C"]);
+    expect(getPlayer(luka)?.position).toBe("PG");
+    expect(getPlayer(sga)?.position).toBe("PG");
+    expect(getPlayer(lebron)?.position).toBe("SF");
+    expect(getPlayer(extraStar)?.position).toBe("PF");
+    expect(getPlayer(jokic)?.position).toBe("C");
     expect(isPlusStar(luka)).toBe(true);
     expect(isPlusStar(jokic)).toBe(true);
     expect(isPlusStar(bouyea)).toBe(false);
@@ -274,12 +281,9 @@ describe("team of the week plus", () => {
     expect(starterGroups.filter((group) => group === "G")).toHaveLength(2);
     expect(starterGroups.filter((group) => group === "F")).toHaveLength(2);
     expect(starterGroups.filter((group) => group === "C")).toHaveLength(1);
-    expect(starterIds).toContain(luka);
-    expect(starterIds).toContain(sga);
-    expect(starterIds).toContain(jokic);
+    expect(starterIds).toEqual([luka, sga, tatum, extraStar, jokic]);
     expect(starterIds).not.toContain(bouyea);
-    expect(starterGroups.slice(0, 2)).toEqual(["G", "G"]);
-    expect(starterGroups[4]).toBe("C");
+    expect(starterGroups).toEqual(["G", "G", "F", "F", "C"]);
 
     const standouts = selectPlusStandouts(rows, new Set(starterIds));
     const standoutIds = standouts.map((row) => row.athleteId);
@@ -329,8 +333,7 @@ describe("team of the week plus", () => {
       game(jokic, 14, { pts: "28", reb: "14", ast: "12" }),
     ]);
     const bestIds = bestFive.map((row) => row.athleteId);
-    expect(bestIds).toContain(luka);
-    expect(bestIds).toContain(jokic);
+    expect(bestIds).toEqual([luka, sga, lebron, tatum, jokic]);
     expect(bestIds).not.toContain(bouyea);
     const totwStrips = fillStartersFromStandouts(createEmptyStrips(), [
       surpriseGuard,

@@ -250,11 +250,14 @@ describe("composer chrome", () => {
     expect(headlineApp).not.toContain("aria-label=\"Team watermark\"");
   });
 
-  it("fills TOTW Plus as a 2/2/1 week plus surprise non-stars", () => {
+  it("fills TOTW Plus as PG–C plus surprise non-stars", () => {
     expect(totwPlusState).toContain("selectPlusStarters");
     expect(totwPlusState).toContain("selectPlusStandouts");
     expect(totwPlusState).toContain("plusLineupGroup");
+    expect(totwPlusState).toContain("PLUS_LINEUP_SLOTS");
+    expect(totwPlusState).toContain("plusLineupSlotMatches");
     expect(totwPlusState).toContain("totwProductionScore");
+    expect(totwPlusState).toContain('"PG", "SG", "SF", "PF", "C"');
     expect(totwPlusState).toMatch(/G:\s*2/);
     expect(totwPlusState).toContain("isPlusStar");
     expect(totwPlusState).toContain("isSurpriseNight");
@@ -630,7 +633,9 @@ describe("composer chrome", () => {
     expect(totwApp).toContain("fillStartersFromStandouts");
     expect(totwApp).toContain("fetchRangeProduction");
     expect(totwApp).not.toContain("fetchStandoutsInRange");
-    expect(totwApp).toContain("week’s best");
+    expect(totwApp).toContain("PG, SG, SF, PF, C");
+    expect(totwPlusApp).toContain("PG, SG, SF, PF, C");
+    expect(rankedApp).toContain("parsePositionLabels(undefined");
     expect(coverApp).toContain("ComposerDateRange");
     expect(statCardApp).toContain("ComposerDateRange");
     expect(rankedApp).toContain("-man lineup");

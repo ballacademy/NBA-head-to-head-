@@ -480,6 +480,7 @@ export function RankedLineupsComposerApp({
     push(strips);
     setStrips(result.strips);
     persistSlide(result.strips);
+    setPositionLabels(parsePositionLabels(undefined, result.strips.length));
     const rankCue = unranked
       ? "PG–C"
       : `${rank.trim().toUpperCase() || "BEST"} PG–C`;

@@ -115,14 +115,15 @@ const PLUS_STARTER_QUOTA: Record<PlayerPositionGroup, number> = {
   C: 1,
 };
 
-const PLUS_POSITION_RANK: Record<string, number> = {
-  PG: 0,
-  G: 1,
-  SG: 2,
-  SF: 3,
-  F: 4,
-  PF: 5,
-  C: 6,
+export const PLUS_LINEUP_SLOTS = ["PG", "SG", "SF", "PF", "C"] as const;
+export type PlusLineupSlot = (typeof PLUS_LINEUP_SLOTS)[number];
+
+const PLUS_SLOT_GROUP: Record<PlusLineupSlot, PlayerPositionGroup> = {
+  PG: "G",
+  SG: "G",
+  SF: "F",
+  PF: "F",
+  C: "C",
 };
 
 /** Wemby-style C/F listings still count as the center slot. */
@@ -144,6 +145,46 @@ export const plusLineupGroup = (
     return "G";
   }
   return "F";
+};
+
+/** Listed PG–C first; generic G/F only when ESPN has no split. */
+export const plusLineupSlot = (
+  player: TierPlayer | null | undefined,
+): PlusLineupSlot | null => {
+  if (!player || player.role === "coach") {
+    return null;
+  }
+  if ((PLUS_LINEUP_SLOTS as readonly string[]).includes(player.position)) {
+    return player.position as PlusLineupSlot;
+  }
+  const group = plusLineupGroup(player);
+  if (group === "C") {
+    return "C";
+  }
+  if (group === "G") {
+    return "SG";
+  }
+  if (group === "F") {
+    return "SF";
+  }
+  return null;
+};
+
+export const plusLineupSlotMatches = (
+  player: TierPlayer | null | undefined,
+  slot: PlusLineupSlot,
+  loose = false,
+) => {
+  if (!player || player.role === "coach") {
+    return false;
+  }
+  if (player.position === slot) {
+    return true;
+  }
+  if (!loose) {
+    return false;
+  }
+  return plusLineupGroup(player) === PLUS_SLOT_GROUP[slot];
 };
 
 export const isPlusStar = (athleteId: string) => {
@@ -178,32 +219,46 @@ const rankTotwBest = (left: NightStandout, right: NightStandout) => {
   return right.score - left.score;
 };
 
-const PLUS_GROUP_RANK: Record<PlayerPositionGroup, number> = {
-  G: 0,
-  F: 1,
-  C: 2,
+/** Place the given rows into PG → C slots. A second PG sits at SG, not left of the first. */
+export const orderPlusStarters = (rows: NightStandout[]) => {
+  const picked: Array<NightStandout | null> = PLUS_LINEUP_SLOTS.map(() => null);
+  const used = new Set<string>();
+  const takeSlot = (slot: PlusLineupSlot, index: number, loose: boolean) => {
+    if (picked[index]) {
+      return;
+    }
+    const ranked = rows
+      .filter((row) => {
+        if (used.has(row.athleteId)) {
+          return false;
+        }
+        return plusLineupSlotMatches(getPlayer(row.athleteId), slot, loose);
+      })
+      .sort(rankTotwBest);
+    const best = ranked[0];
+    if (!best) {
+      return;
+    }
+    picked[index] = best;
+    used.add(best.athleteId);
+  };
+  PLUS_LINEUP_SLOTS.forEach((slot, index) => takeSlot(slot, index, false));
+  PLUS_LINEUP_SLOTS.forEach((slot, index) => takeSlot(slot, index, true));
+  for (const row of [...rows].sort(rankTotwBest)) {
+    if (used.has(row.athleteId) || !plusLineupGroup(getPlayer(row.athleteId))) {
+      continue;
+    }
+    const empty = picked.findIndex((item) => !item);
+    if (empty < 0) {
+      break;
+    }
+    picked[empty] = row;
+    used.add(row.athleteId);
+  }
+  return picked.filter((row): row is NightStandout => Boolean(row));
 };
 
-export const orderPlusStarters = (rows: NightStandout[]) =>
-  [...rows].sort((left, right) => {
-    const a = getPlayer(left.athleteId);
-    const b = getPlayer(right.athleteId);
-    const groupRank =
-      (PLUS_GROUP_RANK[plusLineupGroup(a) ?? "F"] ?? 9) -
-      (PLUS_GROUP_RANK[plusLineupGroup(b) ?? "F"] ?? 9);
-    if (groupRank) {
-      return groupRank;
-    }
-    const rank =
-      (PLUS_POSITION_RANK[a?.position ?? ""] ?? 9) -
-      (PLUS_POSITION_RANK[b?.position ?? ""] ?? 9);
-    if (rank) {
-      return rank;
-    }
-    return rankTotwBest(left, right);
-  });
-
-/** Best week, ideally 2 guards / 2 forwards / 1 center. Soft-fill if the slate isn’t clean. */
+/** Best week (~2G / 2F / 1C), then lined up PG → C — not best-to-worst left to right. */
 export const selectPlusStarters = (rows: NightStandout[]) => {
   const counts: Record<PlayerPositionGroup, number> = { G: 0, F: 0, C: 0 };
   const picked: NightStandout[] = [];
@@ -297,7 +352,7 @@ export const fillPlusFromStandouts = (
   return next;
 };
 
-/** Week’s best five (~2G / 2F / 1C) into a five-strip TOTW board. Stars belong here. */
+/** Week’s best five (PG → C) into a five-strip TOTW board. Stars belong here. */
 export const fillStartersFromStandouts = (
   strips: TotwStrip[],
   rows: NightStandout[],
