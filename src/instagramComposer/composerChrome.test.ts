@@ -256,6 +256,8 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("plusLineupGroup");
     expect(totwPlusState).toContain("PLUS_LINEUP_SLOTS");
     expect(totwPlusState).toContain("plusLineupSlotMatches");
+    expect(totwPlusState).toContain("Brown SF ≠ G");
+    expect(totwPlusState).toContain("Never a forward left of a guard");
     expect(totwPlusState).toContain("totwProductionScore");
     expect(totwPlusState).toContain('"PG", "SG", "SF", "PF", "C"');
     expect(totwPlusState).toMatch(/G:\s*2/);

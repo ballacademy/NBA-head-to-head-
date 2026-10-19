@@ -251,6 +251,14 @@ describe("ranked lineups", () => {
     expect(result.strips[2]?.lastName).toBe("Brown");
     expect(result.strips[3]?.lastName).toMatch(/Antetokounmpo/i);
     expect(result.strips[4]?.lastName).toBe("Jokic");
+    const leaders = pickLineupStatLeaders("2026-27", "points", "regular");
+    expect(leaders.map((row) => row?.player.position)).toEqual([
+      "PG",
+      "SG",
+      "SF",
+      "PF",
+      "C",
+    ]);
     const assists = pickLineupStatLeaders("2026-27", "assists", "regular");
     expect(assists.map((row) => row?.player.id).filter(Boolean)).toHaveLength(5);
     expect(new Set(assists.map((row) => row?.player.id)).size).toBe(5);

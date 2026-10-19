@@ -126,22 +126,34 @@ const PLUS_SLOT_GROUP: Record<PlusLineupSlot, PlayerPositionGroup> = {
   C: "C",
 };
 
-/** Wemby-style C/F listings still count as the center slot. */
+/** Listed PG/SG/SF/PF/C wins over a mismatched positionGroup (Brown SF ≠ G). */
 export const plusLineupGroup = (
   player: TierPlayer | null | undefined,
 ): PlayerPositionGroup | null => {
   if (!player || player.role === "coach") {
     return null;
   }
-  if (player.position === "C" || player.positionGroup === "C") {
+  if (player.position === "C") {
     return "C";
   }
   if (
     player.position === "PG" ||
     player.position === "SG" ||
-    player.position === "G" ||
-    player.positionGroup === "G"
+    player.position === "G"
   ) {
+    return "G";
+  }
+  if (
+    player.position === "SF" ||
+    player.position === "PF" ||
+    player.position === "F"
+  ) {
+    return "F";
+  }
+  if (player.positionGroup === "C") {
+    return "C";
+  }
+  if (player.positionGroup === "G") {
     return "G";
   }
   return "F";
@@ -219,43 +231,39 @@ const rankTotwBest = (left: NightStandout, right: NightStandout) => {
   return right.score - left.score;
 };
 
-/** Place the given rows into PG → C slots. A second PG sits at SG, not left of the first. */
+const slotOrder = (row: NightStandout) => {
+  const slot = plusLineupSlot(getPlayer(row.athleteId));
+  return slot ? PLUS_LINEUP_SLOTS.indexOf(slot) : 9;
+};
+
+/** Guards, then forwards, then center — PG before SG, SF before PF. Never a forward left of a guard. */
 export const orderPlusStarters = (rows: NightStandout[]) => {
-  const picked: Array<NightStandout | null> = PLUS_LINEUP_SLOTS.map(() => null);
-  const used = new Set<string>();
-  const takeSlot = (slot: PlusLineupSlot, index: number, loose: boolean) => {
-    if (picked[index]) {
-      return;
-    }
-    const ranked = rows
-      .filter((row) => {
-        if (used.has(row.athleteId)) {
-          return false;
-        }
-        return plusLineupSlotMatches(getPlayer(row.athleteId), slot, loose);
-      })
-      .sort(rankTotwBest);
-    const best = ranked[0];
-    if (!best) {
-      return;
-    }
-    picked[index] = best;
-    used.add(best.athleteId);
+  const byGroup: Record<PlayerPositionGroup, NightStandout[]> = {
+    G: [],
+    F: [],
+    C: [],
   };
-  PLUS_LINEUP_SLOTS.forEach((slot, index) => takeSlot(slot, index, false));
-  PLUS_LINEUP_SLOTS.forEach((slot, index) => takeSlot(slot, index, true));
-  for (const row of [...rows].sort(rankTotwBest)) {
-    if (used.has(row.athleteId) || !plusLineupGroup(getPlayer(row.athleteId))) {
+  for (const row of rows) {
+    const group = plusLineupGroup(getPlayer(row.athleteId));
+    if (!group) {
       continue;
     }
-    const empty = picked.findIndex((item) => !item);
-    if (empty < 0) {
-      break;
-    }
-    picked[empty] = row;
-    used.add(row.athleteId);
+    byGroup[group].push(row);
   }
-  return picked.filter((row): row is NightStandout => Boolean(row));
+  const byListedSlot = (left: NightStandout, right: NightStandout) => {
+    const rank = slotOrder(left) - slotOrder(right);
+    if (rank) {
+      return rank;
+    }
+    return rankTotwBest(left, right);
+  };
+  byGroup.G.sort(byListedSlot);
+  byGroup.F.sort(byListedSlot);
+  byGroup.C.sort(rankTotwBest);
+  return [...byGroup.G, ...byGroup.F, ...byGroup.C].slice(
+    0,
+    PLUS_STARTER_COUNT,
+  );
 };
 
 /** Best week (~2G / 2F / 1C), then lined up PG → C — not best-to-worst left to right. */

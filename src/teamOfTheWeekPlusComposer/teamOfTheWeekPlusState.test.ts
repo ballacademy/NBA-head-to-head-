@@ -252,6 +252,18 @@ describe("team of the week plus", () => {
     expect(plusLineupGroup(getPlayer(tatum))).toBe("F");
     expect(plusLineupGroup(getPlayer(jokic))).toBe("C");
     expect(plusLineupGroup(getPlayer("5104157"))).toBe("C");
+    const brown = "3917376";
+    const white = "3078576";
+    const brunson = "3934672";
+    const flagg = "5041939";
+    const zubac = "4433621";
+    expect(getPlayer(brown)?.name).toMatch(/Jaylen Brown/);
+    expect(getPlayer(brown)?.position).toBe("SF");
+    expect(getPlayer(brown)?.positionGroup).toBe("G");
+    expect(plusLineupGroup(getPlayer(brown))).toBe("F");
+    expect(plusLineupGroup(getPlayer(white))).toBe("G");
+    expect(getPlayer(white)?.position).toBe("SG");
+    expect(getPlayer(brunson)?.position).toBe("PG");
     expect([...PLUS_LINEUP_SLOTS]).toEqual(["PG", "SG", "SF", "PF", "C"]);
     expect(getPlayer(luka)?.position).toBe("PG");
     expect(getPlayer(sga)?.position).toBe("PG");
@@ -285,9 +297,27 @@ describe("team of the week plus", () => {
     expect(starterGroups.filter((group) => group === "G")).toHaveLength(2);
     expect(starterGroups.filter((group) => group === "F")).toHaveLength(2);
     expect(starterGroups.filter((group) => group === "C")).toHaveLength(1);
-    expect(starterIds).toEqual([luka, sga, tatum, extraStar, jokic]);
+    expect(starterIds).toEqual([luka, sga, extraStar, tatum, jokic]);
     expect(starterIds).not.toContain(bouyea);
     expect(starterGroups).toEqual(["G", "G", "F", "F", "C"]);
+    const brownWhite = selectPlusStarters([
+      game(brown, 90, { pts: "28", reb: "6", ast: "4" }),
+      game(white, 70, { pts: "22", reb: "4", ast: "5" }),
+      game(flagg, 60, { pts: "20", reb: "6", ast: "4" }),
+      game(extraStar, 100, { pts: "32", reb: "12", ast: "8" }),
+      game(zubac, 50, { pts: "16", reb: "12", ast: "2" }),
+      game(brunson, 80, { pts: "26", reb: "3", ast: "7" }),
+    ]);
+    expect(brownWhite.map((row) => row.athleteId)).toEqual([
+      brunson,
+      white,
+      brown,
+      extraStar,
+      zubac,
+    ]);
+    expect(
+      brownWhite.map((row) => plusLineupGroup(getPlayer(row.athleteId))),
+    ).toEqual(["G", "G", "F", "F", "C"]);
 
     const standouts = selectPlusStandouts(rows, new Set(starterIds));
     const standoutIds = standouts.map((row) => row.athleteId);
