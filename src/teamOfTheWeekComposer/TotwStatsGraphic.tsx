@@ -4,10 +4,6 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import {
-  composerNameLines,
-  useComposerNameStyle,
-} from "../instagramComposer/composerNameStyle";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
@@ -15,6 +11,7 @@ import {
   TOTW_STATS_NOTE,
   totwStatsFieldValue,
   totwStatsHasRows,
+  totwStatsSheetName,
   type TotwStatsRow,
   type TotwStatsSheet,
 } from "./totwStatsExport";
@@ -29,21 +26,12 @@ interface TotwStatsGraphicProps {
   onBrandChange?: (value: string) => void;
 }
 
-const PlayerCell = ({ row, alt }: { row: TotwStatsRow; alt: boolean }) => {
-  const [nameStyle] = useComposerNameStyle();
-  const names = composerNameLines(row.firstName, row.lastName, nameStyle);
-  return (
-    <div className={["tws-td", "tws-player", alt ? "is-alt" : ""].filter(Boolean).join(" ")}>
-      <span className="tws-player__slot">{row.slot}</span>
-      <span className="tws-player__names">
-        <span className="tws-player__family">{names.family || row.name}</span>
-        {names.given ? (
-          <span className="tws-player__given">{names.given}</span>
-        ) : null}
-      </span>
-    </div>
-  );
-};
+const PlayerCell = ({ row, alt }: { row: TotwStatsRow; alt: boolean }) => (
+  <div className={["tws-td", "tws-player", alt ? "is-alt" : ""].filter(Boolean).join(" ")}>
+    <span className="tws-player__slot">{row.slot}</span>
+    <span className="tws-player__name">{totwStatsSheetName(row)}</span>
+  </div>
+);
 
 export const TotwStatsGraphic = forwardRef<HTMLElement, TotwStatsGraphicProps>(
   function TotwStatsGraphic(

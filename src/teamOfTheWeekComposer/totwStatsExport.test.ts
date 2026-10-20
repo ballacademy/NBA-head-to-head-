@@ -14,6 +14,7 @@ import {
   totwStatsCsv,
   totwStatsFromStandout,
   totwStatsHasRows,
+  totwStatsSheetName,
 } from "./totwStatsExport";
 
 const stripFor = (athleteId: string): TotwStrip => {
@@ -185,5 +186,34 @@ describe("TOTW week stats export", () => {
       strips: Array.from({ length: 5 }, createEmptyStrip),
       weekRows: [],
     }))).toBe(false);
+  });
+
+  it("keeps Jr. and da Silva on one First Last line", () => {
+    const porter = "4278104";
+    const daSilva = "4702382";
+    expect(getPlayer(porter)?.name).toBe("Michael Porter Jr.");
+    expect(getPlayer(daSilva)?.name).toBe("Tristan da Silva");
+    expect(splitPlayerName("Michael Porter Jr.")).toEqual({
+      firstName: "Michael Porter",
+      lastName: "Jr.",
+    });
+    expect(splitPlayerName("Tristan da Silva")).toEqual({
+      firstName: "Tristan da",
+      lastName: "Silva",
+    });
+    const sheet = buildPlusStatsSheet({
+      brand: "BALLACADEMY",
+      week: "WEEK",
+      starterCaption: "TEAM OF THE WEEK",
+      standoutCaption: "STANDOUTS OF THE WEEK",
+      slots: [stripFor(porter), ...Array.from({ length: 4 }, createEmptyStrip), stripFor(daSilva)],
+      weekRows: [weekRow(porter, {}), weekRow(daSilva, {})],
+    });
+    const porterRow = sheet.sections[0]!.rows[0]!;
+    const silvaRow = sheet.sections[1]!.rows[0]!;
+    expect(totwStatsSheetName(porterRow)).toBe("Michael Porter Jr.");
+    expect(totwStatsSheetName(silvaRow)).toBe("Tristan da Silva");
+    expect(totwStatsSheetName(porterRow)).not.toMatch(/^Jr/i);
+    expect(totwStatsSheetName(silvaRow)).not.toMatch(/^Silva/i);
   });
 });

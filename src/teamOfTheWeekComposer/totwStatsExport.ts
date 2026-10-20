@@ -202,6 +202,14 @@ export const buildPlusStatsSheet = (input: {
 export const totwStatsHasRows = (sheet: TotwStatsSheet) =>
   sheet.sections.some((section) => section.rows.length > 0);
 
+/** First Last with Jr. / da Silva intact — do not restack the strip lockup split. */
+export const totwStatsSheetName = (
+  row: Pick<TotwStatsRow, "name" | "firstName" | "lastName">,
+) =>
+  (row.name || `${row.firstName ?? ""} ${row.lastName ?? ""}`)
+    .replace(/\s+/g, " ")
+    .trim();
+
 export const totwStatsFieldValue = (
   row: TotwStatsRow,
   key: TotwStatsFieldKey,

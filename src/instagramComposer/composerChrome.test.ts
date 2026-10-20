@@ -687,6 +687,19 @@ describe("composer chrome", () => {
     expect(totwStats).toContain('"TS%"');
     expect(totwStats).toContain('"eFG%"');
     expect(totwStats).toContain("buildPlusStatsSheet");
+    expect(totwStats).toContain("totwStatsSheetName");
+    const totwStatsGraphic = readFileSync(
+      join(root, "teamOfTheWeekComposer/TotwStatsGraphic.tsx"),
+      "utf8",
+    );
+    expect(totwStatsGraphic).toContain("totwStatsSheetName");
+    expect(totwStatsGraphic).not.toContain("composerNameLines");
+    const totwStatsCanvas = readFileSync(
+      join(root, "teamOfTheWeekComposer/renderTotwStatsCanvas.ts"),
+      "utf8",
+    );
+    expect(totwStatsCanvas).toContain("totwStatsSheetName");
+    expect(totwStatsCanvas).not.toContain("composerNameLines");
     const totwGraphic = readFileSync(
       join(root, "teamOfTheWeekComposer/TeamOfTheWeekGraphic.tsx"),
       "utf8",

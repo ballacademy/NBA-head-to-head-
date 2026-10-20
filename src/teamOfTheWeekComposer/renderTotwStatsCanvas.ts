@@ -7,10 +7,6 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
-  composerNameLines,
-  readComposerNameStyle,
-} from "../instagramComposer/composerNameStyle";
-import {
   FIELD_TEXTURE_SRC,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
@@ -20,7 +16,6 @@ import {
   TWS_BA_INSET,
   TWS_BA_SIZE,
   TWS_BRAND_SIZE,
-  TWS_GIVEN_SIZE,
   TWS_HEAD_H,
   TWS_HEAD_SIZE,
   TWS_NAME_SIZE,
@@ -45,6 +40,7 @@ import {
   TOTW_STATS_NOTE,
   totwStatsFieldValue,
   totwStatsHasRows,
+  totwStatsSheetName,
   type TotwStatsSheet,
 } from "./totwStatsExport";
 
@@ -115,7 +111,6 @@ export const renderTotwStatsCanvas = async (
   const s = scale;
   const look = options.look ?? "white";
   const showBa = options.showBa === true;
-  const nameStyle = readComposerNameStyle();
   const showBrand = !showBa;
   const showSections = sheet.sections.length > 1;
   const sectionCount = showSections ? sheet.sections.length : 0;
@@ -240,24 +235,22 @@ export const renderTotwStatsCanvas = async (
         context.fillStyle = "rgba(255, 255, 255, 0.045)";
         context.fillRect(tableX, rowY, tableW, rowHeight);
       }
-      const names = composerNameLines(row.firstName, row.lastName, nameStyle);
       context.textAlign = "left";
       context.textBaseline = "middle";
       context.fillStyle = "#facc15";
       context.font = `900 ${TWS_SLOT_SIZE * s}px ${POSTER_FONT}`;
       context.fillText(row.slot, tableX + 10 * s, rowY + rowHeight / 2);
       context.fillStyle = "#fff";
-      context.font = `900 ${TWS_NAME_SIZE * s}px ${POSTER_FONT}`;
       const nameX = tableX + 48 * s;
-      const family = names.family || row.name;
-      if (names.given) {
-        context.fillText(family, nameX, rowY + rowHeight / 2 - 7 * s);
-        context.fillStyle = "#d4d4d8";
-        context.font = `700 ${TWS_GIVEN_SIZE * s}px ${POSTER_FONT}`;
-        context.fillText(names.given, nameX, rowY + rowHeight / 2 + 9 * s);
-      } else {
-        context.fillText(family, nameX, rowY + rowHeight / 2);
+      const label = totwStatsSheetName(row).toUpperCase();
+      let nameSize = TWS_NAME_SIZE * s;
+      context.font = `900 ${nameSize}px ${POSTER_FONT}`;
+      const maxNameW = playerW - 58 * s;
+      while (nameSize > 10 * s && context.measureText(label).width > maxNameW) {
+        nameSize -= s;
+        context.font = `900 ${nameSize}px ${POSTER_FONT}`;
       }
+      context.fillText(label, nameX, rowY + rowHeight / 2);
       context.fillStyle = "#fff";
       context.font = `900 ${TWS_VALUE_SIZE * s}px ${POSTER_FONT}`;
       context.textAlign = "center";
