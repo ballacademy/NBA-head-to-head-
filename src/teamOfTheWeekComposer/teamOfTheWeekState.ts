@@ -99,6 +99,17 @@ export const weekRangeFor = (now = new Date()) => {
 export const defaultWeekLabel = (now = new Date()) =>
   `WEEK OF ${WEEK_MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 
+export const totwPhotoPan = (strip: TotwStrip, story = false): PhotoPan => {
+  if (!story || strip.customPhoto) {
+    return strip.pan;
+  }
+  const y = strip.pan?.y ?? DEFAULT_HEADSHOT_PAN.y;
+  if (Math.abs(y - DEFAULT_HEADSHOT_PAN.y) > 0.05) {
+    return strip.pan;
+  }
+  return { ...strip.pan, y: 0.48 };
+};
+
 export const createEmptyStrip = (): TotwStrip => ({
   playerId: null,
   teamId: null,

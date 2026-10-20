@@ -1069,7 +1069,7 @@ main.sc-stage {
 }
 
 .ig-slot.is-playoff-cut {
-  box-shadow: inset 0 calc(4 * var(--u)) 0 #facc15;
+  box-shadow: inset 0 calc(8 * var(--u)) 0 #facc15;
 }
 
 .ig-slot__l10 {

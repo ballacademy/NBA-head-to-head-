@@ -18,6 +18,7 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TOTW_NAME_H, TOTW_NAME_LOGO } from "./teamOfTheWeekLayout";
 import {
   splitTotwTitle,
+  totwPhotoPan,
   TOTW_STRIP_COUNT,
   type PhotoPan,
   type TotwStrip,
@@ -193,7 +194,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
               <PhotoFrame
                 src={strip.photoSrc}
                 label={label}
-                pan={strip.pan}
+                pan={totwPhotoPan(strip, story)}
                 custom={strip.customPhoto}
                 empty={empty}
                 vignette

@@ -16,11 +16,11 @@ export const QT_BA_SIZE = 72;
 export const QT_BA_INSET = 36;
 export const QT_FADE_H = 680;
 export const QT_QUOTE_SIZE = 70;
-export const QT_QUOTE_SIZE_LONG = 56;
+export const QT_QUOTE_SIZE_LONG = 40;
 export const QT_QUOTE_TRACK = 0.02;
 export const QT_QUOTE_LINE = 1.05;
 export const QT_QUOTE_MAX_LINES = 3;
-export const QT_QUOTE_LONG_MAX_LINES = 2;
+export const QT_QUOTE_LONG_MAX_LINES = 3;
 export const QT_QUOTE_PAD_X = 72;
 export const QT_QUOTE_BOTTOM = 88;
 export const QT_QUOTE_SOURCE_GAP = 56;
@@ -75,7 +75,7 @@ export const quoteTypeSize = (quote: string) => {
     return 30;
   }
   if (words > 14 || chars > 80) {
-    return 40;
+    return 34;
   }
   if (isLongQuote(quote)) {
     return QT_QUOTE_SIZE_LONG;

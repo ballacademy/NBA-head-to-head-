@@ -1,14 +1,5 @@
 /* Instagram Team of the Week — 4:5 board, five vertical photo strips. */
 
-.totw-board.is-story {
-  aspect-ratio: 9 / 16;
-}
-
-.totw-board.is-story .totw-strips {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: repeat(5, minmax(0, 1fr));
-}
-
 .totw-board {
   --u: 1px;
   --frame-color: #fff;
@@ -30,6 +21,15 @@
 
 .totw-board.is-black {
   --frame-color: #0a0a0a;
+}
+
+.totw-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.totw-board.is-story .totw-strips {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(5, minmax(0, 1fr));
 }
 
 .totw-header,

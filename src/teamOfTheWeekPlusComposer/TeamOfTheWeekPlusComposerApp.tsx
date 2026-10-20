@@ -60,6 +60,10 @@ import {
   totwStatsHasRows,
   totwStatsPngFilename,
 } from "../teamOfTheWeekComposer/totwStatsExport";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { exportTeamOfTheWeekPlusPng } from "./exportTeamOfTheWeekPlusPng";
 import { TeamOfTheWeekPlusGraphic } from "./TeamOfTheWeekPlusGraphic";
 import {
@@ -663,8 +667,8 @@ export function TeamOfTheWeekPlusComposerApp() {
       />
 
       <main className="sc-stage">
-        <div className="sc-stage__frame">
-          <ComposerBoard>
+        <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
+          <ComposerBoard height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}>
           {statsSheet ? (
             <TotwStatsGraphic
               sheet={stats}

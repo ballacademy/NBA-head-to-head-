@@ -133,7 +133,7 @@ describe("quote composer", () => {
       "I DIDN’T COME THIS FAR TO ONLY COME THIS FAR TONIGHT";
     expect(isLongQuote(short)).toBe(false);
     expect(isLongQuote(long)).toBe(true);
-    expect(quoteMaxLines(long)).toBe(2);
+    expect(quoteMaxLines(long)).toBe(3);
     expect(quoteTypeSize(long)).toBeLessThan(quoteTypeSize(short));
     expect(quoteLastNameSize("JOKIC", long)).toBeLessThan(
       quoteLastNameSize("JOKIC", short),

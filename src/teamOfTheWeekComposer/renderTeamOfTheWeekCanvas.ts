@@ -50,6 +50,7 @@ import {
   TOTW_STRIP_COUNT,
   TOTW_TITLE_TRACK,
   splitTotwTitle,
+  totwPhotoPan,
   type TotwStrip,
 } from "./teamOfTheWeekState";
 
@@ -122,11 +123,13 @@ const drawStripPhoto = async (
   showTeamHairline = true,
   photoGrade = false,
   stripStat = "",
+  story = false,
 ) => {
   context.save();
   context.fillStyle = "#111";
   context.fillRect(x, y, w, h);
   const inner = clipToInnerFrame(context, x, y, w, h, scale, look);
+  const pan = totwPhotoPan(strip, story);
   if (strip.photoSrc) {
     const photo = strip.photoSrc.startsWith("data:")
       ? await loadImage(strip.photoSrc)
@@ -139,11 +142,11 @@ const drawStripPhoto = async (
         inner.y,
         inner.w,
         inner.h,
-        strip.pan.x,
-        strip.pan.y,
-        photoZoom(strip.pan),
+        pan.x,
+        pan.y,
+        photoZoom(pan),
       );
-      const rotate = photoRotate(strip.pan);
+      const rotate = photoRotate(pan);
       context.save();
       context.filter = canvasGradeFilter(photoGrade);
       if (rotate) {
@@ -294,6 +297,7 @@ export const renderTeamOfTheWeekCanvas = async (
       input.showTeamHairline !== false,
       input.photoGrade === true,
       input.stripStats?.[index] ?? "",
+      story,
     );
     if (input.purpleFlair) {
       paintPurplePlateEdge(

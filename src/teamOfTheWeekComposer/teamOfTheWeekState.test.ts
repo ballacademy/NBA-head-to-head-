@@ -31,6 +31,7 @@ import {
 } from "./teamOfTheWeekLayout";
 import {
   applyPlayerPick,
+  createEmptyStrip,
   createEmptyStrips,
   DEFAULT_TOTW_TITLE,
   defaultTotwDraft,
@@ -38,6 +39,7 @@ import {
   patchStrip,
   setStripPhoto,
   splitTotwTitle,
+  totwPhotoPan,
   TOTW_STRIP_COUNT,
   usedPlayerIds,
   weekRangeFor,
@@ -69,6 +71,9 @@ describe("team of the week state", () => {
     const stacked = totwStripRect(0, true);
     expect(stacked.w).toBeGreaterThan(stacked.h);
     expect(totwStripRect(1, true).y).toBeGreaterThan(stacked.y);
+    const empty = createEmptyStrip();
+    expect(totwPhotoPan(empty, true).y).toBeGreaterThan(empty.pan.y);
+    expect(totwPhotoPan(empty, false).y).toBe(empty.pan.y);
   });
 
   it("defaults the title, week line, and studded metal field", () => {

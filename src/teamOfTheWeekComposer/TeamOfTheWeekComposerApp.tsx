@@ -62,6 +62,7 @@ import {
   exportFilenameFromTitle,
 } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import { totwBoardH } from "./teamOfTheWeekLayout";
 import { TeamOfTheWeekGraphic } from "./TeamOfTheWeekGraphic";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { exportTeamOfTheWeekPng } from "./exportTeamOfTheWeekPng";
@@ -653,7 +654,7 @@ export function TeamOfTheWeekComposerApp() {
 
       <main className="sc-stage">
         <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
-          <ComposerBoard>
+          <ComposerBoard height={totwBoardH(storyCrop)}>
           {statsSheet ? (
             <TotwStatsGraphic
               sheet={stats}

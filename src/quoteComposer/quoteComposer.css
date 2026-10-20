@@ -141,6 +141,7 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 1.05;
+  overflow: hidden;
   -webkit-text-stroke: calc(3 * var(--u)) #000;
   paint-order: stroke fill;
   text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.82);
