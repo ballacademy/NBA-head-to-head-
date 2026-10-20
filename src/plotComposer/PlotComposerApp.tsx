@@ -65,9 +65,12 @@ import {
   pinPlotPlayer,
   plotCaptionNames,
   plotMetricLabel,
+  PLOT_ALL_NAMES_KEY,
   populatePlotPoints,
+  readPlotAllNames,
   togglePlotId,
   unpinPlotPlayer,
+  writePlotAllNames,
   type PlotDraft,
   type PlotPoint,
   type PlotQuadrants,
@@ -95,9 +98,21 @@ const isAutoTitle = (title: string) => {
 const loadDraft = (): PlotDraft => {
   const stored = readJson<Partial<PlotDraft>>(STORAGE_KEY);
   if (isPlotDraft(stored) || (stored && typeof stored.title === "string")) {
-    return normalizePlotDraft(stored ?? {}, parseEveryTeamSeason(stored?.season));
+    const draft = normalizePlotDraft(
+      stored ?? {},
+      parseEveryTeamSeason(stored?.season),
+    );
+    // Old drafts stored Labels-on as showNames:true; all-names stays off
+    // until this Plot-only pref has been set.
+    if (readJson<unknown>(PLOT_ALL_NAMES_KEY) == null) {
+      return { ...draft, showNames: false };
+    }
+    return draft;
   }
-  return defaultPlotDraft(everyTeamCurrentSeason());
+  return {
+    ...defaultPlotDraft(everyTeamCurrentSeason()),
+    showNames: readPlotAllNames(),
+  };
 };
 
 export function PlotComposerApp() {
@@ -122,7 +137,7 @@ export function PlotComposerApp() {
     ...EMPTY_PLAYER_FILTERS,
   });
   const [showBa, setShowBa] = useState(true);
-  const [showNames, setShowNames] = useState(true);
+  const [showNames, setShowNames] = useState(false);
   const [xMin, setXMin] = useState<number | null>(null);
   const [xMax, setXMax] = useState<number | null>(null);
   const [yMin, setYMin] = useState<number | null>(null);
@@ -157,7 +172,7 @@ export function PlotComposerApp() {
     setQuadrants(draft.quadrants ?? { ...DEFAULT_PLOT_QUADRANTS });
     setFilters(draft.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(draft.showBa !== false);
-    setShowNames(draft.showNames !== false);
+    setShowNames(draft.showNames === true);
     setXMin(draft.xMin ?? null);
     setXMax(draft.xMax ?? null);
     setYMin(draft.yMin ?? null);
@@ -235,7 +250,7 @@ export function PlotComposerApp() {
     setQuadrants(next.quadrants ?? { ...DEFAULT_PLOT_QUADRANTS });
     setFilters(next.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(next.showBa !== false);
-    setShowNames(next.showNames !== false);
+    setShowNames(next.showNames === true);
     setXMin(next.xMin ?? null);
     setXMax(next.xMax ?? null);
     setYMin(next.yMin ?? null);
@@ -606,9 +621,13 @@ export function PlotComposerApp() {
         <BaMarkToggle on={showBa} onChange={setShowBa} />
         <ComposerNamesToggle
           on={showNames}
-          onChange={setShowNames}
-          label="Labels"
-          ariaLabel="Show names on the plot"
+          onChange={(on) => {
+            writePlotAllNames(on);
+            setShowNames(on);
+          }}
+          label="All names"
+          ariaLabel="Include names on every plot dot"
+          remember={false}
         />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">X min</span>
@@ -767,9 +786,10 @@ export function PlotComposerApp() {
               push(points);
               skipLivePlot.current = true;
               setPopulated(false);
-              applyDraft(
-                defaultPlotDraft(season),
-              );
+              applyDraft({
+                ...defaultPlotDraft(season),
+                showNames: readPlotAllNames(),
+              });
               setStatus("Blank post.");
             }}
           >

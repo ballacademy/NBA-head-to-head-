@@ -133,7 +133,7 @@ export const renderPlotCanvas = async (
     xAxis,
     yAxis,
     boardH,
-    input.showNames !== false,
+    input.showNames === true,
     input.highlightedIds ?? [],
   );
   const xLabel = plotMetricLabel(input.xMetric);

@@ -5,6 +5,7 @@ import {
 } from "../instagramComposer/composerNameStyle";
 import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import { readJson, writeJson } from "../lib/browserStorage";
 import { parsePlotAxisBound } from "./plotLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
@@ -39,7 +40,22 @@ export { DEFAULT_BRAND };
 
 export const DEFAULT_PLOT_TITLE = "PTS VS AST";
 export const PLOT_TITLE_MAX = 72;
+export const PLOT_ALL_NAMES_KEY = "ddgm:plot-all-names";
 export type PlotSubject = "teams" | "players";
+
+export const readPlotAllNames = () =>
+  readJson<unknown>(PLOT_ALL_NAMES_KEY) === true;
+
+export const writePlotAllNames = (on: boolean) => {
+  writeJson(PLOT_ALL_NAMES_KEY, on);
+};
+
+export const storedOrPlotAllNames = (value: unknown) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  return readPlotAllNames();
+};
 
 export interface PlotPoint {
   id: string;
@@ -147,7 +163,7 @@ export const defaultPlotDraft = (season = "2026-27"): PlotDraft => ({
   sizeMetric: "none",
   quadrants: { ...DEFAULT_PLOT_QUADRANTS },
   showBa: true,
-  showNames: true,
+  showNames: false,
   filters: { ...EMPTY_PLAYER_FILTERS },
 });
 
@@ -217,7 +233,7 @@ export const normalizePlotDraft = (
     sizeMetric: parsePlotSizeMetric(draft.sizeMetric),
     quadrants: parsePlotQuadrants(draft.quadrants),
     showBa: draft.showBa !== false,
-    showNames: draft.showNames !== false,
+    showNames: storedOrPlotAllNames(draft.showNames),
     filters: parsePlayerSearchFilters(draft.filters),
   };
 };

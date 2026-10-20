@@ -724,6 +724,17 @@ describe("composer chrome", () => {
     expect(plotApp).toContain("applyPlot");
     expect(plotApp).toContain("skipLivePlot");
     expect(plotApp).toContain("setPopulated");
+    expect(plotApp).toContain('label="All names"');
+    expect(plotApp).toContain('ariaLabel="Include names on every plot dot"');
+    expect(plotApp).toContain("remember={false}");
+    expect(plotApp).toContain("writePlotAllNames");
+    expect(plotApp).toContain("PLOT_ALL_NAMES_KEY");
+    const namesToggle = readFileSync(
+      join(root, "instagramComposer/ComposerNamesToggle.tsx"),
+      "utf8",
+    );
+    expect(namesToggle).toContain("remember = true");
+    expect(namesToggle).toContain("writeLastShowNames");
     const nameStyle = readFileSync(
       join(root, "instagramComposer/composerNameStyle.ts"),
       "utf8",

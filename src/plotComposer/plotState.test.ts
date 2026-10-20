@@ -11,17 +11,23 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  PLOT_MARK_DOT,
+  PLOT_MARK_PLAYER,
+  PLOT_MARK_TEAM,
   axisFromValues,
   labelsToShow,
   nudgePlotLabels,
   placePlotPoints,
+  plotMarkSize,
   plotRectFor,
+  sizeScaleFor,
 } from "./plotLayout";
 import {
   DEFAULT_PLOT_QUADRANTS,
   DEFAULT_PLOT_TITLE,
   autoPlotTitle,
   defaultPlotDraft,
+  normalizePlotDraft,
   pinPlotPlayer,
   plotMetricLabel,
   populatePlotPlayers,
@@ -53,6 +59,9 @@ describe("plot composer", () => {
     const draft = defaultPlotDraft("2026-27");
     expect(draft.points).toEqual([]);
     expect(draft.subject).toBe("teams");
+    expect(draft.showNames).toBe(false);
+    expect(normalizePlotDraft({}).showNames).toBe(false);
+    expect(normalizePlotDraft({ showNames: true }).showNames).toBe(true);
     expect(draft.title).toBe(DEFAULT_PLOT_TITLE);
     expect(splitPlotTitle(DEFAULT_PLOT_TITLE)).toEqual(["PTS VS", "AST"]);
     expect(EVERY_TEAM_STAT_METRICS.map((item) => item.label)).toEqual(
@@ -164,10 +173,26 @@ describe("plot composer", () => {
       ],
       { min: 0, max: 20, ticks: [0, 10, 20] },
       { min: 0, max: 20, ticks: [0, 10, 20] },
+      GRAPHIC_HEIGHT,
+      true,
     );
     expect(placed[0]?.showLabel).toBe(true);
+    expect(placed[1]?.showLabel).toBe(true);
     expect(placed[1]?.ly).not.toBe(placed[0]?.ly);
     const highlighted = placePlotPoints(
+      [
+        { id: "a", x: 10, y: 10, label: "Alpha", kind: "player" },
+        { id: "b", x: 12, y: 14, label: "Bravo", kind: "player" },
+      ],
+      { min: 0, max: 20, ticks: [0, 10, 20] },
+      { min: 0, max: 20, ticks: [0, 10, 20] },
+      GRAPHIC_HEIGHT,
+      false,
+      ["b"],
+    );
+    expect(highlighted.find((point) => point.id === "a")?.showLabel).toBe(false);
+    expect(highlighted.find((point) => point.id === "b")?.showLabel).toBe(true);
+    const allNames = placePlotPoints(
       [
         { id: "a", x: 10, y: 10, label: "Alpha", kind: "player" },
         { id: "b", x: 12, y: 14, label: "Bravo", kind: "player" },
@@ -178,10 +203,41 @@ describe("plot composer", () => {
       true,
       ["b"],
     );
-    expect(highlighted.find((point) => point.id === "a")?.showLabel).toBe(false);
-    expect(highlighted.find((point) => point.id === "b")?.showLabel).toBe(true);
+    expect(allNames.every((point) => point.showLabel)).toBe(true);
+    const unlabeled = placePlotPoints(
+      [
+        { id: "a", x: 10, y: 10, label: "Alpha", kind: "team" },
+        { id: "b", x: 12, y: 14, label: "Bravo", kind: "team" },
+      ],
+      { min: 0, max: 20, ticks: [0, 10, 20] },
+      { min: 0, max: 20, ticks: [0, 10, 20] },
+    );
+    expect(unlabeled.every((point) => point.showLabel)).toBe(false);
     const nudged = nudgePlotLabels(placed, plotRectFor());
     expect(nudged).toHaveLength(2);
+  });
+
+  it("bumps face and circle size and still scales from that base", () => {
+    expect(PLOT_MARK_TEAM).toBe(58);
+    expect(PLOT_MARK_PLAYER).toBe(46);
+    expect(PLOT_MARK_DOT).toBe(14);
+    expect(plotMarkSize("team", 30)).toBe(PLOT_MARK_TEAM);
+    expect(plotMarkSize("player", 20)).toBe(PLOT_MARK_PLAYER);
+    expect(plotMarkSize("player", 80)).toBe(PLOT_MARK_DOT);
+    const scale = sizeScaleFor([10, 20, 30]);
+    const sized = placePlotPoints(
+      [
+        { id: "lo", x: 10, y: 10, label: "Lo", kind: "team", size: 10 },
+        { id: "hi", x: 20, y: 20, label: "Hi", kind: "team", size: 30 },
+      ],
+      { min: 0, max: 30, ticks: [0, 15, 30] },
+      { min: 0, max: 30, ticks: [0, 15, 30] },
+    );
+    expect(sized[0]?.mark).toBe(Math.max(8, Math.round(PLOT_MARK_TEAM * scale(10))));
+    expect(sized[1]?.mark).toBe(Math.max(8, Math.round(PLOT_MARK_TEAM * scale(30))));
+    expect(sized[1]!.mark).toBeGreaterThan(sized[0]!.mark);
+    expect(sized[1]!.mark).toBeGreaterThan(PLOT_MARK_TEAM);
+    expect(sized[1]!.mark).toBeLessThan(PLOT_MARK_TEAM * 2);
   });
 
   it("still plots advanced and hustle when the HUD sample is preseason", () => {

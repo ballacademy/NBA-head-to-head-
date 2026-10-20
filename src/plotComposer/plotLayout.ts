@@ -23,9 +23,9 @@ export const PLOT_TOP = 152;
 export const PLOT_BOTTOM = 96;
 export const PLOT_AXIS_SIZE = 13;
 export const PLOT_AXIS_TITLE = 16;
-export const PLOT_MARK_TEAM = 48;
-export const PLOT_MARK_PLAYER = 36;
-export const PLOT_MARK_DOT = 10;
+export const PLOT_MARK_TEAM = 58;
+export const PLOT_MARK_PLAYER = 46;
+export const PLOT_MARK_DOT = 14;
 export const PLOT_HEADSHOT_MAX = 36;
 export const PLOT_LABEL_MAX = 32;
 export const PLOT_LABEL_SIZE = 12;
@@ -283,18 +283,16 @@ export const placePlotPoints = (
   xAxis: PlotAxis,
   yAxis: PlotAxis,
   boardH = GRAPHIC_HEIGHT,
-  showNames = true,
+  showNames = false,
   highlightedIds: string[] = [],
 ): PlotPlacedPoint[] => {
   const plot = plotRectFor(boardH);
   const base = plotMarkSize(points[0]?.kind ?? "team", points.length);
   const scale = sizeScaleFor(points.map((point) => point.size));
   const hot = new Set(highlightedIds.filter(Boolean));
-  const labeled = hot.size
-    ? new Set(hot)
-    : showNames
-      ? labelsToShow(points, points.length <= PLOT_LABEL_MAX)
-      : new Set<string>();
+  const labeled = showNames
+    ? new Set(points.map((point) => point.id))
+    : new Set(hot);
   const placed: PlotPlacedPoint[] = points.map((point) => {
     const mark = Math.max(8, Math.round(base * scale(point.size)));
     const px = projectPlot(point.x, xAxis, plot.x, plot.w);

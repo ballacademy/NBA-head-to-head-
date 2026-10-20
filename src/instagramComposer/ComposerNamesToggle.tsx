@@ -5,6 +5,7 @@ interface ComposerNamesToggleProps {
   onChange: (on: boolean) => void;
   label?: string;
   ariaLabel?: string;
+  remember?: boolean;
 }
 
 export function ComposerNamesToggle({
@@ -12,6 +13,7 @@ export function ComposerNamesToggle({
   onChange,
   label = "Names",
   ariaLabel = "Show names",
+  remember = true,
 }: ComposerNamesToggleProps) {
   return (
     <label className="sc-field">
@@ -23,7 +25,9 @@ export function ComposerNamesToggle({
         aria-label={ariaLabel}
         onClick={() => {
           const next = !on;
-          writeLastShowNames(next);
+          if (remember) {
+            writeLastShowNames(next);
+          }
           onChange(next);
         }}
       >
