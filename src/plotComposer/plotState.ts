@@ -14,6 +14,7 @@ import {
   listRosterPlayers,
   matchingTeamIds,
   parseEveryTeamStatMetric,
+  playerRowForSeason,
   playerStatValue,
   rosterStatValue,
   teamLogoSrc,
@@ -363,16 +364,19 @@ export const populatePlotPlayers = (
       return;
     }
     const pinnedRow = pinned.has(row.player.id);
-    if (
-      !pinnedRow &&
-      (!qualifiesForMetric(row.player, xMetric) ||
-        !qualifiesForMetric(row.player, yMetric))
-    ) {
-      return;
-    }
     const x = playerStatValue(row.player.id, season, xMetric, row.teamId, sample);
     const y = playerStatValue(row.player.id, season, yMetric, row.teamId, sample);
     if (x == null || y == null) {
+      return;
+    }
+    const qualifyRow =
+      playerRowForSeason(row.player.id, season, row.teamId, "regular") ??
+      row.player;
+    if (
+      !pinnedRow &&
+      (!qualifiesForMetric(qualifyRow, xMetric) ||
+        !qualifiesForMetric(qualifyRow, yMetric))
+    ) {
       return;
     }
     const names = splitPlayerName(row.player.name);

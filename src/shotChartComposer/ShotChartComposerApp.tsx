@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
+import { GRAPHIC_HEIGHT, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
@@ -426,7 +427,9 @@ export function ShotChartComposerApp() {
       />
       <main className="sc-stage">
         <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
-          <ComposerBoard>
+          <ComposerBoard
+            height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}
+          >
             <ShotChartGraphic
               ref={boardRef}
               draft={draft}

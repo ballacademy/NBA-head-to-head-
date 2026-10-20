@@ -242,7 +242,7 @@ export function PlotComposerApp() {
     setPopulated(next.points.length > 0);
   };
 
-  const skipLivePlot = useRef(true);
+  const skipLivePlot = useRef(false);
 
   const applyPlot = useCallback(
     (announce: boolean) => {
@@ -260,9 +260,7 @@ export function PlotComposerApp() {
       const labelY = plotMetricLabel(yMetric);
       if (next.length === 0) {
         setPoints([]);
-        if (announce) {
-          setStatus(`No ${labelX}/${labelY} for ${season}.`);
-        }
+        setStatus(`No ${labelX}/${labelY} for ${season}.`);
         return next;
       }
       setPoints(next);

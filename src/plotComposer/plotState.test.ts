@@ -184,6 +184,37 @@ describe("plot composer", () => {
     expect(nudged).toHaveLength(2);
   });
 
+  it("still plots advanced and hustle when the HUD sample is preseason", () => {
+    const teams = populatePlotTeams(
+      "2026-27",
+      "usgPct",
+      "per",
+      EMPTY_PLAYER_FILTERS,
+      "preseason",
+    );
+    expect(teams).toHaveLength(30);
+    expect(teams.every((point) => point.x > 0 && point.y > 10)).toBe(true);
+    const hustle = populatePlotTeams(
+      "2026-27",
+      "chargesDrawn",
+      "pace",
+      EMPTY_PLAYER_FILTERS,
+      "preseason",
+    );
+    expect(hustle).toHaveLength(30);
+    expect(Math.max(...hustle.map((point) => point.x))).toBeGreaterThan(0.1);
+    const league = populatePlotPlayers(
+      "2026-27",
+      "usgPct",
+      "chargesDrawn",
+      EMPTY_PLAYER_FILTERS,
+      [],
+      "preseason",
+    );
+    expect(league.length).toBeGreaterThan(40);
+    expect(league.every((point) => point.x > 0 && point.y >= 0)).toBe(true);
+  });
+
   it("plots advanced team and player stats with real axes", () => {
     const teams = populatePlotTeams(
       "2026-27",

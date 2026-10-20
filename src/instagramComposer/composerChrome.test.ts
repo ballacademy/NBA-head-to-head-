@@ -853,4 +853,27 @@ describe("composer chrome", () => {
     expect(mockTradeGraphic).toContain("mockTradePlayerSlot");
     expect(mockTradeGraphic).toContain("data-composer-slot");
   });
+
+  it("plots ESPN play-by-play shot coordinates on a full half-court", () => {
+    const shotState = readFileSync(
+      join(root, "shotChartComposer/shotChartState.ts"),
+      "utf8",
+    );
+    const shotGraphic = readFileSync(
+      join(root, "shotChartComposer/ShotChartGraphic.tsx"),
+      "utf8",
+    );
+    const shotCanvas = readFileSync(
+      join(root, "shotChartComposer/renderShotChartCanvas.ts"),
+      "utf8",
+    );
+    expect(shotState).toContain("site.web.api.espn.com");
+    expect(shotState).toContain("item.shootingPlay !== true");
+    expect(shotState).toContain("isFreeThrow");
+    expect(shotState).not.toContain("Math.random");
+    expect(shotGraphic).toContain("No shot location data");
+    expect(shotGraphic).toContain("shotChartBoardRects");
+    expect(shotCanvas).toContain("shotChartBoardRects");
+    expect(shotCanvas).toContain("paintHalfCourt");
+  });
 });

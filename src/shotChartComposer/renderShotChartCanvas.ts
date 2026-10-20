@@ -17,7 +17,11 @@ import {
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 import {
-  courtPoint,
+  paintHalfCourt,
+  shotChartBoardRects,
+  shotToPx,
+} from "./shotChartLayout";
+import {
   formatZoneSplit,
   shotLine,
   shotZoneSplits,
@@ -40,46 +44,6 @@ export type ShotChartRenderInput = ShotChartDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
   story?: boolean;
-};
-
-const paintCourt = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-) => {
-  context.save();
-  context.translate(x, y);
-  const sx = w / 500;
-  const sy = h / 470;
-  context.scale(sx, sy);
-  context.strokeStyle = "#fff";
-  context.lineWidth = 4;
-  context.strokeRect(4, 4, 492, 462);
-  context.beginPath();
-  context.moveTo(4, 430);
-  context.lineTo(496, 430);
-  context.stroke();
-  context.beginPath();
-  context.arc(250, 430, 75, 0, Math.PI * 2);
-  context.stroke();
-  context.strokeRect(175, 280, 150, 150);
-  context.beginPath();
-  context.arc(250, 280, 60, 0, Math.PI * 2);
-  context.stroke();
-  context.beginPath();
-  context.arc(250, 418, 12, 0, Math.PI * 2);
-  context.strokeStyle = "#facc15";
-  context.stroke();
-  context.strokeStyle = "#fff";
-  context.beginPath();
-  context.moveTo(33, 430);
-  context.lineTo(33, 250);
-  context.arc(250, 250, 217, Math.PI, 0);
-  context.lineTo(467, 430);
-  context.stroke();
-  context.restore();
 };
 
 export const renderShotChartCanvas = async (
@@ -105,12 +69,12 @@ export const renderShotChartCanvas = async (
   context.fillStyle = "#fff";
   if (!input.showBa) {
     context.font = `900 ${22 * s}px ${POSTER_FONT}`;
-    context.fillText(input.brand.toUpperCase(), width / 2, 34 * s);
+    context.fillText(input.brand.toUpperCase(), width / 2, 30 * s);
   }
   const lines = splitShotChartTitle(input.title);
-  context.font = `900 ${44 * s}px ${POSTER_FONT}`;
+  context.font = `900 ${40 * s}px ${POSTER_FONT}`;
   lines.forEach((line, index) => {
-    context.fillText(line, width / 2, (86 + index * 46) * s);
+    context.fillText(line, width / 2, (64 + index * 40) * s);
   });
   const nameLines = composerNameLines(
     input.firstName,
@@ -118,74 +82,95 @@ export const renderShotChartCanvas = async (
     readComposerNameStyle(),
   );
   if (nameLines.given) {
-    context.font = `900 ${14 * s}px ${POSTER_FONT}`;
-    context.fillText(nameLines.given.toUpperCase(), width / 2, 168 * s);
+    context.font = `900 ${13 * s}px ${POSTER_FONT}`;
+    context.fillText(nameLines.given.toUpperCase(), width / 2, 132 * s);
   }
-  context.font = `900 ${42 * s}px ${POSTER_FONT}`;
+  context.font = `900 ${36 * s}px ${POSTER_FONT}`;
   context.fillText(
     (nameLines.family || input.lastName || "PLAYER").toUpperCase(),
     width / 2,
-    206 * s,
+    168 * s,
   );
   context.fillStyle = "#facc15";
   context.font = `900 ${14 * s}px ${POSTER_FONT}`;
   context.fillText(
     `${(input.gameLabel || "LAST GAME").toUpperCase()} · ${shotLine(input.makes, input.attempts)}`,
     width / 2,
-    240 * s,
+    200 * s,
   );
 
+  const rects = shotChartBoardRects(boardH);
+  const court = {
+    x: rects.court.x * s,
+    y: rects.court.y * s,
+    w: rects.court.w * s,
+    h: rects.court.h * s,
+  };
+  paintHalfCourt(context, court);
   const shots = visibleShots(input.shots, input.showMakes, input.showMisses);
-  const courtW = 700 * s;
-  const courtH = (boardH - 300) * s;
-  const courtX = 36 * s;
-  const courtY = 260 * s;
-  paintCourt(context, courtX, courtY, courtW, courtH);
   shots.forEach((shot) => {
-    const point = courtPoint(shot, courtW, courtH);
+    const point = shotToPx(shot, court);
     context.beginPath();
-    context.arc(courtX + point.x, courtY + point.y, (shot.made ? 7 : 6) * s, 0, Math.PI * 2);
+    context.arc(point.x, point.y, (shot.made ? 9 : 8) * s, 0, Math.PI * 2);
     if (shot.made) {
       context.fillStyle = "#facc15";
       context.fill();
+      context.strokeStyle = "#111111";
+      context.lineWidth = 1.4 * s;
+      context.stroke();
     } else {
       context.strokeStyle = "#fb7185";
-      context.lineWidth = 2.4 * s;
+      context.lineWidth = 2.8 * s;
       context.stroke();
     }
   });
 
-  context.textAlign = "left";
-  context.textBaseline = "middle";
-  const zones = shotZoneSplits(shots);
-  const zoneX = courtX + courtW + 24 * s;
-  zones.forEach((zone, index) => {
-    const y = courtY + 28 * s + index * 36 * s;
-    context.fillStyle = "rgba(255,255,255,0.78)";
-    context.font = `900 ${13 * s}px ${POSTER_FONT}`;
-    context.fillText(zone.label, zoneX, y);
-    context.fillStyle = "#facc15";
-    context.textAlign = "right";
+  if (input.shots.length === 0) {
+    context.fillStyle = "rgba(250, 250, 250, 0.78)";
+    context.font = `900 ${22 * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
     context.fillText(
-      formatZoneSplit(zone.makes, zone.attempts),
-      width - 36 * s,
-      y,
+      "NO SHOT LOCATION DATA",
+      court.x + court.w / 2,
+      court.y + court.h / 2,
     );
-    context.textAlign = "left";
-  });
+  } else {
+    const zones = shotZoneSplits(shots);
+    const cellW = (rects.zones.w * s) / 3;
+    const cellH = (rects.zones.h * s) / 2;
+    zones.forEach((zone, index) => {
+      const col = index % 3;
+      const row = Math.floor(index / 3);
+      const x = rects.zones.x * s + col * cellW;
+      const y = rects.zones.y * s + row * cellH + cellH / 2;
+      context.textAlign = "left";
+      context.textBaseline = "middle";
+      context.fillStyle = "rgba(255,255,255,0.78)";
+      context.font = `900 ${12 * s}px ${POSTER_FONT}`;
+      context.fillText(zone.label, x, y);
+      context.fillStyle = "#facc15";
+      context.textAlign = "right";
+      context.font = `900 ${15 * s}px ${POSTER_FONT}`;
+      context.fillText(
+        formatZoneSplit(zone.makes, zone.attempts),
+        x + cellW - 8 * s,
+        y,
+      );
+    });
+  }
 
   context.textAlign = "center";
-  context.font = `900 ${12 * s}px ${POSTER_FONT}`;
+  context.font = `900 ${13 * s}px ${POSTER_FONT}`;
   context.fillStyle = "#facc15";
-  context.fillText("MAKE", width / 2 - 60 * s, height - 28 * s);
+  context.fillText("MAKE", width / 2 - 70 * s, rects.legendY * s);
   context.fillStyle = "#fb7185";
-  context.fillText("MISS", width / 2 + 60 * s, height - 28 * s);
+  context.fillText("MISS", width / 2 + 70 * s, rects.legendY * s);
 
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");
     if (ba) {
       const size = 56 * s;
-      const inset = 24 * s;
+      const inset = 22 * s;
       if (input.purpleFlair) {
         paintPurpleBaGlow(context, width - inset - size, inset, size);
       }

@@ -20,6 +20,12 @@ export const officialTeamSeason = (
   if (TEAM_SEASON_STATS[statsSeason]) {
     return statsSeason;
   }
+  if (sample !== "regular") {
+    const regular = statsSeasonFor(season, "regular");
+    if (TEAM_SEASON_STATS[regular]) {
+      return regular;
+    }
+  }
   if (TEAM_SEASON_STATS[season]) {
     return season;
   }
@@ -34,5 +40,17 @@ export const officialTeamStatValue = (
 ): number | null => {
   const row = TEAM_SEASON_STATS[officialTeamSeason(season, sample)]?.[teamId];
   const value = row?.[metric];
-  return typeof value === "number" ? value : null;
+  if (typeof value === "number") {
+    return value;
+  }
+  if (sample !== "regular") {
+    const fallback =
+      TEAM_SEASON_STATS[officialTeamSeason(season, "regular")]?.[teamId]?.[
+        metric
+      ];
+    if (typeof fallback === "number") {
+      return fallback;
+    }
+  }
+  return null;
 };

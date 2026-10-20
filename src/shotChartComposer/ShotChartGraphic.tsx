@@ -1,4 +1,4 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import { forwardRef, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerFlairClass,
@@ -10,9 +10,17 @@ import {
   useComposerNameStyle,
 } from "../instagramComposer/composerNameStyle";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
-  courtPoint,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import {
+  halfCourtSvgPaths,
+  shotChartBoardRects,
+  shotToPx,
+} from "./shotChartLayout";
+import {
   formatZoneSplit,
   shotLine,
   shotZoneSplits,
@@ -55,8 +63,16 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
       nameStyle,
     );
     const titleLines = splitShotChartTitle(draft.title);
-    const courtW = 500;
-    const courtH = 470;
+    const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+    const rects = useMemo(() => shotChartBoardRects(boardH), [boardH]);
+    const court = rects.court;
+    const paths = useMemo(
+      () => halfCourtSvgPaths(court.w, court.h),
+      [court.w, court.h],
+    );
+    const shots = visibleShots(draft.shots, draft.showMakes, draft.showMisses);
+    const empty = draft.shots.length === 0;
+    const zones = shotZoneSplits(shots);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -94,12 +110,16 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
           "shc-board",
           exporting ? "is-exporting" : "",
           story ? "is-story" : "",
+          empty ? "is-empty" : "",
           composerLookClass(look),
           composerFlairClass(purpleFlair),
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` }}
+        style={{
+          ["--u" as string]: `${unit}px`,
+          height: story ? STORY_DESIGN_HEIGHT : undefined,
+        }}
         aria-label="Instagram shot chart graphic"
       >
         {draft.showBa ? (
@@ -143,52 +163,97 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             {draft.gameLabel || "LAST GAME"} · {shotLine(draft.makes, draft.attempts)}
           </span>
         </button>
-        <div className="shc-body">
-        <svg
-          className="shc-court"
-          viewBox={`0 0 ${courtW} ${courtH}`}
-          role="img"
-          aria-label="Half-court shot chart"
+        <div
+          className="shc-court-wrap"
+          style={{
+            left: `calc(${court.x} * var(--u))`,
+            top: `calc(${court.y} * var(--u))`,
+            width: `calc(${court.w} * var(--u))`,
+            height: `calc(${court.h} * var(--u))`,
+          }}
         >
-          <rect x="4" y="4" width="492" height="462" fill="none" stroke="#fff" strokeWidth="4" />
-          <line x1="4" y1="430" x2="496" y2="430" stroke="#fff" strokeWidth="3" />
-          <circle cx="250" cy="430" r="75" fill="none" stroke="#fff" strokeWidth="3" />
-          <path d="M175 430 V 280 H 325 V 430" fill="none" stroke="#fff" strokeWidth="3" />
-          <circle cx="250" cy="280" r="60" fill="none" stroke="#fff" strokeWidth="3" />
-          <circle cx="250" cy="418" r="12" fill="none" stroke="#facc15" strokeWidth="3" />
-          <path
-            d="M 33 430 L 33 250 A 217 217 0 0 1 467 250 L 467 430"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="3"
-          />
-          {visibleShots(draft.shots, draft.showMakes, draft.showMisses).map((shot, index) => {
-            const point = courtPoint(shot, courtW, courtH);
-            return (
-              <circle
-                key={`${shot.x}-${shot.y}-${index}`}
-                cx={point.x}
-                cy={point.y}
-                r={shot.made ? 7 : 6}
-                fill={shot.made ? "#facc15" : "none"}
-                stroke={shot.made ? "#facc15" : "#fb7185"}
-                strokeWidth="2.4"
-              />
-            );
-          })}
-        </svg>
-        <ul className="shc-zones" aria-label="Shot zone splits">
-          {shotZoneSplits(
-            visibleShots(draft.shots, draft.showMakes, draft.showMisses),
-          ).map((zone) => (
-            <li key={zone.id}>
-              <span>{zone.label}</span>
-              <strong>{formatZoneSplit(zone.makes, zone.attempts)}</strong>
-            </li>
-          ))}
-        </ul>
+          <svg
+            className="shc-court"
+            viewBox={`0 0 ${paths.w} ${paths.h}`}
+            role="img"
+            aria-label="Half-court shot chart"
+          >
+            <rect
+              x="1.5"
+              y="1.5"
+              width={paths.w - 3}
+              height={paths.h - 3}
+              fill="rgba(8,8,10,0.35)"
+              stroke="#f4f4f5"
+              strokeWidth="3"
+            />
+            <path d={paths.paint} fill="none" stroke="#f4f4f5" strokeWidth="3" />
+            <path
+              d={paths.restricted}
+              fill="none"
+              stroke="#f4f4f5"
+              strokeWidth="3"
+            />
+            <circle
+              cx={paths.ftCircle.cx}
+              cy={paths.ftCircle.cy}
+              r={paths.ftCircle.r}
+              fill="none"
+              stroke="#f4f4f5"
+              strokeWidth="3"
+            />
+            <circle
+              cx={paths.hoopX}
+              cy={paths.hoopY}
+              r={paths.hoopR}
+              fill="none"
+              stroke="#facc15"
+              strokeWidth="3"
+            />
+            <path d={paths.three} fill="none" stroke="#f4f4f5" strokeWidth="3" />
+            {shots.map((shot, index) => {
+              const point = shotToPx(shot, { x: 0, y: 0, w: paths.w, h: paths.h });
+              return (
+                <circle
+                  key={`${shot.x}-${shot.y}-${index}`}
+                  className={shot.made ? "is-make" : "is-miss"}
+                  cx={point.x}
+                  cy={point.y}
+                  r={shot.made ? 9 : 8}
+                  fill={shot.made ? "#facc15" : "none"}
+                  stroke={shot.made ? "#111111" : "#fb7185"}
+                  strokeWidth={shot.made ? 1.4 : 2.8}
+                />
+              );
+            })}
+          </svg>
+          {empty ? (
+            <p className="shc-empty">No shot location data</p>
+          ) : null}
         </div>
-        <p className="shc-legend">
+        {empty ? null : (
+          <ul
+            className="shc-zones"
+            aria-label="Shot zone splits"
+            style={{
+              left: `calc(${rects.zones.x} * var(--u))`,
+              top: `calc(${rects.zones.y} * var(--u))`,
+              width: `calc(${rects.zones.w} * var(--u))`,
+              height: `calc(${rects.zones.h} * var(--u))`,
+            }}
+          >
+            {zones.map((zone) => (
+              <li key={zone.id}>
+                <span>{zone.label}</span>
+                <strong>{formatZoneSplit(zone.makes, zone.attempts)}</strong>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p
+          className="shc-legend"
+          style={{ top: `calc(${rects.legendY} * var(--u))` }}
+        >
           <span className="is-make">MAKE</span>
           <span className="is-miss">MISS</span>
         </p>

@@ -12,11 +12,13 @@ import {
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { shotToPx } from "./shotChartLayout";
 
 export { DEFAULT_BRAND };
 
+/** Same host as box-score fetches — `site.api` summaries omit PBP coordinates. */
 export const ESPN_SUMMARY_URL = (eventId: string) =>
-  `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${encodeURIComponent(eventId)}`;
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${encodeURIComponent(eventId)}`;
 
 export const DEFAULT_SHOT_CHART_TITLE = "SHOT CHART";
 export const SHOT_CHART_TITLE_TRACK = 0.04;
@@ -64,6 +66,28 @@ const numOf = (value: unknown) => {
   return Number.isFinite(n) ? n : null;
 };
 
+const playTypeText = (item: Record<string, unknown>) =>
+  textOf(rec(item.type)?.text) || textOf(item.shortDescription);
+
+const isFreeThrow = (item: Record<string, unknown>) =>
+  /free\s*throw/i.test(playTypeText(item));
+
+const shooterId = (item: Record<string, unknown>) => {
+  const athlete = textOf(rec(item.athlete)?.id);
+  if (athlete) {
+    return athlete;
+  }
+  const participants = Array.isArray(item.participants)
+    ? item.participants
+    : [];
+  const first = rec(participants[0]);
+  return textOf(rec(first?.athlete)?.id) || textOf(first?.id);
+};
+
+const isOnCourtCoord = (x: number, y: number) =>
+  x >= -2 && x <= 52 && y >= -8 && y <= 48;
+
+/** Real ESPN play-by-play x/y in feet. Never invents or jitters dots. */
 export const parseShotChartPlays = (
   payload: unknown,
   playerId: string,
@@ -75,36 +99,24 @@ export const parseShotChartPlays = (
     : Array.isArray(root?.plays)
       ? root.plays
       : [];
+  const want = String(playerId);
   const shots: ShotChartMake[] = [];
   plays.forEach((play) => {
     const item = rec(play);
-    if (!item) {
+    if (!item || item.shootingPlay !== true || isFreeThrow(item)) {
       return;
     }
-    const participants = Array.isArray(item.participants)
-      ? item.participants
-      : [];
-    const athleteIds = participants
-      .map((row) => textOf(rec(rec(row)?.athlete)?.id) || textOf(rec(row)?.id))
-      .filter(Boolean);
-    const shooter =
-      textOf(rec(item.athlete)?.id) ||
-      athleteIds[0] ||
-      "";
-    if (shooter !== playerId) {
-      return;
-    }
-    const shooting =
-      item.shootingPlay === true ||
-      Boolean(rec(item.coordinate)) ||
-      /shot|layup|dunk|hook/i.test(textOf(rec(item.type)?.text));
-    if (!shooting) {
+    if (shooterId(item) !== want) {
       return;
     }
     const coord = rec(item.coordinate);
     const x = numOf(coord?.x);
     const y = numOf(coord?.y);
-    if (x == null || y == null) {
+    if (x == null || y == null || !isOnCourtCoord(x, y)) {
+      return;
+    }
+    const attempted = numOf(item.pointsAttempted);
+    if (attempted != null && attempted < 2) {
       return;
     }
     shots.push({
@@ -201,11 +213,8 @@ export const applyShotChartPlayer = (
 export const shotLine = (makes: number, attempts: number) =>
   `${makes}-${attempts}`;
 
-export const courtPoint = (shot: ShotChartMake, w: number, h: number) => {
-  const px = (shot.x / 50) * w;
-  const py = h - (shot.y / 47) * h;
-  return { x: px, y: py };
-};
+export const courtPoint = (shot: ShotChartMake, w: number, h: number) =>
+  shotToPx(shot, { x: 0, y: 0, w, h });
 
 export const SHOT_ZONES = [
   { id: "ra", label: "RESTRICTED" },
@@ -258,6 +267,6 @@ export const shotZoneSplits = (shots: ShotChartMake[]) =>
   });
 
 export const formatZoneSplit = (makes: number, attempts: number) =>
-  attempts ? `${makes}–${attempts}` : "—";
+  `${makes}–${attempts}`;
 
 export { datesInInclusiveRange, fetchRecentGames, isoDateOnly };

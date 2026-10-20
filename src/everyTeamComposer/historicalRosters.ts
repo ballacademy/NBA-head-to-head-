@@ -745,8 +745,22 @@ export const playerStatValue = (
   metric: EveryTeamStatMetric,
   teamId?: string | null,
   sample: ComposerStatsSample = "regular",
-) =>
-  rosterStatValue(playerRowForSeason(playerId, season, teamId, sample), metric);
+) => {
+  const primary = rosterStatValue(
+    playerRowForSeason(playerId, season, teamId, sample),
+    metric,
+  );
+  if (primary != null) {
+    return primary;
+  }
+  if (sample !== "regular") {
+    return rosterStatValue(
+      playerRowForSeason(playerId, season, teamId, "regular"),
+      metric,
+    );
+  }
+  return null;
+};
 
 /** Minutes-weighted roster average — team scoring/rates for tier grouping. */
 export const teamStatValue = (
@@ -762,6 +776,9 @@ export const teamStatValue = (
     }))
     .filter((row) => row.value != null) as Array<{ value: number; minutes: number }>;
   if (!rows.length) {
+    if (sample !== "regular") {
+      return teamStatValue(teamId, season, metric, "regular");
+    }
     return null;
   }
   const weight = rows.reduce((sum, row) => sum + Math.max(row.minutes, 1), 0);

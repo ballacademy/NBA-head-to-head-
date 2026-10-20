@@ -37,6 +37,7 @@ import {
   matchingTeamIds,
   pickSeasonLeader,
   playerRowForSeason,
+  playerStatValue,
   rosterAsTierPlayers,
   rosterStatValue,
   seasonForTeam,
@@ -326,6 +327,12 @@ describe("every-team order and slots", () => {
     expect(rosterStatValue(sga ?? null, "minutes")).toBe(33.2);
     expect(rosterStatValue(sga ?? null, "turnovers")).toBe(2.2);
     expect(rosterStatValue(sga ?? null, "fgPct")).toBe(0.557);
+    expect(playerStatValue("4278073", "2026-27", "usgPct", "OKC", "preseason")).toBeGreaterThan(
+      0.2,
+    );
+    expect(
+      playerStatValue("4278073", "2026-27", "chargesDrawn", "OKC", "preseason"),
+    ).toBeGreaterThan(0);
     expect(formatRosterStat(sga ?? null, "fgPct")).toBe("55.7% FG%");
     expect(pickSeasonLeader("OKC", "2026-27", "points")?.id).toBe("4278073");
     expect(pickSeasonLeader("OKC", "2025-26", "points")?.name).toBe(
