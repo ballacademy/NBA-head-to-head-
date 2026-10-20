@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
@@ -55,6 +55,14 @@ import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { TeamOfTheWeekGraphic } from "./TeamOfTheWeekGraphic";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { exportTeamOfTheWeekPng } from "./exportTeamOfTheWeekPng";
+import { exportTotwStatsPng } from "./exportTotwStatsPng";
+import { TotwStatsExportHud } from "./TotwStatsExportHud";
+import { TotwStatsGraphic } from "./TotwStatsGraphic";
+import {
+  buildTotwStatsSheet,
+  totwStatsHasRows,
+  totwStatsPngFilename,
+} from "./totwStatsExport";
 import {
   applyPlayerPick,
   clearStrip,
@@ -123,6 +131,7 @@ export function TeamOfTheWeekComposerApp() {
   const { range, setRange } = useComposerDateRange();
   const [weekRows, setWeekRows] = useState<NightStandout[]>([]);
   const [weekLoading, setWeekLoading] = useState(false);
+  const [statsSheet, setStatsSheet] = useState(false);
   const totwEmpty = (slots: TotwStrip[]) => slots.every((slot) => !slot.playerId);
 
   const loadWeek = useCallback(async (fromIso: string, toIso: string) => {
@@ -214,28 +223,55 @@ export function TeamOfTheWeekComposerApp() {
     square = false,
   ) => {
     const node = boardRef.current;
-    if (!node) {
+    if (!statsSheet && !node) {
       setStatus("Graphic is not ready to export.");
       return;
     }
     setExporting(true);
-    setStatus("Rendering PNG…");
+    setStatus(statsSheet ? "Rendering week stats…" : "Rendering PNG…");
     setActiveIndex(null);
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      await exportTeamOfTheWeekPng(
-        node,
-        filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
-        { brand, title, week, strips, look, purpleFlair, photoGrade, showBa, showNames, showTeamHairline },
-        story,
-        square,
-      );
+      if (statsSheet) {
+        const sheet = buildTotwStatsSheet({
+          brand,
+          title,
+          week,
+          strips,
+          weekRows,
+        });
+        if (!totwStatsHasRows(sheet)) {
+          setStatus("Fill the lineup to export week stats.");
+          return;
+        }
+        await exportTotwStatsPng(
+          sheet,
+          filename ?? totwStatsPngFilename(sheet, story),
+          { look, purpleFlair, showBa },
+          story,
+          square,
+        );
+      } else {
+        if (!node) {
+          setStatus("Graphic is not ready to export.");
+          return;
+        }
+        await exportTeamOfTheWeekPng(
+          node,
+          filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
+          { brand, title, week, strips, look, purpleFlair, photoGrade, showBa, showNames, showTeamHairline },
+          story,
+          square,
+        );
+      }
       setStatus(
         square
           ? "1:1 PNG download started."
           : story
             ? "Story PNG download started."
-            : "Download started.",
+            : statsSheet
+              ? "Week stats PNG download started."
+              : "Download started.",
       );
     } catch (error) {
       console.error(error);
@@ -346,6 +382,17 @@ export function TeamOfTheWeekComposerApp() {
   const pickerUsedIds = new Set(
     Object.keys(pickerUsed).filter((id) => id !== currentId),
   );
+  const stats = useMemo(
+    () =>
+      buildTotwStatsSheet({
+        brand,
+        title,
+        week,
+        strips,
+        weekRows,
+      }),
+    [brand, title, week, strips, weekRows],
+  );
 
   return (
     <div className="sc-composer">
@@ -387,6 +434,12 @@ export function TeamOfTheWeekComposerApp() {
             }}
             onFill={() => void fillRange(true)}
             fillLabel="Fill range"
+          />
+          <TotwStatsExportHud
+            sheet={stats}
+            statsSheet={statsSheet}
+            onStatsSheet={setStatsSheet}
+            onStatus={setStatus}
           />
           <ComposerPhotoHud
             onPick={() => {
@@ -527,6 +580,16 @@ export function TeamOfTheWeekComposerApp() {
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <ComposerBoard>
+          {statsSheet ? (
+            <TotwStatsGraphic
+              sheet={stats}
+              look={look}
+              purpleFlair={purpleFlair}
+              showBa={showBa}
+              exporting={exporting}
+              onBrandChange={setBrand}
+            />
+          ) : (
           <TeamOfTheWeekGraphic
             ref={boardRef}
             brand={brand}
@@ -568,6 +631,7 @@ export function TeamOfTheWeekComposerApp() {
               setStatus("Swapped player slots.");
             }}
           />
+          )}
           </ComposerBoard>
           <p className="sc-hint">
             Fill range picks the week’s best five, packed PG, SG, SF, PF, C
@@ -576,7 +640,10 @@ export function TeamOfTheWeekComposerApp() {
             Stars belong here, not surprise over-expectation nights.
             Then upload or paste a photo. Drag a player on the preview to swap
             slots — photos, names, and logos move together. Drag inside a photo
-            to pan, pinch or scroll to zoom — same as Player of the Day. Downloads a
+            to pan, pinch or scroll to zoom — same as Player of the Day.
+            Stats sheet (Copy stats / CSV / Export PNG) dumps the filled PG–C
+            line — GP, PTS, REB, AST, STL, BLK, 3PM, FG%, 3P%, TS%, eFG% —
+            without crowding the headshots. Downloads a
             4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

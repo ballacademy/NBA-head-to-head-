@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
@@ -43,6 +43,14 @@ import {
 } from "../playerOfTheDayComposer/nightStandouts";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
+import { exportTotwStatsPng } from "../teamOfTheWeekComposer/exportTotwStatsPng";
+import { TotwStatsExportHud } from "../teamOfTheWeekComposer/TotwStatsExportHud";
+import { TotwStatsGraphic } from "../teamOfTheWeekComposer/TotwStatsGraphic";
+import {
+  buildPlusStatsSheet,
+  totwStatsHasRows,
+  totwStatsPngFilename,
+} from "../teamOfTheWeekComposer/totwStatsExport";
 import { exportTeamOfTheWeekPlusPng } from "./exportTeamOfTheWeekPlusPng";
 import { TeamOfTheWeekPlusGraphic } from "./TeamOfTheWeekPlusGraphic";
 import {
@@ -129,6 +137,7 @@ export function TeamOfTheWeekPlusComposerApp() {
   const { range, setRange } = useComposerDateRange();
   const [weekRows, setWeekRows] = useState<NightStandout[]>([]);
   const [weekLoading, setWeekLoading] = useState(false);
+  const [statsSheet, setStatsSheet] = useState(false);
 
   useEffect(() => {
     document.title = "Team of the Week Plus graphic";
@@ -223,40 +232,68 @@ export function TeamOfTheWeekPlusComposerApp() {
     square = false,
   ) => {
     const node = boardRef.current;
-    if (!node) {
+    if (!statsSheet && !node) {
       setStatus("Graphic is not ready to export.");
       return;
     }
     setExporting(true);
-    setStatus("Rendering PNG…");
+    setStatus(statsSheet ? "Rendering week stats…" : "Rendering PNG…");
     setActiveIndex(null);
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      await exportTeamOfTheWeekPlusPng(
-        node,
-        filename ??
-          exportFilenameFromTitle(starterCaption, "team-of-the-week-plus", week),
-        {
+      if (statsSheet) {
+        const sheet = buildPlusStatsSheet({
           brand,
           week,
           starterCaption,
           standoutCaption,
           slots,
-          look,
-          purpleFlair,
-          photoGrade,
-          showBa,
-          showNames,
-        },
-        story,
-        square,
-      );
+          weekRows,
+        });
+        if (!totwStatsHasRows(sheet)) {
+          setStatus("Fill the lineup to export week stats.");
+          return;
+        }
+        await exportTotwStatsPng(
+          sheet,
+          filename ?? totwStatsPngFilename(sheet, story),
+          { look, purpleFlair, showBa },
+          story,
+          square,
+        );
+      } else {
+        if (!node) {
+          setStatus("Graphic is not ready to export.");
+          return;
+        }
+        await exportTeamOfTheWeekPlusPng(
+          node,
+          filename ??
+            exportFilenameFromTitle(starterCaption, "team-of-the-week-plus", week),
+          {
+            brand,
+            week,
+            starterCaption,
+            standoutCaption,
+            slots,
+            look,
+            purpleFlair,
+            photoGrade,
+            showBa,
+            showNames,
+          },
+          story,
+          square,
+        );
+      }
       setStatus(
         square
           ? "1:1 PNG download started."
           : story
             ? "Story PNG download started."
-            : "Download started.",
+            : statsSheet
+              ? "Week stats PNG download started."
+              : "Download started.",
       );
     } catch (error) {
       console.error(error);
@@ -368,6 +405,18 @@ export function TeamOfTheWeekPlusComposerApp() {
   const pickerUsedIds = new Set(
     Object.keys(pickerUsed).filter((id) => id !== currentId),
   );
+  const stats = useMemo(
+    () =>
+      buildPlusStatsSheet({
+        brand,
+        week,
+        starterCaption,
+        standoutCaption,
+        slots,
+        weekRows,
+      }),
+    [brand, week, starterCaption, standoutCaption, slots, weekRows],
+  );
 
   return (
     <div className="sc-composer">
@@ -426,6 +475,12 @@ export function TeamOfTheWeekPlusComposerApp() {
             }}
             onFill={() => void fillLastWeek(true)}
             fillLabel="Fill range"
+          />
+          <TotwStatsExportHud
+            sheet={stats}
+            statsSheet={statsSheet}
+            onStatsSheet={setStatsSheet}
+            onStatus={setStatus}
           />
           </>
         }
@@ -561,6 +616,16 @@ export function TeamOfTheWeekPlusComposerApp() {
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <ComposerBoard>
+          {statsSheet ? (
+            <TotwStatsGraphic
+              sheet={stats}
+              look={look}
+              purpleFlair={purpleFlair}
+              showBa={showBa}
+              exporting={exporting}
+              onBrandChange={setBrand}
+            />
+          ) : (
           <TeamOfTheWeekPlusGraphic
             ref={boardRef}
             brand={brand}
@@ -605,6 +670,7 @@ export function TeamOfTheWeekPlusComposerApp() {
               setStatus("Swapped player slots.");
             }}
           />
+          )}
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
@@ -616,7 +682,10 @@ export function TeamOfTheWeekPlusComposerApp() {
             their usual line — not two-way/camp 10-point weeks. Packed PG → C
             the same way; a big cannot sit in slot 1. Drag a
             player on the preview to swap slots across either row. Empty photo until you
-            paste. Date range matches Cover / Stat / TOTW. Downloads a 4:5
+            paste. Stats sheet (Copy stats / CSV / Export PNG) dumps the filled
+            TOTW five and Standouts five as separate tables — GP, PTS, REB,
+            AST, STL, BLK, 3PM, FG%, 3P%, TS%, eFG% — without crowding the
+            headshots. Date range matches Cover / Stat / TOTW. Downloads a 4:5
             Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

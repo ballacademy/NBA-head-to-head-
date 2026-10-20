@@ -291,6 +291,9 @@ describe("composer chrome", () => {
     expect(totwPlusApp).toContain("role-player standouts");
     expect(totwPlusApp).toContain("rotation/role players who beat");
     expect(totwPlusApp).toContain("not two-way/camp 10-point weeks");
+    expect(totwPlusApp).toContain("TotwStatsExportHud");
+    expect(totwPlusApp).toContain("buildPlusStatsSheet");
+    expect(totwPlusApp).toContain("exportTotwStatsPng");
     expect(totwPlusApp).not.toContain("fetchStandoutsInRange");
     expect(totwPlusApp).not.toContain("totwStarterStrips");
     expect(totwPlusApp).not.toContain("ddgm:team-of-the-week-composer");
@@ -664,6 +667,32 @@ describe("composer chrome", () => {
     expect(totwApp).toContain("totwPickerSuggestions");
     expect(totwApp).not.toContain("fetchStandoutsInRange");
     expect(totwApp).toContain("PG, SG, SF, PF, C");
+    expect(totwApp).toContain("TotwStatsExportHud");
+    expect(totwApp).toContain("buildTotwStatsSheet");
+    expect(totwApp).toContain("exportTotwStatsPng");
+    const totwStatsHud = readFileSync(
+      join(root, "teamOfTheWeekComposer/TotwStatsExportHud.tsx"),
+      "utf8",
+    );
+    expect(totwStatsHud).toContain("Copy stats");
+    expect(totwStatsHud).toContain("Download CSV");
+    expect(totwStatsHud).toContain("Stats sheet");
+    const totwStats = readFileSync(
+      join(root, "teamOfTheWeekComposer/totwStatsExport.ts"),
+      "utf8",
+    );
+    expect(totwStats).toContain('"GP"');
+    expect(totwStats).toContain('"PTS"');
+    expect(totwStats).toContain('"3PM"');
+    expect(totwStats).toContain('"TS%"');
+    expect(totwStats).toContain('"eFG%"');
+    expect(totwStats).toContain("buildPlusStatsSheet");
+    const totwGraphic = readFileSync(
+      join(root, "teamOfTheWeekComposer/TeamOfTheWeekGraphic.tsx"),
+      "utf8",
+    );
+    expect(totwGraphic).not.toContain("totwStatsFromStandout");
+    expect(totwGraphic).not.toContain("Copy stats");
     expect(sheet).toContain(".sc-team.is-deserving");
     const picker = readFileSync(
       join(root, "tierListComposer/PlayerPicker.tsx"),
