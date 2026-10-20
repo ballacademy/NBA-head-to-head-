@@ -77,7 +77,20 @@ export const lastWeekMark = (delta: number | null) => {
 export interface StandingRecord {
   wins: number;
   losses: number;
+  last10?: string | null;
 }
+
+export const PLAYOFF_CUT_AFTER = 6;
+
+export const formatStandingLast10 = (
+  record: StandingRecord | null | undefined,
+) => {
+  const raw = record?.last10?.trim();
+  if (!raw) {
+    return null;
+  }
+  return raw.replace(/-/g, "–");
+};
 
 export const formatStandingRecord = (
   record: StandingRecord | null | undefined,

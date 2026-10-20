@@ -23,11 +23,18 @@ import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import { LetterGradePlate } from "../instagramComposer/LetterGradePlate";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+  type LetterGrade,
+} from "../lib/letterGrade";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import { CMP_BRAND, compareStatType } from "./compareLayout";
 import {
   compareSideCaption,
+  compareStatBarShares,
   compareWinner,
   leadingSide,
   visibleCompareStats,
@@ -56,6 +63,8 @@ interface CompareGraphicProps {
   onRemoveStat?: (index: number) => void;
   onMoveStat?: (fromIndex: number, toIndex: number) => void;
   onSwap?: (from: number, to: number) => void;
+  onLetterGradeChange?: (grade: LetterGrade) => void;
+  onLetterGradeReasonChange?: (reason: string) => void;
 }
 
 const sideLabel = (side: CompareSide, fallback: string) =>
@@ -80,6 +89,8 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
       onRemoveStat,
       onMoveStat,
       onSwap,
+      onLetterGradeChange,
+      onLetterGradeReasonChange,
     },
     ref,
   ) {
@@ -334,6 +345,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
             {stats.map((stat, index) => {
               const lead = leadingSide(stat.left, stat.right);
               const empty = !stat.left.trim() && !stat.right.trim();
+              const bars = compareStatBarShares(stat.left, stat.right);
               return (
                 <div
                   key={`cmp-stat-${stat.key}-${index}`}
@@ -349,6 +361,16 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                     .join(" ")}
                   onPointerDown={(event) => startStatDrag(index, event)}
                 >
+                  <span className="cmp-stat__bars" aria-hidden="true">
+                    <span
+                      className="cmp-stat__bar is-left"
+                      style={{ width: `${Math.round(bars.left * 100)}%` }}
+                    />
+                    <span
+                      className="cmp-stat__bar is-right"
+                      style={{ width: `${Math.round(bars.right * 100)}%` }}
+                    />
+                  </span>
                   {dragEnabled ? (
                     <span className="cmp-stat__grip" aria-hidden="true" />
                   ) : null}
@@ -444,6 +466,16 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
             }
           />
         </div>
+        {draft.showLetterGrade ? (
+          <LetterGradePlate
+            className="cmp-grade"
+            grade={parseLetterGrade(draft.letterGrade ?? DEFAULT_LETTER_GRADE)}
+            reason={draft.letterGradeReason ?? ""}
+            exporting={exporting}
+            onGrade={(next) => onLetterGradeChange?.(next)}
+            onReason={onLetterGradeReasonChange}
+          />
+        ) : null}
       </article>
     );
   },

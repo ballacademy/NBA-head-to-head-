@@ -1,5 +1,6 @@
 import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import { DIVISIONS, getDivisionForTeam } from "../lib/divisions";
 import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import {
@@ -73,6 +74,39 @@ export const isEveryTeamSlots = (value: unknown): value is EveryTeamSlots =>
   value.every((slot) => slot === null || typeof slot === "string");
 
 export type EveryTeamMode = "unranked" | "ranked";
+export type EveryTeamGridGroup = "none" | "conference" | "division";
+
+export const parseEveryTeamGridGroup = (value: unknown): EveryTeamGridGroup =>
+  value === "conference" || value === "division" ? value : "none";
+
+export const groupedEveryTeamOrder = (
+  group: EveryTeamGridGroup,
+): NbaTeam[] => {
+  if (group === "conference") {
+    return [
+      ...EVERY_TEAM_ORDER.filter((team) => team.conference === "East"),
+      ...EVERY_TEAM_ORDER.filter((team) => team.conference === "West"),
+    ];
+  }
+  if (group === "division") {
+    return DIVISIONS.flatMap((division) =>
+      EVERY_TEAM_ORDER.filter((team) => getDivisionForTeam(team.id) === division),
+    );
+  }
+  return EVERY_TEAM_ORDER;
+};
+
+export const everyTeamBreakAfterRows = (
+  group: EveryTeamGridGroup,
+): number[] => {
+  if (group === "conference") {
+    return [2];
+  }
+  if (group === "division") {
+    return [0, 1, 2, 3, 4];
+  }
+  return [];
+};
 
 export interface EveryTeamDraft {
   brand: string;
@@ -87,6 +121,7 @@ export interface EveryTeamDraft {
   cellSeasons?: Record<string, string>;
   duo?: boolean;
   partners?: EveryTeamSlots;
+  gridGroup?: EveryTeamGridGroup;
 }
 
 export const createDefaultRankedOrder = (): string[] =>
@@ -136,9 +171,10 @@ export const slotIndexForTeam = (teamId: string) =>
 export const displayedTeams = (
   ranked: boolean,
   rankedOrder: string[] = createDefaultRankedOrder(),
+  gridGroup: EveryTeamGridGroup = "none",
 ): NbaTeam[] => {
   if (!ranked) {
-    return EVERY_TEAM_ORDER;
+    return groupedEveryTeamOrder(gridGroup);
   }
   return normalizeRankedOrder(rankedOrder).map(
     (id) => EVERY_TEAM_ORDER[slotIndexForTeam(id)]!,

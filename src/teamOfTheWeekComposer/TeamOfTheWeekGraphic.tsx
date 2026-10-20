@@ -35,6 +35,7 @@ interface TeamOfTheWeekGraphicProps {
   showNames?: boolean;
   showTeamHairline?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onWeekChange: (value: string) => void;
@@ -47,6 +48,7 @@ interface TeamOfTheWeekGraphicProps {
     names: { firstName?: string; lastName?: string },
   ) => void;
   onSwap?: (from: number, to: number) => void;
+  stripStats?: string[];
 }
 
 export const TeamOfTheWeekGraphic = forwardRef<
@@ -65,6 +67,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     showNames = false,
     showTeamHairline = true,
     exporting = false,
+    story = false,
     onBrandChange,
     onTitleChange,
     onWeekChange,
@@ -74,6 +77,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
     onUpload,
     onNameChange,
     onSwap,
+    stripStats = [],
   },
   ref,
 ) {
@@ -119,6 +123,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
       ref={setRefs}
       className={[
         "totw-board",
+        story ? "is-story" : "",
         exporting ? "is-exporting" : "",
         showNames ? "" : "is-names-off",
         showTeamHairline ? "is-hairline" : "",
@@ -214,6 +219,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
                   onLastChange={(lastName) =>
                     onNameChange(index, { lastName })
                   }
+                  stat={stripStats[index] ?? ""}
                   onEmptyClick={() => onPick(index)}
                 />
               ) : null}

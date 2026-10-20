@@ -49,13 +49,27 @@ const statNumber = (entry: EspnStandingEntry, names: string[]) => {
   return null;
 };
 
+const last10FromEntry = (entry: EspnStandingEntry): string | null => {
+  for (const stat of entry.stats ?? []) {
+    const label = `${stat.name ?? ""} ${stat.abbreviation ?? ""}`.toLowerCase();
+    if (!label.includes("last ten") && stat.abbreviation !== "L10") {
+      continue;
+    }
+    const display = `${stat.displayValue ?? ""}`.trim();
+    if (/^\d{1,2}-\d{1,2}$/.test(display)) {
+      return display;
+    }
+  }
+  return null;
+};
+
 const recordFromEntry = (entry: EspnStandingEntry): StandingRecord | null => {
   const wins = statNumber(entry, ["wins", " w"]);
   const losses = statNumber(entry, ["losses", " l"]);
   if (wins == null || losses == null) {
     return null;
   }
-  return { wins, losses };
+  return { wins, losses, last10: last10FromEntry(entry) };
 };
 
 const teamIdFromAbbrev = (abbreviation?: string) => {

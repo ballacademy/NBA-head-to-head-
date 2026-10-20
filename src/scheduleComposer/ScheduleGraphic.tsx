@@ -16,6 +16,7 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  scheduleBackToBackEventIds,
   scheduleFillLayout,
   scheduleGroups,
   splitScheduleTitle,
@@ -48,6 +49,7 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
+    const b2b = scheduleBackToBackEventIds(draft.games);
     const [unit, setUnit] = useState(0.4);
     const titleLines = splitScheduleTitle(draft.title);
     const groups = scheduleGroups(draft.games);
@@ -154,7 +156,7 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
                   const home = getTeam(game.homeId);
                   return (
                     <div key={game.eventId || `${game.awayId}-${game.homeId}-${game.timeLabel}`} className="sch-game">
-                      <div className="sch-game__side">
+                      <div className="sch-game__side is-away">
                         <span className="sch-game__logo">
                           {away ? (
                             <TeamLogo src={away.logoSrc} label={away.id} shadow={0} />
@@ -163,7 +165,7 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
                         <span>{game.awayId}</span>
                       </div>
                       <span className="sch-game__at">@</span>
-                      <div className="sch-game__side">
+                      <div className="sch-game__side is-home">
                         <span className="sch-game__logo">
                           {home ? (
                             <TeamLogo src={home.logoSrc} label={home.id} shadow={0} />
@@ -171,7 +173,12 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
                         </span>
                         <span>{game.homeId}</span>
                       </div>
-                      <span className="sch-game__time">{game.timeLabel}</span>
+                      <span className="sch-game__time">
+                        {game.timeLabel}
+                        {b2b.has(game.eventId || `${game.date}-${game.awayId}`) ? (
+                          <span className="sch-b2b">B2B</span>
+                        ) : null}
+                      </span>
                     </div>
                   );
                 })}

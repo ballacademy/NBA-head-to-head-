@@ -42,6 +42,10 @@
   --body-y: 994;
   --body-h: 100;
   --source-y: 1448;
+  --grade-x: 694;
+  --grade-y: 980;
+  --grade-w: 136;
+  --grade-h: 0;
   --ba-x: 28;
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   position: relative;
@@ -378,4 +382,13 @@
 .hl-board .pod-photo__pick {
   font-size: calc(18 * var(--u));
   letter-spacing: 0.08em;
+}
+
+.hl-grade {
+  position: absolute;
+  left: calc(var(--grade-x) * var(--u));
+  top: calc(var(--grade-y) * var(--u));
+  width: calc(var(--grade-w) * var(--u));
+  height: calc(var(--grade-h) * var(--u));
+  z-index: 6;
 }

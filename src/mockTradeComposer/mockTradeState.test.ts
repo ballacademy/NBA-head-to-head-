@@ -16,6 +16,7 @@ import {
   MOCK_TRADE_PLAYER_MAX,
   mockTradeCaptionFor,
   mockTradePickLabel,
+  mockTradeSalaryTotalsLabel,
   mockTradeTeamCount,
   normalizeMockTradeDraft,
   parseMockTradeRound,
@@ -132,6 +133,67 @@ describe("mock trade draft", () => {
     const draft = setMockTradeSideTeam(defaultMockTradeDraft(), 0, "BOS");
     expect(draft.sides[0]?.teamId).toBe("BOS");
     expect(mockTradeCaptionFor(draft)).toMatch(/MOCK TRADE/i);
+  });
+
+  it("totals salary in vs out per side from the other team's outgoing players", () => {
+    const jokic = fillMockTradePlayer(
+      {
+        id: "3112335",
+        name: "Nikola Jokic",
+        team: "DEN",
+        headshotUrl: "",
+        age: 30,
+        heightInches: 83,
+        displayHeight: "",
+        position: "C",
+        positionGroup: "C",
+        division: "Northwest",
+        conference: "West",
+        draftYear: 2014,
+        draftRound: 2,
+        draftPick: 41,
+        country: null,
+        experienceYears: 10,
+        allStar: true,
+        ppg: 26,
+      },
+      defaultMockTradeDraft().sides[0]!.players[0]!,
+    );
+    const tatum = fillMockTradePlayer(
+      {
+        id: "4065648",
+        name: "Jayson Tatum",
+        team: "BOS",
+        headshotUrl: "",
+        age: 27,
+        heightInches: 80,
+        displayHeight: "",
+        position: "F",
+        positionGroup: "F",
+        division: "Atlantic",
+        conference: "East",
+        draftYear: 2017,
+        draftRound: 1,
+        draftPick: 3,
+        country: null,
+        experienceYears: 8,
+        allStar: true,
+        ppg: 27,
+      },
+      defaultMockTradeDraft().sides[1]!.players[0]!,
+    );
+    let draft = setMockTradeSideTeam(defaultMockTradeDraft(), 0, "BOS");
+    draft = setMockTradeSideTeam(draft, 1, "DEN");
+    draft = {
+      ...draft,
+      sides: [
+        { ...draft.sides[0]!, players: [jokic] },
+        { ...draft.sides[1]!, players: [tatum] },
+      ],
+    };
+    expect(mockTradeSalaryTotalsLabel(draft, 0)).toMatch(/^IN \$/);
+    expect(mockTradeSalaryTotalsLabel(draft, 0)).toMatch(/OUT \$/);
+    expect(mockTradeSalaryTotalsLabel(draft, 1)).toMatch(/^IN \$/);
   });
 
   it("normalizes short or oversized saves", () => {

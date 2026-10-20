@@ -18,7 +18,7 @@ import {
 } from "../instagramComposer/titleLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
-import { swapItems } from "../instagramComposer/composerSlotSwap";
+import { insertItems, swapItems } from "../instagramComposer/composerSlotSwap";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
 import { rangeWeekLine } from "../instagramComposer/composerDateRange";
@@ -298,6 +298,12 @@ export const swapCoverSlots = (
   from: number,
   to: number,
 ): CoverSlot[] => swapItems(slots, from, to);
+
+export const insertCoverSlots = (
+  slots: CoverSlot[],
+  from: number,
+  to: number,
+): CoverSlot[] => insertItems(slots, from, to);
 
 export const clearCoverSlot = (slots: CoverSlot[], index: number) => {
   if (index < 0 || index >= slots.length) {

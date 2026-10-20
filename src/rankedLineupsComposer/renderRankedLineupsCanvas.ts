@@ -174,6 +174,7 @@ const drawStripPhoto = async (
   showFade = false,
   showTeamHairline = true,
   photoGrade = false,
+  stripStat = "",
 ) => {
   context.save();
   context.fillStyle = "#111";
@@ -250,6 +251,7 @@ const drawStripPhoto = async (
       familySize: RL_NAME_FAMILY_SIZE * scale,
       givenSize: RL_NAME_GIVEN_SIZE * scale,
       scale,
+      stat: stripStat,
     });
   }
   if (showTeamHairline) {
@@ -271,6 +273,7 @@ export interface RankedLineupsRenderInput {
   rankDisplay?: RankDisplay;
   positionLabels?: string[];
   story?: boolean;
+  stripStats?: string[];
 }
 
 export const renderRankedLineupsCanvas = async (
@@ -445,6 +448,7 @@ export const renderRankedLineupsCanvas = async (
       input.showFade === true,
       input.showTeamHairline !== false,
       input.photoGrade === true,
+      input.stripStats?.[index] ?? "",
     );
     if (input.purpleFlair) {
       paintPurpleInnerHairline(
@@ -531,6 +535,13 @@ export const renderRankedLineupsCanvas = async (
         });
       });
       setLetterSpacing(context, 0);
+    }
+    const stat = (input.stripStats?.[index] ?? "").trim().toUpperCase();
+    if (stat) {
+      context.font = `800 ${10 * s}px ${POSTER_FONT}`;
+      context.fillStyle = "rgba(255,255,255,0.82)";
+      context.textBaseline = "top";
+      context.fillText(stat, cx, nameTop + 58 * s, nameW);
     }
   }
 

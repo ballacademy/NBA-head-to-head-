@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { LetterGradeHud } from "../instagramComposer/LetterGradeHud";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+} from "../lib/letterGrade";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
@@ -119,6 +124,9 @@ const renderInput = (
   metaLine: draft.showMeta ? (draft.metaLine ?? "") : "",
   sourceCredit: draft.sourceCredit ?? "",
   photoBw: draft.photoBw === true,
+  showLetterGrade: draft.showLetterGrade === true,
+  letterGrade: parseLetterGrade(draft.letterGrade),
+  letterGradeReason: draft.letterGradeReason ?? "",
   look,
   purpleFlair,
   photoGrade,
@@ -615,6 +623,26 @@ export function HeadlineComposerApp() {
               : "Full name"}
           </button>
         </label>
+        <LetterGradeHud
+          on={draft.showLetterGrade === true}
+          grade={parseLetterGrade(draft.letterGrade)}
+          reason={draft.letterGradeReason ?? ""}
+          onToggle={(showLetterGrade) =>
+            setDraft((current) => ({
+              ...current,
+              showLetterGrade,
+              letterGrade: parseLetterGrade(
+                current.letterGrade ?? DEFAULT_LETTER_GRADE,
+              ),
+            }))
+          }
+          onGrade={(letterGrade) =>
+            setDraft((current) => ({ ...current, letterGrade }))
+          }
+          onReason={(letterGradeReason) =>
+            setDraft((current) => ({ ...current, letterGradeReason }))
+          }
+        />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Record line</span>
           <button
@@ -864,6 +892,9 @@ export function HeadlineComposerApp() {
             metaLine={draft.showMeta ? (draft.metaLine ?? "") : ""}
             sourceCredit={draft.sourceCredit ?? ""}
             photoBw={draft.photoBw === true}
+            showLetterGrade={draft.showLetterGrade === true}
+            letterGrade={parseLetterGrade(draft.letterGrade)}
+            letterGradeReason={draft.letterGradeReason ?? ""}
             look={look}
             purpleFlair={purpleFlair}
             photoGrade={photoGrade}
@@ -903,6 +934,12 @@ export function HeadlineComposerApp() {
                 ...current,
                 sourceCredit: clipHeadlineSource(sourceCredit),
               }))
+            }
+            onLetterGradeChange={(letterGrade) =>
+              setDraft((current) => ({ ...current, letterGrade }))
+            }
+            onLetterGradeReasonChange={(letterGradeReason) =>
+              setDraft((current) => ({ ...current, letterGradeReason }))
             }
             onPan={(pan) => setDraft((current) => ({ ...current, pan }))}
             onUpload={(dataUrl) => {

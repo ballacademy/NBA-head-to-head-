@@ -2,10 +2,17 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 import { TOTW_STRIP_COUNT } from "./teamOfTheWeekState";
 
-export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH, TOTW_STRIP_COUNT };
+export {
+  GRAPHIC_ASPECT,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+  TOTW_STRIP_COUNT,
+};
 
 export const TOTW_PAD_X = 10;
 export const TOTW_STRIP_GAP = 6;
@@ -34,3 +41,27 @@ export const TOTW_STRIP_H = TOTW_STRIPS_BOTTOM - TOTW_STRIPS_TOP;
 
 export const totwStripX = (index: number) =>
   TOTW_PAD_X + index * (TOTW_STRIP_W + TOTW_STRIP_GAP);
+
+export const totwBoardH = (story = false) =>
+  story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+
+export const totwStripRect = (index: number, story = false) => {
+  if (!story) {
+    return {
+      x: totwStripX(index),
+      y: TOTW_STRIPS_TOP,
+      w: TOTW_STRIP_W,
+      h: TOTW_STRIP_H,
+    };
+  }
+  const stripsBottom = STORY_DESIGN_HEIGHT - TOTW_FOOTER_H;
+  const stripsH = stripsBottom - TOTW_STRIPS_TOP;
+  const h =
+    (stripsH - TOTW_STRIP_GAP * (TOTW_STRIP_COUNT - 1)) / TOTW_STRIP_COUNT;
+  return {
+    x: TOTW_PAD_X,
+    y: TOTW_STRIPS_TOP + index * (h + TOTW_STRIP_GAP),
+    w: GRAPHIC_WIDTH - TOTW_PAD_X * 2,
+    h,
+  };
+};

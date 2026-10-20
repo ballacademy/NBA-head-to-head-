@@ -474,5 +474,53 @@ describe("headline composer", () => {
     expect(draft.panelLeft).toBe(false);
     expect(draft.boardMode).toBe("split");
     expect(draft.nameStack).toBe("hurts");
+    expect(draft.showLetterGrade).toBe(false);
+  });
+
+  it("places an optional letter-grade stamp under the stacked name", () => {
+    const off = headlineSplitLayout({
+      headline: "SIGNING",
+      firstName: "Jaylen",
+      lastName: "Brown",
+      storyLine: "FOUR YEARS",
+    });
+    expect(off.grade.h).toBe(0);
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(off))).toEqual([]);
+    const on = headlineSplitLayout({
+      headline: "SIGNING",
+      firstName: "Jaylen",
+      lastName: "Brown",
+      storyLine: "FOUR YEARS",
+      showLetterGrade: true,
+      letterGradeReason: "4yr / $192M",
+    });
+    expect(on.grade.h).toBeGreaterThan(80);
+    expect(on.grade.y).toBeGreaterThanOrEqual(on.family.y + on.family.h);
+    expect(on.grade.x + on.grade.w).toBeLessThanOrEqual(GRAPHIC_WIDTH);
+    expect(on.body.y).toBeGreaterThanOrEqual(on.grade.y + on.grade.h);
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(on))).toEqual([]);
+    const wolves = headlineSplitLayout({
+      headline: "SIGNING",
+      firstName: "Minnesota",
+      lastName: "Timberwolves",
+      city: "MINNESOTA",
+      nick: "TIMBERWOLVES",
+      shortName: "Wolves",
+      showLetterGrade: true,
+      letterGradeReason: "OVERPAY",
+    });
+    expect(wolves.family.x + wolves.family.w).toBeLessThanOrEqual(GRAPHIC_WIDTH);
+    expect(wolves.grade.x + wolves.grade.w).toBeLessThanOrEqual(GRAPHIC_WIDTH);
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(wolves))).toEqual([]);
+    const story = headlineSplitLayout({
+      headline: "SIGNING",
+      firstName: "Jaylen",
+      lastName: "Brown",
+      showLetterGrade: true,
+      letterGradeReason: "4YR / $192M",
+      boardH: STORY_DESIGN_HEIGHT,
+    });
+    expect(story.grade.h).toBeGreaterThan(0);
+    expect(collidingHeadlineBoxes(headlineVisibleTypeBoxes(story))).toEqual([]);
   });
 });

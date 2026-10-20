@@ -109,6 +109,9 @@ describe("plot composer", () => {
     expect(xAxis.min).toBeGreaterThanOrEqual(0);
     const tight = axisFromValues([1.2, 3.4, 6], "assists");
     expect(tight.min).toBe(0);
+    const locked = axisFromValues([12, 28], "points", { min: 0, max: 40 });
+    expect(locked.min).toBe(0);
+    expect(locked.max).toBe(40);
   });
 
   it("filters West teams and pins unique players without repeats", () => {
@@ -164,6 +167,19 @@ describe("plot composer", () => {
     );
     expect(placed[0]?.showLabel).toBe(true);
     expect(placed[1]?.ly).not.toBe(placed[0]?.ly);
+    const highlighted = placePlotPoints(
+      [
+        { id: "a", x: 10, y: 10, label: "Alpha", kind: "player" },
+        { id: "b", x: 12, y: 14, label: "Bravo", kind: "player" },
+      ],
+      { min: 0, max: 20, ticks: [0, 10, 20] },
+      { min: 0, max: 20, ticks: [0, 10, 20] },
+      GRAPHIC_HEIGHT,
+      true,
+      ["b"],
+    );
+    expect(highlighted.find((point) => point.id === "a")?.showLabel).toBe(false);
+    expect(highlighted.find((point) => point.id === "b")?.showLabel).toBe(true);
     const nudged = nudgePlotLabels(placed, plotRectFor());
     expect(nudged).toHaveLength(2);
   });

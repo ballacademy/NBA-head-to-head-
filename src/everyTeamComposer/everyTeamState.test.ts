@@ -185,6 +185,11 @@ describe("every-team order and slots", () => {
     expect(displayedTeams(true, swapped)[0]?.id).toBe("NYK");
     expect(displayedTeams(true, swapped)[19]?.id).toBe("ATL");
     expect(displayedTeams(false, swapped)[0]?.id).toBe("ATL");
+    const eastFirst = displayedTeams(false, undefined, "conference");
+    expect(eastFirst[0]?.conference).toBe("East");
+    expect(eastFirst[15]?.conference).toBe("West");
+    const byDiv = displayedTeams(false, undefined, "division");
+    expect(byDiv).toHaveLength(30);
     const slots = assignPlayerToTeam(createEmptyEveryTeamSlots(), "NYK", "1966");
     expect(slots[19]).toBe("1966");
     expect(assignPlayerToTeam(slots, "ATL", "1966")[19]).toBeNull();

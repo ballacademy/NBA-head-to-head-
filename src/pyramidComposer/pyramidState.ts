@@ -56,6 +56,7 @@ export interface PyramidDraft {
   rows?: number;
   showBa?: boolean;
   showNames?: boolean;
+  showRankPip?: boolean;
   rowLabels?: string[];
 }
 
@@ -135,6 +136,7 @@ export const defaultPyramidDraft = (): PyramidDraft => ({
   rows: PYR_DEFAULT_ROWS,
   showBa: storedOrLastShowBa(undefined),
   showNames: storedOrLastShowNames(undefined, false),
+  showRankPip: true,
   rowLabels: parsePyramidRowLabels(undefined, PYR_DEFAULT_ROWS),
 });
 

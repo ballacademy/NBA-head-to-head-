@@ -39,15 +39,41 @@
   right: 0;
   bottom: 0;
   z-index: 2;
-  height: calc(560 * var(--u));
+  height: calc(680 * var(--u));
   pointer-events: none;
   background: linear-gradient(
     to top,
-    rgba(6, 6, 8, 0.96) 0%,
-    rgba(6, 6, 8, 0.82) 38%,
-    rgba(6, 6, 8, 0.28) 72%,
+    rgba(6, 6, 8, 0.98) 0%,
+    rgba(6, 6, 8, 0.9) 28%,
+    rgba(6, 6, 8, 0.62) 58%,
+    rgba(6, 6, 8, 0.22) 82%,
     rgba(6, 6, 8, 0) 100%
   );
+}
+
+.qt-type-dim {
+  position: absolute;
+  left: calc(40 * var(--u));
+  right: calc(40 * var(--u));
+  bottom: calc(20 * var(--u));
+  z-index: 3;
+  height: calc(320 * var(--u));
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 80%,
+    rgba(6, 6, 8, 0.72) 0%,
+    rgba(6, 6, 8, 0.28) 58%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.qt-grade {
+  position: absolute;
+  right: calc(28 * var(--u));
+  bottom: calc(108 * var(--u));
+  width: calc(118 * var(--u));
+  height: calc(88 * var(--u));
+  z-index: 6;
 }
 
 .qt-lastname {
@@ -110,7 +136,7 @@
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(70 * var(--u));
+  font-size: calc(var(--quote-size, 70) * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -118,10 +144,6 @@
   -webkit-text-stroke: calc(3 * var(--u)) #000;
   paint-order: stroke fill;
   text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.82);
-}
-
-.qt-quote.is-long {
-  font-size: calc(56 * var(--u));
 }
 
 .qt-source {

@@ -6,7 +6,12 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { LetterGradeHud } from "../instagramComposer/LetterGradeHud";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+} from "../lib/letterGrade";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import {
@@ -317,6 +322,26 @@ export function QuoteComposerApp() {
         </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <LetterGradeHud
+          on={draft.showLetterGrade === true}
+          grade={parseLetterGrade(draft.letterGrade)}
+          reason={draft.letterGradeReason ?? ""}
+          onToggle={(showLetterGrade) =>
+            setDraft((current) => ({
+              ...current,
+              showLetterGrade,
+              letterGrade: parseLetterGrade(
+                current.letterGrade ?? DEFAULT_LETTER_GRADE,
+              ),
+            }))
+          }
+          onGrade={(letterGrade) =>
+            setDraft((current) => ({ ...current, letterGrade }))
+          }
+          onReason={(letterGradeReason) =>
+            setDraft((current) => ({ ...current, letterGradeReason }))
+          }
+        />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
         <BaMarkToggle
           on={draft.showBa !== false}
@@ -478,6 +503,12 @@ export function QuoteComposerApp() {
                 }))
               }
               onPick={() => setPickerOpen(true)}
+              onLetterGradeChange={(letterGrade) =>
+                setDraft((current) => ({ ...current, letterGrade }))
+              }
+              onLetterGradeReasonChange={(letterGradeReason) =>
+                setDraft((current) => ({ ...current, letterGradeReason }))
+              }
             />
             <StoryCropGuide on={storyCrop} />
           </ComposerBoard>

@@ -128,6 +128,7 @@ describe("pyramid composer", () => {
     expect(draft.rows).toBe(4);
     expect(draft.slots.every((slot) => slot.playerId === null)).toBe(true);
     expect(draft.showNames).toBe(false);
+    expect(draft.showRankPip).toBe(true);
   });
 
   it("fills each square with a shinier kyber violet, not magenta studs", () => {

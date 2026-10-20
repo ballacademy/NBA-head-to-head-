@@ -152,6 +152,7 @@ export function PlayInComposerApp() {
           east: playInSlotsFromStandings(current.size, east.slots),
           west: playInSlotsFromStandings(current.size, west.slots),
           records: { ...east.records, ...west.records },
+          showWl: true,
         };
         return games.length
           ? applyLivePlayInScores(filled, games)

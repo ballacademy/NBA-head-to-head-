@@ -11,7 +11,15 @@ import {
 } from "../instagramComposer/composerNameStyle";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
-import { courtPoint, shotLine, splitShotChartTitle, type ShotChartDraft } from "./shotChartState";
+import {
+  courtPoint,
+  formatZoneSplit,
+  shotLine,
+  shotZoneSplits,
+  splitShotChartTitle,
+  visibleShots,
+  type ShotChartDraft,
+} from "./shotChartState";
 
 interface ShotChartGraphicProps {
   draft: ShotChartDraft;
@@ -135,6 +143,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             {draft.gameLabel || "LAST GAME"} · {shotLine(draft.makes, draft.attempts)}
           </span>
         </button>
+        <div className="shc-body">
         <svg
           className="shc-court"
           viewBox={`0 0 ${courtW} ${courtH}`}
@@ -153,7 +162,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             stroke="#fff"
             strokeWidth="3"
           />
-          {draft.shots.map((shot, index) => {
+          {visibleShots(draft.shots, draft.showMakes, draft.showMisses).map((shot, index) => {
             const point = courtPoint(shot, courtW, courtH);
             return (
               <circle
@@ -168,6 +177,17 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             );
           })}
         </svg>
+        <ul className="shc-zones" aria-label="Shot zone splits">
+          {shotZoneSplits(
+            visibleShots(draft.shots, draft.showMakes, draft.showMisses),
+          ).map((zone) => (
+            <li key={zone.id}>
+              <span>{zone.label}</span>
+              <strong>{formatZoneSplit(zone.makes, zone.attempts)}</strong>
+            </li>
+          ))}
+        </ul>
+        </div>
         <p className="shc-legend">
           <span className="is-make">MAKE</span>
           <span className="is-miss">MISS</span>

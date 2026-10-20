@@ -11,7 +11,13 @@ import {
 import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import { LetterGradePlate } from "../instagramComposer/LetterGradePlate";
 import { headlinePanelHex } from "../headlineComposer/headlineLayout";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+  type LetterGrade,
+} from "../lib/letterGrade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
@@ -26,6 +32,7 @@ import {
   mockTradePlayerLockup,
   mockTradePlayerName,
   mockTradePlayerSlot,
+  mockTradeSalaryTotalsLabel,
   mockTradeTeamCount,
   type MockTradeDraft,
   type PhotoPan,
@@ -48,6 +55,8 @@ interface MockTradeGraphicProps {
   onPan: (side: number, player: number, pan: PhotoPan) => void;
   onUpload: (side: number, player: number, dataUrl: string) => void;
   onSwap?: (from: number, to: number) => void;
+  onLetterGradeChange?: (grade: LetterGrade) => void;
+  onLetterGradeReasonChange?: (reason: string) => void;
 }
 
 const u = (value: number) => `calc(${value} * var(--u))`;
@@ -75,6 +84,8 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
       onPan,
       onUpload,
       onSwap,
+      onLetterGradeChange,
+      onLetterGradeReasonChange,
     },
     ref,
   ) {
@@ -174,6 +185,11 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
               </div>
               <p className="mt-gets" style={boxStyle(local(column.gets))}>
                 Gets
+                {draft.showSalaries ? (
+                  <span className="mt-cap">
+                    {mockTradeSalaryTotalsLabel(board, sideIndex)}
+                  </span>
+                ) : null}
               </p>
               {column.players.map((slot, playerIndex) => {
                 const person = side.players[playerIndex]!;
@@ -289,6 +305,16 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
             }
           />
         </div>
+        {draft.showLetterGrade ? (
+          <LetterGradePlate
+            className="mt-grade"
+            grade={parseLetterGrade(draft.letterGrade ?? DEFAULT_LETTER_GRADE)}
+            reason={draft.letterGradeReason ?? ""}
+            exporting={exporting}
+            onGrade={(next) => onLetterGradeChange?.(next)}
+            onReason={onLetterGradeReasonChange}
+          />
+        ) : null}
         {draft.showBa !== false ? (
           <img
             className="composer-ba"

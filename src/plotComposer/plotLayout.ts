@@ -76,18 +76,29 @@ const niceStep = (span: number, target = 5) => {
   return step * base;
 };
 
+export const parsePlotAxisBound = (value: unknown): number | null => {
+  if (value == null || value === "") {
+    return null;
+  }
+  const n = typeof value === "number" ? value : Number(String(value).trim());
+  return Number.isFinite(n) ? n : null;
+};
+
 export const axisFromValues = (
   values: number[],
   metric: EveryTeamStatMetric,
+  bounds?: { min?: number | null; max?: number | null },
 ): PlotAxis => {
   const percent = isPercentStatMetric(metric);
-  if (!values.length) {
+  const boundMin = parsePlotAxisBound(bounds?.min);
+  const boundMax = parsePlotAxisBound(bounds?.max);
+  if (!values.length && boundMin == null && boundMax == null) {
     return percent
       ? { min: 0, max: 1, ticks: [0, 0.25, 0.5, 0.75, 1] }
       : { min: 0, max: 40, ticks: [0, 10, 20, 30, 40] };
   }
-  const lo = Math.min(...values);
-  const hi = Math.max(...values);
+  const lo = values.length ? Math.min(...values) : boundMin ?? 0;
+  const hi = values.length ? Math.max(...values) : boundMax ?? (percent ? 1 : 40);
   const pad =
     lo === hi
       ? percent
@@ -101,6 +112,12 @@ export const axisFromValues = (
     max = Math.min(1, Math.max(max, min + 0.02));
   } else if (lo >= 0) {
     min = Math.max(0, min);
+  }
+  if (boundMin != null) {
+    min = boundMin;
+  }
+  if (boundMax != null) {
+    max = boundMax;
   }
   if (max <= min) {
     max = min + (percent ? 0.1 : 1);
@@ -273,10 +290,11 @@ export const placePlotPoints = (
   const base = plotMarkSize(points[0]?.kind ?? "team", points.length);
   const scale = sizeScaleFor(points.map((point) => point.size));
   const hot = new Set(highlightedIds.filter(Boolean));
-  const labeled = showNames
-    ? labelsToShow(points, points.length <= PLOT_LABEL_MAX)
-    : new Set<string>();
-  hot.forEach((id) => labeled.add(id));
+  const labeled = hot.size
+    ? new Set(hot)
+    : showNames
+      ? labelsToShow(points, points.length <= PLOT_LABEL_MAX)
+      : new Set<string>();
   const placed: PlotPlacedPoint[] = points.map((point) => {
     const mark = Math.max(8, Math.round(base * scale(point.size)));
     const px = projectPlot(point.x, xAxis, plot.x, plot.w);

@@ -43,6 +43,12 @@ import {
   composerNameLines,
   readComposerNameStyle,
 } from "../instagramComposer/composerNameStyle";
+import { paintLetterGradePlate } from "../instagramComposer/paintLetterGrade";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+  type LetterGrade,
+} from "../lib/letterGrade";
 import {
   headlineLabel,
   splitTeamWordmark,
@@ -171,6 +177,9 @@ export interface HeadlineRenderInput {
   metaLine?: string;
   sourceCredit?: string;
   photoBw?: boolean;
+  showLetterGrade?: boolean;
+  letterGrade?: LetterGrade;
+  letterGradeReason?: string;
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
@@ -221,6 +230,8 @@ export const renderHeadlineCanvas = async (
     storyLine: input.storyLine ?? "",
     metaLine: input.metaLine ?? "",
     sourceCredit: input.sourceCredit ?? "",
+    showLetterGrade: input.showLetterGrade === true,
+    letterGradeReason: input.letterGradeReason ?? "",
   });
 
   await document.fonts?.ready.catch(() => undefined);
@@ -477,6 +488,16 @@ export const renderHeadlineCanvas = async (
     layout.family.y,
     0.98,
   );
+
+  if (input.showLetterGrade && layout.grade.h > 0) {
+    paintLetterGradePlate(
+      context,
+      layout.grade,
+      parseLetterGrade(input.letterGrade ?? DEFAULT_LETTER_GRADE),
+      input.letterGradeReason ?? "",
+      s,
+    );
+  }
 
   if (layout.meta.text) {
     paintStack(

@@ -102,6 +102,8 @@ export interface RankedLineupsDraft {
   positionLabels?: string[];
   season?: string;
   stripCount?: number;
+  showStripStat?: boolean;
+  stripStatMetric?: EveryTeamStatMetric;
 }
 
 export const lineupPosition = (index: number): string =>
@@ -321,6 +323,8 @@ export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
     rankDisplay: DEFAULT_RANK_DISPLAY,
     positionLabels: [...DEFAULT_POSITION_LABELS],
     stripCount: RANKED_LINEUP_STRIP_COUNT,
+    showStripStat: false,
+    stripStatMetric: "points",
   };
 };
 

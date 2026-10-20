@@ -59,10 +59,12 @@ import {
   nextEmptyEveryTeamSlot,
   normalizeRankedOrder,
   insertRankedOrder,
+  parseEveryTeamGridGroup,
   pruneSlotsToSeasons,
   slotIndexForTeam,
   teamAtSlot,
   usedEveryTeamLabels,
+  type EveryTeamGridGroup,
   type EveryTeamNightMetric,
   type EveryTeamSeat,
   type EveryTeamSlots,
@@ -113,6 +115,7 @@ interface EveryTeamComposerDraft {
   cellSeasons?: Record<string, string>;
   duo?: boolean;
   partners?: EveryTeamSlots;
+  gridGroup?: EveryTeamGridGroup;
 }
 
 const loadDraft = (): EveryTeamComposerDraft => {
@@ -134,6 +137,7 @@ const loadDraft = (): EveryTeamComposerDraft => {
     season,
     cellSeasons,
     duo: stored?.duo === true,
+    gridGroup: parseEveryTeamGridGroup(stored?.gridGroup),
     partners: isEveryTeamSlots(stored?.partners)
       ? pruneSlotsToSeasons(stored.partners, season, cellSeasons)
       : createEmptyEveryTeamSlots(),
@@ -161,6 +165,7 @@ export function EveryTeamComposerApp() {
   const [showNames, setShowNames] = useState(false);
   const [showHistoricalLogos, setShowHistoricalLogos] = useState(false);
   const [duo, setDuo] = useState(false);
+  const [gridGroup, setGridGroup] = useState<EveryTeamGridGroup>("none");
   const [partners, setPartners] = useState<EveryTeamSlots>(createEmptyEveryTeamSlots);
   const [duoSeat, setDuoSeat] = useState<EveryTeamSeat>("a");
   const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
@@ -191,6 +196,7 @@ export function EveryTeamComposerApp() {
         setSeason(draft.season ?? everyTeamCurrentSeason());
         setCellSeasons(draft.cellSeasons ?? {});
         setDuo(draft.duo === true);
+        setGridGroup(parseEveryTeamGridGroup(draft.gridGroup));
         setPartners(
           isEveryTeamSlots(draft.partners)
             ? draft.partners
@@ -222,6 +228,7 @@ export function EveryTeamComposerApp() {
       cellSeasons,
       duo,
       partners,
+      gridGroup,
     });
   }, [
     brand,
@@ -236,6 +243,7 @@ export function EveryTeamComposerApp() {
     cellSeasons,
     duo,
     partners,
+    gridGroup,
     hydrated,
   ]);
 
@@ -281,6 +289,7 @@ export function EveryTeamComposerApp() {
           cellSeasons,
           duo,
           partners,
+          gridGroup,
         },
         story,
         square,
@@ -652,6 +661,21 @@ export function EveryTeamComposerApp() {
           onChange={setShowNames}
           ariaLabel="Show player names on cells"
         />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Row breaks</span>
+          <select
+            value={gridGroup}
+            aria-label="Conference or division row breaks"
+            disabled={ranked}
+            onChange={(event) =>
+              setGridGroup(parseEveryTeamGridGroup(event.target.value))
+            }
+          >
+            <option value="none">None</option>
+            <option value="conference">Conference</option>
+            <option value="division">Division</option>
+          </select>
+        </label>
         <div className="sc-look" role="group" aria-label="Two-player cells">
           <span className="sc-look__label">Duo</span>
           <button
@@ -719,6 +743,7 @@ export function EveryTeamComposerApp() {
             cellSeasons,
             duo,
             partners,
+            gridGroup,
           }}
           onLoad={(next) => {
             const nextSeason = parseEveryTeamSeason(next.season);
@@ -734,6 +759,7 @@ export function EveryTeamComposerApp() {
             setSeason(nextSeason);
             setCellSeasons(nextCells);
             setDuo(next.duo === true);
+            setGridGroup(parseEveryTeamGridGroup(next.gridGroup));
             setPartners(
               isEveryTeamSlots(next.partners)
                 ? pruneSlotsToSeasons(next.partners, nextSeason, nextCells)
@@ -837,6 +863,7 @@ export function EveryTeamComposerApp() {
             showBa={showBa}
             ranked={ranked}
             rankedOrder={rankedOrder}
+            gridGroup={gridGroup}
             showNames={showNames}
             showHistoricalLogos={showHistoricalLogos}
             season={season}

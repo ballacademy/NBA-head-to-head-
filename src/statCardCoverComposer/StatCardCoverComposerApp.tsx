@@ -64,6 +64,7 @@ import {
   patchCoverSlot,
   setCoverSlotPhotoAt,
   setCoverSlotPlayer,
+  insertCoverSlots,
   swapCoverSlots,
   usedCoverPlayerIds,
   type StatCardCoverDraft,
@@ -715,9 +716,9 @@ export function StatCardCoverComposerApp() {
                   push(draft);
                   setDraft((current) => ({
                     ...current,
-                    slots: swapCoverSlots(current.slots, from, to),
+                    slots: insertCoverSlots(current.slots, from, to),
                   }));
-                  setStatus("Swapped cover portraits.");
+                  setStatus("Reordered cover portraits.");
                 }}
               />
             </ComposerBoard>
@@ -725,7 +726,7 @@ export function StatCardCoverComposerApp() {
           </div>
           <p className="sc-hint">
             Stars and standouts cover — 2, 3, or 4 full-bleed faces in one row,
-            no individual stats. Drag a portrait on the preview to swap slots.
+            no individual stats. Drag a portrait on the preview to reorder slots.
             Fill from a date range. Export pack zips the
             cover plus a Stat card for each standout. Downloads a 4:5 Instagram
             PNG — nothing is posted.

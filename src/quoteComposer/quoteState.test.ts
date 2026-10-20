@@ -138,5 +138,10 @@ describe("quote composer", () => {
     expect(quoteLastNameSize("JOKIC", long)).toBeLessThan(
       quoteLastNameSize("JOKIC", short),
     );
+    const epic =
+      "I DIDN’T COME THIS FAR TO ONLY COME THIS FAR TONIGHT AND I WILL NOT STOP UNTIL THE WORK IS DONE";
+    expect(quoteTypeSize(epic)).toBeLessThan(quoteTypeSize(long));
+    expect(quoteMaxLines(epic)).toBeGreaterThan(quoteMaxLines(long));
+    expect(defaultQuoteDraft().showLetterGrade).toBe(false);
   });
 });

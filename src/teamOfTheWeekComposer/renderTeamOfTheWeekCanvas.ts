@@ -30,7 +30,6 @@ import {
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
-  GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   TOTW_BRAND_SIZE,
   TOTW_FOOTER_H,
@@ -39,15 +38,13 @@ import {
   TOTW_NAME_LOGO,
   TOTW_NAME_SIZE,
   TOTW_PLATE_X,
-  TOTW_STRIP_H,
-  TOTW_STRIP_W,
-  TOTW_STRIPS_TOP,
   TOTW_TITLE_PAD,
   TOTW_TITLE_PLATE_H,
   TOTW_TITLE_SIZE,
   TOTW_WEEK_H,
   TOTW_WEEK_SIZE,
-  totwStripX,
+  totwBoardH,
+  totwStripRect,
 } from "./teamOfTheWeekLayout";
 import {
   TOTW_STRIP_COUNT,
@@ -124,6 +121,7 @@ const drawStripPhoto = async (
   showNames = false,
   showTeamHairline = true,
   photoGrade = false,
+  stripStat = "",
 ) => {
   context.save();
   context.fillStyle = "#111";
@@ -200,6 +198,7 @@ const drawStripPhoto = async (
       familySize: TOTW_NAME_SIZE * scale,
       givenSize: TOTW_NAME_GIVEN_SIZE * scale,
       scale,
+      stat: stripStat,
     });
   }
   if (showTeamHairline) {
@@ -218,14 +217,17 @@ export interface TeamOfTheWeekRenderInput {
   showBa?: boolean;
   showNames?: boolean;
   showTeamHairline?: boolean;
+  stripStats?: string[];
+  story?: boolean;
 }
 
 export const renderTeamOfTheWeekCanvas = async (
   input: TeamOfTheWeekRenderInput,
   scale = 2,
 ) => {
+  const boardH = totwBoardH(input.story === true);
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -267,9 +269,7 @@ export const renderTeamOfTheWeekCanvas = async (
     }
   }
 
-  const stripY = TOTW_STRIPS_TOP * s;
-  const stripH = TOTW_STRIP_H * s;
-  const stripW = TOTW_STRIP_W * s;
+  const story = input.story === true;
   for (let index = 0; index < TOTW_STRIP_COUNT; index += 1) {
     const strip = input.strips[index] ?? {
       playerId: null,
@@ -280,26 +280,28 @@ export const renderTeamOfTheWeekCanvas = async (
       customPhoto: false,
       pan: { x: 0.5, y: 0.22 },
     };
+    const rect = totwStripRect(index, story);
     await drawStripPhoto(
       context,
       strip,
-      totwStripX(index) * s,
-      stripY,
-      stripW,
-      stripH,
+      rect.x * s,
+      rect.y * s,
+      rect.w * s,
+      rect.h * s,
       s,
       input.look,
       input.showNames === true,
       input.showTeamHairline !== false,
       input.photoGrade === true,
+      input.stripStats?.[index] ?? "",
     );
     if (input.purpleFlair) {
       paintPurplePlateEdge(
         context,
-        totwStripX(index) * s,
-        stripY,
-        stripW,
-        stripH,
+        rect.x * s,
+        rect.y * s,
+        rect.w * s,
+        rect.h * s,
         s,
       );
     }
@@ -307,7 +309,7 @@ export const renderTeamOfTheWeekCanvas = async (
 
   const plate = {
     x: TOTW_PLATE_X * s,
-    y: (GRAPHIC_HEIGHT - TOTW_FOOTER_H) * s,
+    y: (boardH - TOTW_FOOTER_H) * s,
     w: width - TOTW_PLATE_X * 2 * s,
     h: TOTW_TITLE_PLATE_H * s,
   };

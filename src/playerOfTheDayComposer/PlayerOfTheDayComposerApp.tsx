@@ -39,7 +39,10 @@ import { GamePicker } from "./GamePicker";
 import { POTD_TITLE_PRESETS, exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { downloadExportPack } from "../instagramComposer/exportPack";
-import { readLeaderboardDraft } from "../potdLeaderboardComposer/potdLeaderboardState";
+import {
+  addNamedLeaderboardEntries,
+  readLeaderboardDraft,
+} from "../potdLeaderboardComposer/potdLeaderboardState";
 import { renderPotdLeaderboardCanvas } from "../potdLeaderboardComposer/renderPotdLeaderboardCanvas";
 import { PlayerOfTheDayGraphic } from "./PlayerOfTheDayGraphic";
 import { renderPlayerOfTheDayCanvas } from "./renderPlayerOfTheDayCanvas";
@@ -50,6 +53,7 @@ import {
 import {
   applyLeaderboardTotals,
   applyPlayerPick,
+  cardPlayerName,
   hasCustomPhoto,
   leaderboardTotalForName,
   clearCard,
@@ -62,6 +66,7 @@ import {
   type PotdDraft,
 } from "./playerOfTheDayState";
 import { subscribeLeaderboard } from "../potdLeaderboardComposer/potdLeaderboardState";
+
 import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./playerOfTheDayComposer.css";
@@ -371,6 +376,22 @@ export function PlayerOfTheDayComposerApp() {
               }}
             >
               Right
+            </button>
+            <button
+              type="button"
+              className="sc-chip"
+              aria-label="Add both names to the POTD leaderboard"
+              onClick={() => {
+                const names = cards.map(cardPlayerName).filter(Boolean);
+                if (names.length < 2) {
+                  setStatus("Pick both players first.");
+                  return;
+                }
+                addNamedLeaderboardEntries(names);
+                setStatus("Added both names to the leaderboard.");
+              }}
+            >
+              Add both to board
             </button>
             <button
               type="button"

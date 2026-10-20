@@ -5,6 +5,7 @@ import {
 } from "../instagramComposer/composerNameStyle";
 import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import { parsePlotAxisBound } from "./plotLayout";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
 import {
@@ -88,6 +89,10 @@ export interface PlotDraft {
   points: PlotPoint[];
   pinnedIds: string[];
   highlightedIds?: string[];
+  xMin?: number | null;
+  xMax?: number | null;
+  yMin?: number | null;
+  yMax?: number | null;
   sizeMetric?: EveryTeamStatMetric | "none";
   quadrants?: PlotQuadrants;
   showBa?: boolean;
@@ -134,6 +139,10 @@ export const defaultPlotDraft = (season = "2026-27"): PlotDraft => ({
   points: [],
   pinnedIds: [],
   highlightedIds: [],
+  xMin: null,
+  xMax: null,
+  yMin: null,
+  yMax: null,
   sizeMetric: "none",
   quadrants: { ...DEFAULT_PLOT_QUADRANTS },
   showBa: true,
@@ -200,6 +209,10 @@ export const normalizePlotDraft = (
     highlightedIds: Array.isArray(draft.highlightedIds)
       ? draft.highlightedIds.filter((id): id is string => typeof id === "string")
       : [],
+    xMin: parsePlotAxisBound(draft.xMin),
+    xMax: parsePlotAxisBound(draft.xMax),
+    yMin: parsePlotAxisBound(draft.yMin),
+    yMax: parsePlotAxisBound(draft.yMax),
     sizeMetric: parsePlotSizeMetric(draft.sizeMetric),
     quadrants: parsePlotQuadrants(draft.quadrants),
     showBa: draft.showBa !== false,

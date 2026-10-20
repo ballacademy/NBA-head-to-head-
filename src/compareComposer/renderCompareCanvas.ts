@@ -46,11 +46,17 @@ import {
 import {
   compareSideCaption,
   compareWinner,
+  compareStatBarShares,
   leadingSide,
   visibleCompareStats,
   type CompareDraft,
 } from "./compareState";
 import { getTeam } from "../standingsComposer/teams";
+import { paintLetterGradePlate } from "../instagramComposer/paintLetterGrade";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+} from "../lib/letterGrade";
 
 export { canvasToPngBlob };
 
@@ -328,6 +334,18 @@ export const renderCompareCanvas = async (
     const y = bodyTop + index * rowSpan + rowSpan / 2;
     const lead = leadingSide(stat.left, stat.right);
     const mid = statsX + statsW / 2;
+    const bars = compareStatBarShares(stat.left, stat.right);
+    const barH = Math.max(16 * s, rowSpan * 0.42);
+    const barMax = statsW / 2 - 18 * s;
+    context.fillStyle = "rgba(255, 229, 102, 0.28)";
+    if (bars.left > 0) {
+      const bw = barMax * bars.left;
+      context.fillRect(mid - 12 * s - bw, y - barH / 2, bw, barH);
+    }
+    if (bars.right > 0) {
+      const bw = barMax * bars.right;
+      context.fillRect(mid + 12 * s, y - barH / 2, bw, barH);
+    }
     context.fillStyle = "rgba(255,255,255,0.45)";
     const ruleH = Math.max(20 * s, rowSpan * type.rule);
     context.fillRect(
@@ -389,6 +407,16 @@ export const renderCompareCanvas = async (
       titleW - 24 * s,
     );
     setLetterSpacing(context, 0);
+  }
+
+  if (input.showLetterGrade) {
+    paintLetterGradePlate(
+      context,
+      { x: 28, y: 44, w: 108, h: 80 },
+      parseLetterGrade(input.letterGrade ?? DEFAULT_LETTER_GRADE),
+      input.letterGradeReason ?? "",
+      s,
+    );
   }
 
   return canvas;

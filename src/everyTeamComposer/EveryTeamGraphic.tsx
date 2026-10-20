@@ -33,8 +33,11 @@ import {
 } from "./everyTeamLayout";
 import {
   displayedTeams,
+  EVERY_TEAM_COLS,
+  everyTeamBreakAfterRows,
   slotIndexForTeam,
   splitEveryTeamTitle,
+  type EveryTeamGridGroup,
   type EveryTeamSlots,
 } from "./everyTeamState";
 import {
@@ -57,6 +60,7 @@ interface EveryTeamGraphicProps {
   showBa?: boolean;
   ranked?: boolean;
   rankedOrder?: string[];
+  gridGroup?: EveryTeamGridGroup;
   showNames?: boolean;
   showHistoricalLogos?: boolean;
   season?: string;
@@ -107,6 +111,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       showBa = false,
       ranked = false,
       rankedOrder,
+      gridGroup = "none",
       showNames = false,
       showHistoricalLogos = false,
       season,
@@ -138,7 +143,8 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
     const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
     const titleLines = splitEveryTeamTitle(title);
     const grid = everyTeamGrid(1);
-    const teams = displayedTeams(ranked, rankedOrder);
+    const teams = displayedTeams(ranked, rankedOrder, ranked ? "none" : gridGroup);
+    const breakAfter = ranked ? [] : everyTeamBreakAfterRows(gridGroup);
     const dragEnabled = ranked && !exporting && Boolean(onMoveSlots);
 
     const cellIndexFromPoint = (x: number, y: number) => {
@@ -393,6 +399,8 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                   )
                 : null;
             const rank = index + 1;
+            const row = Math.floor(index / EVERY_TEAM_COLS);
+            const rowBreak = breakAfter.includes(row - 1);
             const overridden = Boolean(cellSeasons?.[team.id]);
             const showYear =
               overridden || cellSeason !== everyTeamCurrentSeason();
@@ -412,6 +420,7 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                   draggingFrom === index ? "et-cell--dragging" : "",
                   activeIndex === index ? "is-active" : "",
                   dropIndex === index ? "is-drop" : "",
+                  rowBreak ? "is-row-break" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}

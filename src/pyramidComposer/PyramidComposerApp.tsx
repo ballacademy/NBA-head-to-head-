@@ -87,6 +87,7 @@ const loadDraft = (): PyramidDraft => {
       slots: resizePyramidSlots(stored.slots, rows),
       showBa: stored.showBa !== false,
       showNames: stored.showNames === true,
+      showRankPip: stored.showRankPip !== false,
       rowLabels: parsePyramidRowLabels(stored.rowLabels, rows),
     };
   }
@@ -97,6 +98,7 @@ const loadDraft = (): PyramidDraft => {
     rows: empty.rows,
     showBa: stored?.showBa !== false,
     showNames: stored?.showNames === true,
+    showRankPip: stored?.showRankPip !== false,
     rowLabels: empty.rowLabels,
   };
 };
@@ -117,6 +119,7 @@ export function PyramidComposerApp() {
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
+  const [showRankPip, setShowRankPip] = useState(true);
   const [storyCrop, setStoryCrop] = useState(false);
   const [rowLabels, setRowLabels] = useState(() =>
     parsePyramidRowLabels(undefined, empty.rows ?? 4),
@@ -142,6 +145,7 @@ export function PyramidComposerApp() {
     setRows(draft.rows ?? 4);
     setShowBa(draft.showBa !== false);
     setShowNames(draft.showNames === true);
+    setShowRankPip(draft.showRankPip !== false);
     setRowLabels(parsePyramidRowLabels(draft.rowLabels, draft.rows ?? 4));
     setHydrated(true);
   }, []);
@@ -150,8 +154,16 @@ export function PyramidComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { title, slots, rows, showBa, showNames, rowLabels });
-  }, [title, slots, rows, showBa, showNames, rowLabels, hydrated]);
+    writeJson(STORAGE_KEY, {
+      title,
+      slots,
+      rows,
+      showBa,
+      showNames,
+      showRankPip,
+      rowLabels,
+    });
+  }, [title, slots, rows, showBa, showNames, showRankPip, rowLabels, hydrated]);
 
   const fillRanking = useCallback(
     async (force = false, nextTitle = title, nextRows = rows) => {
@@ -221,7 +233,7 @@ export function PyramidComposerApp() {
       await exportPyramidPng(
         node,
         filename ?? exportFilenameFromTitle(title, "pyramid"),
-        { title, slots, rows, rowLabels, look, purpleFlair, photoGrade, showBa, showNames },
+        { title, slots, rows, rowLabels, look, purpleFlair, photoGrade, showBa, showNames, showRankPip },
         story,
         square,
       );
@@ -453,6 +465,18 @@ export function PyramidComposerApp() {
           onChange={setShowNames}
           ariaLabel="Show player names on cells"
         />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Rank pip</span>
+          <button
+            type="button"
+            className={showRankPip ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showRankPip}
+            aria-label="Show rank pip on cells"
+            onClick={() => setShowRankPip((on) => !on)}
+          >
+            {showRankPip ? "On" : "Off"}
+          </button>
+        </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
@@ -474,7 +498,7 @@ export function PyramidComposerApp() {
         persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
-          board={{ title, slots, rows, showBa, showNames, rowLabels }}
+          board={{ title, slots, rows, showBa, showNames, showRankPip, rowLabels }}
           onLoad={(next) => {
             const nextRows = parsePyramidRows(next.rows, next.slots.length);
             setTitle(next.title);
@@ -482,6 +506,7 @@ export function PyramidComposerApp() {
             setSlots(resizePyramidSlots(next.slots, nextRows));
             setShowBa(next.showBa !== false);
             setShowNames(next.showNames === true);
+            setShowRankPip(next.showRankPip !== false);
             setRowLabels(parsePyramidRowLabels(next.rowLabels, nextRows));
             setStatus("Loaded named graphic.");
           }}
@@ -568,6 +593,7 @@ export function PyramidComposerApp() {
                     photoGrade,
                     showBa,
                     showNames,
+                    showRankPip,
                   };
                   await downloadExportPack(
                     () => renderPyramidCanvas(pyramidInput, 2),
@@ -625,6 +651,7 @@ export function PyramidComposerApp() {
             photoGrade={photoGrade}
             showBa={showBa}
             showNames={showNames}
+            showRankPip={showRankPip}
             exporting={exporting}
             story={storyCrop}
             onTitleChange={setTitle}

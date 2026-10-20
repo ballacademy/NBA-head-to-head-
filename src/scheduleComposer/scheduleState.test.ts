@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
   parseScoreboardGames,
+  scheduleBackToBackEventIds,
   scheduleFillLayout,
   scheduleGroups,
 } from "./scheduleState";
@@ -33,6 +34,7 @@ describe("schedule poster", () => {
     expect(games[0]?.homeId).toBe("BOS");
     expect(games[0]?.timeLabel).toContain("7:30");
     expect(scheduleGroups(games)[0]?.games).toHaveLength(1);
+    expect(scheduleBackToBackEventIds(games).size).toBe(0);
   });
 
   it("groups late ET tips on the Eastern date, not UTC midnight", () => {

@@ -13,7 +13,7 @@ import {
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
-import { getTeamGlowColor } from "../lib/teamColors";
+import { getTeamColors } from "../lib/teamColors";
 import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters";
 import {
   axisFromValues,
@@ -45,6 +45,10 @@ interface PlotGraphicProps {
   purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  xMin?: number | null;
+  xMax?: number | null;
+  yMin?: number | null;
+  yMax?: number | null;
   exporting?: boolean;
   story?: boolean;
   onBrandChange: (value: string) => void;
@@ -66,6 +70,10 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
       purpleFlair = false,
       showBa = true,
       showNames = true,
+      xMin = null,
+      xMax = null,
+      yMin = null,
+      yMax = null,
       exporting = false,
       story = false,
       onBrandChange,
@@ -79,12 +87,20 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
     const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
     const plot = plotRectFor(boardH);
     const xAxis = useMemo(
-      () => axisFromValues(points.map((point) => point.x), xMetric),
-      [points, xMetric],
+      () =>
+        axisFromValues(points.map((point) => point.x), xMetric, {
+          min: xMin,
+          max: xMax,
+        }),
+      [points, xMetric, xMin, xMax],
     );
     const yAxis = useMemo(
-      () => axisFromValues(points.map((point) => point.y), yMetric),
-      [points, yMetric],
+      () =>
+        axisFromValues(points.map((point) => point.y), yMetric, {
+          min: yMin,
+          max: yMax,
+        }),
+      [points, yMetric, yMin, yMax],
     );
     const placed = useMemo(
       () =>
@@ -277,7 +293,7 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
                     ) : (
                       <span
                         className="plt-dot"
-                        style={{ background: getTeamGlowColor(point.teamId) }}
+                        style={{ background: getTeamColors(point.teamId).primary }}
                       />
                     )}
                   </span>

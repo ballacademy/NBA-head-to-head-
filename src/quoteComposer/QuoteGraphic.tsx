@@ -6,7 +6,13 @@ import {
 } from "../instagramComposer/composerLook";
 import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
+import { LetterGradePlate } from "../instagramComposer/LetterGradePlate";
 import { getTeamColors } from "../lib/teamColors";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+  type LetterGrade,
+} from "../lib/letterGrade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { QUOTE_MAX, SOURCE_MAX, type QuoteDraft } from "./quoteState";
@@ -15,6 +21,7 @@ import {
   quoteBottom,
   quoteLastName,
   quoteLastNameSize,
+  quoteMaxLines,
   quoteTypeSize,
 } from "./quoteLayout";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -30,6 +37,8 @@ interface QuoteGraphicProps {
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
+  onLetterGradeChange?: (grade: LetterGrade) => void;
+  onLetterGradeReasonChange?: (reason: string) => void;
 }
 
 export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
@@ -45,6 +54,8 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
       onPan,
       onUpload,
       onPick,
+      onLetterGradeChange,
+      onLetterGradeReasonChange,
     },
     ref,
   ) {
@@ -55,6 +66,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
     const long = isLongQuote(draft.quote);
     const lastSize = quoteLastNameSize(last, draft.quote);
     const quoteSize = quoteTypeSize(draft.quote);
+    const quoteLines = quoteMaxLines(draft.quote);
     const hasSource = Boolean(draft.source.trim());
     const bottom = quoteBottom(hasSource);
     const teamColor = draft.teamId
@@ -106,6 +118,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           {
             ["--u" as string]: `${unit}px`,
             ["--team-color" as string]: teamColor,
+            ["--quote-size" as string]: String(quoteSize),
           } as React.CSSProperties
         }
         aria-label="Instagram quote graphic"
@@ -122,6 +135,7 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           onPick={onPick}
         />
         <div className="qt-fade" aria-hidden="true" />
+        <div className="qt-type-dim" aria-hidden="true" />
         {last ? (
           <p
             className={[
@@ -151,10 +165,10 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
           />
         ) : null}
         <textarea
-          className={["qt-quote", long ? "is-long" : ""].filter(Boolean).join(" ")}
+          className="qt-quote"
           style={{
             bottom: `calc(${bottom} * var(--u))`,
-            height: `calc(${quoteSize * 2.2} * var(--u))`,
+            height: `calc(${quoteSize * Math.max(2.2, quoteLines * 1.12)} * var(--u))`,
           }}
           value={draft.quote}
           maxLength={QUOTE_MAX}
@@ -179,6 +193,16 @@ export const QuoteGraphic = forwardRef<HTMLElement, QuoteGraphicProps>(
             onSourceChange(event.target.value.slice(0, SOURCE_MAX))
           }
         />
+        {draft.showLetterGrade ? (
+          <LetterGradePlate
+            className="qt-grade"
+            grade={parseLetterGrade(draft.letterGrade ?? DEFAULT_LETTER_GRADE)}
+            reason={draft.letterGradeReason ?? ""}
+            exporting={exporting}
+            onGrade={(next) => onLetterGradeChange?.(next)}
+            onReason={onLetterGradeReasonChange}
+          />
+        ) : null}
       </article>
     );
   },

@@ -31,6 +31,8 @@ import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  PLAYOFF_CUT_AFTER,
+  formatStandingLast10,
   formatStandingRecord,
   lastWeekDelta,
   lastWeekMark,
@@ -216,6 +218,8 @@ export interface StandingsRenderInput {
   showBa?: boolean;
   showArrows?: boolean;
   showRecord?: boolean;
+  showLast10?: boolean;
+  showPlayoffCut?: boolean;
   records?: Record<string, StandingRecord>;
   lastWeekSlots?: RankingSlots | null;
 }
@@ -406,6 +410,25 @@ export const renderStandingsCanvas = async (
       context.textBaseline = "top";
       context.fillStyle = "#fff";
       context.fillText(recordLabel, rankX, rankY + 48 * scale + 4 * scale);
+    }
+    const last10Label =
+      input.showLast10 === true
+        ? formatStandingLast10(team ? input.records?.[team.id] : null)
+        : null;
+    if (last10Label) {
+      context.font = `900 ${12 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "left";
+      context.textBaseline = "top";
+      context.fillStyle = "rgba(255,255,255,0.82)";
+      context.fillText(
+        last10Label,
+        rankX,
+        rankY + 48 * scale + (recordLabel ? 22 : 4) * scale,
+      );
+    }
+    if (input.showPlayoffCut === true && index === PLAYOFF_CUT_AFTER) {
+      context.fillStyle = "#facc15";
+      context.fillRect(0, y, width, 4 * scale);
     }
   }
 

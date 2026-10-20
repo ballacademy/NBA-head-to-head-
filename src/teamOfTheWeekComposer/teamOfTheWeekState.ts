@@ -1,6 +1,7 @@
 import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
 import { swapItems } from "../instagramComposer/composerSlotSwap";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -42,6 +43,8 @@ export interface TotwDraft {
   showBa?: boolean;
   showNames?: boolean;
   showTeamHairline?: boolean;
+  showStripStat?: boolean;
+  stripStatMetric?: EveryTeamStatMetric;
 }
 
 export const splitPlayerName = (name: string) => {
@@ -253,4 +256,6 @@ export const defaultTotwDraft = (): TotwDraft => ({
   strips: createEmptyStrips(),
   showNames: storedOrLastShowNames(undefined, false),
   showTeamHairline: true,
+  showStripStat: false,
+  stripStatMetric: "points",
 });

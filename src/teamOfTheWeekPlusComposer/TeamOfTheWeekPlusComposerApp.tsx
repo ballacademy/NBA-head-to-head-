@@ -15,6 +15,15 @@ import {
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
+import { StripStatHud } from "../instagramComposer/StripStatHud";
+import { stripStatCaption } from "../instagramComposer/stripStatCaption";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import {
+  everyTeamCurrentSeason,
+  loadEveryTeamRosters,
+  parseEveryTeamStatMetric,
+  type EveryTeamStatMetric,
+} from "../everyTeamComposer/historicalRosters";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import {
   TEAM_OF_THE_WEEK_PLUS_LOOK_KEY,
@@ -91,6 +100,8 @@ const loadDraft = (): TotwPlusDraft => {
           ? DEFAULT_PLUS_STANDOUT_CAPTION
           : stored.standoutCaption,
       showNames: stored.showNames !== false,
+      showStripStat: stored.showStripStat === true,
+      stripStatMetric: parseEveryTeamStatMetric(stored.stripStatMetric),
     };
   }
   const empty = defaultTotwPlusDraft();
@@ -106,6 +117,8 @@ const loadDraft = (): TotwPlusDraft => {
     slots: empty.slots,
     showBa: stored?.showBa === true,
     showNames: stored?.showNames !== false,
+    showStripStat: stored?.showStripStat === true,
+    stripStatMetric: parseEveryTeamStatMetric(stored?.stripStatMetric),
   };
 };
 
@@ -127,6 +140,10 @@ export function TeamOfTheWeekPlusComposerApp() {
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(true);
+  const [showStripStat, setShowStripStat] = useState(false);
+  const [stripStatMetric, setStripStatMetric] =
+    useState<EveryTeamStatMetric>("points");
+  const [statsSample] = useComposerStatsSample();
   const [storyCrop, setStoryCrop] = useState(false);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
@@ -196,7 +213,12 @@ export function TeamOfTheWeekPlusComposerApp() {
     setSlots(draft.slots);
     setShowBa(draft.showBa === true);
     setShowNames(draft.showNames !== false);
+    setShowStripStat(draft.showStripStat === true);
+    setStripStatMetric(parseEveryTeamStatMetric(draft.stripStatMetric));
     setHydrated(true);
+    void loadEveryTeamRosters().catch((error: unknown) => {
+      console.error(error);
+    });
     if (plusBoardEmpty(draft.slots)) {
       void fillLastWeek(false);
     }
@@ -221,10 +243,22 @@ export function TeamOfTheWeekPlusComposerApp() {
       slots,
       showBa,
       showNames,
+      showStripStat,
+      stripStatMetric,
     });
-  }, [brand, week, starterCaption, standoutCaption, slots, showBa, showNames, hydrated]);
+  }, [brand, week, starterCaption, standoutCaption, slots, showBa, showNames, showStripStat, stripStatMetric, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
+  const stripStats = showStripStat
+    ? slots.map((slot) =>
+        stripStatCaption(
+          slot.playerId,
+          stripStatMetric,
+          everyTeamCurrentSeason(),
+          statsSample,
+        ),
+      )
+    : [];
 
   const handleExport = async (
     filename?: string,
@@ -281,6 +315,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             photoGrade,
             showBa,
             showNames,
+            stripStats,
           },
           story,
           square,
@@ -314,6 +349,8 @@ export function TeamOfTheWeekPlusComposerApp() {
     setStandoutCaption(next.standoutCaption);
     setSlots(next.slots);
     setShowNames(next.showNames !== false);
+    setShowStripStat(next.showStripStat === true);
+    setStripStatMetric(parseEveryTeamStatMetric(next.stripStatMetric));
     setActiveIndex(null);
     setStatus(status);
   };
@@ -330,6 +367,8 @@ export function TeamOfTheWeekPlusComposerApp() {
         slots,
         showBa,
         showNames,
+        showStripStat,
+        stripStatMetric,
       }),
       "Reset — photos kept.",
     );
@@ -508,6 +547,12 @@ export function TeamOfTheWeekPlusComposerApp() {
           label="Name + logo"
           ariaLabel="Name and team logo"
         />
+        <StripStatHud
+          on={showStripStat}
+          metric={stripStatMetric}
+          onToggle={setShowStripStat}
+          onMetric={setStripStatMetric}
+        />
           </>
         }
         persist={
@@ -521,6 +566,8 @@ export function TeamOfTheWeekPlusComposerApp() {
             slots,
             showBa,
             showNames,
+            showStripStat,
+            stripStatMetric,
           }}
           onLoad={(next) => {
             setBrand(next.brand);
@@ -530,6 +577,8 @@ export function TeamOfTheWeekPlusComposerApp() {
             setSlots(next.slots);
             setShowBa(next.showBa === true);
             setShowNames(next.showNames !== false);
+            setShowStripStat(next.showStripStat === true);
+            setStripStatMetric(parseEveryTeamStatMetric(next.stripStatMetric));
             setStatus("Loaded named graphic.");
           }}
         />
@@ -638,6 +687,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             photoGrade={photoGrade}
             showBa={showBa}
             showNames={showNames}
+            stripStats={stripStats}
             exporting={exporting}
             story={storyCrop}
             onBrandChange={setBrand}

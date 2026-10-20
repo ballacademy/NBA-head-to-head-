@@ -22,6 +22,7 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   INJURY_KICKER_FILL,
   INJURY_KICKER_INK,
+  cycleInjuryKicker,
   injuryFillLayout,
   splitInjuryTitle,
   type InjuryDraft,
@@ -38,6 +39,7 @@ interface InjuryGraphicProps {
   onTitleChange: (value: string) => void;
   onKickerChange: (value: string) => void;
   onDateLineChange: (value: string) => void;
+  onStatusCycle?: (teamId: string, playerId: string, status: InjuryKicker) => void;
 }
 
 export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
@@ -52,6 +54,7 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
       onTitleChange,
       onKickerChange,
       onDateLineChange,
+      onStatusCycle,
     },
     ref,
   ) {
@@ -179,8 +182,19 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
                   <div className="inj-team__rows">
                     {block.players.map((player) => (
                       <div key={`${block.teamId}-${player.id}`} className="inj-row">
-                        <span
+                        <button
+                          type="button"
                           className="inj-pip"
+                          disabled={exporting || !onStatusCycle}
+                          aria-label={`Cycle ${player.name} status`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onStatusCycle?.(
+                              block.teamId,
+                              player.id,
+                              cycleInjuryKicker(player.status),
+                            );
+                          }}
                           style={
                             {
                               ["--pip-fill" as string]:
@@ -191,7 +205,7 @@ export const InjuryGraphic = forwardRef<HTMLElement, InjuryGraphicProps>(
                           }
                         >
                           {player.status}
-                        </span>
+                        </button>
                         <span className="inj-name">
                           {formatComposerPersonName(player.name, nameStyle) ||
                             player.shortName}

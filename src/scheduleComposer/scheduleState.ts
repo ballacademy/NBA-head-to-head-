@@ -254,6 +254,33 @@ export const normalizeScheduleDraft = (
   };
 };
 
+export const scheduleBackToBackEventIds = (games: ScheduleGame[]) => {
+  const byTeam = new Map<string, Array<{ date: string; eventId: string }>>();
+  games.forEach((game) => {
+    [game.awayId, game.homeId].forEach((teamId) => {
+      if (!teamId) {
+        return;
+      }
+      const rows = byTeam.get(teamId) ?? [];
+      rows.push({ date: game.date, eventId: game.eventId || `${game.date}-${teamId}` });
+      byTeam.set(teamId, rows);
+    });
+  });
+  const ids = new Set<string>();
+  byTeam.forEach((rows) => {
+    const sorted = [...rows].sort((left, right) => left.date.localeCompare(right.date));
+    for (let index = 1; index < sorted.length; index += 1) {
+      const prev = Date.parse(`${sorted[index - 1]!.date}T12:00:00Z`);
+      const next = Date.parse(`${sorted[index]!.date}T12:00:00Z`);
+      if (Number.isFinite(prev) && Number.isFinite(next) && next - prev === 86_400_000) {
+        ids.add(sorted[index - 1]!.eventId);
+        ids.add(sorted[index]!.eventId);
+      }
+    }
+  });
+  return ids;
+};
+
 export const scheduleGroups = (games: ScheduleGame[]) => {
   const groups: Array<{ date: string; label: string; games: ScheduleGame[] }> =
     [];

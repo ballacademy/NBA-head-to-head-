@@ -2,6 +2,15 @@ import {
   formatComposerName,
   type ComposerNameStyle,
 } from "../instagramComposer/composerNameStyle";
+import {
+  defaultLetterGradeFields,
+  normalizeLetterGradeFields,
+  type LetterGradeFields,
+} from "../lib/letterGrade";
+import {
+  formatCapSalary,
+  getPlayerSalary,
+} from "../lib/playerSalaries";
 import { graphicCaption } from "../instagramComposer/graphicCaption";
 import {
   clampPan,
@@ -56,7 +65,7 @@ export interface MockTradeSide {
   picks: MockTradePick[];
 }
 
-export interface MockTradeDraft {
+export interface MockTradeDraft extends LetterGradeFields {
   title: string;
   sides: MockTradeSide[];
   showBa?: boolean;
@@ -223,6 +232,7 @@ export const defaultMockTradeDraft = (): MockTradeDraft => ({
   sides: [emptyMockTradeSide(), emptyMockTradeSide()],
   showBa: true,
   showSalaries: false,
+  ...defaultLetterGradeFields(),
 });
 
 export const normalizeMockTradeDraft = (draft: MockTradeDraft): MockTradeDraft => {
@@ -237,7 +247,50 @@ export const normalizeMockTradeDraft = (draft: MockTradeDraft): MockTradeDraft =
     sides: parsed.slice(0, MOCK_TRADE_TEAM_MAX),
     showBa: draft.showBa !== false,
     showSalaries: draft.showSalaries === true,
+    ...normalizeLetterGradeFields(draft),
   };
+};
+
+export const mockTradeSideSalaryIn = (side: MockTradeSide) =>
+  side.players.reduce((sum, player) => {
+    const value = getPlayerSalary(undefined, player.playerId ?? undefined);
+    return sum + (value ?? 0);
+  }, 0);
+
+export const mockTradeSideSalaryOut = (
+  draft: MockTradeDraft,
+  index: number,
+) => {
+  const teamId = draft.sides[index]?.teamId;
+  if (!teamId) {
+    return 0;
+  }
+  return draft.sides.reduce((sum, side, sideIndex) => {
+    if (sideIndex === index) {
+      return sum;
+    }
+    return (
+      sum +
+      side.players.reduce((inner, player) => {
+        if (player.teamId !== teamId) {
+          return inner;
+        }
+        const value = getPlayerSalary(undefined, player.playerId ?? undefined);
+        return inner + (value ?? 0);
+      }, 0)
+    );
+  }, 0);
+};
+
+export const mockTradeSalaryTotalsLabel = (
+  draft: MockTradeDraft,
+  index: number,
+) => {
+  const incoming = mockTradeSideSalaryIn(draft.sides[index]!);
+  const outgoing = mockTradeSideSalaryOut(draft, index);
+  const inn = incoming ? formatCapSalary(incoming) : "—";
+  const out = outgoing ? formatCapSalary(outgoing) : "—";
+  return `IN ${inn}  OUT ${out}`;
 };
 
 export const mockTradeTeamCount = (draft: MockTradeDraft): 2 | 3 =>

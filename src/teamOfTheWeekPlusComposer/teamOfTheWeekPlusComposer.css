@@ -40,6 +40,22 @@
 
 .twp-board.is-story {
   aspect-ratio: 9 / 16;
+  grid-template-rows:
+    calc(var(--header-h) * var(--u))
+    minmax(0, auto)
+    calc(var(--section-h) * var(--u))
+    minmax(0, auto)
+    calc(var(--footer-h) * var(--u));
+  align-content: start;
+  row-gap: calc(36 * var(--u));
+}
+
+.twp-board.is-story .twp-bar--starters {
+  max-height: calc(302 * var(--u));
+}
+
+.twp-board.is-story .twp-bar--standouts {
+  max-height: calc(256 * var(--u));
 }
 
 .twp-board.is-black {

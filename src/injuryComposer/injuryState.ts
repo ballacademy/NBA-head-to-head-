@@ -104,6 +104,28 @@ export const resolveInjuryTeamId = (abbrev: string) => {
   return ESPN_ABBREV_TO_TEAM[token] ?? "";
 };
 
+export const cycleInjuryKicker = (status: string): InjuryKicker => {
+  const index = INJURY_KICKERS.indexOf(status as InjuryKicker);
+  return INJURY_KICKERS[(index < 0 ? 0 : index + 1) % INJURY_KICKERS.length]!;
+};
+
+export const setInjuryPlayerStatus = (
+  teams: InjuryTeamBlock[],
+  teamId: string,
+  playerId: string,
+  status: InjuryKicker,
+): InjuryTeamBlock[] =>
+  teams.map((block) =>
+    block.teamId !== teamId
+      ? block
+      : {
+          ...block,
+          players: block.players.map((player) =>
+            player.id === playerId ? { ...player, status } : player,
+          ),
+        },
+  );
+
 export const normalizeInjuryKicker = (value: string): InjuryKicker | null => {
   const raw = value.trim().toUpperCase().replace(/[._]/g, " ");
   if (!raw || raw === "ACTIVE" || raw === "AVAILABLE") {

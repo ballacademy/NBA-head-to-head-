@@ -160,6 +160,9 @@
 }
 
 .inj-pip {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
   flex: 0 0 auto;
   min-width: calc(72 * var(--u));
   padding: 0 calc(8 * var(--u));

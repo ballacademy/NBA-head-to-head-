@@ -103,6 +103,7 @@ describe("ranked lineups", () => {
     expect(nextRankPill("10TH")).toBe("11TH");
     expect(slidesFromDraft(draft)).toHaveLength(1);
     expect(draft.showFade).toBe(false);
+    expect(draft.showStripStat).toBe(false);
     expect(draft.showTeamHairline).toBe(true);
     expect(draft.positionLabels).toEqual([...DEFAULT_POSITION_LABELS]);
     expect(parsePositionLabels(["pg", "", "SF", "PF", "C"])).toEqual([

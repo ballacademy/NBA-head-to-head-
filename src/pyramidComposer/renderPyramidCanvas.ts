@@ -422,6 +422,7 @@ export interface PyramidRenderInput {
   photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  showRankPip?: boolean;
   story?: boolean;
 }
 
@@ -509,6 +510,24 @@ export const renderPyramidCanvas = async (
     paintCellFrameEdges(context, x, y, w, h, input.look, s, rest, quietLine);
     if (input.purpleFlair) {
       paintPurplePlateEdges(context, x, y, w, h, s, rest);
+    }
+    if (input.showRankPip !== false) {
+      const pip = 22 * s;
+      const px = x + 8 * s;
+      const py = y + 8 * s;
+      context.fillStyle = "rgba(0,0,0,0.72)";
+      if (typeof context.roundRect === "function") {
+        context.beginPath();
+        context.roundRect(px, py, pip, pip, pip / 2);
+        context.fill();
+      } else {
+        context.fillRect(px, py, pip, pip);
+      }
+      context.font = `900 ${12 * s}px ${POSTER_FONT}`;
+      context.fillStyle = "#facc15";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(String(index + 1), px + pip / 2, py + pip / 2);
     }
     const line = quietLine;
     const purpleLine = input.purpleFlair ? purplePlateLinePx(s) : 0;

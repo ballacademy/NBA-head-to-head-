@@ -204,6 +204,41 @@
   margin: 0;
 }
 
+.cmp-stat__bars {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22%;
+  height: 56%;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(10 * var(--u));
+  pointer-events: none;
+}
+
+.cmp-stat__bar {
+  height: 100%;
+  background: rgba(255, 229, 102, 0.28);
+}
+
+.cmp-stat__bar.is-left {
+  justify-self: end;
+}
+
+.cmp-stat__bar.is-right {
+  justify-self: start;
+}
+
+.cmp-grade {
+  position: absolute;
+  left: calc(28 * var(--u));
+  top: calc(44 * var(--u));
+  width: calc(108 * var(--u));
+  height: calc(80 * var(--u));
+  z-index: 6;
+}
+
 .cmp-stat--movable {
   cursor: grab;
   touch-action: none;
@@ -261,6 +296,8 @@
 }
 
 .cmp-stat__side {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;

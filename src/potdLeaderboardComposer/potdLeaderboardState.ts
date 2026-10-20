@@ -370,6 +370,24 @@ export const addLeaderboardEntry = (
   return [...entries, createLeaderboardEntry(name, wins)];
 };
 
+export const addNamedLeaderboardEntries = (names: string[]) => {
+  const draft = readLeaderboardDraft();
+  let entries = draft.entries;
+  names.forEach((name) => {
+    const trimmed = name.replace(/\s+/g, " ").trim();
+    if (!trimmed) {
+      return;
+    }
+    const key = normalizePlayerNameKey(trimmed);
+    if (entries.some((entry) => normalizePlayerNameKey(entry.name) === key)) {
+      return;
+    }
+    entries = addLeaderboardEntry(entries, trimmed);
+  });
+  writeLeaderboardDraft({ ...draft, entries });
+  return entries;
+};
+
 export const patchLeaderboardEntry = (
   entries: LeaderboardEntry[],
   id: string,

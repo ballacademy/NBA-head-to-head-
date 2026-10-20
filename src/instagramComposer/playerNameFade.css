@@ -108,3 +108,20 @@
   outline: 1px dashed rgba(255, 255, 255, 0.45);
   outline-offset: 3px;
 }
+
+.ig-name-fade__stat {
+  margin: calc(1 * var(--u)) 0 0;
+  max-width: 100%;
+  color: rgba(255, 255, 255, 0.82);
+  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  font-size: calc(9 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.78);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}

@@ -33,6 +33,11 @@ import {
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  defaultLetterGradeFields,
+  normalizeLetterGradeFields,
+  type LetterGradeFields,
+} from "../lib/letterGrade";
 
 export { clampPan, type PhotoPan };
 
@@ -110,7 +115,7 @@ export interface CompareSide {
   pan: PhotoPan;
 }
 
-export interface CompareDraft {
+export interface CompareDraft extends LetterGradeFields {
   title: string;
   subtitle: string;
   statsLabel: string;
@@ -268,6 +273,7 @@ export const defaultCompareDraft = (): CompareDraft => {
     showBa: readLastShowBa(),
     showWinner: false,
     watermark: DEFAULT_COMPOSER_WATERMARK,
+    ...defaultLetterGradeFields(),
   };
 };
 
@@ -287,7 +293,18 @@ export const normalizeCompareDraft = (draft: CompareDraft): CompareDraft => {
     showBa: storedOrLastShowBa(draft.showBa),
     showWinner: draft.showWinner === true,
     watermark: parseComposerWatermark(draft.watermark),
+    ...normalizeLetterGradeFields(draft),
   };
+};
+
+export const compareStatBarShares = (left: string, right: string) => {
+  const a = Math.abs(numericStat(left) ?? 0);
+  const b = Math.abs(numericStat(right) ?? 0);
+  const max = Math.max(a, b);
+  if (max <= 0) {
+    return { left: 0, right: 0 };
+  }
+  return { left: a / max, right: b / max };
 };
 
 export const hasCustomPhoto = (side: CompareSide) =>

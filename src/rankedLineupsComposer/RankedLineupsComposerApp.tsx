@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import { StripStatHud } from "../instagramComposer/StripStatHud";
+import { stripStatCaption } from "../instagramComposer/stripStatCaption";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { TeamHairlineToggle } from "../instagramComposer/TeamHairlineToggle";
@@ -202,6 +204,7 @@ export function RankedLineupsComposerApp({
   );
   const [season, setSeason] = useState(everyTeamCurrentSeason);
   const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
+  const [showStripStat, setShowStripStat] = useState(false);
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [rostersReady, setRostersReady] = useState(isEveryTeamRostersReady);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -253,6 +256,10 @@ export function RankedLineupsComposerApp({
       parsePositionLabels(draft.positionLabels, draft.strips.length),
     );
     setSeason(draft.season || everyTeamCurrentSeason());
+    setShowStripStat(draft.showStripStat === true);
+    if (draft.stripStatMetric) {
+      setFillMetric(draft.stripStatMetric);
+    }
     setHydrated(true);
     void loadEveryTeamRosters()
       .then(() => {
@@ -281,8 +288,10 @@ export function RankedLineupsComposerApp({
       rankDisplay,
       positionLabels,
       season,
+      showStripStat,
+      stripStatMetric: fillMetric,
     });
-  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, season, hydrated, storageKey]);
+  }, [brand, title, rank, strips, slides, activeSlide, showBa, showFade, showTeamHairline, rankDisplay, positionLabels, season, showStripStat, fillMetric, hydrated, storageKey]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -300,6 +309,10 @@ export function RankedLineupsComposerApp({
     setActiveSlide(next.activeSlide ?? 0);
     setShowBa(next.showBa === true);
     setShowFade(next.showFade === true);
+    setShowStripStat(next.showStripStat === true);
+    if (next.stripStatMetric) {
+      setFillMetric(next.stripStatMetric);
+    }
     setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
     setRankDisplay(parseRankDisplay(next.rankDisplay));
     setPositionLabels(
@@ -361,6 +374,7 @@ export function RankedLineupsComposerApp({
           showTeamHairline,
           rankDisplay: unranked ? "none" : rankDisplay,
           positionLabels,
+          stripStats,
         },
         story,
         square,
@@ -411,6 +425,11 @@ export function RankedLineupsComposerApp({
             showTeamHairline,
             rankDisplay,
             positionLabels,
+            stripStats: showStripStat
+              ? slide.strips.map((strip) =>
+                  stripStatCaption(strip.playerId, fillMetric, season, statsSample),
+                )
+              : [],
           },
         );
         await new Promise((resolve) => window.setTimeout(resolve, 280));
@@ -568,6 +587,11 @@ export function RankedLineupsComposerApp({
     activeIndex != null ? strips[activeIndex]?.playerId ?? null : null;
   const activePos =
     activeIndex != null ? lineupPosition(activeIndex) : "PG";
+  const stripStats = showStripStat
+    ? strips.map((strip) =>
+        stripStatCaption(strip.playerId, fillMetric, season, statsSample),
+      )
+    : [];
   const board: RankedLineupsDraft = {
     brand,
     title,
@@ -581,6 +605,8 @@ export function RankedLineupsComposerApp({
     rankDisplay,
     positionLabels,
     season,
+    showStripStat,
+    stripStatMetric: fillMetric,
   };
 
   return (
@@ -805,6 +831,12 @@ export function RankedLineupsComposerApp({
           label="Names in photo"
           ariaLabel="First and last name with team logo on the photo"
         />
+        <StripStatHud
+          on={showStripStat}
+          metric={fillMetric}
+          onToggle={setShowStripStat}
+          onMetric={setFillMetric}
+        />
           </>
         }
         persist={
@@ -941,6 +973,16 @@ export function RankedLineupsComposerApp({
                                   showTeamHairline,
                                   rankDisplay,
                                   positionLabels,
+                                  stripStats: showStripStat
+                                    ? slide.strips.map((strip) =>
+                                        stripStatCaption(
+                                          strip.playerId,
+                                          fillMetric,
+                                          season,
+                                          statsSample,
+                                        ),
+                                      )
+                                    : [],
                                 },
                                 2,
                               ),
@@ -964,6 +1006,7 @@ export function RankedLineupsComposerApp({
                     showTeamHairline,
                     rankDisplay: unranked ? "none" as const : rankDisplay,
                     positionLabels,
+                    stripStats,
                   };
                   await downloadExportPack(
                     () => renderRankedLineupsCanvas(rankedInput, 2),
@@ -1023,6 +1066,7 @@ export function RankedLineupsComposerApp({
             showTeamHairline={showTeamHairline}
             rankDisplay={unranked ? "none" : rankDisplay}
             positionLabels={positionLabels}
+            stripStats={stripStats}
             onPositionChange={(index, label) =>
               setPositionLabels((current) => {
                 const next = parsePositionLabels(current);

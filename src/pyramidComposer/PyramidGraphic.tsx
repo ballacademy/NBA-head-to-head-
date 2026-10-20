@@ -32,6 +32,7 @@ interface PyramidGraphicProps {
   photoGrade?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  showRankPip?: boolean;
   exporting?: boolean;
   story?: boolean;
   onTitleChange: (value: string) => void;
@@ -54,6 +55,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
       photoGrade = false,
       showBa = true,
       showNames = false,
+      showRankPip = true,
       exporting = false,
       story = false,
       onTitleChange,
@@ -231,6 +233,11 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                         }
                         onPick={() => onPick(index)}
                       />
+                      {showRankPip ? (
+                        <span className="pyr-cell__pip" aria-hidden="true">
+                          {index + 1}
+                        </span>
+                      ) : null}
                       {showNames && name ? (
                         <p className="pyr-cell__name">{name}</p>
                       ) : null}

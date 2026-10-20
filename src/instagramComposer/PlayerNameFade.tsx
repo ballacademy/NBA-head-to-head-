@@ -18,6 +18,7 @@ interface PlayerNameFadeProps {
   givenAria: string;
   familyAria: string;
   flushLeft?: boolean;
+  stat?: string;
   onFirstChange: (value: string) => void;
   onLastChange: (value: string) => void;
   onEmptyClick: () => void;
@@ -31,6 +32,7 @@ export function PlayerNameFade({
   givenAria,
   familyAria,
   flushLeft = false,
+  stat = "",
   onFirstChange,
   onLastChange,
   onEmptyClick,
@@ -128,6 +130,9 @@ export function PlayerNameFade({
               }
             }}
           />
+          {stat.trim() ? (
+            <p className="ig-name-fade__stat">{stat}</p>
+          ) : null}
         </div>
       </div>
     </div>

@@ -14,7 +14,7 @@ export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 export const QT_BA_SIZE = 72;
 export const QT_BA_INSET = 36;
-export const QT_FADE_H = 560;
+export const QT_FADE_H = 680;
 export const QT_QUOTE_SIZE = 70;
 export const QT_QUOTE_SIZE_LONG = 56;
 export const QT_QUOTE_TRACK = 0.02;
@@ -68,11 +68,35 @@ export const quoteLastNameSize = (last: string, quote = "") => {
   return size;
 };
 
-export const quoteTypeSize = (quote: string) =>
-  isLongQuote(quote) ? QT_QUOTE_SIZE_LONG : QT_QUOTE_SIZE;
+export const quoteTypeSize = (quote: string) => {
+  const words = quoteWordCount(quote);
+  const chars = quote.replace(/\s+/g, " ").trim().length;
+  if (words > 22 || chars > 120) {
+    return 30;
+  }
+  if (words > 14 || chars > 80) {
+    return 40;
+  }
+  if (isLongQuote(quote)) {
+    return QT_QUOTE_SIZE_LONG;
+  }
+  return QT_QUOTE_SIZE;
+};
 
-export const quoteMaxLines = (quote: string) =>
-  isLongQuote(quote) ? QT_QUOTE_LONG_MAX_LINES : QT_QUOTE_MAX_LINES;
+export const quoteMaxLines = (quote: string) => {
+  const words = quoteWordCount(quote);
+  const chars = quote.replace(/\s+/g, " ").trim().length;
+  if (words > 22 || chars > 120) {
+    return 5;
+  }
+  if (words > 14 || chars > 80) {
+    return 4;
+  }
+  if (isLongQuote(quote)) {
+    return QT_QUOTE_LONG_MAX_LINES;
+  }
+  return QT_QUOTE_MAX_LINES;
+};
 
 export const quoteBottom = (hasSource: boolean) =>
   hasSource ? QT_QUOTE_BOTTOM + QT_QUOTE_SOURCE_GAP : QT_QUOTE_BOTTOM;

@@ -211,6 +211,27 @@
   border-top: 0;
 }
 
+.pyr-cell__pip {
+  position: absolute;
+  top: calc(8 * var(--u));
+  left: calc(8 * var(--u));
+  z-index: 7;
+  min-width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  padding: 0 calc(6 * var(--u));
+  border-radius: calc(11 * var(--u));
+  background: rgba(0, 0, 0, 0.72);
+  color: #facc15;
+  font-family: var(--ig-poster);
+  font-size: calc(12 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .pyr-cell__name {
   position: absolute;
   left: 0;

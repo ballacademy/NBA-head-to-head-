@@ -276,6 +276,40 @@ export function ShotChartComposerApp() {
               }
             />
             <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Makes</span>
+              <button
+                type="button"
+                className={draft.showMakes !== false ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showMakes !== false}
+                aria-label="Show made shots"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showMakes: current.showMakes === false,
+                  }))
+                }
+              >
+                {draft.showMakes !== false ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Misses</span>
+              <button
+                type="button"
+                className={draft.showMisses !== false ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showMisses !== false}
+                aria-label="Show missed shots"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showMisses: current.showMisses === false,
+                  }))
+                }
+              >
+                {draft.showMisses !== false ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
               <span className="sc-toolbar__eyebrow">9:16 crop</span>
               <button
                 type="button"

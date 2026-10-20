@@ -15,6 +15,7 @@ import {
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  scheduleBackToBackEventIds,
   scheduleFillLayout,
   scheduleGroups,
   splitScheduleTitle,
@@ -93,6 +94,7 @@ export const renderScheduleCanvas = async (
   const gutter = 20 * s;
   const colW = (listRight - listLeft - gutter) / 2;
   const logo = fill.logo * s;
+  const b2b = scheduleBackToBackEventIds(input.games);
   groups.forEach((group, dayIndex) => {
     const dayTop = (fill.listTop + dayIndex * (fill.dayH + fill.dayGap)) * s;
     context.textAlign = "left";
@@ -128,7 +130,7 @@ export const renderScheduleCanvas = async (
           },
         );
       }
-      context.fillStyle = "#fff";
+      context.fillStyle = "#93c5fd";
       context.font = `900 ${fill.type * s}px ${POSTER_FONT}`;
       context.textAlign = "left";
       context.fillText(game.awayId, x0 + logo + 8 * s, y);
@@ -136,11 +138,15 @@ export const renderScheduleCanvas = async (
       context.fillStyle = "rgba(255,255,255,0.55)";
       context.fillText("@", x0 + colW * 0.4, y);
       context.textAlign = "left";
-      context.fillStyle = "#fff";
+      context.fillStyle = "#fde68a";
       context.fillText(game.homeId, x0 + colW * 0.44 + logo + 8 * s, y);
       context.textAlign = "right";
       context.font = `900 ${fill.time * s}px ${POSTER_FONT}`;
-      context.fillText(game.timeLabel, x0 + colW, y);
+      context.fillStyle = "#fff";
+      const b2bMark = b2b.has(game.eventId || `${game.date}-${game.awayId}`)
+        ? "  B2B"
+        : "";
+      context.fillText(`${game.timeLabel}${b2bMark}`, x0 + colW, y);
     });
   });
 

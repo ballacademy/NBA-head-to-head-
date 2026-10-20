@@ -35,6 +35,7 @@ import {
   injuryDateLine,
   isInjuryDraft,
   normalizeInjuryDraft,
+  setInjuryPlayerStatus,
   type InjuryDraft,
 } from "./injuryState";
 import "@fontsource/montserrat/latin-900.css";
@@ -315,6 +316,18 @@ export function InjuryComposerApp() {
               onDateLineChange={(dateLine) =>
                 setDraft((current) => ({ ...current, dateLine }))
               }
+              onStatusCycle={(teamId, playerId, status) => {
+                push(draft);
+                setDraft((current) => ({
+                  ...current,
+                  teams: setInjuryPlayerStatus(
+                    current.teams,
+                    teamId,
+                    playerId,
+                    status,
+                  ),
+                }));
+              }}
             />
           </ComposerBoard>
           <StoryCropGuide on={storyCrop} />

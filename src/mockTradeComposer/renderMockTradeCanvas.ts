@@ -24,6 +24,11 @@ import {
 } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { salaryLabelForPlayer } from "../lib/playerSalaries";
+import { paintLetterGradePlate } from "../instagramComposer/paintLetterGrade";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+} from "../lib/letterGrade";
 import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_WIDTH,
@@ -35,6 +40,7 @@ import {
   compactMockTradeDraft,
   mockTradePickLabel,
   mockTradePlayerLockup,
+  mockTradeSalaryTotalsLabel,
   mockTradeTeamCount,
   type MockTradeDraft,
 } from "./mockTradeState";
@@ -170,9 +176,22 @@ export const renderMockTradeCanvas = async (
     context.fillText(
       "GETS",
       (column.gets.x + column.gets.w / 2) * s,
-      (column.gets.y + column.gets.h / 2) * s,
+      (column.gets.y + 10) * s,
     );
     setLetterSpacing(context, 0);
+    if (input.showSalaries) {
+      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+      context.fillStyle = "rgba(250, 204, 21, 0.92)";
+      setLetterSpacing(context, 0.1 * 11 * s);
+      context.textBaseline = "top";
+      context.fillText(
+        mockTradeSalaryTotalsLabel(board, sideIndex),
+        (column.gets.x + column.gets.w / 2) * s,
+        (column.gets.y + 18) * s,
+        column.gets.w * s,
+      );
+      setLetterSpacing(context, 0);
+    }
 
     for (const [playerIndex, slot] of column.players.entries()) {
       const person = side.players[playerIndex]!;
@@ -314,6 +333,16 @@ export const renderMockTradeCanvas = async (
   setLetterSpacing(context, 0);
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
+
+  if (input.showLetterGrade) {
+    paintLetterGradePlate(
+      context,
+      { x: 22, y: 22, w: 118, h: input.letterGradeReason ? 100 : 88 },
+      parseLetterGrade(input.letterGrade ?? DEFAULT_LETTER_GRADE),
+      input.letterGradeReason ?? "",
+      s,
+    );
+  }
 
   if (input.showBa !== false) {
     const ba = await loadImage("/ba-logo-circled.png");

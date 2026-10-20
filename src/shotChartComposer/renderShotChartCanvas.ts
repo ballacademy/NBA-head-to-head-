@@ -18,8 +18,11 @@ import {
 } from "../standingsComposer/rankingState";
 import {
   courtPoint,
+  formatZoneSplit,
   shotLine,
+  shotZoneSplits,
   splitShotChartTitle,
+  visibleShots,
   type ShotChartDraft,
 } from "./shotChartState";
 
@@ -132,12 +135,13 @@ export const renderShotChartCanvas = async (
     240 * s,
   );
 
-  const courtW = 760 * s;
+  const shots = visibleShots(input.shots, input.showMakes, input.showMisses);
+  const courtW = 700 * s;
   const courtH = (boardH - 300) * s;
-  const courtX = (width - courtW) / 2;
+  const courtX = 36 * s;
   const courtY = 260 * s;
   paintCourt(context, courtX, courtY, courtW, courtH);
-  input.shots.forEach((shot) => {
+  shots.forEach((shot) => {
     const point = courtPoint(shot, courtW, courtH);
     context.beginPath();
     context.arc(courtX + point.x, courtY + point.y, (shot.made ? 7 : 6) * s, 0, Math.PI * 2);
@@ -151,6 +155,26 @@ export const renderShotChartCanvas = async (
     }
   });
 
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  const zones = shotZoneSplits(shots);
+  const zoneX = courtX + courtW + 24 * s;
+  zones.forEach((zone, index) => {
+    const y = courtY + 28 * s + index * 36 * s;
+    context.fillStyle = "rgba(255,255,255,0.78)";
+    context.font = `900 ${13 * s}px ${POSTER_FONT}`;
+    context.fillText(zone.label, zoneX, y);
+    context.fillStyle = "#facc15";
+    context.textAlign = "right";
+    context.fillText(
+      formatZoneSplit(zone.makes, zone.attempts),
+      width - 36 * s,
+      y,
+    );
+    context.textAlign = "left";
+  });
+
+  context.textAlign = "center";
   context.font = `900 ${12 * s}px ${POSTER_FONT}`;
   context.fillStyle = "#facc15";
   context.fillText("MAKE", width / 2 - 60 * s, height - 28 * s);

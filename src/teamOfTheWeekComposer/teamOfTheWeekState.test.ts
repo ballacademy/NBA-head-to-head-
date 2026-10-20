@@ -26,6 +26,7 @@ import {
   TOTW_NAME_LOGO,
   TOTW_NAME_SIZE,
   TOTW_TITLE_SIZE,
+  totwStripRect,
   totwStripX,
 } from "./teamOfTheWeekLayout";
 import {
@@ -65,6 +66,9 @@ describe("team of the week state", () => {
     expect(TOTW_NAME_LOGO).toBeLessThanOrEqual(TOTW_NAME_SIZE + 6);
     expect(TOTW_NAME_H).toBeLessThan(100);
     expect(TOTW_NAME_H).toBeGreaterThan(TOTW_NAME_LOGO * 2);
+    const stacked = totwStripRect(0, true);
+    expect(stacked.w).toBeGreaterThan(stacked.h);
+    expect(totwStripRect(1, true).y).toBeGreaterThan(stacked.y);
   });
 
   it("defaults the title, week line, and studded metal field", () => {
@@ -75,6 +79,7 @@ describe("team of the week state", () => {
     expect(defaultWeekLabel(new Date(2026, 9, 13))).toBe("WEEK OF OCT 13, 2026");
     expect(weekRangeFor(new Date(2026, 9, 12))).toBe("10/12 - 10/18");
     expect(draft.showNames).toBe(false);
+    expect(draft.showStripStat).toBe(false);
     expect(splitTotwTitle(DEFAULT_TOTW_TITLE)).toEqual([
       "TEAM OF",
       "THE WEEK",

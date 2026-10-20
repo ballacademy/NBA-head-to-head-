@@ -1,0 +1,105 @@
+/* Optional contract / trade letter-grade stamp. Distinct from photo Grade. */
+
+.lg-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.lg-hud__letters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+}
+
+.lg-hud__letters .sc-chip {
+  min-width: 2.4rem;
+  padding-inline: 0.45rem;
+}
+
+.lg-plate {
+  --lg-fill: #1f8a4c;
+  --lg-ink: #f4fff6;
+  --lg-stroke: #0e4d2a;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: calc(8 * var(--u, 1px)) calc(10 * var(--u, 1px)) calc(7 * var(--u, 1px));
+  border: calc(2.2 * var(--u, 1px)) solid var(--lg-stroke);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.04) 38%,
+      rgba(0, 0, 0, 0.22) 100%
+    ),
+    var(--lg-fill);
+  box-shadow:
+    0 calc(3 * var(--u, 1px)) calc(10 * var(--u, 1px)) rgba(0, 0, 0, 0.38),
+    inset 0 calc(1 * var(--u, 1px)) 0 rgba(255, 255, 255, 0.28);
+  color: var(--lg-ink);
+  pointer-events: auto;
+  z-index: 6;
+}
+
+.lg-plate__mark {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  font-size: calc(46 * var(--u, 1px));
+  font-weight: 900;
+  font-style: italic;
+  font-synthesis: none;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+  text-align: center;
+  text-shadow: 0 calc(1 * var(--u, 1px)) 0 rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}
+
+.lg-plate__reason {
+  width: 100%;
+  margin: calc(4 * var(--u, 1px)) 0 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  font-size: calc(11 * var(--u, 1px));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  resize: none;
+  overflow: hidden;
+}
+
+.lg-plate__reason::placeholder {
+  color: inherit;
+  opacity: 0.38;
+}
+
+.lg-plate__mark:focus,
+.lg-plate__reason:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.5);
+  outline-offset: 3px;
+}
+
+.lg-plate__reason.is-empty {
+  min-height: calc(12 * var(--u, 1px));
+}
+
+.is-exporting .lg-plate__reason.is-empty {
+  display: none;
+}

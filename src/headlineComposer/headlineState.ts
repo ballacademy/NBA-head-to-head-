@@ -18,6 +18,12 @@ import {
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
+  defaultLetterGradeFields,
+  normalizeLetterGradeFields,
+  type LetterGrade,
+  type LetterGradeFields,
+} from "../lib/letterGrade";
+import {
   HL_FAMILY_SIZE,
   HL_FAMILY_TRACK,
   HL_NICK_AUTO_MIN,
@@ -125,7 +131,7 @@ export const HEADLINE_CAPTION_PRESETS: Record<string, string> = {
   UNLOCKED: "Unlocked.",
 };
 
-export interface HeadlineDraft {
+export interface HeadlineDraft extends LetterGradeFields {
   headline: string;
   body: string;
   teamId: string | null;
@@ -156,6 +162,8 @@ export interface HeadlineDraft {
   opponentId?: string | null;
   gameDate?: string | null;
 }
+
+export type { LetterGrade };
 
 const isNullableString = (value: unknown) =>
   typeof value === "string" || value === null;
@@ -205,6 +213,7 @@ export const defaultHeadlineDraft = (): HeadlineDraft => ({
   photoBw: false,
   opponentId: null,
   gameDate: null,
+  ...defaultLetterGradeFields(),
 });
 
 export const normalizeHeadlineDraft = (draft: HeadlineDraft): HeadlineDraft => ({
@@ -231,6 +240,7 @@ export const normalizeHeadlineDraft = (draft: HeadlineDraft): HeadlineDraft => (
   photoBw: draft.photoBw === true,
   opponentId: draft.opponentId ?? null,
   gameDate: draft.gameDate ?? null,
+  ...normalizeLetterGradeFields(draft),
 });
 
 export const hasCustomPhoto = (draft: HeadlineDraft) =>

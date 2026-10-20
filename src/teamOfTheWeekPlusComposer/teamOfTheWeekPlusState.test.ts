@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
+import {
+  EXPORT_HEIGHT,
+  EXPORT_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getPlayer, NBA_ACTIVE_PLAYERS } from "../tierListComposer/nbaActivePlayers";
 import { TIER_BADGE_SIZE } from "../tierListComposer/tierLayout";
 import { DEFAULT_CUSTOM_PAN } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -100,6 +104,9 @@ describe("team of the week plus", () => {
     expect(starterBar.w).toBeCloseTo(starter.w * 5);
     expect(standoutBar.w).toBeCloseTo(standout.w * 5);
     expect(starterBar.w).toBeGreaterThan(standoutBar.w);
+    const story = plusBoardMetrics(false, STORY_DESIGN_HEIGHT);
+    expect(story.starterH).toBeLessThan(metrics.starterH + 80);
+    expect(story.starterH / story.starterW).toBeLessThan(1.4);
   });
 
   it("uses large centered titles, a readable week, and a small brand mark", () => {
@@ -132,6 +139,7 @@ describe("team of the week plus", () => {
     expect(starterSlots(draft.slots)).toHaveLength(5);
     expect(standoutSlots(draft.slots)).toHaveLength(5);
     expect(draft.showNames).toBe(true);
+    expect(draft.showStripStat).toBe(false);
     expect(PLUS_ZOOM_STEP).toBeGreaterThan(0.25);
     const below = plusBoardMetrics(true);
     expect(below.titlesBelow).toBe(true);

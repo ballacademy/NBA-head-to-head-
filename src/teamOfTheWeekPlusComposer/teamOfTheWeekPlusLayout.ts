@@ -76,9 +76,16 @@ export const plusBoardMetrics = (
   const sectionCount = titlesBelow ? 2 : 1;
   const stack =
     boardH - headerH - PLUS_SECTION_H * sectionCount - PLUS_FOOTER;
-  const starterH = Math.round(stack * PLUS_STARTER_SHARE);
-  const standoutH = stack - starterH;
-  const starterY = headerH;
+  const starterW = (GRAPHIC_WIDTH - PLUS_STARTER_PAD_X * 2) / PLUS_STARTER_COUNT;
+  const standoutW = (GRAPHIC_WIDTH - PLUS_STANDOUT_PAD_X * 2) / PLUS_STANDOUT_COUNT;
+  let starterH = Math.round(stack * PLUS_STARTER_SHARE);
+  let standoutH = stack - starterH;
+  if (boardH > GRAPHIC_HEIGHT) {
+    starterH = Math.min(starterH, Math.round(starterW * 1.32));
+    standoutH = Math.min(standoutH, Math.round(standoutW * 1.18));
+  }
+  const leftover = Math.max(0, stack - starterH - standoutH);
+  const starterY = headerH + leftover / 2;
   const starterCaptionY = titlesBelow
     ? starterY + starterH + PLUS_SECTION_H / 2
     : PLUS_TITLE_BAND_H / 2;
@@ -93,8 +100,8 @@ export const plusBoardMetrics = (
     standoutH,
     starterY,
     standoutY,
-    starterW: (GRAPHIC_WIDTH - PLUS_STARTER_PAD_X * 2) / PLUS_STARTER_COUNT,
-    standoutW: (GRAPHIC_WIDTH - PLUS_STANDOUT_PAD_X * 2) / PLUS_STANDOUT_COUNT,
+    starterW,
+    standoutW,
     titleY: starterCaptionY,
     weekY: titlesBelow ? (headerH - PLUS_WEEK_H) / 2 : PLUS_TITLE_BAND_H,
     weekH: PLUS_WEEK_H,
@@ -134,10 +141,11 @@ export const plusCellRect = (
 export const plusBarRect = (
   row: "starters" | "standouts",
   titlesBelow = false,
+  boardH = GRAPHIC_HEIGHT,
 ) => {
   const count = row === "starters" ? PLUS_STARTER_COUNT : PLUS_STANDOUT_COUNT;
-  const first = plusCellRect(row, 0, titlesBelow);
-  const last = plusCellRect(row, count - 1, titlesBelow);
+  const first = plusCellRect(row, 0, titlesBelow, boardH);
+  const last = plusCellRect(row, count - 1, titlesBelow, boardH);
   return {
     x: first.x,
     y: first.y,

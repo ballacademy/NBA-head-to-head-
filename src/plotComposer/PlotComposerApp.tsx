@@ -51,6 +51,7 @@ import {
   type PlayerSearchFilters,
 } from "../tierListComposer/nbaActivePlayers";
 import { STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
+import { parsePlotAxisBound } from "./plotLayout";
 import { PlotGraphic } from "./PlotGraphic";
 import { exportPlotPng } from "./exportPlotPng";
 import { renderPlotCanvas } from "./renderPlotCanvas";
@@ -121,6 +122,10 @@ export function PlotComposerApp() {
   });
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(true);
+  const [xMin, setXMin] = useState<number | null>(null);
+  const [xMax, setXMax] = useState<number | null>(null);
+  const [yMin, setYMin] = useState<number | null>(null);
+  const [yMax, setYMax] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -152,6 +157,10 @@ export function PlotComposerApp() {
     setFilters(draft.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(draft.showBa !== false);
     setShowNames(draft.showNames !== false);
+    setXMin(draft.xMin ?? null);
+    setXMax(draft.xMax ?? null);
+    setYMin(draft.yMin ?? null);
+    setYMax(draft.yMax ?? null);
     setPopulated(draft.points.length > 0);
     setHydrated(true);
     void loadEveryTeamRosters()
@@ -182,6 +191,10 @@ export function PlotComposerApp() {
       quadrants,
       showBa,
       showNames,
+      xMin,
+      xMax,
+      yMin,
+      yMax,
       filters,
     } satisfies PlotDraft);
   }, [
@@ -198,6 +211,10 @@ export function PlotComposerApp() {
     quadrants,
     showBa,
     showNames,
+    xMin,
+    xMax,
+    yMin,
+    yMax,
     filters,
     hydrated,
   ]);
@@ -218,6 +235,10 @@ export function PlotComposerApp() {
     setFilters(next.filters ?? { ...EMPTY_PLAYER_FILTERS });
     setShowBa(next.showBa !== false);
     setShowNames(next.showNames !== false);
+    setXMin(next.xMin ?? null);
+    setXMax(next.xMax ?? null);
+    setYMin(next.yMin ?? null);
+    setYMax(next.yMax ?? null);
     setPopulated(next.points.length > 0);
   };
 
@@ -310,6 +331,10 @@ export function PlotComposerApp() {
     purpleFlair,
     showBa,
     showNames,
+    xMin,
+    xMax,
+    yMin,
+    yMax,
   };
 
   const handleExport = async (filename?: string, story = false, square = false) => {
@@ -587,6 +612,50 @@ export function PlotComposerApp() {
           ariaLabel="Show names on the plot"
         />
         <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">X min</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="auto"
+            aria-label="X axis min"
+            value={xMin ?? ""}
+            onChange={(event) => setXMin(parsePlotAxisBound(event.target.value))}
+          />
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">X max</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="auto"
+            aria-label="X axis max"
+            value={xMax ?? ""}
+            onChange={(event) => setXMax(parsePlotAxisBound(event.target.value))}
+          />
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Y min</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="auto"
+            aria-label="Y axis min"
+            value={yMin ?? ""}
+            onChange={(event) => setYMin(parsePlotAxisBound(event.target.value))}
+          />
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Y max</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="auto"
+            aria-label="Y axis max"
+            value={yMax ?? ""}
+            onChange={(event) => setYMax(parsePlotAxisBound(event.target.value))}
+          />
+        </label>
+        <label className="sc-field">
           TL
           <input
             value={quadrants.tl}
@@ -661,6 +730,10 @@ export function PlotComposerApp() {
             quadrants,
             showBa,
             showNames,
+            xMin,
+            xMax,
+            yMin,
+            yMax,
             filters,
           }}
           onLoad={(next) => {
@@ -802,6 +875,10 @@ export function PlotComposerApp() {
               purpleFlair={purpleFlair}
               showBa={showBa}
               showNames={showNames}
+              xMin={xMin}
+              xMax={xMax}
+              yMin={yMin}
+              yMax={yMax}
               exporting={exporting}
               story={storyCrop}
               onBrandChange={setBrand}

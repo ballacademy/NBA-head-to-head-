@@ -301,6 +301,8 @@ export interface HeadlineSplitOpts {
   storyLine?: string;
   metaLine?: string;
   sourceCredit?: string;
+  showLetterGrade?: boolean;
+  letterGradeReason?: string;
 }
 
 export interface HeadlineSplitLayout {
@@ -322,6 +324,7 @@ export interface HeadlineSplitLayout {
   meta: HeadlineBox & { size: number; text: string };
   body: HeadlineBox & { lines: string[] };
   source: HeadlineBox & { size: number; text: string };
+  grade: HeadlineBox;
   ba: HeadlineBox;
 }
 
@@ -344,6 +347,8 @@ export const headlineSplitLayout = ({
   storyLine = "",
   metaLine = "",
   sourceCredit = "",
+  showLetterGrade = false,
+  letterGradeReason = "",
 }: HeadlineSplitOpts = {}): HeadlineSplitLayout => {
   const mode = parseHeadlineBoardMode(boardMode);
   const teamOnly = mode === "team-only";
@@ -418,7 +423,14 @@ export const headlineSplitLayout = ({
   const storyTop = chevronTop + chevronH + 14;
   const givenTop = storyH ? storyTop + storyH + 10 : nameTop;
   const familyTop = givenH ? givenTop + givenH + 4 : givenTop;
-  const metaTop = (familyH ? familyTop + familyH : givenTop + givenH) + (metaH ? 10 : 0);
+  const stackBottom = familyH ? familyTop + familyH : givenTop + givenH;
+  const gradeReason = letterGradeReason.replace(/\s+/g, " ").trim();
+  const gradeOn = showLetterGrade === true;
+  const gradeW = Math.min(136, typeW);
+  const gradeH = gradeOn ? (gradeReason ? 112 : 84) : 0;
+  const gradeTop = stackBottom + (gradeH ? 14 : 0);
+  const afterGrade = gradeH ? gradeTop + gradeH : stackBottom;
+  const metaTop = afterGrade + (metaH ? 10 : 0);
   const bodyLines = wrapHeadlineBody(
     body,
     HL_BODY_SIZE,
@@ -426,7 +438,7 @@ export const headlineSplitLayout = ({
     typeW - 12,
   );
   const bodyTop =
-    (metaH ? metaTop + metaH : familyH ? familyTop + familyH : givenTop + givenH) +
+    (metaH ? metaTop + metaH : afterGrade) +
     (bodyLines.length ? 22 : 0);
   const bodyH = Math.max(
     headlineBodyBlock(Math.max(bodyLines.length, 3)),
@@ -542,6 +554,13 @@ export const headlineSplitLayout = ({
       size: HL_SOURCE_SIZE,
       text: sourceText,
     },
+    grade: {
+      id: "grade",
+      x: typeX,
+      y: gradeTop,
+      w: gradeW,
+      h: gradeH,
+    },
     ba: {
       id: "ba",
       x: baX,
@@ -598,6 +617,9 @@ export const headlineVisibleTypeBoxes = (
   }
   if (layout.family.h > 0) {
     boxes.push(layout.family);
+  }
+  if (layout.grade.h > 0) {
+    boxes.push(layout.grade);
   }
   if (layout.meta.h > 0) {
     boxes.push(layout.meta);

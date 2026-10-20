@@ -145,6 +145,7 @@ const drawPortrait = async (
   first: boolean,
   showNames: boolean,
   photoGrade = false,
+  stripStat = "",
 ) => {
   const line = frameLinePx(scale, look);
   context.save();
@@ -219,6 +220,7 @@ const drawPortrait = async (
     familySize: nameSize * scale,
     givenSize: givenSize * scale,
     scale,
+    stat: stripStat,
   });
 };
 
@@ -338,6 +340,7 @@ export interface TeamOfTheWeekPlusRenderInput {
   showNames?: boolean;
   titlesBelow?: boolean;
   story?: boolean;
+  stripStats?: string[];
 }
 
 export const renderTeamOfTheWeekPlusCanvas = async (
@@ -431,9 +434,10 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       index === 0,
       input.showNames !== false,
       input.photoGrade === true,
+      input.stripStats?.[index] ?? "",
     );
   }
-  const starterBar = plusBarRect("starters", titlesBelow);
+  const starterBar = plusBarRect("starters", titlesBelow, boardH);
   paintBarChrome(
     context,
     starterBar.x * s,
@@ -476,9 +480,10 @@ export const renderTeamOfTheWeekPlusCanvas = async (
       index === 0,
       input.showNames !== false,
       input.photoGrade === true,
+      input.stripStats?.[PLUS_STARTER_COUNT + index] ?? "",
     );
   }
-  const standoutBar = plusBarRect("standouts", titlesBelow);
+  const standoutBar = plusBarRect("standouts", titlesBelow, boardH);
   paintBarChrome(
     context,
     standoutBar.x * s,

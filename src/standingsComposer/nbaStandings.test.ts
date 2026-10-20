@@ -20,6 +20,7 @@ const payload = (): EspnStandingsPayload => ({
             stats: [
               { name: "wins", abbreviation: "W", value: 64 },
               { name: "losses", abbreviation: "L", value: 18 },
+              { name: "Last Ten Games", abbreviation: "L10", displayValue: "8-2" },
             ],
           },
           { team: { abbreviation: "NY" } },
@@ -65,8 +66,8 @@ describe("NBA standings auto-fill", () => {
     expect(west[3]).toBeNull();
     const rows = parseConferenceStandingRows(payload(), "East");
     expect(recordsFromStandingRows(rows)).toEqual({
-      BOS: { wins: 64, losses: 18 },
-      CLE: { wins: 48, losses: 34 },
+      BOS: { wins: 64, losses: 18, last10: "8-2" },
+      CLE: { wins: 48, losses: 34, last10: null },
     });
     expect(rows[1]?.record).toBeNull();
   });

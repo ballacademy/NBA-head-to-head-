@@ -8,7 +8,13 @@ import {
   composerNameLines,
   useComposerNameStyle,
 } from "../instagramComposer/composerNameStyle";
+import { LetterGradePlate } from "../instagramComposer/LetterGradePlate";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+  type LetterGrade,
+} from "../lib/letterGrade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -62,6 +68,9 @@ interface HeadlineGraphicProps {
   metaLine?: string;
   sourceCredit?: string;
   photoBw?: boolean;
+  showLetterGrade?: boolean;
+  letterGrade?: LetterGrade;
+  letterGradeReason?: string;
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
@@ -75,6 +84,8 @@ interface HeadlineGraphicProps {
   onStoryChange?: (value: string) => void;
   onMetaChange?: (value: string) => void;
   onSourceChange?: (value: string) => void;
+  onLetterGradeChange?: (grade: LetterGrade) => void;
+  onLetterGradeReasonChange?: (reason: string) => void;
   onPan: (pan: PhotoPan) => void;
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
@@ -101,6 +112,9 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       metaLine = "",
       sourceCredit = "",
       photoBw = false,
+      showLetterGrade = false,
+      letterGrade = DEFAULT_LETTER_GRADE,
+      letterGradeReason = "",
       look = "white",
       purpleFlair = false,
       photoGrade = false,
@@ -114,6 +128,8 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       onStoryChange,
       onMetaChange,
       onSourceChange,
+      onLetterGradeChange,
+      onLetterGradeReasonChange,
       onPan,
       onUpload,
       onPick,
@@ -152,6 +168,8 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
       storyLine,
       metaLine,
       sourceCredit,
+      showLetterGrade,
+      letterGradeReason,
     });
     const panelFill = headlinePanelHex(teamId);
     const panelFillB = headlinePanelHex(secondTeamId);
@@ -255,6 +273,10 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             ["--body-y" as string]: String(layout.body.y),
             ["--body-h" as string]: String(layout.body.h),
             ["--source-y" as string]: String(layout.source.y),
+            ["--grade-x" as string]: String(layout.grade.x),
+            ["--grade-y" as string]: String(layout.grade.y),
+            ["--grade-w" as string]: String(layout.grade.w),
+            ["--grade-h" as string]: String(layout.grade.h),
             ["--ba-x" as string]: String(layout.ba.x),
           } as React.CSSProperties
         }
@@ -417,6 +439,16 @@ export const HeadlineGraphic = forwardRef<HTMLElement, HeadlineGraphicProps>(
             onChange={(event) =>
               onSourceChange?.(event.target.value.slice(0, HEADLINE_SOURCE_MAX))
             }
+          />
+        ) : null}
+        {showLetterGrade && layout.grade.h > 0 ? (
+          <LetterGradePlate
+            className="hl-grade"
+            grade={parseLetterGrade(letterGrade)}
+            reason={letterGradeReason}
+            exporting={exporting}
+            onGrade={(next) => onLetterGradeChange?.(next)}
+            onReason={onLetterGradeReasonChange}
           />
         ) : null}
         <div className="hl-frame" aria-hidden="true" />

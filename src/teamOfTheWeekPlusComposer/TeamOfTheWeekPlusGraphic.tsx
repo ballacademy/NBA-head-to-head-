@@ -69,6 +69,7 @@ interface TeamOfTheWeekPlusGraphicProps {
     names: { firstName?: string; lastName?: string },
   ) => void;
   onSwap?: (from: number, to: number) => void;
+  stripStats?: string[];
 }
 
 const PortraitCell = ({
@@ -85,6 +86,7 @@ const PortraitCell = ({
   onUpload,
   onNameChange,
   onSwapStart,
+  stat = "",
 }: {
   slot: TotwStrip;
   index: number;
@@ -102,6 +104,7 @@ const PortraitCell = ({
     names: { firstName?: string; lastName?: string },
   ) => void;
   onSwapStart: (index: number, event: React.PointerEvent) => void;
+  stat?: string;
 }) => {
   const empty = !slot.photoSrc;
   const label = stripPlayerName(slot) || slotLabel(index);
@@ -139,6 +142,7 @@ const PortraitCell = ({
           givenAria={`${slotLabel(index)} first name`}
           familyAria={`${slotLabel(index)} last name`}
           flushLeft={index !== 0 && index !== PLUS_STARTER_COUNT}
+          stat={stat}
           onFirstChange={(firstName) => onNameChange(index, { firstName })}
           onLastChange={(lastName) => onNameChange(index, { lastName })}
           onEmptyClick={() => onPick(index)}
@@ -176,6 +180,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
     onUpload,
     onNameChange,
     onSwap,
+    stripStats = [],
   },
   ref,
 ) {
@@ -313,6 +318,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             onUpload={onUpload}
             onNameChange={onNameChange}
             onSwapStart={slotSwap.startDrag}
+            stat={stripStats[index] ?? ""}
           />
         ))}
       </div>
@@ -360,6 +366,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             onUpload={onUpload}
             onNameChange={onNameChange}
             onSwapStart={slotSwap.startDrag}
+            stat={stripStats[PLUS_STARTER_COUNT + index] ?? ""}
           />
         ))}
       </div>

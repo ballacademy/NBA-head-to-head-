@@ -18,6 +18,8 @@ import {
 import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_WIDTH,
+  PLAYOFF_CUT_AFTER,
+  formatStandingLast10,
   formatStandingRecord,
   lastWeekDelta,
   lastWeekMark,
@@ -37,6 +39,8 @@ interface StandingsGraphicProps {
   lastWeekSlots?: RankingSlots | null;
   showArrows?: boolean;
   showRecord?: boolean;
+  showLast10?: boolean;
+  showPlayoffCut?: boolean;
   records?: Record<string, StandingRecord>;
   activeIndex: number | null;
   look?: ComposerLook;
@@ -91,6 +95,8 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       lastWeekSlots = null,
       showArrows = false,
       showRecord = false,
+      showLast10 = false,
+      showPlayoffCut = false,
       records,
       activeIndex,
       look = "white",
@@ -269,6 +275,9 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
             const recordLabel = showRecord
               ? formatStandingRecord(team ? records?.[team.id] : null)
               : null;
+            const last10Label = showLast10
+              ? formatStandingLast10(team ? records?.[team.id] : null)
+              : null;
             return (
               <button
                 key={rank}
@@ -277,6 +286,11 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                   "ig-slot",
                   team ? "ig-slot--filled" : "",
                   activeIndex === index ? "ig-slot--active" : "",
+                  showPlayoffCut &&
+                  index >= PLAYOFF_CUT_AFTER &&
+                  index < PLAYOFF_CUT_AFTER + 3
+                    ? "is-playoff-cut"
+                    : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -300,6 +314,11 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                   {recordLabel ? (
                     <span className="ig-slot__record" aria-label={`${team?.name} record ${recordLabel}`}>
                       {recordLabel}
+                    </span>
+                  ) : null}
+                  {last10Label ? (
+                    <span className="ig-slot__l10" aria-label={`${team?.name} last ten ${last10Label}`}>
+                      {last10Label}
                     </span>
                   ) : null}
                 </span>

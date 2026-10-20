@@ -46,6 +46,8 @@ export interface ShotChartDraft {
   attempts: number;
   shots: ShotChartMake[];
   showBa?: boolean;
+  showMakes?: boolean;
+  showMisses?: boolean;
 }
 
 export const splitShotChartTitle = (title: string) =>
@@ -163,6 +165,8 @@ export const defaultShotChartDraft = (): ShotChartDraft => ({
   attempts: 0,
   shots: [],
   showBa: false,
+  showMakes: true,
+  showMisses: true,
 });
 
 export const isShotChartDraft = (value: unknown): value is ShotChartDraft =>
@@ -202,5 +206,58 @@ export const courtPoint = (shot: ShotChartMake, w: number, h: number) => {
   const py = h - (shot.y / 47) * h;
   return { x: px, y: py };
 };
+
+export const SHOT_ZONES = [
+  { id: "ra", label: "RESTRICTED" },
+  { id: "paint", label: "PAINT" },
+  { id: "mid", label: "MID" },
+  { id: "left-c3", label: "L CORNER 3" },
+  { id: "right-c3", label: "R CORNER 3" },
+  { id: "break-3", label: "ABOVE BREAK 3" },
+] as const;
+
+export type ShotZoneId = (typeof SHOT_ZONES)[number]["id"];
+
+export const shotZone = (shot: ShotChartMake): ShotZoneId => {
+  const dx = shot.x - 25;
+  const dist = Math.hypot(dx, shot.y);
+  const left = shot.x < 25;
+  const corner = shot.y <= 14;
+  if (dist > 22 && corner) {
+    return left ? "left-c3" : "right-c3";
+  }
+  if (dist > 23.75) {
+    return "break-3";
+  }
+  if (dist <= 8) {
+    return "ra";
+  }
+  if (Math.abs(dx) <= 8 && shot.y <= 19) {
+    return "paint";
+  }
+  return "mid";
+};
+
+export const visibleShots = (
+  shots: ShotChartMake[],
+  showMakes = true,
+  showMisses = true,
+) =>
+  shots.filter((shot) => (shot.made ? showMakes !== false : showMisses !== false));
+
+export const shotZoneSplits = (shots: ShotChartMake[]) =>
+  SHOT_ZONES.map((zone) => {
+    const rows = shots.filter((shot) => shotZone(shot) === zone.id);
+    const makes = rows.filter((shot) => shot.made).length;
+    return {
+      id: zone.id,
+      label: zone.label,
+      makes,
+      attempts: rows.length,
+    };
+  });
+
+export const formatZoneSplit = (makes: number, attempts: number) =>
+  attempts ? `${makes}–${attempts}` : "—";
 
 export { datesInInclusiveRange, fetchRecentGames, isoDateOnly };

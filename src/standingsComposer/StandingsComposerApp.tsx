@@ -60,6 +60,8 @@ interface ComposerDraft {
   showBa?: boolean;
   showArrows?: boolean;
   showRecord?: boolean;
+  showLast10?: boolean;
+  showPlayoffCut?: boolean;
   records?: Record<string, StandingRecord>;
 }
 
@@ -73,6 +75,8 @@ const loadDraft = (): ComposerDraft => {
     showBa: stored?.showBa === true,
     showArrows: stored?.showArrows === true,
     showRecord: stored?.showRecord === true,
+    showLast10: stored?.showLast10 === true,
+    showPlayoffCut: stored?.showPlayoffCut === true,
     records:
       stored?.records && typeof stored.records === "object"
         ? stored.records
@@ -100,6 +104,8 @@ export function StandingsComposerApp() {
   const [showBa, setShowBa] = useState(false);
   const [showArrows, setShowArrows] = useState(false);
   const [showRecord, setShowRecord] = useState(false);
+  const [showLast10, setShowLast10] = useState(false);
+  const [showPlayoffCut, setShowPlayoffCut] = useState(false);
   const [records, setRecords] = useState<Record<string, StandingRecord>>({});
   const [lastWeekSlots, setLastWeekSlots] = useState<RankingSlots | null>(null);
   const [filling, setFilling] = useState(false);
@@ -118,6 +124,8 @@ export function StandingsComposerApp() {
     setShowBa(draft.showBa === true);
     setShowArrows(draft.showArrows === true);
     setShowRecord(draft.showRecord === true);
+    setShowLast10(draft.showLast10 === true);
+    setShowPlayoffCut(draft.showPlayoffCut === true);
     setRecords(draft.records ?? {});
     setLastWeekSlots(loadLastWeek());
     setHydrated(true);
@@ -135,9 +143,11 @@ export function StandingsComposerApp() {
       showBa,
       showArrows,
       showRecord,
+      showLast10,
+      showPlayoffCut,
       records,
     });
-  }, [brand, title, subtitle, slots, showBa, showArrows, showRecord, records, hydrated]);
+  }, [brand, title, subtitle, slots, showBa, showArrows, showRecord, showLast10, showPlayoffCut, records, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -169,6 +179,8 @@ export function StandingsComposerApp() {
           showBa,
           showArrows,
           showRecord,
+          showLast10,
+          showPlayoffCut,
           records,
           lastWeekSlots,
         },
@@ -245,6 +257,8 @@ export function StandingsComposerApp() {
           showBa,
           showArrows,
           showRecord,
+          showLast10,
+          showPlayoffCut,
           records,
           lastWeekSlots,
         },
@@ -356,6 +370,30 @@ export function StandingsComposerApp() {
             {showRecord ? "On" : "Off"}
           </button>
         </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Last 10</span>
+          <button
+            type="button"
+            className={showLast10 ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showLast10}
+            aria-label="Show last-10 record"
+            onClick={() => setShowLast10((on) => !on)}
+          >
+            {showLast10 ? "On" : "Off"}
+          </button>
+        </label>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Playoff cut</span>
+          <button
+            type="button"
+            className={showPlayoffCut ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={showPlayoffCut}
+            aria-label="Show playoff cut line"
+            onClick={() => setShowPlayoffCut((on) => !on)}
+          >
+            {showPlayoffCut ? "On" : "Off"}
+          </button>
+        </label>
           </>
         }
         persist={
@@ -369,6 +407,8 @@ export function StandingsComposerApp() {
             showBa,
             showArrows,
             showRecord,
+            showLast10,
+            showPlayoffCut,
             records,
           }}
           onLoad={(next) => {
@@ -379,6 +419,8 @@ export function StandingsComposerApp() {
             setShowBa(next.showBa === true);
             setShowArrows(next.showArrows === true);
             setShowRecord(next.showRecord === true);
+            setShowLast10(next.showLast10 === true);
+            setShowPlayoffCut(next.showPlayoffCut === true);
             setRecords(next.records ?? {});
             setStatus("Loaded named graphic.");
           }}
@@ -470,6 +512,8 @@ export function StandingsComposerApp() {
                       showBa,
                       showArrows,
                       showRecord,
+                      showLast10,
+                      showPlayoffCut,
                       records,
                       lastWeekSlots,
                     },
@@ -515,6 +559,8 @@ export function StandingsComposerApp() {
             lastWeekSlots={lastWeekSlots}
             showArrows={showArrows}
             showRecord={showRecord}
+            showLast10={showLast10}
+            showPlayoffCut={showPlayoffCut}
             records={records}
             look={look}
             purpleFlair={purpleFlair}

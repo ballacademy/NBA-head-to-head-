@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { courtPoint, parseShotChartPlays, shotLine } from "./shotChartState";
+import {
+  courtPoint,
+  parseShotChartPlays,
+  shotLine,
+  shotZone,
+  shotZoneSplits,
+  visibleShots,
+} from "./shotChartState";
 
 describe("shot chart", () => {
   it("plots one player's makes and misses from ESPN shotchart plays", () => {
@@ -40,5 +47,9 @@ describe("shot chart", () => {
     const hoop = courtPoint({ x: 25, y: 0, made: true, text: "" }, 500, 470);
     expect(hoop.x).toBeCloseTo(250);
     expect(hoop.y).toBeCloseTo(470);
+    expect(shotZone({ x: 25, y: 2, made: true, text: "" })).toBe("ra");
+    expect(shotZone({ x: 3, y: 8, made: false, text: "" })).toBe("left-c3");
+    expect(visibleShots(shots, true, false).every((shot) => shot.made)).toBe(true);
+    expect(shotZoneSplits(shots).some((zone) => zone.attempts > 0)).toBe(true);
   });
 });

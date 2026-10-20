@@ -56,8 +56,11 @@ import {
 } from "./everyTeamLayout";
 import {
   displayedTeams,
+  EVERY_TEAM_COLS,
+  everyTeamBreakAfterRows,
   slotIndexForTeam,
   splitEveryTeamTitle,
+  type EveryTeamGridGroup,
   type EveryTeamSlots,
 } from "./everyTeamState";
 
@@ -151,6 +154,7 @@ export interface EveryTeamRenderInput {
   cellSeasons?: Record<string, string>;
   duo?: boolean;
   partners?: EveryTeamSlots;
+  gridGroup?: EveryTeamGridGroup;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -252,7 +256,9 @@ export const renderEveryTeamCanvas = async (
 
   const grid = everyTeamGrid(scale);
   const ranked = input.ranked === true;
-  const teams = displayedTeams(ranked, input.rankedOrder);
+  const gridGroup = ranked ? "none" : (input.gridGroup ?? "none");
+  const teams = displayedTeams(ranked, input.rankedOrder, gridGroup);
+  const breakAfter = everyTeamBreakAfterRows(gridGroup);
   const art = await Promise.all(
     teams.map(async (team) => {
       const cellSeason = seasonForTeam(
@@ -305,6 +311,7 @@ export const renderEveryTeamCanvas = async (
 
   art.forEach((cell, index) => {
     const { x, y, size } = everyTeamCellRect(index, grid);
+    const row = Math.floor(index / EVERY_TEAM_COLS);
     const gradient = context.createLinearGradient(x, y, x + size, y + size);
     gradient.addColorStop(0, cell.team.cellFrom);
     gradient.addColorStop(1, cell.team.cellTo);
@@ -378,6 +385,10 @@ export const renderEveryTeamCanvas = async (
     }
     context.restore();
     paintCellFrame(context, x, y, size, size, input.look, scale);
+    if (breakAfter.includes(row - 1)) {
+      context.fillStyle = "#facc15";
+      context.fillRect(x, y, size, 4 * scale);
+    }
     if (input.purpleFlair) {
       paintPurpleInnerHairline(context, x, y, size, size, scale, input.look);
     }

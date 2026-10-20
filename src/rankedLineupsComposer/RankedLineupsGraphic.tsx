@@ -72,6 +72,7 @@ interface RankedLineupsGraphicProps {
   ) => void;
   onPositionChange: (index: number, label: string) => void;
   onSwap?: (from: number, to: number) => void;
+  stripStats?: string[];
 }
 
 function RankedMetaName({
@@ -79,6 +80,7 @@ function RankedMetaName({
   lastName,
   empty,
   position,
+  stat = "",
   onNameChange,
   onPick,
 }: {
@@ -86,6 +88,7 @@ function RankedMetaName({
   lastName: string;
   empty: boolean;
   position: string;
+  stat?: string;
   onNameChange: (names: { firstName?: string; lastName?: string }) => void;
   onPick: () => void;
 }) {
@@ -137,6 +140,7 @@ function RankedMetaName({
           }
         }}
       />
+      {stat.trim() ? <p className="rl-strip-stat">{stat}</p> : null}
     </>
   );
 }
@@ -167,6 +171,7 @@ export const RankedLineupsGraphic = forwardRef<
     onHover,
     onPan,
     onUpload,
+    stripStats = [],
     onNameChange,
     onPositionChange,
     onSwap,
@@ -351,6 +356,7 @@ export const RankedLineupsGraphic = forwardRef<
                     onNameChange(index, { lastName })
                   }
                   onEmptyClick={() => onPick(index)}
+                  stat={stripStats[index] ?? ""}
                 />
               ) : null}
             </section>
@@ -408,6 +414,7 @@ export const RankedLineupsGraphic = forwardRef<
                   lastName={strip.lastName}
                   empty={empty}
                   position={position}
+                  stat={stripStats[index] ?? ""}
                   onNameChange={(names) => onNameChange(index, names)}
                   onPick={() => onPick(index)}
                 />

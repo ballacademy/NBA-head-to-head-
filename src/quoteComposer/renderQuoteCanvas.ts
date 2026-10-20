@@ -6,6 +6,11 @@ import {
 } from "../instagramComposer/composerLook";
 import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { getTeamColors } from "../lib/teamColors";
+import { paintLetterGradePlate } from "../instagramComposer/paintLetterGrade";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+} from "../lib/letterGrade";
 import { paintPhotoVignette } from "../instagramComposer/photoVignette";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { coverPanDraw } from "../playerOfTheDayComposer/playerOfTheDayLayout";
@@ -161,11 +166,25 @@ export const renderQuoteCanvas = async (
     height,
   );
   fade.addColorStop(0, "rgba(6, 6, 8, 0)");
-  fade.addColorStop(0.28, "rgba(6, 6, 8, 0.28)");
-  fade.addColorStop(0.62, "rgba(6, 6, 8, 0.82)");
-  fade.addColorStop(1, "rgba(6, 6, 8, 0.96)");
+  fade.addColorStop(0.18, "rgba(6, 6, 8, 0.22)");
+  fade.addColorStop(0.42, "rgba(6, 6, 8, 0.62)");
+  fade.addColorStop(0.72, "rgba(6, 6, 8, 0.9)");
+  fade.addColorStop(1, "rgba(6, 6, 8, 0.98)");
   context.fillStyle = fade;
   context.fillRect(0, height - QT_FADE_H * s, width, QT_FADE_H * s);
+  const dim = context.createRadialGradient(
+    width / 2,
+    height * 0.86,
+    20 * s,
+    width / 2,
+    height * 0.86,
+    width * 0.55,
+  );
+  dim.addColorStop(0, "rgba(6, 6, 8, 0.72)");
+  dim.addColorStop(0.58, "rgba(6, 6, 8, 0.28)");
+  dim.addColorStop(1, "rgba(6, 6, 8, 0)");
+  context.fillStyle = dim;
+  context.fillRect(40 * s, height - 340 * s, width - 80 * s, 320 * s);
 
   const last = quoteLastName(input.attribution, readComposerNameStyle());
   if (last) {
@@ -238,6 +257,21 @@ export const renderQuoteCanvas = async (
       width - 176 * s,
     );
     setLetterSpacing(context, 0);
+  }
+
+  if (input.showLetterGrade) {
+    paintLetterGradePlate(
+      context,
+      {
+        x: GRAPHIC_WIDTH - 28 - 118,
+        y: GRAPHIC_HEIGHT - 108 - 88,
+        w: 118,
+        h: 88,
+      },
+      parseLetterGrade(input.letterGrade ?? DEFAULT_LETTER_GRADE),
+      input.letterGradeReason ?? "",
+      s,
+    );
   }
 
   if (input.showBa !== false) {

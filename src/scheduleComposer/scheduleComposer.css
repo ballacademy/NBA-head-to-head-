@@ -160,6 +160,20 @@
   opacity: 0.55;
 }
 
+.sch-game__side.is-away {
+  color: #93c5fd;
+}
+
+.sch-game__side.is-home {
+  color: #fde68a;
+}
+
+.sch-b2b {
+  margin-left: calc(8 * var(--u));
+  color: #facc15;
+  letter-spacing: 0.12em;
+}
+
 .sch-game__time {
   text-align: right;
   font-family: var(--ig-poster);

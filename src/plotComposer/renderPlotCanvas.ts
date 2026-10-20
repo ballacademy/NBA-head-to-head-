@@ -14,7 +14,7 @@ import {
   GRAPHIC_WIDTH,
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
-import { getTeamGlowColor } from "../lib/teamColors";
+import { getTeamColors } from "../lib/teamColors";
 import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters";
 import {
   axisFromValues,
@@ -67,6 +67,10 @@ export interface PlotRenderInput {
   purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  xMin?: number | null;
+  xMax?: number | null;
+  yMin?: number | null;
+  yMax?: number | null;
   story?: boolean;
 }
 
@@ -110,10 +114,12 @@ export const renderPlotCanvas = async (
   const xAxis = axisFromValues(
     input.points.map((point) => point.x),
     input.xMetric,
+    { min: input.xMin, max: input.xMax },
   );
   const yAxis = axisFromValues(
     input.points.map((point) => point.y),
     input.yMetric,
+    { min: input.yMin, max: input.yMax },
   );
   const placed = placePlotPoints(
     input.points.map((point) => ({
@@ -280,7 +286,7 @@ export const renderPlotCanvas = async (
     } else {
       context.beginPath();
       context.arc(cx, cy, (mark.mark / 2) * s, 0, Math.PI * 2);
-      context.fillStyle = getTeamGlowColor(point.teamId);
+      context.fillStyle = getTeamColors(point.teamId).primary;
       context.fill();
       context.lineWidth = 1.4 * s;
       context.strokeStyle = "rgba(0,0,0,0.55)";

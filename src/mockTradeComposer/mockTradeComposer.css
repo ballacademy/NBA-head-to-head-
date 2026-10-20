@@ -112,6 +112,24 @@
   line-height: calc(22 * var(--u));
 }
 
+.mt-cap {
+  display: block;
+  margin-top: calc(2 * var(--u));
+  color: rgba(250, 204, 21, 0.92);
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+}
+
+.mt-grade {
+  position: absolute;
+  left: calc(22 * var(--u));
+  top: calc(22 * var(--u));
+  width: calc(118 * var(--u));
+  height: calc(88 * var(--u));
+  z-index: 6;
+}
+
 .mt-player {
   position: absolute;
   z-index: 3;

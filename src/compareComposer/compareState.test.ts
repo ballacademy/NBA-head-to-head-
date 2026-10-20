@@ -12,6 +12,7 @@ import {
   COMPARE_STAT_COUNT,
   COMPARE_STAT_MAX,
   compareCaptionFor,
+  compareStatBarShares,
   defaultCompareDraft,
   defaultCompareStats,
   isAutoCompareSubtitle,
@@ -83,6 +84,9 @@ describe("compare composer recs", () => {
     expect(next.playerId).toBe(luka.id);
     expect(next.photoSrc).toBeNull();
     expect(next.lastName.toUpperCase()).toContain("DONCIC");
+    expect(defaultCompareDraft().showLetterGrade).toBe(false);
+    expect(compareStatBarShares("28", "11").left).toBe(1);
+    expect(compareStatBarShares("28", "11").right).toBeCloseTo(11 / 28);
     expect(leadingSide("31.1", "24.2")).toBe(0);
     expect(leadingSide("24.2", "31.1")).toBe(1);
     expect(leadingSide("24.2", "24.2")).toBeNull();

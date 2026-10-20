@@ -1,4 +1,5 @@
 import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
+import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters";
 import type { LastGameStats } from "../playerOfTheDayComposer/lastGame";
 import {
   isSurpriseNight,
@@ -58,6 +59,8 @@ export interface TotwPlusDraft {
   showBa?: boolean;
   showNames?: boolean;
   titlesBelow?: boolean;
+  showStripStat?: boolean;
+  stripStatMetric?: EveryTeamStatMetric;
 }
 
 export const createEmptyPlusSlots = (): TotwStrip[] =>
@@ -108,6 +111,8 @@ export const defaultTotwPlusDraft = (): TotwPlusDraft => ({
   standoutCaption: DEFAULT_PLUS_STANDOUT_CAPTION,
   slots: createEmptyPlusSlots(),
   showNames: storedOrLastShowNames(undefined, true),
+  showStripStat: false,
+  stripStatMetric: "points",
 });
 
 export const plusBoardEmpty = (slots: TotwStrip[]) =>

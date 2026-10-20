@@ -8,6 +8,10 @@ import {
 import { getTeam } from "../standingsComposer/teams";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  defaultLetterGradeFields,
+  type LetterGradeFields,
+} from "../lib/letterGrade";
 
 export const DEFAULT_QUOTE = "";
 export const QUOTE_PRESETS = [
@@ -29,7 +33,7 @@ export const QUOTE_MAX = 180;
 export const ATTRIB_MAX = 48;
 export const SOURCE_MAX = 48;
 
-export interface QuoteDraft {
+export interface QuoteDraft extends LetterGradeFields {
   quote: string;
   attribution: string;
   source: string;
@@ -70,6 +74,7 @@ export const defaultQuoteDraft = (): QuoteDraft => ({
   pan: { ...DEFAULT_CUSTOM_PAN },
   showHeadshot: true,
   showBa: true,
+  ...defaultLetterGradeFields(),
 });
 
 export const hasCustomPhoto = (draft: QuoteDraft) =>

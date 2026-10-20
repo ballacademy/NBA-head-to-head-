@@ -23,6 +23,16 @@ import {
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
 import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { StripStatHud } from "../instagramComposer/StripStatHud";
+import { stripStatCaption } from "../instagramComposer/stripStatCaption";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import {
+  everyTeamCurrentSeason,
+  loadEveryTeamRosters,
+  parseEveryTeamStatMetric,
+  type EveryTeamStatMetric,
+} from "../everyTeamComposer/historicalRosters";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   TEAM_OF_THE_WEEK_LOOK_KEY,
@@ -90,6 +100,8 @@ const loadDraft = (): TotwDraft => {
       ...stored,
       showNames: stored.showNames === true,
       showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
+      showStripStat: stored.showStripStat === true,
+      stripStatMetric: parseEveryTeamStatMetric(stored.stripStatMetric),
     };
   }
   const empty = defaultTotwDraft();
@@ -101,6 +113,8 @@ const loadDraft = (): TotwDraft => {
     showBa: stored?.showBa === true,
     showNames: stored?.showNames === true,
     showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
+    showStripStat: stored?.showStripStat === true,
+    stripStatMetric: parseEveryTeamStatMetric(stored?.stripStatMetric),
   };
 };
 
@@ -122,6 +136,11 @@ export function TeamOfTheWeekComposerApp() {
   const [showBa, setShowBa] = useState(false);
   const [showNames, setShowNames] = useState(false);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
+  const [storyCrop, setStoryCrop] = useState(false);
+  const [showStripStat, setShowStripStat] = useState(false);
+  const [stripStatMetric, setStripStatMetric] =
+    useState<EveryTeamStatMetric>("points");
+  const [statsSample] = useComposerStatsSample();
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
     playerId: string;
@@ -190,7 +209,12 @@ export function TeamOfTheWeekComposerApp() {
     setShowBa(draft.showBa === true);
     setShowNames(draft.showNames === true);
     setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
+    setShowStripStat(draft.showStripStat === true);
+    setStripStatMetric(parseEveryTeamStatMetric(draft.stripStatMetric));
     setHydrated(true);
+    void loadEveryTeamRosters().catch((error: unknown) => {
+      console.error(error);
+    });
   }, []);
 
   useEffect(() => {
@@ -212,10 +236,22 @@ export function TeamOfTheWeekComposerApp() {
       showBa,
       showNames,
       showTeamHairline,
+      showStripStat,
+      stripStatMetric,
     });
-  }, [brand, title, week, strips, showBa, showNames, showTeamHairline, hydrated]);
+  }, [brand, title, week, strips, showBa, showNames, showTeamHairline, showStripStat, stripStatMetric, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
+  const stripStats = showStripStat
+    ? strips.map((strip) =>
+        stripStatCaption(
+          strip.playerId,
+          stripStatMetric,
+          everyTeamCurrentSeason(),
+          statsSample,
+        ),
+      )
+    : [];
 
   const handleExport = async (
     filename?: string,
@@ -259,7 +295,19 @@ export function TeamOfTheWeekComposerApp() {
         await exportTeamOfTheWeekPng(
           node,
           filename ?? exportFilenameFromTitle(title, "team-of-the-week", week),
-          { brand, title, week, strips, look, purpleFlair, photoGrade, showBa, showNames, showTeamHairline },
+          {
+            brand,
+            title,
+            week,
+            strips,
+            look,
+            purpleFlair,
+            photoGrade,
+            showBa,
+            showNames,
+            showTeamHairline,
+            stripStats,
+          },
           story,
           square,
         );
@@ -292,6 +340,8 @@ export function TeamOfTheWeekComposerApp() {
     setStrips(next.strips);
     setShowNames(next.showNames === true);
     setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
+    setShowStripStat(next.showStripStat === true);
+    setStripStatMetric(parseEveryTeamStatMetric(next.stripStatMetric));
     setActiveIndex(null);
     setStatus(status);
   };
@@ -308,6 +358,8 @@ export function TeamOfTheWeekComposerApp() {
         showBa,
         showNames,
         showTeamHairline,
+        showStripStat,
+        stripStatMetric,
       }),
       "Reset — photos kept.",
     );
@@ -467,6 +519,18 @@ export function TeamOfTheWeekComposerApp() {
         }
         board={
           <>
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="9:16 crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
@@ -476,6 +540,12 @@ export function TeamOfTheWeekComposerApp() {
           on={showNames}
           onChange={setShowNames}
           ariaLabel="Show first and last names"
+        />
+        <StripStatHud
+          on={showStripStat}
+          metric={stripStatMetric}
+          onToggle={setShowStripStat}
+          onMetric={setStripStatMetric}
         />
           </>
         }
@@ -490,6 +560,8 @@ export function TeamOfTheWeekComposerApp() {
             showBa,
             showNames,
             showTeamHairline,
+            showStripStat,
+            stripStatMetric,
           }}
           onLoad={(next) => {
             setBrand(next.brand);
@@ -499,6 +571,8 @@ export function TeamOfTheWeekComposerApp() {
             setShowBa(next.showBa === true);
             setShowNames(next.showNames === true);
             setShowTeamHairline(parseShowTeamHairline(next.showTeamHairline));
+            setShowStripStat(next.showStripStat === true);
+            setStripStatMetric(parseEveryTeamStatMetric(next.stripStatMetric));
             setStatus("Loaded named graphic.");
           }}
         />
@@ -578,7 +652,7 @@ export function TeamOfTheWeekComposerApp() {
       />
 
       <main className="sc-stage">
-        <div className="sc-stage__frame">
+        <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
           <ComposerBoard>
           {statsSheet ? (
             <TotwStatsGraphic
@@ -602,7 +676,9 @@ export function TeamOfTheWeekComposerApp() {
             showBa={showBa}
             showNames={showNames}
             showTeamHairline={showTeamHairline}
+            stripStats={stripStats}
             exporting={exporting}
+            story={storyCrop}
             onBrandChange={setBrand}
             onTitleChange={setTitle}
             onWeekChange={setWeek}
@@ -633,6 +709,7 @@ export function TeamOfTheWeekComposerApp() {
           />
           )}
           </ComposerBoard>
+          <StoryCropGuide on={storyCrop} />
           <p className="sc-hint">
             Fill range picks the week’s best five, packed PG, SG, SF, PF, C
             among whoever made it — 2+ games (extra GP can break a close call), counting mixed
