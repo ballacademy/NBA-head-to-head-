@@ -48,6 +48,7 @@ import { TeamPicker } from "./TeamPicker";
 import { getTeam } from "./teams";
 import "@fontsource/montserrat/latin-900.css";
 import "./standingsComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:standings-composer";
 const SAVES_KEY = "ddgm:standings-composer:saves";
@@ -203,6 +204,9 @@ export function StandingsComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     setBrand(DEFAULT_BRAND);
     setTitle(DEFAULT_TITLE);
     setSubtitle(DEFAULT_SUBTITLE);

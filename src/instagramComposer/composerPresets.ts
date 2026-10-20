@@ -1,3 +1,5 @@
+import { readComposerCarry } from "./composerCarry";
+
 export const STANDINGS_TITLE_PRESETS = [
   "PROJECTED NBA STANDINGS",
   "NBA POWER RANKINGS",
@@ -163,9 +165,13 @@ export const exportFilenameFromTitle = (
   fallback: string,
   date = "",
   story = false,
+  player = "",
 ) => {
   const stem = slugifyExport(title) || fallback;
-  const day = slugifyExport(date);
-  const parts = [stem, day, story ? "story" : ""].filter(Boolean);
+  const who =
+    slugifyExport(player) ||
+    slugifyExport(readComposerCarry()?.playerName ?? "");
+  const day = slugifyExport(date) || exportDateStamp();
+  const parts = [stem, who, day, story ? "story" : ""].filter(Boolean);
   return `${parts.join("-")}.png`;
 };

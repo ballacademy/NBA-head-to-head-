@@ -58,10 +58,10 @@ export function PhotoGradeToggle({
   };
 
   return (
-    <div className="sc-grade" role="group" aria-label="Photo grade">
+    <div className="sc-grade" role="group" aria-label="Photo look">
       <label className="sc-field sc-field--range">
         <span className="sc-toolbar__eyebrow">
-          Grade <span className="sc-range__value">{value}</span>
+          Photo look <span className="sc-range__value">{value}</span>
         </span>
         <span className="sc-range">
           <input
@@ -70,7 +70,7 @@ export function PhotoGradeToggle({
             max={100}
             step={1}
             value={value}
-            aria-label="Photo grade intensity"
+            aria-label="Photo look intensity"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={value}

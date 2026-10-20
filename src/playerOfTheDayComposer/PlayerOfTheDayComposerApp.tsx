@@ -70,6 +70,11 @@ import { subscribeLeaderboard } from "../potdLeaderboardComposer/potdLeaderboard
 import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./playerOfTheDayComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import {
+  nextEmptySlotIndex,
+  slotMissingPlayer,
+} from "../instagramComposer/nextEmptySlot";
 
 const STORAGE_KEY = "ddgm:player-of-the-day-composer";
 const SAVES_KEY = "ddgm:player-of-the-day-composer:saves";
@@ -199,6 +204,9 @@ export function PlayerOfTheDayComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     const next = defaultPotdDraft();
     push(cards);
     setBrand(next.brand);
@@ -256,13 +264,14 @@ export function PlayerOfTheDayComposerApp() {
       return;
     }
     push(cards);
-    setCards((current) =>
-      applyPlayerPick(current, index, player, game, total, keepCustomPhoto),
-    );
+    setCards((current) => {
+      const next = applyPlayerPick(current, index, player, game, total, keepCustomPhoto);
+      setActiveIndex(nextEmptySlotIndex(next, index, slotMissingPlayer));
+      return next;
+    });
     if (game?.dateLabel) {
       setDate(game.dateLabel);
     }
-    setActiveIndex(null);
     setGameChoices(null);
     setKeepPrompt(null);
     pendingPick.current = null;

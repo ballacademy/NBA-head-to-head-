@@ -1,3 +1,6 @@
+import { readComposerCarry } from "./composerCarry";
+import { rangeWeekLine, readComposerDateRange } from "./composerDateRange";
+
 export const COMPOSER_HASHTAGS = "#NBA #BallAcademy";
 export const COMPOSER_FIRST_COMMENT_PROMPT =
   "Who you got? Drop it in the first comment.";
@@ -14,16 +17,29 @@ export const graphicCaption = (
   title: string,
   names: string[],
   extra: string[] = [],
-) =>
-  [
+) => {
+  const range = readComposerDateRange();
+  const dateLine = rangeWeekLine(range.from, range.to);
+  const carry = readComposerCarry();
+  const extras = extra.map((line) => line.trim()).filter(Boolean);
+  const blob = extras.join(" ").toLowerCase();
+  if (dateLine && !blob.includes(dateLine.toLowerCase()) && !blob.includes(range.from)) {
+    extras.push(dateLine);
+  }
+  const people = [...names];
+  if (carry?.playerName && !people.some((name) => name.toLowerCase().includes(carry.playerName.split(" ").pop()?.toLowerCase() ?? ""))) {
+    people.unshift(carry.playerName);
+  }
+  return [
     title.trim(),
-    ...extra.map((line) => line.trim()).filter(Boolean),
-    ...names,
+    ...extras,
+    ...people,
     COMPOSER_HASHTAGS,
     COMPOSER_FIRST_COMMENT_PROMPT,
   ]
     .filter(Boolean)
     .join("\n");
+};
 
 export const everyTeamCaption = (title: string, names: string[]) =>
   graphicCaption(title, names);

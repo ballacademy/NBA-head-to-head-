@@ -47,16 +47,22 @@ import {
 } from "./shotChartState";
 import "@fontsource/montserrat/latin-900.css";
 import "./shotChartComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import { carriedPlayerId } from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = "ddgm:shot-chart-composer";
 const SAVES_KEY = "ddgm:shot-chart-composer:saves";
 
 const loadDraft = (): ShotChartDraft => {
   const stored = readJson<Partial<ShotChartDraft>>(STORAGE_KEY);
-  if (isShotChartDraft(stored)) {
-    return { ...defaultShotChartDraft(), ...stored };
+  const base = isShotChartDraft(stored)
+    ? { ...defaultShotChartDraft(), ...stored }
+    : defaultShotChartDraft();
+  if (base.playerId) {
+    return base;
   }
-  return defaultShotChartDraft();
+  const carried = carriedPlayerId();
+  return carried ? applyShotChartPlayer(base, carried) : base;
 };
 
 export function ShotChartComposerApp() {
@@ -353,6 +359,9 @@ export function ShotChartComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
                 push(draft);
                 setDraft(defaultShotChartDraft());
                 setStatus("Blank post.");

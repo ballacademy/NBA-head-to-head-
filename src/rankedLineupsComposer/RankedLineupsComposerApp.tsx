@@ -94,6 +94,11 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./rankedLineupsComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import {
+  nextEmptySlotIndex,
+  slotMissingPlayer,
+} from "../instagramComposer/nextEmptySlot";
 
 const RANKED_STORAGE_KEY = "ddgm:ranked-lineups-composer";
 const RANKED_SAVES_KEY = "ddgm:ranked-lineups-composer:saves";
@@ -465,6 +470,9 @@ export function RankedLineupsComposerApp({
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     const next = defaultRankedLineupsDraft();
     push(snapshotBoard());
     applyDraft(next);
@@ -531,9 +539,9 @@ export function RankedLineupsComposerApp({
     setStrips((current) => {
       const next = applyPlayerPick(current, index, player, keepCustomPhoto);
       persistSlide(next);
+      setActiveIndex(nextEmptySlotIndex(next, index, slotMissingPlayer));
       return next;
     });
-    setActiveIndex(null);
     setKeepPrompt(null);
     setStatus(
       keepCustomPhoto

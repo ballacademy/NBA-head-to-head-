@@ -854,6 +854,64 @@ describe("composer chrome", () => {
     expect(mockTradeGraphic).toContain("data-composer-slot");
   });
 
+  it("ships HUD extras 17–32 on the shared chrome", () => {
+    const tabs = readFileSync(
+      join(root, "instagramComposer/ComposerTabs.tsx"),
+      "utf8",
+    );
+    const hub = readFileSync(
+      join(root, "instagramComposer/ComposerHub.tsx"),
+      "utf8",
+    );
+    const grade = readFileSync(
+      join(root, "instagramComposer/PhotoGradeToggle.tsx"),
+      "utf8",
+    );
+    const pack = readFileSync(
+      join(root, "instagramComposer/exportPack.ts"),
+      "utf8",
+    );
+    const picker = readFileSync(
+      join(root, "tierListComposer/PlayerPicker.tsx"),
+      "utf8",
+    );
+    const photo = readFileSync(
+      join(root, "playerOfTheDayComposer/PhotoFrame.tsx"),
+      "utf8",
+    );
+    const ba = readFileSync(
+      join(root, "instagramComposer/BaMarkToggle.tsx"),
+      "utf8",
+    );
+    const totwApp = readFileSync(
+      join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),
+      "utf8",
+    );
+    expect(tabs).toContain("Search composers");
+    expect(tabs).toContain("jumpComposerMode");
+    expect(tabs).toContain("Focus");
+    expect(tabs).toContain("Fit");
+    expect(tabs).toContain("Preview zoom");
+    expect(tabs).toContain('"75"');
+    expect(tabs).toContain("sc-unsaved");
+    expect(hub).toContain("is-hud-focus");
+    expect(hub).toContain("composerHotkeyAction");
+    expect(hub).toContain("data-ba-corner");
+    expect(grade).toContain("Photo look");
+    expect(grade).not.toMatch(/aria-label="Photo grade"/);
+    expect(pack).toContain("toSquareCanvas");
+    expect(picker).toContain("Recently used");
+    expect(picker).toContain("rememberComposerPlayer");
+    expect(photo).toContain("ArrowLeft");
+    expect(ba).toContain("Top left");
+    expect(ba).toContain("Bottom right");
+    expect(totwApp).toContain("nextEmptySlotIndex");
+    expect(totwApp).toContain("confirmBlankPost");
+    expect(totwApp).toContain("showComposerToast");
+    expect(sheet).toContain("is-hud-focus");
+    expect(sheet).toContain("data-ba-corner");
+  });
+
   it("plots ESPN play-by-play shot coordinates on a full half-court", () => {
     const shotState = readFileSync(
       join(root, "shotChartComposer/shotChartState.ts"),

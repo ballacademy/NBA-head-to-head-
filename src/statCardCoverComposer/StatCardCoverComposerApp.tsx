@@ -71,6 +71,11 @@ import {
 } from "./statCardCoverState";
 import "@fontsource/montserrat/latin-900.css";
 import "./statCardCoverComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import {
+  nextEmptySlotIndex,
+  slotMissingPlayer,
+} from "../instagramComposer/nextEmptySlot";
 
 const STORAGE_KEY = "ddgm:stat-card-cover-composer";
 const SAVES_KEY = "ddgm:stat-card-cover-composer:saves";
@@ -222,11 +227,11 @@ export function StatCardCoverComposerApp() {
       return;
     }
     push(draft);
-    setDraft((current) => ({
-      ...current,
-      slots: setCoverSlotPlayer(current.slots, index, player, keepCustomPhoto),
-    }));
-    setActiveIndex(null);
+    setDraft((current) => {
+      const slots = setCoverSlotPlayer(current.slots, index, player, keepCustomPhoto);
+      setActiveIndex(nextEmptySlotIndex(slots, index, slotMissingPlayer));
+      return { ...current, slots };
+    });
     setKeepPrompt(null);
     setStatus(
       keepCustomPhoto
@@ -516,6 +521,9 @@ export function StatCardCoverComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
                 push(draft);
                 autoFill.current = false;
                 filledKey.current = "";

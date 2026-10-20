@@ -90,6 +90,11 @@ import {
 } from "./teamOfTheWeekPlusState";
 import "@fontsource/montserrat/latin-900.css";
 import "./teamOfTheWeekPlusComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import {
+  nextEmptySlotIndex,
+  slotMissingPlayer,
+} from "../instagramComposer/nextEmptySlot";
 
 const STORAGE_KEY = "ddgm:team-of-the-week-plus-composer";
 const SAVES_KEY = "ddgm:team-of-the-week-plus-composer:saves";
@@ -379,6 +384,9 @@ export function TeamOfTheWeekPlusComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     applyPlusDraft(defaultTotwPlusDraft(), "Blank post.");
   };
 
@@ -392,10 +400,11 @@ export function TeamOfTheWeekPlusComposerApp() {
       return;
     }
     push(slots);
-    setSlots((current) =>
-      applyPlayerPick(current, index, player, keepCustomPhoto),
-    );
-    setActiveIndex(null);
+    setSlots((current) => {
+      const next = applyPlayerPick(current, index, player, keepCustomPhoto);
+      setActiveIndex(nextEmptySlotIndex(next, index, slotMissingPlayer));
+      return next;
+    });
     setKeepPrompt(null);
     setStatus(
       keepCustomPhoto

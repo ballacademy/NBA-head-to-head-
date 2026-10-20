@@ -47,6 +47,7 @@ import {
 } from "./playInState";
 import "@fontsource/montserrat/latin-900.css";
 import "./playInComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:play-in-composer";
 const SAVES_KEY = "ddgm:play-in-composer:saves";
@@ -432,6 +433,9 @@ export function PlayInComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
               push(draft);
               setDraft(defaultPlayInDraft());
               setStatus("Blank post.");

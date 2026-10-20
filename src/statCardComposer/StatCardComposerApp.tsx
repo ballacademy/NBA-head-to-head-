@@ -92,16 +92,22 @@ import {
 } from "./statCardState";
 import "@fontsource/montserrat/latin-900.css";
 import "./statCardComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import { carriedPlayerId } from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = STAT_CARD_STORAGE_KEY;
 const SAVES_KEY = "ddgm:stat-card-composer:saves";
 
 const loadDraft = (): StatCardDraft => {
   const stored = readJson<Partial<StatCardDraft>>(STORAGE_KEY);
-  if (isStatCardDraft(stored)) {
-    return normalizeStatCardDraft(stored);
+  const base = isStatCardDraft(stored)
+    ? normalizeStatCardDraft(stored)
+    : defaultStatCardDraft();
+  if (base.playerId) {
+    return base;
   }
-  return defaultStatCardDraft();
+  const player = getPlayer(carriedPlayerId());
+  return player ? fillStatCardFromPlayer(player, base) : base;
 };
 
 export function StatCardComposerApp() {
@@ -641,6 +647,9 @@ export function StatCardComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
               push(draft);
               setDraft(defaultStatCardDraft());
               setStatus("Blank post.");

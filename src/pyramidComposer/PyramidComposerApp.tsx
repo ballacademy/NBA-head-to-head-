@@ -73,6 +73,11 @@ import {
 } from "./pyramidState";
 import "@fontsource/montserrat/latin-900.css";
 import "./pyramidComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import {
+  nextEmptySlotIndex,
+  slotMissingPlayer,
+} from "../instagramComposer/nextEmptySlot";
 
 const STORAGE_KEY = "ddgm:pyramid-composer";
 const SAVES_KEY = "ddgm:pyramid-composer:saves";
@@ -277,6 +282,9 @@ export function PyramidComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     applyPyramidDraft(defaultPyramidDraft(), "Blank post.");
   };
 
@@ -290,10 +298,11 @@ export function PyramidComposerApp() {
       return;
     }
     push({ slots, rows });
-    setSlots((current) =>
-      applyPyramidPick(current, index, player, keepCustomPhoto),
-    );
-    setActiveIndex(null);
+    setSlots((current) => {
+      const next = applyPyramidPick(current, index, player, keepCustomPhoto);
+      setActiveIndex(nextEmptySlotIndex(next, index, slotMissingPlayer));
+      return next;
+    });
     setKeepPrompt(null);
     setStatus(
       keepCustomPhoto

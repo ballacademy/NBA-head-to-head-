@@ -37,6 +37,7 @@ import {
 } from "./potdLeaderboardState";
 import "@fontsource/montserrat/latin-900.css";
 import "./potdLeaderboardComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 export function PotdLeaderboardComposerApp() {
   const boardRef = useRef<HTMLElement | null>(null);
@@ -117,6 +118,9 @@ export function PotdLeaderboardComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     const next = defaultLeaderboardDraft();
     push(entries);
     setTitle(next.title);

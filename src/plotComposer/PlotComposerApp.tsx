@@ -75,6 +75,7 @@ import {
 } from "./plotState";
 import "@fontsource/montserrat/latin-900.css";
 import "./plotComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:plot-composer";
 const SAVES_KEY = "ddgm:plot-composer:saves";
@@ -760,6 +761,9 @@ export function PlotComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
               push(points);
               skipLivePlot.current = true;
               setPopulated(false);

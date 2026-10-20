@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { rangeWeekLine, readComposerDateRange } from "./composerDateRange";
 import {
   COMPOSER_FIRST_COMMENT_PROMPT,
   COMPOSER_HASHTAGS,
@@ -8,6 +9,11 @@ import {
   statCardLineCaption,
   tierListCaption,
 } from "./graphicCaption";
+
+const captionDate = () => {
+  const range = readComposerDateRange();
+  return rangeWeekLine(range.from, range.to);
+};
 
 describe("graphic captions", () => {
   it("builds a ranked-lineups caption with title, rank, names, and hashtags", () => {
@@ -20,6 +26,7 @@ describe("graphic captions", () => {
       [
         "Top 10 NBA Players at Each Position",
         "BEST",
+        captionDate(),
         "Shai Gilgeous-Alexander",
         "Anthony Edwards",
         COMPOSER_HASHTAGS,
@@ -56,6 +63,7 @@ describe("graphic captions", () => {
         "Giannis Antetokounmpo",
         "20/15/9 in 24 min",
         "W vs NYK 120–110",
+        captionDate(),
         COMPOSER_HASHTAGS,
         COMPOSER_FIRST_COMMENT_PROMPT,
       ].join("\n"),
@@ -66,6 +74,7 @@ describe("graphic captions", () => {
     expect(everyTeamCaption("Every NBA team", ["Luka Doncic", "Shai"])).toBe(
       [
         "Every NBA team",
+        captionDate(),
         "Luka Doncic",
         "Shai",
         COMPOSER_HASHTAGS,
@@ -83,6 +92,7 @@ describe("graphic captions", () => {
         "Guess the tier",
         "S: Jokic, Shai",
         "A: Tatum",
+        captionDate(),
         COMPOSER_HASHTAGS,
         COMPOSER_FIRST_COMMENT_PROMPT,
       ].join("\n"),

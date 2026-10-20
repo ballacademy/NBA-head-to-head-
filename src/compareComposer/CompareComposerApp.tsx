@@ -91,6 +91,7 @@ import {
 } from "./compareState";
 import "@fontsource/montserrat/latin-900.css";
 import "./compareComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:compare-composer";
 const SAVES_KEY = "ddgm:compare-composer:saves";
@@ -668,6 +669,9 @@ export function CompareComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
               push(draft);
               setDraft(defaultCompareDraft());
               setStatus("Blank post.");

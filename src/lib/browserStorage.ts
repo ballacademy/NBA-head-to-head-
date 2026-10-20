@@ -68,6 +68,11 @@ export const writeJson = <T>(key: string, value: T) => {
 
   try {
     storage.setItem(key, JSON.stringify(value));
+    if (typeof window !== "undefined" && key !== "ddgm:composer-unsaved") {
+      window.dispatchEvent(
+        new CustomEvent("ddgm:composer-draft-write", { detail: key }),
+      );
+    }
   } catch {
     try {
       storage.removeItem?.(key);

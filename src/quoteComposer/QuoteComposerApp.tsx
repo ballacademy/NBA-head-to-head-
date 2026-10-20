@@ -55,20 +55,26 @@ import {
 } from "./quoteState";
 import "@fontsource/montserrat/latin-900.css";
 import "./quoteComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import { carriedPlayerId } from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = "ddgm:quote-composer";
 const SAVES_KEY = "ddgm:quote-composer:saves";
 
 const loadDraft = (): QuoteDraft => {
   const stored = readJson<Partial<QuoteDraft>>(STORAGE_KEY);
-  if (isQuoteDraft(stored)) {
-    return {
-      ...stored,
-      showBa: stored.showBa !== false,
-      source: stored.source ?? "",
-    };
+  const base = isQuoteDraft(stored)
+    ? {
+        ...stored,
+        showBa: stored.showBa !== false,
+        source: stored.source ?? "",
+      }
+    : defaultQuoteDraft();
+  if (base.playerId) {
+    return base;
   }
-  return defaultQuoteDraft();
+  const player = getPlayer(carriedPlayerId());
+  return player ? fillQuoteFromPlayer(player, base) : base;
 };
 
 export function QuoteComposerApp() {
@@ -401,6 +407,9 @@ export function QuoteComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
               push(draft);
               setDraft(defaultQuoteDraft());
               setStatus("Blank post.");

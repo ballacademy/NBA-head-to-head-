@@ -83,6 +83,7 @@ import {
 } from "./tierState";
 import "@fontsource/montserrat/latin-900.css";
 import "./tierListComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const TEAM_STORAGE_KEY = "ddgm:tier-list-composer";
 const PLAYER_STORAGE_KEY = "ddgm:tier-list-composer-players";
@@ -280,6 +281,9 @@ export function TierListComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     push(rows);
     setTitle(DEFAULT_TIER_TITLE);
     setRows(createDefaultRows());

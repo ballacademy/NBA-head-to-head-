@@ -273,6 +273,26 @@ export function PhotoFrame({
         .filter(Boolean)
         .join(" ")}
       tabIndex={0}
+      onKeyDown={(event) => {
+        if (!filled) {
+          return;
+        }
+        const step = event.shiftKey ? 0.06 : 0.02;
+        const current = panRef.current;
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          onPanRef.current(clampPan({ ...current, x: current.x - step }));
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault();
+          onPanRef.current(clampPan({ ...current, x: current.x + step }));
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          onPanRef.current(clampPan({ ...current, y: current.y - step }));
+        } else if (event.key === "ArrowDown") {
+          event.preventDefault();
+          onPanRef.current(clampPan({ ...current, y: current.y + step }));
+        }
+      }}
       onPaste={(event) => {
         event.stopPropagation();
         void dataUrlFromClipboard(event.nativeEvent).then((dataUrl) => {

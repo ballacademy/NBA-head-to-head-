@@ -42,6 +42,7 @@ import {
 } from "./scheduleState";
 import "@fontsource/montserrat/latin-900.css";
 import "./scheduleComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:schedule-composer";
 const SAVES_KEY = "ddgm:schedule-composer:saves";
@@ -246,6 +247,9 @@ export function ScheduleComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
                 push(draft);
                 setDraft(defaultScheduleDraft());
                 setStatus("Blank post.");

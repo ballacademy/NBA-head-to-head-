@@ -88,16 +88,22 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./headlineComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import { carriedPlayerId } from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = "ddgm:headline-composer";
 const SAVES_KEY = "ddgm:headline-composer:saves";
 
 const loadDraft = (): HeadlineDraft => {
   const stored = readJson<Partial<HeadlineDraft>>(STORAGE_KEY);
-  if (isHeadlineDraft(stored)) {
-    return normalizeHeadlineDraft(stored);
+  const base = isHeadlineDraft(stored)
+    ? normalizeHeadlineDraft(stored)
+    : defaultHeadlineDraft();
+  if (base.playerId) {
+    return base;
   }
-  return defaultHeadlineDraft();
+  const player = getPlayer(carriedPlayerId());
+  return player ? fillHeadlineFromPlayer(player, base) : base;
 };
 
 const renderInput = (
@@ -764,6 +770,9 @@ export function HeadlineComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
               push(draft);
               setDraft(defaultHeadlineDraft());
               setStatus("Blank post.");

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
 import type { ComposerMode } from "./composerMode";
 import { getComposerExportContext } from "./composerRecents";
+import { clearComposerUnsaved } from "./composerUnsaved";
 
 export const COMPOSER_EXPORT_HISTORY_KEY = "ddgm:composer-export-history";
 export const COMPOSER_EXPORT_HISTORY_EVENT = "ddgm:composer-export-history";
@@ -68,6 +69,7 @@ export const recordComposerExport = async (
       ...readComposerExportHistory(),
     ].slice(0, COMPOSER_EXPORT_HISTORY_MAX);
     writeJson(COMPOSER_EXPORT_HISTORY_KEY, next);
+    clearComposerUnsaved();
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event(COMPOSER_EXPORT_HISTORY_EVENT));
     }

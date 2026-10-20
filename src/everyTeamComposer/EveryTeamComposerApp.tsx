@@ -91,6 +91,7 @@ import {
 } from "./historicalRosters";
 import "@fontsource/montserrat/latin-900.css";
 import "./everyTeamComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:every-team-composer";
 
@@ -318,6 +319,9 @@ export function EveryTeamComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     push(snapshot());
     setBrand(DEFAULT_BRAND);
     setTitle(DEFAULT_EVERY_TEAM_TITLE);

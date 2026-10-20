@@ -53,6 +53,7 @@ import {
 } from "../playerOfTheDayComposer/nightStandouts";
 import {
   fillStartersFromStandouts,
+  totwGames,
   totwPickerEmpty,
   totwPickerHeading,
   totwPickerSuggestions,
@@ -90,6 +91,15 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./teamOfTheWeekComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import {
+  nextEmptySlotIndex,
+  slotMissingPlayer,
+} from "../instagramComposer/nextEmptySlot";
+import {
+  fillQualityMessage,
+  showComposerToast,
+} from "../instagramComposer/composerFillToast";
 
 const STORAGE_KEY = "ddgm:team-of-the-week-composer";
 const SAVES_KEY = "ddgm:team-of-the-week-composer:saves";
@@ -189,13 +199,20 @@ export function TeamOfTheWeekComposerApp() {
             ? "Filled PG–C."
             : "No box scores for this range yet — pick players for the empty slots.",
         );
+        const toast = fillQualityMessage(
+          statsSample,
+          rows.map((row) => totwGames(row)),
+        );
+        if (toast) {
+          showComposerToast(toast);
+        }
         return next;
       });
     } catch (error) {
       console.error(error);
       setStatus("Could not load this range’s standouts.");
     }
-  }, [loadWeek, range.from, range.to]);
+  }, [loadWeek, range.from, range.to, statsSample]);
 
   useEffect(() => {
     document.title = "Team of the Week graphic";
@@ -367,6 +384,9 @@ export function TeamOfTheWeekComposerApp() {
   };
 
   const handleReset = () => {
+    if (!confirmBlankPost()) {
+      return;
+    }
     applyTotwDraft(defaultTotwDraft(), "Blank post.");
   };
 
@@ -380,10 +400,9 @@ export function TeamOfTheWeekComposerApp() {
       return;
     }
     push(strips);
-    setStrips((current) =>
-      applyPlayerPick(current, index, player, keepCustomPhoto),
-    );
-    setActiveIndex(null);
+    const next = applyPlayerPick(strips, index, player, keepCustomPhoto);
+    setStrips(next);
+    setActiveIndex(nextEmptySlotIndex(next, index, slotMissingPlayer));
     setKeepPrompt(null);
     setStatus(
       keepCustomPhoto

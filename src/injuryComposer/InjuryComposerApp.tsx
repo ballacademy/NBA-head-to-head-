@@ -40,6 +40,7 @@ import {
 } from "./injuryState";
 import "@fontsource/montserrat/latin-900.css";
 import "./injuryComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:injury-composer";
 const SAVES_KEY = "ddgm:injury-composer:saves";
@@ -218,6 +219,9 @@ export function InjuryComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
                 push(draft);
                 setDraft(defaultInjuryDraft());
                 setStatus("Blank post.");

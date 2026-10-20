@@ -1,4 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { rememberComposerPlayer } from "../instagramComposer/composerCarry";
+import {
+  recentPickerPlayers,
+  rememberRecentPlayer,
+} from "../instagramComposer/composerRecentPlayers";
 import { pickerHighlightIndex } from "../instagramComposer/pickerKeyboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
@@ -172,6 +177,12 @@ export function PlayerPicker({
     [suggestedRows],
   );
 
+  const handlePick = (playerId: string) => {
+    rememberComposerPlayer(playerId);
+    rememberRecentPlayer(playerId);
+    onPick(playerId);
+  };
+
   const players = useMemo(() => {
     const catalog = includeCoaches
       ? withCoaches(rosterPlayers ?? NBA_ACTIVE_PLAYERS)
@@ -198,15 +209,28 @@ export function PlayerPicker({
     depthReady,
   ]);
 
-  const restPlayers = showSuggested
-    ? players.filter((player) => !suggestedIds.has(player.id))
-    : players;
+  const recentPlayers = useMemo(() => {
+    if (query.trim()) {
+      return [];
+    }
+    return recentPickerPlayers(players).filter(
+      (player) => !suggestedIds.has(player.id),
+    );
+  }, [players, query, suggestedIds]);
+  const recentIds = useMemo(
+    () => new Set(recentPlayers.map((player) => player.id)),
+    [recentPlayers],
+  );
+  const restPlayers = players.filter(
+    (player) => !suggestedIds.has(player.id) && !recentIds.has(player.id),
+  );
   const visibleIds = useMemo(
     () => [
+      ...recentPlayers.map((player) => player.id),
       ...(showSuggested ? suggestedRows.map((row) => row.id) : []),
       ...restPlayers.map((player) => player.id),
     ],
-    [showSuggested, suggestedRows, restPlayers],
+    [recentPlayers, showSuggested, suggestedRows, restPlayers],
   );
 
   useEffect(() => {
@@ -229,7 +253,7 @@ export function PlayerPicker({
       const id = visibleIds[Math.max(0, activeIndex)];
       if (id) {
         event.preventDefault();
-        onPick(id);
+        handlePick(id);
       }
     }
   };
@@ -462,6 +486,29 @@ export function PlayerPicker({
           </div>
         )}
         </div>
+        {recentPlayers.length ? (
+          <div className="sc-picker__suggested">
+            <p className="sc-picker__suggested-label">Recently used</p>
+            <div
+              className="sc-picker__grid sc-picker__grid--suggested"
+              aria-label="Recently used players"
+            >
+              {recentPlayers.map((player, index) => (
+                <PlayerButton
+                  key={`recent-${player.id}`}
+                  player={player}
+                  currentId={currentId}
+                  usedLabel={usedLabels[player.id]}
+                  showPpg={false}
+                  showDepth={false}
+                  badge="Recent"
+                  highlighted={activeIndex === index}
+                  onPick={handlePick}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
         {showSuggestedSection ? (
           <div className="sc-picker__suggested">
             <p className="sc-picker__suggested-label">{standoutHeading}</p>
@@ -487,8 +534,8 @@ export function PlayerPicker({
                     badge={row.badge}
                     metaOverride={row.meta}
                     deserving
-                    highlighted={activeIndex === index}
-                    onPick={onPick}
+                    highlighted={activeIndex === recentPlayers.length + index}
+                    onPick={handlePick}
                   />
                 ))}
               </div>
@@ -513,9 +560,11 @@ export function PlayerPicker({
               ppgEmptyLabel={simple ? "No stats" : undefined}
               highlighted={
                 activeIndex ===
-                (showSuggested ? suggestedRows.length : 0) + index
+                recentPlayers.length +
+                  (showSuggested ? suggestedRows.length : 0) +
+                  index
               }
-              onPick={onPick}
+              onPick={handlePick}
             />
           ))}
         </div>

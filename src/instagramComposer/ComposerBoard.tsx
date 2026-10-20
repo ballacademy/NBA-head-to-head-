@@ -6,6 +6,10 @@ import {
 import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
+import {
+  previewZoomFactor,
+  useComposerPreviewZoom,
+} from "./composerPreviewZoom";
 
 /**
  * Design-px board, scaled as a unit so type/overlays match the PNG.
@@ -24,6 +28,7 @@ export function ComposerBoard({
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [previewZoom] = useComposerPreviewZoom();
 
   useLayoutEffect(() => {
     const node = wrapRef.current;
@@ -48,7 +53,7 @@ export function ComposerBoard({
   return (
     <div
       ref={wrapRef}
-      className="sc-stage__board"
+      className={`sc-stage__board${previewZoom === "fit" ? "" : " is-zoomed"}`}
       style={{ aspectRatio: `${width} / ${height}` }}
     >
       <div
@@ -56,7 +61,9 @@ export function ComposerBoard({
         style={{
           width,
           height,
-          zoom: scale,
+          // zoom: scale keeps the caret on glyphs; 75/100 override Fit.
+          zoom:
+            previewZoom === "fit" ? scale : previewZoomFactor(scale, previewZoom),
         }}
       >
         {children}

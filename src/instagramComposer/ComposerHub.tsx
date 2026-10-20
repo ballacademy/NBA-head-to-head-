@@ -1,4 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
+import { ComposerToast } from "./ComposerToast";
+import { useComposerBaCorner } from "./composerBaCorner";
+import { useComposerFocusMode } from "./composerFocusMode";
+import {
+  composerHotkeyAction,
+  runComposerHotkey,
+} from "./composerHotkeys";
+import {
+  COMPOSER_DRAFT_KEYS,
+  markComposerUnsaved,
+} from "./composerUnsaved";
 import { EveryTeamComposerApp } from "../everyTeamComposer/EveryTeamComposerApp";
 import { PlayerOfTheDayComposerApp } from "../playerOfTheDayComposer/PlayerOfTheDayComposerApp";
 import { PotdLeaderboardComposerApp } from "../potdLeaderboardComposer/PotdLeaderboardComposerApp";
@@ -56,6 +67,8 @@ export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
   const [photoEdit, setPhotoEdit] = useComposerPhotoEdit();
   const [hudMode] = useComposerHudMode();
+  const [focusMode, setFocusMode] = useComposerFocusMode();
+  const [baCorner] = useComposerBaCorner();
   const [persistReady, setPersistReady] = useState(false);
 
   useEffect(() => {
@@ -91,6 +104,40 @@ export function ComposerHub() {
     setMode(next);
   }, []);
 
+  useEffect(() => {
+    const onWrite = (event: Event) => {
+      const key = (event as CustomEvent<string>).detail;
+      const found = (Object.entries(COMPOSER_DRAFT_KEYS) as Array<
+        [ComposerMode, string[]]
+      >).find(([, keys]) => keys.includes(key));
+      if (found) {
+        markComposerUnsaved(found[0]);
+      }
+    };
+    window.addEventListener("ddgm:composer-draft-write", onWrite);
+    return () => window.removeEventListener("ddgm:composer-draft-write", onWrite);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const action = composerHotkeyAction(event);
+      if (!action) {
+        return;
+      }
+      if (action === "focus-off") {
+        if (focusMode) {
+          event.preventDefault();
+          setFocusMode(false);
+        }
+        return;
+      }
+      event.preventDefault();
+      runComposerHotkey(action, document);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusMode, setFocusMode]);
+
   if (!persistReady) {
     return (
       <div className="feature-page-fallback hub-empty" role="status">
@@ -105,11 +152,27 @@ export function ComposerHub() {
         "sc-root",
         photoEdit ? "is-photo-edit" : "",
         hudMode === "simple" ? "is-hud-simple" : "",
+        focusMode ? "is-hud-focus" : "",
       ]
         .filter(Boolean)
         .join(" ")}
+      data-ba-corner={baCorner}
       data-scroller="page"
+      onClick={(event) => {
+        if (!focusMode) {
+          return;
+        }
+        const target = event.target;
+        if (
+          target instanceof Element &&
+          target.closest(".sc-tabs, .sc-toolbar, .sc-toast")
+        ) {
+          return;
+        }
+        setFocusMode(false);
+      }}
     >
+      <ComposerToast />
       <ComposerTabs
         mode={mode}
         photoEdit={photoEdit}

@@ -68,6 +68,7 @@ import {
 } from "./mockTradeState";
 import "@fontsource/montserrat/latin-900.css";
 import "./mockTradeComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:mock-trade-composer";
 const SAVES_KEY = "ddgm:mock-trade-composer:saves";
@@ -691,6 +692,9 @@ export function MockTradeComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
                 push(draft);
                 setDraft(defaultMockTradeDraft());
                 setStatus("Blank post.");
