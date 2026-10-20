@@ -55,5 +55,5 @@ export const twsRowH = (
 ) => {
   const available = twsAvailableBody(showBrand, Math.max(1, sectionCount));
   const count = Math.max(1, rowCount);
-  return Math.max(52, Math.min(108, available / count));
+  return Math.max(52, Math.min(76, available / count));
 };
