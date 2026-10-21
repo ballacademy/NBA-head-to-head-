@@ -15,7 +15,7 @@ import {
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
-  formatPicksLine,
+  formatPicksGameLine,
   PICKS_CHECK_FILL,
   picksFillLayout,
   splitPicksTitle,
@@ -166,7 +166,7 @@ export const renderPicksCanvas = async (
     };
     paintSideCheck("away", leftCheckX);
     paintSideCheck("home", rightCheckX);
-    const line = formatPicksLine(game.line);
+    const line = formatPicksGameLine(game);
     if (line) {
       context.textAlign = "center";
       context.fillStyle = "#fff";

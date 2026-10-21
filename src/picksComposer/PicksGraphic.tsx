@@ -17,9 +17,10 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
-  formatPicksLine,
+  formatPicksGameLine,
   parsePicksLineInput,
   picksFillLayout,
+  picksLineForSide,
   splitPicksTitle,
   type PicksDraft,
   type PicksGame,
@@ -302,7 +303,8 @@ function LineField({
   game: PicksGame;
   onLineChange: (gameId: string, line: number | null) => void;
 }) {
-  const display = formatPicksLine(game.line);
+  const display = formatPicksGameLine(game);
+  const shown = picksLineForSide(game.line, game.pick);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(display);
 
@@ -313,7 +315,7 @@ function LineField({
       setEditing(false);
       return;
     }
-    if (parsed !== game.line) {
+    if (parsed !== shown) {
       onLineChange(game.id, parsed);
     }
     setEditing(false);

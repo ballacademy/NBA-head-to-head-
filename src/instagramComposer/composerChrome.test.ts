@@ -834,7 +834,7 @@ describe("composer chrome", () => {
     expect(picksCss).toContain(".pk-check.is-on");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
     expect(picksCanvas).toContain("paintCheck");
-    expect(picksCanvas).toContain("formatPicksLine");
+    expect(picksCanvas).toContain("formatPicksGameLine");
     const coverNameFade = readFileSync(
       join(root, "instagramComposer/PlayerNameFade.tsx"),
       "utf8",

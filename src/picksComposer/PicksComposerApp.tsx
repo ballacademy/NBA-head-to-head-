@@ -36,14 +36,14 @@ import {
   defaultPicksDraft,
   emptyPicksGame,
   fetchPicksSlate,
-  formatPicksLine,
+  formatPicksGameLine,
   isAutoPicksDateLine,
   isPicksDraft,
   mergePicksFill,
   normalizePicksDraft,
   picksDateLine,
   refillPicksRow,
-  setPicksLine,
+  setPicksDisplayedLine,
   setPicksTeam,
   togglePicksPick,
   type PicksDraft,
@@ -319,7 +319,7 @@ export function PicksComposerApp() {
                   graphicCaption(
                     draft.title,
                     draft.games.map((game) => {
-                      const line = formatPicksLine(game.line);
+                      const line = formatPicksGameLine(game);
                       const pick =
                         game.pick === "away"
                           ? game.awayId
@@ -434,7 +434,9 @@ export function PicksComposerApp() {
                 setDraft((current) => ({
                   ...current,
                   games: current.games.map((game) =>
-                    game.id === gameId ? setPicksLine(game, line) : game,
+                    game.id === gameId
+                      ? setPicksDisplayedLine(game, line)
+                      : game,
                   ),
                 }));
               }}

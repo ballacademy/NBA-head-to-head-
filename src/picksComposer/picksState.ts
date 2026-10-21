@@ -109,7 +109,7 @@ const finiteNumber = (value: unknown): number | null => {
   return null;
 };
 
-/** Format the away spread for the middle of the row. Empty when there is no line. */
+/** Format a signed spread. Empty when there is no line — never invent. */
 export const formatPicksLine = (line: number | null | undefined) => {
   if (line == null || !Number.isFinite(line)) {
     return "";
@@ -120,6 +120,39 @@ export const formatPicksLine = (line: number | null | undefined) => {
   const abs = Math.abs(line);
   const body = Number.isInteger(abs) ? String(abs) : String(abs);
   return `${line > 0 ? "+" : "-"}${body}`;
+};
+
+/** Home line is the inverse of the stored away line. PK and missing stay as-is. */
+export const picksLineForSide = (
+  line: number | null | undefined,
+  side: PicksSide | null | undefined,
+): number | null => {
+  if (line == null || !Number.isFinite(line)) {
+    return null;
+  }
+  if (side === "home" && line !== 0) {
+    return -line;
+  }
+  return line;
+};
+
+/** Checked side’s line in the middle; unchecked rows keep the left/away number. */
+export const formatPicksGameLine = (game: {
+  line: number | null;
+  pick: PicksSide | null;
+}) => formatPicksLine(picksLineForSide(game.line, game.pick));
+
+export const awayLineFromDisplayed = (
+  displayed: number | null,
+  side: PicksSide | null | undefined,
+): number | null => {
+  if (displayed == null) {
+    return null;
+  }
+  if (side === "home" && displayed !== 0) {
+    return -displayed;
+  }
+  return displayed;
 };
 
 export const parsePicksLineInput = (raw: string): number | null | undefined => {
@@ -300,6 +333,13 @@ export const setPicksLine = (game: PicksGame, line: number | null): PicksGame =>
   line,
   lineEdited: true,
 });
+
+/** Commit a typed number for the side currently on the row (checked, else away). */
+export const setPicksDisplayedLine = (
+  game: PicksGame,
+  displayed: number | null,
+): PicksGame =>
+  setPicksLine(game, awayLineFromDisplayed(displayed, game.pick));
 
 export const setPicksTeam = (
   game: PicksGame,

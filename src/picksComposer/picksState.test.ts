@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
   emptyPicksGame,
+  formatPicksGameLine,
   formatPicksLine,
   isPicksRowEdited,
   mergePicksFill,
@@ -11,6 +12,7 @@ import {
   picksFillLayout,
   PICKS_SCOREBOARD_URL,
   refillPicksRow,
+  setPicksDisplayedLine,
   setPicksLine,
   setPicksTeam,
   togglePicksPick,
@@ -100,6 +102,30 @@ describe("picks composer", () => {
         "ATL",
       ),
     ).toBe(-2.5);
+  });
+
+  it("shows the checked side’s line so a home pick is not the away number", () => {
+    const milWas = row({
+      id: "b",
+      eventId: "402",
+      awayId: "MIL",
+      homeId: "WAS",
+      line: 4.5,
+    });
+    expect(formatPicksGameLine(milWas)).toBe("+4.5");
+    const wasPick = togglePicksPick(milWas, "home");
+    expect(formatPicksGameLine(wasPick)).toBe("-4.5");
+    const milPick = togglePicksPick(milWas, "away");
+    expect(formatPicksGameLine(milPick)).toBe("+4.5");
+    const noLine = togglePicksPick(
+      row({ id: "c", awayId: "DEN", homeId: "LAL", line: null }),
+      "home",
+    );
+    expect(formatPicksGameLine(noLine)).toBe("");
+    expect(formatPicksGameLine({ ...milWas, line: 0, pick: "home" })).toBe("PK");
+    const typedHome = setPicksDisplayedLine(wasPick, -3);
+    expect(typedHome.line).toBe(3);
+    expect(formatPicksGameLine(typedHome)).toBe("-3");
   });
 
   it("parses typed lines including plus, minus, and PK", () => {
