@@ -5,14 +5,21 @@ import {
 } from "../standingsComposer/rankingState";
 import {
   clampPicksPlateOpacity,
+  cyclePicksGrade,
   DEFAULT_PICKS_PLATE_OPACITY,
   defaultPicksDraft,
   emptyPicksGame,
-  PICKS_TITLE_SIZE,
+  emptyPicksLedger,
+  effectivePicksResult,
+  formatPicksAtsRecord,
+  formatPicksFooter,
   formatPicksGameLine,
   formatPicksLine,
   formatPicksSideTicket,
   formatPicksTotal,
+  formatPicksUnitsPl,
+  gradePicksAts,
+  gradePicksStraightUp,
   isAutoPicksTitle,
   isPicksRowEdited,
   mergePicksFill,
@@ -27,16 +34,25 @@ import {
   picksTitlePlateH,
   picksJuiceOrMove,
   picksNameLabel,
+  picksRecordLine,
   picksShortName,
   PICKS_SCOREBOARD_URL,
+  PICKS_TITLE_SIZE,
   sortPicksGames,
+  summarizePicksLast10,
+  summarizePicksLedger,
+  summarizePicksUnitsPl,
   refillPicksRow,
   setPicksDisplayedLine,
   setPicksLine,
   setPicksLock,
   setPicksTeam,
   togglePicksPick,
+  upsertPicksLedger,
+  visiblePicksGames,
   type PicksGame,
+  type PicksLedger,
+  type PicksLedgerEntry,
 } from "./picksState";
 
 const scoreboard = (
@@ -356,8 +372,9 @@ describe("picks composer", () => {
     expect(
       parseEspnNationalTv({ broadcasts: [{ names: ["NBA League Pass"] }] }),
     ).toBe("");
-    expect(picksDatePill("WED, OCT 21", 11)).toBe("WED, OCT 21  ·  11 GAMES");
-    expect(picksDatePill("WED, OCT 21", 1)).toBe("WED, OCT 21  ·  1 GAME");
+    expect(picksDatePill(11)).toBe("11 GAMES");
+    expect(picksDatePill(1)).toBe("1 GAME");
+    expect(picksDatePill(0)).toBe("");
     expect(picksDefaultTitle("2026-10-21")).toBe("10/21 NBA SPREAD PREDICTIONS");
     expect(picksDefaultTitle("2026-01-05")).toBe("1/5 NBA SPREAD PREDICTIONS");
     expect(isAutoPicksTitle("PICKS")).toBe(true);
@@ -373,6 +390,9 @@ describe("picks composer", () => {
     expect(empty.showTotal).toBe(false);
     expect(empty.showMoneyline).toBe(false);
     expect(empty.showUnits).toBe(false);
+    expect(empty.showJuice).toBe(false);
+    expect(empty.showConfidence).toBe(false);
+    expect(empty.resultMode).toBe("ats");
     expect(empty.plateOpacity).toBe(DEFAULT_PICKS_PLATE_OPACITY);
     expect(empty.plateOpacity).toBeGreaterThanOrEqual(85);
     expect(clampPicksPlateOpacity(-10)).toBe(0);
@@ -413,5 +433,134 @@ describe("picks composer", () => {
     );
     expect(story.rowH).toBeGreaterThan(feed.rowH);
     expect(story.logo).toBeGreaterThanOrEqual(48);
+  });
+
+  it("keeps even row height for 7 or 11 games and rooms a footer", () => {
+    const seven = picksFillLayout(7);
+    const eleven = picksFillLayout(11);
+    expect(seven.rowH * 7 + seven.gap * 6).toBeCloseTo(seven.listH);
+    expect(eleven.rowH * 11 + eleven.gap * 10).toBeCloseTo(eleven.listH);
+    expect(seven.rowH).toBeGreaterThan(eleven.rowH);
+    const withParlay = picksFillLayout(7, GRAPHIC_HEIGHT, 0, 1, true);
+    expect(withParlay.listBottom).toBeGreaterThan(seven.listBottom);
+  });
+
+  it("grades ATS, straight up, pushes, and skips unfinished games", () => {
+    expect(gradePicksAts("away", 2.5, 110, 100, true)).toBe("W");
+    expect(gradePicksAts("away", 2.5, 100, 110, true)).toBe("L");
+    expect(gradePicksAts("away", 2.5, 110, 112.5, true)).toBe("P");
+    expect(gradePicksAts("home", -4.5, 100, 110, true)).toBe("W");
+    expect(gradePicksAts("home", 4.5, 110, 100, true)).toBe("L");
+    expect(gradePicksAts("away", 2.5, 110, 100, false)).toBeNull();
+    expect(gradePicksAts("away", 2.5, null, 100, true)).toBeNull();
+    expect(gradePicksAts(null, 2.5, 110, 100, true)).toBeNull();
+    expect(gradePicksStraightUp("away", 110, 100, true)).toBe("W");
+    expect(gradePicksStraightUp("home", 110, 100, true)).toBe("L");
+    expect(gradePicksStraightUp("away", 100, 100, true)).toBe("P");
+    expect(
+      effectivePicksResult({
+        pick: "away",
+        line: 2.5,
+        awayScore: 100,
+        homeScore: 110,
+        final: true,
+        gradeManual: "W",
+      }),
+    ).toBe("W");
+    expect(cyclePicksGrade("W", "W")).toBe("L");
+    expect(cyclePicksGrade("P", "W")).toBeNull();
+  });
+
+  it("hides 0-0 records, filters export to locks, and prints ATS with L10, pushes, and units", () => {
+    expect(picksRecordLine("0-0", "0-0")).toBe("");
+    expect(picksRecordLine("12-8", "7-3")).toBe("12-8 · L10 7-3");
+    expect(picksRecordLine("12-8-1")).toBe("12-8-1");
+    const slate = [
+      row({ id: "a", awayId: "ATL", homeId: "ORL", pick: "away" }),
+      row({ id: "b", awayId: "BOS", homeId: "NYK" }),
+      row({ id: "c", awayId: "CHI", homeId: "MIA", pick: "home" }),
+    ];
+    expect(visiblePicksGames(slate, false)).toHaveLength(3);
+    expect(visiblePicksGames(slate, true).map((game) => game.id)).toEqual([
+      "a",
+      "c",
+    ]);
+    const entry = (
+      date: string,
+      result: "W" | "L" | "P",
+      startMs: number,
+      units = "1u",
+    ): PicksLedgerEntry => ({
+      eventId: `${date}-${startMs}`,
+      date,
+      awayId: "ATL",
+      homeId: "ORL",
+      line: 2.5,
+      pick: "away",
+      awayScore: 110,
+      homeScore: 100,
+      final: true,
+      result,
+      units,
+      gradeManual: result,
+      startMs,
+    });
+    const first11: PicksLedgerEntry[] = [];
+    const mix: Array<"W" | "L" | "P"> = [
+      "W",
+      "W",
+      "W",
+      "W",
+      "W",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "P",
+    ];
+    mix.forEach((result, index) => {
+      first11.push(entry("2026-10-18", result, index));
+    });
+    const last6 = [
+      entry("2026-10-19", "W", 1),
+      entry("2026-10-19", "W", 2),
+      entry("2026-10-19", "W", 3),
+      entry("2026-10-19", "W", 4),
+      entry("2026-10-19", "L", 5),
+      entry("2026-10-19", "L", 6),
+    ];
+    const lastNight = [
+      entry("2026-10-20", "W", 1),
+      entry("2026-10-20", "W", 2),
+      entry("2026-10-20", "W", 3),
+      entry("2026-10-20", "L", 4),
+    ];
+    const ledger: PicksLedger = {
+      slates: {
+        "2026-10-18": first11,
+        "2026-10-19": last6,
+        "2026-10-20": lastNight,
+      },
+    };
+    expect(formatPicksAtsRecord(summarizePicksLedger(ledger))).toBe("12-8-1");
+    expect(formatPicksAtsRecord(summarizePicksLast10(ledger))).toBe("7-3");
+    expect(formatPicksUnitsPl(summarizePicksUnitsPl(ledger))).toBe("+4u");
+    expect(formatPicksFooter(ledger, "2026-10-21")).toBe(
+      "ATS 12-8-1  ·  L10 7-3  ·  LAST NIGHT 3-1  ·  +4u",
+    );
+    const seeded = upsertPicksLedger(emptyPicksLedger(), "2026-10-21", [
+      row({
+        id: "live",
+        eventId: "401",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 2.5,
+        pick: "home",
+        units: "0.5u",
+      }),
+    ]);
+    expect(seeded.slates["2026-10-21"]?.[0]?.pick).toBe("home");
+    expect(seeded.slates["2026-10-21"]?.[0]?.units).toBe("0.5u");
   });
 });

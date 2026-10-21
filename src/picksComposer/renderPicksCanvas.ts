@@ -21,10 +21,14 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   clampPicksPlateOpacity,
   DEFAULT_PICKS_PLATE_OPACITY,
+  effectivePicksResult,
   formatPicksLine,
   formatPicksTotal,
+  PICKS_CHECK_FILL,
+  PICKS_FOOTER_H,
   PICKS_LOCK_FILL,
   PICKS_NOTCH_H,
+  PICKS_PARLAY_H,
   PICKS_PLATE_X,
   PICKS_PLATE_Y,
   PICKS_TITLE_PAD,
@@ -38,10 +42,13 @@ import {
   picksRecordLine,
   picksDatePill,
   picksNameLabel,
+  picksParlayLabel,
   sortPicksGames,
   splitPicksTitle,
+  visiblePicksGames,
   type PicksDraft,
   type PicksGame,
+  type PicksResultMode,
   type PicksSide,
 } from "./picksState";
 
@@ -59,6 +66,7 @@ export type PicksRenderInput = PicksDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
   story?: boolean;
+  footer?: string;
 };
 
 const hexAlpha = (hex: string, alpha: number) => {
@@ -134,56 +142,29 @@ const strokeFillText = (
   context.fillText(text, x, y);
 };
 
-const paintLogoRing = (
+const paintCheck = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   size: number,
-  scale: number,
   locked: boolean,
 ) => {
   context.save();
-  context.strokeStyle = locked ? PICKS_LOCK_FILL : "rgba(255, 255, 255, 0.92)";
-  context.lineWidth = Math.max(1.5, 1.5 * scale);
-  context.beginPath();
-  context.arc(x, y, size / 2 + 2.5 * scale, 0, Math.PI * 2);
-  context.stroke();
-  if (locked) {
-    paintStar(
-      context,
-      x + size * 0.42,
-      y + size * 0.4,
-      size * 0.14,
-      PICKS_LOCK_FILL,
-    );
-  }
-  context.restore();
-};
-
-const paintStar = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  r: number,
-  fill: string,
-) => {
-  context.save();
-  context.fillStyle = fill;
-  context.beginPath();
-  for (let i = 0; i < 5; i += 1) {
-    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
-    const px = x + Math.cos(angle) * r;
-    const py = y + Math.sin(angle) * r;
-    if (i === 0) {
-      context.moveTo(px, py);
-    } else {
-      context.lineTo(px, py);
-    }
-    const inner = angle + Math.PI / 5;
-    context.lineTo(x + Math.cos(inner) * r * 0.42, y + Math.sin(inner) * r * 0.42);
-  }
-  context.closePath();
-  context.fill();
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = `900 ${size}px ${POSTER_FONT}`;
+  context.lineJoin = "round";
+  context.miterLimit = 2;
+  context.strokeStyle = locked ? "#3a2a00" : "#062a18";
+  context.lineWidth = Math.max(1.5, size * 0.06);
+  context.shadowColor = "rgba(0, 0, 0, 0.85)";
+  context.shadowOffsetX = Math.max(1, size * 0.04);
+  context.shadowOffsetY = Math.max(1, size * 0.045);
+  context.shadowBlur = 0;
+  context.fillStyle = locked ? PICKS_LOCK_FILL : PICKS_CHECK_FILL;
+  const mark = locked ? "★" : "✓";
+  context.strokeText(mark, x, y);
+  context.fillText(mark, x, y);
   context.restore();
 };
 
@@ -269,11 +250,16 @@ export const renderPicksCanvas = async (
   setLetterSpacing(context, 0);
   context.restore();
 
-  const games = sortPicksGames(input.games);
-  const pill = picksDatePill(input.dateLine, games.length);
+  const allGames = sortPicksGames(input.games);
+  const games = visiblePicksGames(allGames, true);
+  const picked = allGames.filter((game) => game.pick);
+  const parlay = picked.map(picksParlayLabel).filter(Boolean);
+  const mode: PicksResultMode = input.resultMode === "su" ? "su" : "ats";
+  const footer = (input.footer ?? "").trim();
+  const pill = picksDatePill(allGames.length);
   context.font = `900 ${16 * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.04 * 16 * s);
-  const weekW = Math.max(420 * s, context.measureText(pill).width + 48 * s);
+  const weekW = Math.max(280 * s, context.measureText(pill).width + 48 * s);
   const weekH = PICKS_NOTCH_H * s;
   const weekX = (width - weekW) / 2;
   const weekY = plate.y + plate.h - 2 * s;
@@ -296,6 +282,7 @@ export const renderPicksCanvas = async (
     boardH,
     0,
     lines.length,
+    parlay.length > 0,
   );
   const needed = new Set<string>();
   games.forEach((game) => {
@@ -326,7 +313,7 @@ export const renderPicksCanvas = async (
     midY: number,
   ) => {
     const teamId = side === "away" ? game.awayId : game.homeId;
-    const picked = game.pick === side;
+    const pickedSide = game.pick === side;
     const dimmed = Boolean(game.pick && game.pick !== side);
     const size = logo;
     const image = logos.get(teamId);
@@ -349,16 +336,6 @@ export const renderPicksCanvas = async (
         },
       );
     }
-    if (picked) {
-      paintLogoRing(
-        context,
-        cx,
-        logoY + size / 2,
-        size,
-        s,
-        game.locked === true,
-      );
-    }
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#fff";
@@ -377,7 +354,7 @@ export const renderPicksCanvas = async (
       context.fillStyle = "rgba(255,255,255,0.7)";
       context.fillText(record, cx, midY + logo / 2 + fill.name * 1.15 * s);
     }
-    if (input.showUnits && picked) {
+    if (input.showUnits && pickedSide) {
       context.textAlign = "center";
       context.fillStyle = "rgba(255,255,255,0.88)";
       context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
@@ -388,6 +365,15 @@ export const renderPicksCanvas = async (
       );
     }
     context.restore();
+    if (pickedSide) {
+      paintCheck(
+        context,
+        cx,
+        logoY + size * 0.18,
+        fill.check * s,
+        game.locked === true,
+      );
+    }
   };
 
   const paintTicket = (
@@ -398,7 +384,7 @@ export const renderPicksCanvas = async (
   ) => {
     const teamId = side === "away" ? game.awayId : game.homeId;
     const line = formatPicksLine(picksLineForSide(game.line, side));
-    const picked = game.pick === side;
+    const pickedSide = game.pick === side;
     const dimmed = Boolean(game.pick && game.pick !== side);
     context.save();
     context.globalAlpha = dimmed ? 0.32 : 1;
@@ -407,10 +393,10 @@ export const renderPicksCanvas = async (
     context.fillStyle = "#fff";
     const ml = input.showMoneyline ? picksMl(game, side) : "";
     const body = [teamId, line, ml].filter(Boolean).join(" ");
-    const lineSize = picked ? fill.line * 1.14 : dimmed ? fill.line * 0.86 : fill.line;
+    const lineSize = pickedSide ? fill.line * 1.14 : dimmed ? fill.line * 0.86 : fill.line;
     context.font = `900 ${lineSize * s}px ${POSTER_FONT}`;
     context.fillText(body || "—", x, y);
-    const juice = picksJuiceOrMove(game, side);
+    const juice = input.showJuice ? picksJuiceOrMove(game, side) : "";
     if (juice) {
       context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
       context.fillStyle = "rgba(255,255,255,0.7)";
@@ -429,12 +415,12 @@ export const renderPicksCanvas = async (
         input.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
       ) / 100;
     const gradient = context.createLinearGradient(x, y, x + rowW, y);
-    gradient.addColorStop(0, hexAlpha(awayColor, 0.42 * opacity));
-    gradient.addColorStop(0.2, hexAlpha(awayColor, 0.26 * opacity));
-    gradient.addColorStop(0.36, `rgba(22,22,22,${opacity})`);
-    gradient.addColorStop(0.64, `rgba(22,22,22,${opacity})`);
-    gradient.addColorStop(0.8, hexAlpha(homeColor, 0.26 * opacity));
-    gradient.addColorStop(1, hexAlpha(homeColor, 0.42 * opacity));
+    gradient.addColorStop(0, hexAlpha(awayColor, 0.28 * opacity));
+    gradient.addColorStop(0.12, hexAlpha(awayColor, 0.16 * opacity));
+    gradient.addColorStop(0.22, `rgba(22,22,22,${opacity})`);
+    gradient.addColorStop(0.78, `rgba(22,22,22,${opacity})`);
+    gradient.addColorStop(0.88, hexAlpha(homeColor, 0.16 * opacity));
+    gradient.addColorStop(1, hexAlpha(homeColor, 0.28 * opacity));
     roundRectPath(context, x, y, rowW, rowH, 2 * s);
     context.fillStyle = `rgba(22,22,22,${opacity})`;
     context.fill();
@@ -453,11 +439,31 @@ export const renderPicksCanvas = async (
     const midX = width / 2;
     const ticketY = midY - (game.tip || game.tv || input.showTotal ? 8 * s : 0);
     paintTicket(game, "away", midX - 92 * s, ticketY);
+    context.save();
     context.fillStyle = "rgba(255,255,255,0.28)";
-    context.font = `900 ${fill.line * 0.72 * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.fillText("|", midX, ticketY);
+    context.fillRect(midX - 0.5 * s, ticketY - fill.line * 0.42 * s, Math.max(1, s), fill.line * 0.84 * s);
+    context.restore();
     paintTicket(game, "home", midX + 92 * s, ticketY);
+
+    const stamp = game.pick ? effectivePicksResult(game, mode) : null;
+    if (stamp) {
+      context.save();
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+      context.fillStyle =
+        stamp === "W" ? "#7dffb2" : stamp === "L" ? "#ff8d8d" : "#f4d35e";
+      context.strokeStyle = context.fillStyle;
+      context.lineWidth = Math.max(1, 1.2 * s);
+      const stampW = 22 * s;
+      const stampH = 16 * s;
+      const stampX = midX - stampW / 2;
+      const stampY = ticketY - fill.line * 0.95 * s;
+      roundRectPath(context, stampX, stampY, stampW, stampH, 3 * s);
+      context.stroke();
+      context.fillText(stamp, midX, stampY + stampH / 2);
+      context.restore();
+    }
 
     let metaY = ticketY + fill.line * 0.9 * s;
     if (input.showTotal) {
@@ -473,7 +479,25 @@ export const renderPicksCanvas = async (
     if (tipBits.length) {
       context.fillStyle = "rgba(255,255,255,0.72)";
       context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
       context.fillText(tipBits.join("   "), midX, metaY);
+    }
+    if (game.notes) {
+      context.fillStyle = "rgba(255,255,255,0.7)";
+      context.font = `700 ${9 * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.fillText(game.notes.toUpperCase(), midX, y + rowH - 8 * s);
+    }
+    if (input.showConfidence && game.pick) {
+      const ticks = Math.max(1, Math.min(3, game.confidence || 1));
+      context.fillStyle = PICKS_LOCK_FILL;
+      context.font = `900 ${10 * s}px ${POSTER_FONT}`;
+      context.textAlign = "right";
+      context.fillText(
+        `${"●".repeat(ticks)}${"○".repeat(3 - ticks)}`,
+        x + rowW - 12 * s,
+        y + 12 * s,
+      );
     }
   };
 
@@ -481,6 +505,31 @@ export const renderPicksCanvas = async (
     paintRow(game, cursorY);
     cursorY += (fill.rowH + fill.gap) * s;
   });
+
+  const bottomTop = height - fill.listBottom * s;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  if (parlay.length) {
+    context.fillStyle = "rgba(255,255,255,0.78)";
+    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.06 * 11 * s);
+    context.fillText(
+      parlay.join("   ·   "),
+      width / 2,
+      bottomTop + PICKS_PARLAY_H * 0.45 * s,
+    );
+    setLetterSpacing(context, 0);
+  }
+  if (footer) {
+    context.fillStyle = "rgba(255,255,255,0.92)";
+    context.font = `900 ${13 * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.06 * 13 * s);
+    const footerY = parlay.length
+      ? bottomTop + (PICKS_PARLAY_H + PICKS_FOOTER_H * 0.45) * s
+      : bottomTop + PICKS_FOOTER_H * 0.5 * s;
+    context.fillText(footer, width / 2, footerY);
+    setLetterSpacing(context, 0);
+  }
 
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");

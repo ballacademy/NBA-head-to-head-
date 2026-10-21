@@ -24,21 +24,27 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   clampPicksPlateOpacity,
   DEFAULT_PICKS_PLATE_OPACITY,
+  effectivePicksResult,
   formatPicksLine,
   formatPicksTotal,
   parsePicksLineInput,
+  picksDatePill,
   picksFillLayout,
-  picksListTop,
-  picksTitlePlateH,
   picksJuiceOrMove,
   picksLineForSide,
+  picksListTop,
   picksMl,
-  picksRecordLine,
   picksNameLabel,
+  picksParlayLabel,
+  picksRecordLine,
+  picksTitlePlateH,
   sortPicksGames,
   splitPicksTitle,
+  visiblePicksGames,
+  type PicksAtsResult,
   type PicksDraft,
   type PicksGame,
+  type PicksResultMode,
   type PicksSide,
 } from "./picksState";
 
@@ -48,9 +54,9 @@ interface PicksGraphicProps {
   purpleFlair?: boolean;
   exporting?: boolean;
   story?: boolean;
+  footer?: string;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
-  onDateLineChange: (value: string) => void;
   onPickSide: (gameId: string, side: PicksSide) => void;
   onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
   onPickTeam: (gameId: string, side: PicksSide) => void;
@@ -58,6 +64,9 @@ interface PicksGraphicProps {
   onRefillGame: (gameId: string) => void;
   onLockGame: (gameId: string) => void;
   onCycleUnits: (gameId: string) => void;
+  onCycleGrade: (gameId: string) => void;
+  onNotesChange: (gameId: string, notes: string) => void;
+  onCycleConfidence: (gameId: string) => void;
 }
 
 export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
@@ -68,9 +77,9 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
       purpleFlair = false,
       exporting = false,
       story = false,
+      footer = "",
       onBrandChange,
       onTitleChange,
-      onDateLineChange,
       onPickSide,
       onLineChange,
       onPickTeam,
@@ -78,19 +87,28 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
       onRefillGame,
       onLockGame,
       onCycleUnits,
+      onCycleGrade,
+      onNotesChange,
+      onCycleConfidence,
     },
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
     const titleLines = splitPicksTitle(draft.title, draft.date);
-    const games = sortPicksGames(draft.games);
+    const allGames = sortPicksGames(draft.games);
+    const games = visiblePicksGames(allGames, exporting);
+    const picked = allGames.filter((game) => game.pick);
+    const parlay = picked.map(picksParlayLabel).filter(Boolean);
     const fill = picksFillLayout(
       games.length,
       story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
       0,
       titleLines.length,
+      parlay.length > 0,
     );
+    const notch = picksDatePill(exporting ? games.length : allGames.length);
+    const mode: PicksResultMode = draft.resultMode === "su" ? "su" : "ats";
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -146,6 +164,7 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             ["--pk-group-h" as string]: String(fill.groupH),
             ["--pk-plate-h" as string]: String(picksTitlePlateH(titleLines.length)),
             ["--pk-header-h" as string]: String(picksListTop(titleLines.length)),
+            ["--pk-bottom" as string]: String(fill.listBottom),
             ["--pk-plate-opacity" as string]: String(
               clampPicksPlateOpacity(
                 draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
@@ -188,23 +207,11 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
               />
             </div>
           </div>
-          <div className="pk-date-notch">
-            <input
-              className="pk-date"
-              value={draft.dateLine}
-              maxLength={40}
-              spellCheck={false}
-              aria-label="Picks date"
-              size={Math.max(12, draft.dateLine.trim().length + 1)}
-              onChange={(event) => onDateLineChange(event.target.value.slice(0, 40))}
-            />
-            {games.length ? (
-              <span className="pk-date-count">
-                {" · "}
-                {games.length} GAME{games.length === 1 ? "" : "S"}
-              </span>
-            ) : null}
-          </div>
+          {notch ? (
+            <div className="pk-date-notch">
+              <span className="pk-date">{notch}</span>
+            </div>
+          ) : null}
         </header>
         <div className="pk-list">
           {games.length ? (
@@ -212,9 +219,12 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
               <PicksRow
                 key={game.id}
                 game={game}
+                mode={mode}
                 showTotal={draft.showTotal === true}
                 showMoneyline={draft.showMoneyline === true}
                 showUnits={draft.showUnits === true}
+                showJuice={draft.showJuice === true}
+                showConfidence={draft.showConfidence === true}
                 onPickSide={onPickSide}
                 onLineChange={onLineChange}
                 onPickTeam={onPickTeam}
@@ -222,11 +232,20 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
                 onRefillGame={onRefillGame}
                 onLockGame={onLockGame}
                 onCycleUnits={onCycleUnits}
+                onCycleGrade={onCycleGrade}
+                onNotesChange={onNotesChange}
+                onCycleConfidence={onCycleConfidence}
               />
             ))
           ) : (
             <p className="pk-empty">Fill tonight’s slate</p>
           )}
+        </div>
+        <div className="pk-bottom">
+          {parlay.length ? (
+            <p className="pk-parlay">{parlay.join("   ·   ")}</p>
+          ) : null}
+          {footer ? <p className="pk-footer">{footer}</p> : null}
         </div>
       </article>
     );
@@ -235,9 +254,12 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
 
 function PicksRow({
   game,
+  mode,
   showTotal,
   showMoneyline,
   showUnits,
+  showJuice,
+  showConfidence,
   onPickSide,
   onLineChange,
   onPickTeam,
@@ -245,11 +267,17 @@ function PicksRow({
   onRefillGame,
   onLockGame,
   onCycleUnits,
+  onCycleGrade,
+  onNotesChange,
+  onCycleConfidence,
 }: {
   game: PicksGame;
+  mode: PicksResultMode;
   showTotal: boolean;
   showMoneyline: boolean;
   showUnits: boolean;
+  showJuice: boolean;
+  showConfidence: boolean;
   onPickSide: (gameId: string, side: PicksSide) => void;
   onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
   onPickTeam: (gameId: string, side: PicksSide) => void;
@@ -257,9 +285,16 @@ function PicksRow({
   onRefillGame: (gameId: string) => void;
   onLockGame: (gameId: string) => void;
   onCycleUnits: (gameId: string) => void;
+  onCycleGrade: (gameId: string) => void;
+  onNotesChange: (gameId: string, notes: string) => void;
+  onCycleConfidence: (gameId: string) => void;
 }) {
   const awayColor = getTeamColors(game.awayId).primary;
   const homeColor = getTeamColors(game.homeId).primary;
+  const stamp = game.pick ? effectivePicksResult(game, mode) : null;
+  const showStamp = Boolean(
+    game.pick && (stamp || game.final || game.gradeManual),
+  );
   return (
     <div
       className={[
@@ -294,7 +329,11 @@ function PicksRow({
         game={game}
         showTotal={showTotal}
         showMoneyline={showMoneyline}
+        showJuice={showJuice}
+        stamp={stamp}
+        showStamp={showStamp}
         onLineChange={onLineChange}
+        onCycleGrade={onCycleGrade}
       />
       <PicksSideBlock
         side="home"
@@ -308,6 +347,26 @@ function PicksRow({
         onPickSide={onPickSide}
         onPickTeam={onPickTeam}
         onCycleUnits={onCycleUnits}
+      />
+      {showConfidence && game.pick ? (
+        <button
+          type="button"
+          className="pk-conf"
+          aria-label="Cycle confidence"
+          onClick={() => onCycleConfidence(game.id)}
+        >
+          {"●".repeat(game.confidence || 1)}
+          {"○".repeat(Math.max(0, 3 - (game.confidence || 1)))}
+        </button>
+      ) : null}
+      <input
+        className="pk-notes"
+        value={game.notes ?? ""}
+        maxLength={48}
+        placeholder="Note"
+        spellCheck={false}
+        aria-label="Pick note"
+        onChange={(event) => onNotesChange(game.id, event.target.value.slice(0, 48))}
       />
       <div className="pk-row__tools">
         <button
@@ -395,20 +454,30 @@ function PicksSideBlock({
             : `Pick ${team?.id ?? side}`
         }
         onClick={() => onPickSide(gameId, side)}
-      />
-      <button
-        type="button"
+      >
+        {picked ? (locked ? "★" : "✓") : ""}
+      </button>
+      <div
         className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]
           .filter(Boolean)
           .join(" ")}
-        aria-label={team ? `Change ${team.id}` : `Pick ${side} team`}
-        onClick={() => onPickTeam(gameId, side)}
       >
         {team ? (
           <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
         ) : (
           "+"
         )}
+      </div>
+      <button
+        type="button"
+        className="pk-logo-edit"
+        aria-label={team ? `Change ${team.id}` : `Pick ${side} team`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onPickTeam(gameId, side);
+        }}
+      >
+        ✎
       </button>
       <span className="pk-name">{picksNameLabel(teamId, side)}</span>
       {record ? <span className="pk-record">{record}</span> : null}
@@ -430,12 +499,20 @@ function OddsBlock({
   game,
   showTotal,
   showMoneyline,
+  showJuice,
+  stamp,
+  showStamp,
   onLineChange,
+  onCycleGrade,
 }: {
   game: PicksGame;
   showTotal: boolean;
   showMoneyline: boolean;
+  showJuice: boolean;
+  stamp: PicksAtsResult | null;
+  showStamp: boolean;
   onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
+  onCycleGrade: (gameId: string) => void;
 }) {
   const total = showTotal ? formatPicksTotal(game.total) : "";
   return (
@@ -445,18 +522,28 @@ function OddsBlock({
           game={game}
           side="away"
           showMoneyline={showMoneyline}
+          showJuice={showJuice}
           onLineChange={onLineChange}
         />
-        <span className="pk-odds__pipe" aria-hidden="true">
-          |
-        </span>
+        <span className="pk-odds__pipe" aria-hidden="true" />
         <TicketField
           game={game}
           side="home"
           showMoneyline={showMoneyline}
+          showJuice={showJuice}
           onLineChange={onLineChange}
         />
       </div>
+      {showStamp ? (
+        <button
+          type="button"
+          className={`pk-stamp${stamp ? ` is-${stamp.toLowerCase()}` : ""}${game.gradeManual ? " is-manual" : ""}`}
+          aria-label="Cycle pick result"
+          onClick={() => onCycleGrade(game.id)}
+        >
+          {stamp || "·"}
+        </button>
+      ) : null}
       {total ? <p className="pk-ou">{total}</p> : null}
       <p className="pk-tip-row">
         {game.tip ? <span className="pk-tip">{game.tip}</span> : null}
@@ -470,17 +557,19 @@ function TicketField({
   game,
   side,
   showMoneyline,
+  showJuice,
   onLineChange,
 }: {
   game: PicksGame;
   side: PicksSide;
   showMoneyline: boolean;
+  showJuice: boolean;
   onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
 }) {
   const display = formatPicksLine(picksLineForSide(game.line, side));
   const shown = picksLineForSide(game.line, side);
   const abbrev = side === "away" ? game.awayId : game.homeId;
-  const juice = picksJuiceOrMove(game, side);
+  const juice = showJuice ? picksJuiceOrMove(game, side) : "";
   const ml = showMoneyline ? picksMl(game, side) : "";
   const picked = game.pick === side;
   const dimmed = Boolean(game.pick && game.pick !== side);

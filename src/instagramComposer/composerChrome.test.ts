@@ -841,17 +841,28 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("showTotal");
     expect(picksApp).toContain("Plate opacity");
     expect(picksCss).toContain("--pk-plate-opacity");
-    expect(picksCss).toContain("#161616 36%");
+    expect(picksCss).toContain("#161616 22%");
+    expect(picksCss).not.toContain("#161616 36%");
     expect(picksCss).not.toContain("#161616 16%");
-    expect(picksCanvas).toContain("addColorStop(0.36");
-    expect(picksCss).toContain(".pk-logo.is-on:not(.is-empty)::after");
-    expect(picksCss).toContain(".pk-board.is-exporting .pk-check");
-    expect(picksCss).not.toContain(".pk-check.is-on");
+    expect(picksCanvas).toContain("addColorStop(0.22");
+    expect(picksCss).not.toContain(".pk-logo.is-on:not(.is-empty)::after");
+    expect(picksCss).toContain(".pk-check.is-on");
+    expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
+    expect(picksCss).toContain(".pk-footer");
+    expect(picksCss).toContain(".pk-parlay");
     expect(picksCss).toContain(".pk-title-plate");
-    expect(picksCanvas).toContain("paintLogoRing");
-    expect(picksCanvas).not.toContain("paintCheck");
+    expect(picksCanvas).not.toContain("paintLogoRing");
+    expect(picksCanvas).toContain("paintCheck");
+    expect(picksCanvas).toContain("visiblePicksGames");
     expect(picksCanvas).toContain("picksLineForSide");
     expect(picksCanvas).toContain("picksDatePill");
+    expect(picksGraphic).toContain("pk-logo-edit");
+    expect(picksGraphic).toContain("pk-footer");
+    expect(picksGraphic).toContain("visiblePicksGames");
+    expect(picksApp).toContain("PICKS_LEDGER_KEY");
+    expect(picksApp).toContain("Show juice");
+    expect(picksApp).toContain("Show confidence ticks");
+    expect(picksApp).toContain("Toggle ATS or straight up");
     const coverNameFade = readFileSync(
       join(root, "instagramComposer/PlayerNameFade.tsx"),
       "utf8",

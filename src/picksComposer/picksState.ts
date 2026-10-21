@@ -3,6 +3,7 @@ import {
   ESPN_ABBREV_TO_TEAM,
   isoDateOnly,
   nbaTodayIso,
+  shiftIsoDate,
   toEspnDateParam,
 } from "../playerOfTheDayComposer/lastGame";
 import {
@@ -17,7 +18,9 @@ export { DEFAULT_BRAND };
 export const PICKS_SCOREBOARD_URL = (iso: string) =>
   `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
 
-export const PICKS_LIST_BOTTOM = 22;
+export const PICKS_FOOTER_H = 28;
+export const PICKS_PARLAY_H = 32;
+export const PICKS_LIST_BOTTOM = PICKS_FOOTER_H + 8;
 export const PICKS_GROUP_H = 18;
 export const PICKS_PLATE_X = 56;
 export const PICKS_HEADER_PAD = 8;
@@ -73,6 +76,8 @@ export const NATIONAL_TV = new Set([
 ]);
 
 export type PicksSide = "away" | "home";
+export type PicksResultMode = "ats" | "su";
+export type PicksAtsResult = "W" | "L" | "P";
 
 export interface PicksGame {
   id: string;
@@ -100,6 +105,12 @@ export interface PicksGame {
   locked?: boolean;
   /** ESPN tip-off epoch ms. Missing/custom rows sort last. */
   startMs?: number;
+  awayScore?: number | null;
+  homeScore?: number | null;
+  final?: boolean;
+  notes?: string;
+  confidence?: number;
+  gradeManual?: PicksAtsResult | null;
 }
 
 export interface PicksDraft {
@@ -112,9 +123,40 @@ export interface PicksDraft {
   showTotal?: boolean;
   showMoneyline?: boolean;
   showUnits?: boolean;
+  showJuice?: boolean;
+  showConfidence?: boolean;
+  resultMode?: PicksResultMode;
   /** 0–100. Default is solid metal, not a glass wash. */
   plateOpacity?: number;
 }
+
+export interface PicksLedgerEntry {
+  eventId: string;
+  date: string;
+  awayId: string;
+  homeId: string;
+  line: number | null;
+  pick: PicksSide;
+  awayScore?: number | null;
+  homeScore?: number | null;
+  final?: boolean;
+  result?: PicksAtsResult | null;
+  units?: string;
+  startMs?: number;
+  gradeManual?: PicksAtsResult | null;
+}
+
+export interface PicksLedger {
+  slates: Record<string, PicksLedgerEntry[]>;
+}
+
+export interface PicksAtsTally {
+  wins: number;
+  losses: number;
+  pushes: number;
+}
+
+export const PICKS_LEDGER_KEY = "ddgm:picks-composer:ledger";
 
 const rec = (value: unknown) =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : null;
@@ -281,12 +323,455 @@ export const clampPicksPlateOpacity = (value: unknown) => {
   return Math.round(Math.min(100, Math.max(0, parsed)));
 };
 
-export const picksDatePill = (dateLine: string, games: number) => {
-  const date = dateLine.trim().toUpperCase();
-  if (!games) {
-    return date;
+export const picksDatePill = (games: number) =>
+  games ? `${games} GAME${games === 1 ? "" : "S"}` : "";
+
+/** ATS vs the locked away line. Null when the game is not a gradeable final. */
+export const gradePicksAts = (
+  pick: PicksSide | null | undefined,
+  line: number | null | undefined,
+  awayScore: number | null | undefined,
+  homeScore: number | null | undefined,
+  final = false,
+): PicksAtsResult | null => {
+  if (!final || (pick !== "away" && pick !== "home")) {
+    return null;
   }
-  return `${date}  ·  ${games} GAME${games === 1 ? "" : "S"}`;
+  if (line == null || !Number.isFinite(line)) {
+    return null;
+  }
+  if (
+    awayScore == null ||
+    homeScore == null ||
+    !Number.isFinite(awayScore) ||
+    !Number.isFinite(homeScore)
+  ) {
+    return null;
+  }
+  const cover = awayScore + line - homeScore;
+  if (cover === 0) {
+    return "P";
+  }
+  if (pick === "away") {
+    return cover > 0 ? "W" : "L";
+  }
+  return cover < 0 ? "W" : "L";
+};
+
+export const gradePicksStraightUp = (
+  pick: PicksSide | null | undefined,
+  awayScore: number | null | undefined,
+  homeScore: number | null | undefined,
+  final = false,
+): PicksAtsResult | null => {
+  if (!final || (pick !== "away" && pick !== "home")) {
+    return null;
+  }
+  if (
+    awayScore == null ||
+    homeScore == null ||
+    !Number.isFinite(awayScore) ||
+    !Number.isFinite(homeScore)
+  ) {
+    return null;
+  }
+  if (awayScore === homeScore) {
+    return "P";
+  }
+  if (pick === "away") {
+    return awayScore > homeScore ? "W" : "L";
+  }
+  return homeScore > awayScore ? "W" : "L";
+};
+
+export const isPicksGrade = (value: unknown): value is PicksAtsResult =>
+  value === "W" || value === "L" || value === "P";
+
+export const effectivePicksResult = (
+  row: {
+    pick?: PicksSide | null;
+    line?: number | null;
+    awayScore?: number | null;
+    homeScore?: number | null;
+    final?: boolean;
+    gradeManual?: PicksAtsResult | null;
+  },
+  mode: PicksResultMode = "ats",
+): PicksAtsResult | null => {
+  if (isPicksGrade(row.gradeManual)) {
+    return row.gradeManual;
+  }
+  if (mode === "su") {
+    return gradePicksStraightUp(
+      row.pick,
+      row.awayScore,
+      row.homeScore,
+      row.final === true,
+    );
+  }
+  return gradePicksAts(
+    row.pick,
+    row.line,
+    row.awayScore,
+    row.homeScore,
+    row.final === true,
+  );
+};
+
+export const cyclePicksGrade = (
+  current?: PicksAtsResult | null,
+  auto?: PicksAtsResult | null,
+): PicksAtsResult | null => {
+  const order: PicksAtsResult[] = ["W", "L", "P"];
+  const shown = current ?? auto ?? null;
+  const idx = shown ? order.indexOf(shown) : -1;
+  const next = order[(idx + 1) % 3];
+  if (auto && next === auto) {
+    return null;
+  }
+  return next;
+};
+
+export const cyclePicksConfidence = (current?: number) => {
+  const next = current === 1 ? 2 : current === 2 ? 3 : 1;
+  return next;
+};
+
+export const parsePicksUnits = (value?: string) => {
+  const match = String(value ?? "1u").trim().toLowerCase().match(/^(\d+(?:\.\d+)?)u$/);
+  const amount = match ? Number(match[1]) : 1;
+  return Number.isFinite(amount) && amount > 0 ? amount : 1;
+};
+
+export const formatPicksUnitsPl = (amount: number) => {
+  if (!Number.isFinite(amount) || amount === 0) {
+    return "";
+  }
+  const rounded = Math.round(amount * 10) / 10;
+  const body = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  return `${rounded > 0 ? "+" : ""}${body}u`;
+};
+
+export const picksUnitsDelta = (
+  result: PicksAtsResult | null | undefined,
+  units?: string,
+) => {
+  if (result === "W") {
+    return parsePicksUnits(units);
+  }
+  if (result === "L") {
+    return -parsePicksUnits(units);
+  }
+  return 0;
+};
+
+export const visiblePicksGames = (games: PicksGame[], exporting = false) =>
+  exporting ? games.filter((game) => Boolean(game.pick)) : games;
+
+export const picksParlayLabel = (game: PicksGame) => {
+  if (!game.pick) {
+    return "";
+  }
+  return formatPicksSideTicket(game, game.pick);
+};
+
+export const formatPicksAtsRecord = (tally: PicksAtsTally) => {
+  if (!tally.wins && !tally.losses && !tally.pushes) {
+    return "";
+  }
+  if (!tally.pushes) {
+    return `${tally.wins}-${tally.losses}`;
+  }
+  return `${tally.wins}-${tally.losses}-${tally.pushes}`;
+};
+
+export const emptyPicksLedger = (): PicksLedger => ({ slates: {} });
+
+const tallyResults = (results: PicksAtsResult[]): PicksAtsTally => {
+  const tally: PicksAtsTally = { wins: 0, losses: 0, pushes: 0 };
+  results.forEach((result) => {
+    if (result === "W") {
+      tally.wins += 1;
+    } else if (result === "L") {
+      tally.losses += 1;
+    } else {
+      tally.pushes += 1;
+    }
+  });
+  return tally;
+};
+
+export const gradedPicksChronology = (
+  ledger: PicksLedger,
+  mode: PicksResultMode = "ats",
+) => {
+  const rows: Array<PicksLedgerEntry & { result: PicksAtsResult }> = [];
+  Object.values(ledger.slates).forEach((list) => {
+    list.forEach((row) => {
+      const result = effectivePicksResult(row, mode);
+      if (result) {
+        rows.push({ ...row, result });
+      }
+    });
+  });
+  rows.sort((left, right) => {
+    const date = left.date.localeCompare(right.date);
+    if (date !== 0) {
+      return date;
+    }
+    return (left.startMs ?? 0) - (right.startMs ?? 0);
+  });
+  return rows;
+};
+
+export const summarizePicksLedger = (
+  ledger: PicksLedger,
+  mode: PicksResultMode = "ats",
+): PicksAtsTally =>
+  tallyResults(gradedPicksChronology(ledger, mode).map((row) => row.result));
+
+export const summarizePicksLast10 = (
+  ledger: PicksLedger,
+  mode: PicksResultMode = "ats",
+): PicksAtsTally => {
+  const rows = gradedPicksChronology(ledger, mode);
+  return tallyResults(rows.slice(-10).map((row) => row.result));
+};
+
+export const summarizePicksNight = (
+  ledger: PicksLedger,
+  iso: string,
+  mode: PicksResultMode = "ats",
+): PicksAtsTally => {
+  const token = isoDateOnly(iso);
+  const rows = token ? ledger.slates[token] ?? [] : [];
+  return tallyResults(
+    rows
+      .map((row) => effectivePicksResult(row, mode))
+      .filter((result): result is PicksAtsResult => Boolean(result)),
+  );
+};
+
+export const summarizePicksUnitsPl = (
+  ledger: PicksLedger,
+  mode: PicksResultMode = "ats",
+) =>
+  gradedPicksChronology(ledger, mode).reduce(
+    (sum, row) => sum + picksUnitsDelta(row.result, row.units),
+    0,
+  );
+
+export const formatPicksFooter = (
+  ledger: PicksLedger,
+  date: string,
+  mode: PicksResultMode = "ats",
+) => {
+  const season = formatPicksAtsRecord(summarizePicksLedger(ledger, mode));
+  if (!season) {
+    return "";
+  }
+  const bits = [`${mode === "su" ? "SU" : "ATS"} ${season}`];
+  const last10 = summarizePicksLast10(ledger, mode);
+  const last10n = last10.wins + last10.losses + last10.pushes;
+  if (last10n) {
+    bits.push(`L10 ${formatPicksAtsRecord(last10)}`);
+  }
+  const lastNight = formatPicksAtsRecord(
+    summarizePicksNight(ledger, shiftIsoDate(date, -1), mode),
+  );
+  if (lastNight) {
+    bits.push(`LAST NIGHT ${lastNight}`);
+  }
+  const units = formatPicksUnitsPl(summarizePicksUnitsPl(ledger, mode));
+  if (units) {
+    bits.push(units);
+  }
+  return bits.join("  ·  ");
+};
+
+const ledgerKeyFor = (game: Pick<PicksGame, "eventId" | "id">) =>
+  game.eventId || `custom:${game.id}`;
+
+const toLedgerEntry = (date: string, game: PicksGame): PicksLedgerEntry | null => {
+  if (game.pick !== "away" && game.pick !== "home") {
+    return null;
+  }
+  return {
+    eventId: ledgerKeyFor(game),
+    date,
+    awayId: game.awayId,
+    homeId: game.homeId,
+    line: game.line,
+    pick: game.pick,
+    awayScore: game.awayScore ?? null,
+    homeScore: game.homeScore ?? null,
+    final: game.final === true,
+    units: game.units || "1u",
+    startMs: game.startMs ?? 0,
+    gradeManual: isPicksGrade(game.gradeManual) ? game.gradeManual : null,
+    result: effectivePicksResult(game, "ats"),
+  };
+};
+
+export const upsertPicksLedger = (
+  ledger: PicksLedger,
+  date: string,
+  games: PicksGame[],
+): PicksLedger => {
+  const token = isoDateOnly(date);
+  if (!token) {
+    return ledger;
+  }
+  const prev = new Map(
+    (ledger.slates[token] ?? []).map((row) => [row.eventId, row]),
+  );
+  const nextRows: PicksLedgerEntry[] = [];
+  games.forEach((game) => {
+    const fresh = toLedgerEntry(token, game);
+    if (!fresh) {
+      return;
+    }
+    const older = prev.get(fresh.eventId);
+    const awayScore = fresh.awayScore ?? older?.awayScore ?? null;
+    const homeScore = fresh.homeScore ?? older?.homeScore ?? null;
+    const final = fresh.final === true || older?.final === true;
+    const merged = {
+      ...fresh,
+      awayScore,
+      homeScore,
+      final,
+      units: fresh.units || older?.units || "1u",
+      startMs: fresh.startMs || older?.startMs || 0,
+      gradeManual: isPicksGrade(fresh.gradeManual)
+        ? fresh.gradeManual
+        : isPicksGrade(older?.gradeManual)
+          ? older?.gradeManual
+          : null,
+    };
+    nextRows.push({
+      ...merged,
+      result: effectivePicksResult(merged, "ats"),
+    });
+  });
+  const slates = { ...ledger.slates };
+  if (!nextRows.length) {
+    delete slates[token];
+  } else {
+    slates[token] = nextRows;
+  }
+  return { slates };
+};
+
+export const applyScoresToPicksLedger = (
+  ledger: PicksLedger,
+  date: string,
+  incoming: PicksGame[],
+): PicksLedger => {
+  const token = isoDateOnly(date);
+  const rows = token ? ledger.slates[token] : undefined;
+  if (!token || !rows?.length) {
+    return ledger;
+  }
+  const byEvent = new Map(
+    incoming.filter((game) => game.eventId).map((game) => [game.eventId, game]),
+  );
+  const nextRows = rows.map((row) => {
+    const match = byEvent.get(row.eventId);
+    if (!match) {
+      return row;
+    }
+    const awayScore = match.awayScore ?? row.awayScore ?? null;
+    const homeScore = match.homeScore ?? row.homeScore ?? null;
+    const final = match.final === true || row.final === true;
+    const next = {
+      ...row,
+      awayScore,
+      homeScore,
+      final,
+    };
+    return {
+      ...next,
+      result: effectivePicksResult(next, "ats"),
+    };
+  });
+  return {
+    slates: {
+      ...ledger.slates,
+      [token]: nextRows,
+    },
+  };
+};
+
+export const ungradedPicksDates = (ledger: PicksLedger) =>
+  Object.entries(ledger.slates)
+    .filter(([, rows]) =>
+      rows.some(
+        (row) => row.pick && row.result == null && row.eventId && !row.eventId.startsWith("custom:"),
+      ),
+    )
+    .map(([date]) => date);
+
+export const normalizePicksLedger = (value: unknown): PicksLedger => {
+  const root = rec(value);
+  const slates = rec(root?.slates);
+  if (!slates) {
+    return emptyPicksLedger();
+  }
+  const next: Record<string, PicksLedgerEntry[]> = {};
+  Object.entries(slates).forEach(([date, rows]) => {
+    const token = isoDateOnly(date);
+    if (!token || !Array.isArray(rows)) {
+      return;
+    }
+    const list = rows
+      .map((row) => {
+        const item = rec(row);
+        if (!item || (item.pick !== "away" && item.pick !== "home")) {
+          return null;
+        }
+        const line = item.line == null || item.line === "" ? null : finiteNumber(item.line);
+        const awayScore =
+          item.awayScore == null || item.awayScore === ""
+            ? null
+            : finiteNumber(item.awayScore);
+        const homeScore =
+          item.homeScore == null || item.homeScore === ""
+            ? null
+            : finiteNumber(item.homeScore);
+        const final = item.final === true;
+        const pick = item.pick as PicksSide;
+        return {
+          eventId: textOf(item.eventId) || `custom:${textOf(item.id) || date}`,
+          date: token,
+          awayId: resolvePicksTeam(textOf(item.awayId)),
+          homeId: resolvePicksTeam(textOf(item.homeId)),
+          line,
+          pick,
+          awayScore,
+          homeScore,
+          final,
+          units: textOf(item.units) || "1u",
+          startMs: finiteNumber(item.startMs) ?? 0,
+          gradeManual: isPicksGrade(item.gradeManual) ? item.gradeManual : null,
+          result: effectivePicksResult(
+            {
+              pick,
+              line,
+              awayScore,
+              homeScore,
+              final,
+              gradeManual: isPicksGrade(item.gradeManual) ? item.gradeManual : null,
+            },
+            "ats",
+          ),
+        } as PicksLedgerEntry;
+      })
+      .filter((row): row is PicksLedgerEntry => Boolean(row));
+    if (list.length) {
+      next[token] = list;
+    }
+  });
+  return { slates: next };
 };
 
 export const formatPicksTotal = (total?: number | null) => {
@@ -341,8 +826,12 @@ export const picksNameLabel = (teamId: string, side: PicksSide) => {
 export const picksRecordLine = (record?: string, last10?: string) => {
   const rec = (record ?? "").trim();
   const ten = (last10 ?? "").trim();
-  if (rec && ten) {
-    return `${rec}  L10 ${ten}`;
+  const placeholder = !rec || /^0-0(?:-0)?$/u.test(rec);
+  if (placeholder) {
+    return "";
+  }
+  if (ten && !/^0-0(?:-0)?$/u.test(ten)) {
+    return `${rec} · L10 ${ten}`;
   }
   return rec;
 };
@@ -494,6 +983,44 @@ export const parseEspnRecord = (
   return textOf(rec(match)?.summary);
 };
 
+export const parseEspnScore = (competitor: unknown): number | null => {
+  const side = rec(competitor);
+  const raw = side?.score;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    return raw;
+  }
+  const token = textOf(raw);
+  if (!token) {
+    return null;
+  }
+  const parsed = Number(token);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+export const parseEspnCompleted = (
+  event: unknown,
+  competition: unknown,
+): boolean => {
+  const status =
+    rec(rec(event)?.status)?.type ?? rec(rec(competition)?.status)?.type;
+  const item = rec(status);
+  if (!item) {
+    return false;
+  }
+  if (item.completed === true) {
+    return true;
+  }
+  const state = textOf(item.state).toLowerCase();
+  const name = textOf(item.name).toUpperCase();
+  const desc = textOf(item.description).toUpperCase();
+  return (
+    state === "post" ||
+    name === "STATUS_FINAL" ||
+    name.endsWith("_FINAL") ||
+    desc === "FINAL"
+  );
+};
+
 export const parseEspnStartMs = (event: unknown, competition: unknown): number => {
   const iso = textOf(rec(event)?.date) || textOf(rec(competition)?.date);
   const date = new Date(iso);
@@ -633,6 +1160,9 @@ export const parsePicksScoreboard = (
       homeJuice: parseEspnJuice(competition, "home"),
       tv: parseEspnNationalTv(competition),
       units: "1u",
+      awayScore: parseEspnScore(awayRow),
+      homeScore: parseEspnScore(homeRow),
+      final: parseEspnCompleted(event, competition),
     });
   });
   void slateDate;
@@ -752,6 +1282,12 @@ const mergePicksRow = (prev: PicksGame, incoming: PicksGame): PicksGame => {
     eventId: incoming.eventId || prev.eventId,
     locked: prev.locked === true,
     units: prev.units || incoming.units || "1u",
+    awayScore: incoming.awayScore ?? prev.awayScore ?? null,
+    homeScore: incoming.homeScore ?? prev.homeScore ?? null,
+    final: incoming.final === true || prev.final === true,
+    notes: prev.notes || incoming.notes,
+    confidence: prev.confidence ?? incoming.confidence,
+    gradeManual: isPicksGrade(prev.gradeManual) ? prev.gradeManual : null,
   };
 };
 
@@ -824,6 +1360,9 @@ export const defaultPicksDraft = (now = new Date()): PicksDraft => {
     showTotal: false,
     showMoneyline: false,
     showUnits: false,
+    showJuice: false,
+    showConfidence: false,
+    resultMode: "ats",
     plateOpacity: DEFAULT_PICKS_PLATE_OPACITY,
   };
 };
@@ -872,6 +1411,21 @@ const normalizeGame = (value: unknown): PicksGame | null => {
     units: textOf(row.units) || "1u",
     locked: row.locked === true,
     startMs: finiteNumber(row.startMs) ?? 0,
+    awayScore:
+      row.awayScore == null || row.awayScore === ""
+        ? null
+        : finiteNumber(row.awayScore),
+    homeScore:
+      row.homeScore == null || row.homeScore === ""
+        ? null
+        : finiteNumber(row.homeScore),
+    final: row.final === true,
+    notes: textOf(row.notes).slice(0, 48),
+    confidence:
+      row.confidence === 1 || row.confidence === 2 || row.confidence === 3
+        ? row.confidence
+        : undefined,
+    gradeManual: isPicksGrade(row.gradeManual) ? row.gradeManual : null,
   };
 };
 
@@ -898,24 +1452,32 @@ export const normalizePicksDraft = (
     showTotal: draft.showTotal === true,
     showMoneyline: draft.showMoneyline === true,
     showUnits: draft.showUnits === true,
+    showJuice: draft.showJuice === true,
+    showConfidence: draft.showConfidence === true,
+    resultMode: draft.resultMode === "su" ? "su" : "ats",
     plateOpacity: clampPicksPlateOpacity(
       draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
     ),
   };
 };
 
+export const picksBoardBottom = (parlay = false) =>
+  PICKS_FOOTER_H + (parlay ? PICKS_PARLAY_H : 0) + 8;
+
 export const picksFillLayout = (
   count: number,
   boardH = GRAPHIC_HEIGHT,
   groupCount = 0,
   lineCount = 1,
+  parlay = false,
 ) => {
   const games = Math.max(0, count);
   const rows = Math.max(1, games);
   const groups = Math.max(0, groupCount);
   const labels = groups > 1 ? groups * PICKS_GROUP_H : 0;
   const listTop = picksListTop(lineCount);
-  const listH = boardH - listTop - PICKS_LIST_BOTTOM;
+  const listBottom = picksBoardBottom(parlay);
+  const listH = boardH - listTop - listBottom;
   const usable = Math.max(48, listH - labels);
   const gap = games <= 1 ? 0 : Math.min(6, usable * 0.006);
   const rowH = (usable - gap * Math.max(0, rows - 1)) / rows;
@@ -923,7 +1485,7 @@ export const picksFillLayout = (
     Math.round(Math.min(max, Math.max(min, value)));
   return {
     listTop,
-    listBottom: PICKS_LIST_BOTTOM,
+    listBottom,
     listH,
     rows,
     rowH,
@@ -933,7 +1495,7 @@ export const picksFillLayout = (
     line: clamp(16, 36, rowH * 0.28),
     name: clamp(11, 18, rowH * 0.16),
     meta: clamp(9, 13, rowH * 0.12),
-    check: clamp(16, 28, rowH * 0.26),
+    check: clamp(32, 52, rowH * 0.5),
   };
 };
 

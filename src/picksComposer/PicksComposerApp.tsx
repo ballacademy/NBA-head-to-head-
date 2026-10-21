@@ -37,17 +37,25 @@ import { PicksGraphic } from "./PicksGraphic";
 import { exportPicksPng } from "./exportPicksPng";
 import { renderPicksCanvas } from "./renderPicksCanvas";
 import {
+  applyScoresToPicksLedger,
   clampPicksPlateOpacity,
+  cyclePicksConfidence,
+  cyclePicksGrade,
   cyclePicksUnits,
   defaultPicksDraft,
   DEFAULT_PICKS_PLATE_OPACITY,
+  effectivePicksResult,
   emptyPicksGame,
+  emptyPicksLedger,
   fetchPicksSlate,
+  formatPicksFooter,
   formatPicksSideTicket,
   isAutoPicksDateLine,
   isAutoPicksTitle,
   isPicksDraft,
   mergePicksFill,
+  normalizePicksLedger,
+  PICKS_LEDGER_KEY,
   picksDefaultTitle,
   sortPicksGames,
   normalizePicksDraft,
@@ -57,7 +65,10 @@ import {
   setPicksLock,
   setPicksTeam,
   togglePicksPick,
+  ungradedPicksDates,
+  upsertPicksLedger,
   type PicksDraft,
+  type PicksLedger,
   type PicksSide,
 } from "./picksState";
 import "@fontsource/montserrat/latin-900.css";
@@ -80,6 +91,7 @@ export function PicksComposerApp() {
   const slateRef = useRef<ReturnType<typeof emptyPicksGame>[]>([]);
   const autoFillRef = useRef(false);
   const [draft, setDraft] = useState<PicksDraft>(defaultPicksDraft);
+  const [ledger, setLedger] = useState<PicksLedger>(emptyPicksLedger);
   const [exporting, setExporting] = useState(false);
   const [filling, setFilling] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -96,6 +108,7 @@ export function PicksComposerApp() {
   useEffect(() => {
     document.title = "Daily spread picks";
     setDraft(loadDraft());
+    setLedger(normalizePicksLedger(readJson(PICKS_LEDGER_KEY)));
     setHydrated(true);
   }, []);
 
@@ -104,6 +117,40 @@ export function PicksComposerApp() {
       writeJson(STORAGE_KEY, draft);
     }
   }, [draft, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    setLedger((current) => upsertPicksLedger(current, draft.date, draft.games));
+  }, [draft.date, draft.games, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      writeJson(PICKS_LEDGER_KEY, ledger);
+    }
+  }, [ledger, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    let cancelled = false;
+    const dates = ungradedPicksDates(ledger);
+    void Promise.all(
+      dates.map(async (iso) => {
+        const incoming = await fetchPicksSlate(iso);
+        if (!cancelled && incoming.length) {
+          setLedger((current) => applyScoresToPicksLedger(current, iso, incoming));
+        }
+      }),
+    );
+    return () => {
+      cancelled = true;
+    };
+    // Grade leftover slates once after hydrate; later fills upsert scores.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
   const fillSlate = async (iso = draft.date, forceRowId?: string) => {
     const date = isoDateOnly(iso) || draft.date;
@@ -159,6 +206,12 @@ export function PicksComposerApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
+  const footer = formatPicksFooter(
+    ledger,
+    draft.date,
+    draft.resultMode === "su" ? "su" : "ats",
+  );
+
   const handleExport = async (story = false, square = false) => {
     const node = boardRef.current;
     if (!node) {
@@ -170,7 +223,7 @@ export function PicksComposerApp() {
       await exportPicksPng(
         node,
         exportFilenameFromTitle(draft.title, "picks", draft.date),
-        { ...draft, look, purpleFlair },
+        { ...draft, look, purpleFlair, footer },
         story,
         square,
       );
@@ -361,6 +414,56 @@ export function PicksComposerApp() {
               </button>
             </label>
             <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Juice</span>
+              <button
+                type="button"
+                className={draft.showJuice ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showJuice === true}
+                aria-label="Show juice"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showJuice: !current.showJuice,
+                  }))
+                }
+              >
+                {draft.showJuice ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Confidence</span>
+              <button
+                type="button"
+                className={draft.showConfidence ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showConfidence === true}
+                aria-label="Show confidence ticks"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showConfidence: !current.showConfidence,
+                  }))
+                }
+              >
+                {draft.showConfidence ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Result</span>
+              <button
+                type="button"
+                className="sc-chip is-on"
+                aria-label="Toggle ATS or straight up"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    resultMode: current.resultMode === "su" ? "ats" : "su",
+                  }))
+                }
+              >
+                {draft.resultMode === "su" ? "SU" : "ATS"}
+              </button>
+            </label>
+            <label className="sc-field">
               <span className="sc-toolbar__eyebrow">9:16 crop</span>
               <button
                 type="button"
@@ -470,14 +573,18 @@ export function PicksComposerApp() {
                       draft.date,
                     );
                     await downloadExportPack(
-                      () => renderPicksCanvas({ ...draft, look, purpleFlair }, 2),
+                      () =>
+                        renderPicksCanvas(
+                          { ...draft, look, purpleFlair, footer },
+                          2,
+                        ),
                       filename,
                       [
                         {
                           filename: storyFilename(filename),
                           render: () =>
                             renderPicksCanvas(
-                              { ...draft, look, purpleFlair, story: true },
+                              { ...draft, look, purpleFlair, story: true, footer },
                               2,
                             ),
                         },
@@ -517,14 +624,12 @@ export function PicksComposerApp() {
               purpleFlair={purpleFlair}
               exporting={exporting}
               story={storyCrop}
+              footer={footer}
               onBrandChange={(brand) =>
                 setDraft((current) => ({ ...current, brand }))
               }
               onTitleChange={(title) =>
                 setDraft((current) => ({ ...current, title }))
-              }
-              onDateLineChange={(dateLine) =>
-                setDraft((current) => ({ ...current, dateLine }))
               }
               onPickSide={(gameId, side) => {
                 setDraft((current) => ({
@@ -558,6 +663,53 @@ export function PicksComposerApp() {
                   ...current,
                   games: current.games.map((game) =>
                     game.id === gameId ? cyclePicksUnits(game) : game,
+                  ),
+                }));
+              }}
+              onCycleGrade={(gameId) => {
+                setDraft((current) => {
+                  const mode = current.resultMode === "su" ? "su" : "ats";
+                  return {
+                    ...current,
+                    games: current.games.map((game) => {
+                      if (game.id !== gameId) {
+                        return game;
+                      }
+                      const auto = effectivePicksResult(
+                        { ...game, gradeManual: null },
+                        mode,
+                      );
+                      return {
+                        ...game,
+                        gradeManual: cyclePicksGrade(
+                          effectivePicksResult(game, mode),
+                          auto,
+                        ),
+                      };
+                    }),
+                  };
+                });
+              }}
+              onNotesChange={(gameId, notes) => {
+                setDraft((current) => ({
+                  ...current,
+                  games: current.games.map((game) =>
+                    game.id === gameId
+                      ? { ...game, notes: notes.slice(0, 48) }
+                      : game,
+                  ),
+                }));
+              }}
+              onCycleConfidence={(gameId) => {
+                setDraft((current) => ({
+                  ...current,
+                  games: current.games.map((game) =>
+                    game.id === gameId
+                      ? {
+                          ...game,
+                          confidence: cyclePicksConfidence(game.confidence),
+                        }
+                      : game,
                   ),
                 }));
               }}
