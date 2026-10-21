@@ -17,6 +17,7 @@ import { getTeam } from "../standingsComposer/teams";
 import { PhotoFrame } from "./PhotoFrame";
 import { statsFillForTeam } from "./playerOfTheDayLayout";
 import {
+  potdResultOutcome,
   splitPotdTitle,
   type PhotoPan,
   type PotdCard,
@@ -32,6 +33,7 @@ interface PlayerOfTheDayGraphicProps {
   purpleFlair?: boolean;
   photoGrade?: boolean;
   showBa?: boolean;
+  wlColor?: boolean;
   exporting?: boolean;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
@@ -68,6 +70,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
     purpleFlair = false,
     photoGrade = false,
     showBa = false,
+    wlColor = false,
     exporting = false,
     onBrandChange,
     onTitleChange,
@@ -240,7 +243,17 @@ export const PlayerOfTheDayGraphic = forwardRef<
                 </div>
               </div>
               <input
-                className="pod-result"
+                className={[
+                  "pod-result",
+                  wlColor && potdResultOutcome(card.result) === "W"
+                    ? "is-win"
+                    : "",
+                  wlColor && potdResultOutcome(card.result) === "L"
+                    ? "is-loss"
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 value={card.result}
                 maxLength={32}
                 placeholder="SCORE W/L VS OPP"

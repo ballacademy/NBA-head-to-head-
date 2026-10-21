@@ -97,6 +97,7 @@ const loadDraft = (): PotdDraft => {
     date: stored?.date?.trim() ? stored.date : empty.date,
     cards: empty.cards,
     showBa: stored?.showBa === true,
+    wlColor: stored?.wlColor === true,
   };
 };
 
@@ -117,6 +118,7 @@ export function PlayerOfTheDayComposerApp() {
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(false);
+  const [wlColor, setWlColor] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
@@ -146,6 +148,7 @@ export function PlayerOfTheDayComposerApp() {
     setDate(draft.date);
     setCards(applyLeaderboardTotals(draft.cards));
     setShowBa(draft.showBa === true);
+    setWlColor(draft.wlColor === true);
     setHydrated(true);
   }, []);
 
@@ -157,8 +160,8 @@ export function PlayerOfTheDayComposerApp() {
     if (!hydrated) {
       return;
     }
-    writeJson(STORAGE_KEY, { brand, title, date, cards, showBa });
-  }, [brand, title, date, cards, showBa, hydrated]);
+    writeJson(STORAGE_KEY, { brand, title, date, cards, showBa, wlColor });
+  }, [brand, title, date, cards, showBa, wlColor, hydrated]);
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
@@ -180,7 +183,7 @@ export function PlayerOfTheDayComposerApp() {
       await exportPlayerOfTheDayPng(
         node,
         filename ?? exportFilenameFromTitle(title, "player-of-the-day", date),
-        { brand, title, date, cards, look, purpleFlair, photoGrade, showBa },
+        { brand, title, date, cards, look, purpleFlair, photoGrade, showBa, wlColor },
         story,
         square,
       );
@@ -221,6 +224,8 @@ export function PlayerOfTheDayComposerApp() {
     setTitle(next.title);
     setDate(next.date);
     setCards(next.cards);
+    setShowBa(next.showBa === true);
+    setWlColor(next.wlColor === true);
     setActiveIndex(null);
     setStatus("Blank post.");
   };
@@ -482,19 +487,32 @@ export function PlayerOfTheDayComposerApp() {
         <ComposerLookToggle look={look} onChange={setLook} />
         <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
         <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">W/L color</span>
+          <button
+            type="button"
+            className={wlColor ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={wlColor}
+            aria-label="Color W/L on the score strip"
+            onClick={() => setWlColor((current) => !current)}
+          >
+            {wlColor ? "On" : "Off"}
+          </button>
+        </label>
         <BaMarkToggle on={showBa} onChange={setShowBa} />
           </>
         }
         persist={
         <ComposerSaves
           storageKey={SAVES_KEY}
-          board={{ brand, title, date, cards, showBa }}
+          board={{ brand, title, date, cards, showBa, wlColor }}
           onLoad={(next) => {
             setBrand(next.brand);
             setTitle(next.title);
             setDate(next.date);
             setCards(next.cards);
             setShowBa(next.showBa === true);
+            setWlColor(next.wlColor === true);
             setStatus("Loaded named graphic.");
           }}
         />
@@ -587,6 +605,7 @@ export function PlayerOfTheDayComposerApp() {
                           purpleFlair,
                           photoGrade,
                           showBa,
+                          wlColor,
                         },
                         2,
                       ),
@@ -645,6 +664,7 @@ export function PlayerOfTheDayComposerApp() {
             purpleFlair={purpleFlair}
             photoGrade={photoGrade}
             showBa={showBa}
+            wlColor={wlColor}
             exporting={exporting}
             onBrandChange={setBrand}
             onTitleChange={setTitle}

@@ -62,6 +62,7 @@ import {
   POTD_TITLE_TRACK,
   photoRotate,
   photoZoom,
+  potdResultFill,
   splitPotdTitle,
   type PotdCard,
 } from "./playerOfTheDayState";
@@ -145,6 +146,7 @@ export interface PlayerOfTheDayRenderInput {
   purpleFlair?: boolean;
   photoGrade?: boolean;
   showBa?: boolean;
+  wlColor?: boolean;
 }
 
 export const renderPlayerOfTheDayCanvas = async (
@@ -415,15 +417,23 @@ export const renderPlayerOfTheDayCanvas = async (
     context.globalAlpha = 0.92;
     context.fillRect(x, resultY, w, resultH);
     context.globalAlpha = 1;
-    context.fillStyle = "#fff";
+    const resultColor =
+      potdResultFill(card.result, input.wlColor === true) ?? "#fff";
     context.font = `900 ${20 * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(
-      (card.result || "").toUpperCase(),
-      x + w / 2,
-      resultY + resultH / 2,
-    );
+    const resultText = (card.result || "").toUpperCase();
+    const resultX = x + w / 2;
+    const resultMid = resultY + resultH / 2;
+    if (resultColor === "#fff") {
+      context.fillStyle = resultColor;
+      context.fillText(resultText, resultX, resultMid);
+    } else {
+      withShadow(context, s, () => {
+        context.fillStyle = resultColor;
+        context.fillText(resultText, resultX, resultMid);
+      });
+    }
     paintPotdPlateBorder(context, x, resultY, w, resultH, s, input.look);
 
     context.fillStyle = "#0a0a0a";

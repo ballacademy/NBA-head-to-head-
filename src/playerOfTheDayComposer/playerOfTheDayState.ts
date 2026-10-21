@@ -25,6 +25,31 @@ export const POTD_TITLE_TRACK = 0.02;
 export const POTD_CARD_COUNT = 2;
 export const POTD_FILL_COUNT = 2;
 export const POTD_PICKER_LIMIT = 8;
+/** Light mint/coral so W/L still reads on dark team-color bars. */
+export const POTD_WL_WIN = "#7EFF96";
+export const POTD_WL_LOSS = "#FF7E7E";
+
+export const potdResultOutcome = (result: string): "W" | "L" | null => {
+  const token = result
+    .toUpperCase()
+    .split(/\s+/)
+    .find((part) => part === "W" || part === "L");
+  return token === "W" || token === "L" ? token : null;
+};
+
+export const potdResultFill = (result: string, on: boolean) => {
+  if (!on) {
+    return null;
+  }
+  const outcome = potdResultOutcome(result);
+  if (outcome === "W") {
+    return POTD_WL_WIN;
+  }
+  if (outcome === "L") {
+    return POTD_WL_LOSS;
+  }
+  return null;
+};
 
 export const potdNightHeading = (
   date: string,
@@ -168,6 +193,7 @@ export interface PotdDraft {
   date: string;
   cards: PotdCard[];
   showBa?: boolean;
+  wlColor?: boolean;
 }
 
 export const splitPlayerName = (name: string) => {
@@ -429,4 +455,5 @@ export const defaultPotdDraft = (): PotdDraft => ({
   title: DEFAULT_POTD_TITLE,
   date: todayDateLabel(),
   cards: createEmptyCards(),
+  wlColor: false,
 });

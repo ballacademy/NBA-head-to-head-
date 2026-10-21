@@ -21,6 +21,8 @@ import {
   DEFAULT_PHOTO_ZOOM,
   DEFAULT_POTD_TITLE,
   MAX_PHOTO_ZOOM,
+  POTD_WL_LOSS,
+  POTD_WL_WIN,
   applyPlayerPick,
   blankStats,
   clampPan,
@@ -31,6 +33,8 @@ import {
   fillPotdFromStandouts,
   photoRotate,
   photoZoom,
+  potdResultFill,
+  potdResultOutcome,
   potdNightHeading,
   potdPickerSuggestions,
   rankPotdNightBest,
@@ -61,6 +65,18 @@ describe("player of the day state", () => {
     expect(exportPotdFilename(DEFAULT_POTD_TITLE)).toBe(
       "player-of-the-day.png",
     );
+  });
+
+  it("colors the score-strip lockup green for a win and red for a loss", () => {
+    expect(potdResultOutcome("113-121 L vs DET")).toBe("L");
+    expect(potdResultOutcome("106-100 W vs NYK")).toBe("W");
+    expect(potdResultOutcome("128-110 W VS MIN")).toBe("W");
+    expect(potdResultOutcome("")).toBeNull();
+    expect(potdResultOutcome("VS DET")).toBeNull();
+    expect(potdResultFill("106-100 W vs NYK", false)).toBeNull();
+    expect(potdResultFill("106-100 W vs NYK", true)).toBe(POTD_WL_WIN);
+    expect(potdResultFill("113-121 L vs DET", true)).toBe(POTD_WL_LOSS);
+    expect(potdResultFill("no result yet", true)).toBeNull();
   });
 
   it("auto-fills headshot, team, stats, and result from the latest game", () => {

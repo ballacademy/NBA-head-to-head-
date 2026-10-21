@@ -428,6 +428,22 @@ describe("composer chrome", () => {
     expect(potdApp).toContain("potdPickerSuggestions");
     expect(potdApp).toContain("fetchNightBoxAppearances");
     expect(potdApp).not.toContain("nightStandoutPickerRows(night.standouts)");
+    expect(potdApp).toContain("W/L color");
+    expect(potdApp).toContain('aria-label="Color W/L on the score strip"');
+    expect(potdApp).toContain("wlColor={wlColor}");
+    expect(potdApp).toContain("showBa, wlColor");
+    const potdGraphic = readFileSync(
+      join(root, "playerOfTheDayComposer/PlayerOfTheDayGraphic.tsx"),
+      "utf8",
+    );
+    const potdCanvas = readFileSync(
+      join(root, "playerOfTheDayComposer/renderPlayerOfTheDayCanvas.ts"),
+      "utf8",
+    );
+    expect(potdGraphic).toContain('? "is-win"');
+    expect(potdGraphic).toContain('? "is-loss"');
+    expect(potdCanvas).toContain("potdResultFill");
+    expect(potdCanvas).toContain("wlColor?: boolean");
     expect(pyramidApp).toContain("PYRAMID_AWARD_GROUPS");
     expect(appMain).toContain("applyComposerFavicon");
     const rankedApp = readFileSync(
