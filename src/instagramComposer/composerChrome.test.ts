@@ -828,13 +828,17 @@ describe("composer chrome", () => {
     expect(picksGraphic).toContain("pk-logo");
     expect(picksGraphic).toContain("pk-check");
     expect(picksGraphic).toContain("pk-line");
+    expect(picksGraphic).toContain("picksShortName");
     expect(picksApp).toContain("TeamPicker");
     expect(picksApp).toContain("mergePicksFill");
     expect(picksApp).toContain("setPicksTeam");
+    expect(picksApp).toContain("showTotal");
     expect(picksCss).toContain(".pk-check.is-on");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
+    expect(picksCss).toContain(".pk-title-plate");
     expect(picksCanvas).toContain("paintCheck");
-    expect(picksCanvas).toContain("formatPicksGameLine");
+    expect(picksCanvas).toContain("picksLineForSide");
+    expect(picksCanvas).toContain("picksDatePill");
     const coverNameFade = readFileSync(
       join(root, "instagramComposer/PlayerNameFade.tsx"),
       "utf8",

@@ -12,15 +12,27 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { getTeamColors } from "../lib/teamColors";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
-  formatPicksGameLine,
+  formatPicksLine,
+  formatPicksTotal,
   parsePicksLineInput,
+  picksConferenceGroups,
   picksFillLayout,
+  picksJuiceOrMove,
   picksLineForSide,
+  picksMl,
+  picksPickCount,
+  picksRecordLine,
+  picksShortName,
   splitPicksTitle,
   type PicksDraft,
   type PicksGame,
@@ -37,10 +49,12 @@ interface PicksGraphicProps {
   onTitleChange: (value: string) => void;
   onDateLineChange: (value: string) => void;
   onPickSide: (gameId: string, side: PicksSide) => void;
-  onLineChange: (gameId: string, line: number | null) => void;
+  onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
   onPickTeam: (gameId: string, side: PicksSide) => void;
   onRemoveGame: (gameId: string) => void;
   onRefillGame: (gameId: string) => void;
+  onLockGame: (gameId: string) => void;
+  onCycleUnits: (gameId: string) => void;
 }
 
 export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
@@ -59,13 +73,21 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
       onPickTeam,
       onRemoveGame,
       onRefillGame,
+      onLockGame,
+      onCycleUnits,
     },
     ref,
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
     const titleLines = splitPicksTitle(draft.title);
-    const fill = picksFillLayout(draft.games.length);
+    const groups = picksConferenceGroups(draft.games);
+    const fill = picksFillLayout(
+      draft.games.length,
+      story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
+      groups.length,
+    );
+    const pickCount = picksPickCount(draft.games);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -114,8 +136,11 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             ["--pk-logo" as string]: String(fill.logo),
             ["--pk-line" as string]: String(fill.line),
             ["--pk-name" as string]: String(fill.name),
+            ["--pk-meta" as string]: String(fill.meta),
             ["--pk-check-size" as string]: String(fill.check),
             ["--pk-gap" as string]: String(fill.gap),
+            ["--pk-row-h" as string]: String(fill.rowH),
+            ["--pk-group-h" as string]: String(fill.groupH),
           } as CSSProperties
         }
         aria-label="Instagram daily spread picks poster"
@@ -128,46 +153,73 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             aria-hidden="true"
           />
         ) : null}
-        {draft.showBa ? null : (
-          <input
-            className="pk-brand"
-            value={draft.brand}
-            maxLength={24}
-            spellCheck={false}
-            aria-label="Brand label"
-            onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
-          />
-        )}
-        <div className="pk-title-block">
-          <ComposerTitleField
-            value={draft.title}
-            lines={titleLines}
-            ariaLabel="Picks title"
-            inputClassName="pk-title-input"
-            lineClassName="pk-title-line"
-            onChange={onTitleChange}
-          />
-        </div>
-        <input
-          className="pk-date"
-          value={draft.dateLine}
-          maxLength={40}
-          spellCheck={false}
-          aria-label="Picks date"
-          onChange={(event) => onDateLineChange(event.target.value.slice(0, 40))}
-        />
+        <header className="pk-header">
+          {draft.showBa ? (
+            <div className="pk-brand pk-brand--spacer" aria-hidden="true" />
+          ) : (
+            <input
+              className="pk-brand"
+              value={draft.brand}
+              maxLength={24}
+              spellCheck={false}
+              aria-label="Brand label"
+              onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
+            />
+          )}
+          <div className="pk-title-plate">
+            <div className="pk-title-block">
+              <ComposerTitleField
+                value={draft.title}
+                lines={titleLines}
+                ariaLabel="Picks title"
+                inputClassName="pk-title-input"
+                lineClassName="pk-title-line"
+                onChange={onTitleChange}
+              />
+            </div>
+          </div>
+          <div className="pk-date-notch">
+            <input
+              className="pk-date"
+              value={draft.dateLine}
+              maxLength={40}
+              spellCheck={false}
+              aria-label="Picks date"
+              size={Math.max(12, draft.dateLine.trim().length + 1)}
+              onChange={(event) => onDateLineChange(event.target.value.slice(0, 40))}
+            />
+            {pickCount ? (
+              <span className="pk-date-count">
+                {" · "}
+                {pickCount} PICK{pickCount === 1 ? "" : "S"}
+              </span>
+            ) : null}
+          </div>
+        </header>
         <div className="pk-list">
           {draft.games.length ? (
-            draft.games.map((game) => (
-              <PicksRow
-                key={game.id}
-                game={game}
-                onPickSide={onPickSide}
-                onLineChange={onLineChange}
-                onPickTeam={onPickTeam}
-                onRemoveGame={onRemoveGame}
-                onRefillGame={onRefillGame}
-              />
+            groups.map((group) => (
+              <section key={group.key} className="pk-group">
+                {fill.groupH ? (
+                  <p className="pk-group__label">{group.label}</p>
+                ) : null}
+                {group.games.map((game) => (
+                  <PicksRow
+                    key={game.id}
+                    game={game}
+                    showTotal={draft.showTotal === true}
+                    showMoneyline={draft.showMoneyline === true}
+                    showUnits={draft.showUnits === true}
+                    onPickSide={onPickSide}
+                    onLineChange={onLineChange}
+                    onPickTeam={onPickTeam}
+                    onRemoveGame={onRemoveGame}
+                    onRefillGame={onRefillGame}
+                    onLockGame={onLockGame}
+                    onCycleUnits={onCycleUnits}
+                  />
+                ))}
+              </section>
             ))
           ) : (
             <p className="pk-empty">Fill tonight’s slate</p>
@@ -180,33 +232,70 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
 
 function PicksRow({
   game,
+  showTotal,
+  showMoneyline,
+  showUnits,
   onPickSide,
   onLineChange,
   onPickTeam,
   onRemoveGame,
   onRefillGame,
+  onLockGame,
+  onCycleUnits,
 }: {
   game: PicksGame;
+  showTotal: boolean;
+  showMoneyline: boolean;
+  showUnits: boolean;
   onPickSide: (gameId: string, side: PicksSide) => void;
-  onLineChange: (gameId: string, line: number | null) => void;
+  onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
   onPickTeam: (gameId: string, side: PicksSide) => void;
   onRemoveGame: (gameId: string) => void;
   onRefillGame: (gameId: string) => void;
+  onLockGame: (gameId: string) => void;
+  onCycleUnits: (gameId: string) => void;
 }) {
   const away = getTeam(game.awayId);
   const home = getTeam(game.homeId);
+  const awayColor = getTeamColors(game.awayId).primary;
+  const homeColor = getTeamColors(game.homeId).primary;
   return (
-    <div className="pk-row">
-      <PicksSide
+    <div
+      className={[
+        "pk-row",
+        game.pick === "away" ? "is-away-pick" : "",
+        game.pick === "home" ? "is-home-pick" : "",
+        game.locked ? "is-lock" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={
+        {
+          ["--pk-away" as string]: awayColor,
+          ["--pk-home" as string]: homeColor,
+        } as CSSProperties
+      }
+    >
+      <PicksSideBlock
         side="away"
         teamId={game.awayId}
+        record={picksRecordLine(game.awayRecord, game.awayLast10)}
         picked={game.pick === "away"}
+        dimmed={game.pick === "home"}
         gameId={game.id}
+        units={showUnits && game.pick === "away" ? game.units || "1u" : ""}
         onPickTeam={onPickTeam}
+        onCycleUnits={onCycleUnits}
       />
       <button
         type="button"
-        className={game.pick === "away" ? "pk-check is-on" : "pk-check"}
+        className={[
+          "pk-check",
+          game.pick === "away" ? "is-on" : "",
+          game.locked && game.pick === "away" ? "is-lock" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         aria-pressed={game.pick === "away"}
         aria-label={
           game.pick === "away"
@@ -215,12 +304,23 @@ function PicksRow({
         }
         onClick={() => onPickSide(game.id, "away")}
       >
-        {game.pick === "away" ? "✓" : ""}
+        {game.pick === "away" ? (game.locked ? "★" : "✓") : ""}
       </button>
-      <LineField game={game} onLineChange={onLineChange} />
+      <OddsBlock
+        game={game}
+        showTotal={showTotal}
+        showMoneyline={showMoneyline}
+        onLineChange={onLineChange}
+      />
       <button
         type="button"
-        className={game.pick === "home" ? "pk-check is-on" : "pk-check"}
+        className={[
+          "pk-check",
+          game.pick === "home" ? "is-on" : "",
+          game.locked && game.pick === "home" ? "is-lock" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         aria-pressed={game.pick === "home"}
         aria-label={
           game.pick === "home"
@@ -229,16 +329,30 @@ function PicksRow({
         }
         onClick={() => onPickSide(game.id, "home")}
       >
-        {game.pick === "home" ? "✓" : ""}
+        {game.pick === "home" ? (game.locked ? "★" : "✓") : ""}
       </button>
-      <PicksSide
+      <PicksSideBlock
         side="home"
         teamId={game.homeId}
+        record={picksRecordLine(game.homeRecord, game.homeLast10)}
         picked={game.pick === "home"}
+        dimmed={game.pick === "away"}
         gameId={game.id}
+        units={showUnits && game.pick === "home" ? game.units || "1u" : ""}
         onPickTeam={onPickTeam}
+        onCycleUnits={onCycleUnits}
       />
       <div className="pk-row__tools">
+        <button
+          type="button"
+          className={game.locked ? "pk-lock is-on" : "pk-lock"}
+          aria-pressed={game.locked === true}
+          aria-label={game.locked ? "Clear lock" : "Set lock"}
+          title="Lock this pick"
+          onClick={() => onLockGame(game.id)}
+        >
+          ★
+        </button>
         {game.eventId ? (
           <button
             type="button"
@@ -261,22 +375,40 @@ function PicksRow({
   );
 }
 
-function PicksSide({
+function PicksSideBlock({
   side,
   teamId,
+  record,
   picked,
+  dimmed,
   gameId,
+  units,
   onPickTeam,
+  onCycleUnits,
 }: {
   side: PicksSide;
   teamId: string;
+  record: string;
   picked: boolean;
+  dimmed: boolean;
   gameId: string;
+  units: string;
   onPickTeam: (gameId: string, side: PicksSide) => void;
+  onCycleUnits: (gameId: string) => void;
 }) {
   const team = getTeam(teamId);
   return (
-    <div className={`pk-side is-${side}`}>
+    <div
+      className={[
+        "pk-side",
+        `is-${side}`,
+        picked ? "is-on" : "",
+        dimmed ? "is-dim" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {side === "home" ? <span className="pk-home-mark">@</span> : null}
       <button
         type="button"
         className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]
@@ -286,25 +418,85 @@ function PicksSide({
         onClick={() => onPickTeam(gameId, side)}
       >
         {team ? (
-          <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
+          <TeamLogo src={team.logoSrc} label={team.id} shadow={picked ? 10 : 0} />
         ) : (
           "+"
         )}
       </button>
-      <span className="pk-name">{team?.id ?? "TEAM"}</span>
+      <span className="pk-name">{picksShortName(teamId)}</span>
+      {record ? <span className="pk-record">{record}</span> : null}
+      {units ? (
+        <button
+          type="button"
+          className="pk-units"
+          aria-label="Cycle units"
+          onClick={() => onCycleUnits(gameId)}
+        >
+          {units}
+        </button>
+      ) : null}
     </div>
   );
 }
 
-function LineField({
+function OddsBlock({
   game,
+  showTotal,
+  showMoneyline,
   onLineChange,
 }: {
   game: PicksGame;
-  onLineChange: (gameId: string, line: number | null) => void;
+  showTotal: boolean;
+  showMoneyline: boolean;
+  onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
 }) {
-  const display = formatPicksGameLine(game);
-  const shown = picksLineForSide(game.line, game.pick);
+  const total = showTotal ? formatPicksTotal(game.total) : "";
+  return (
+    <div className="pk-odds">
+      <div className="pk-odds__row">
+        <TicketField
+          game={game}
+          side="away"
+          showMoneyline={showMoneyline}
+          onLineChange={onLineChange}
+        />
+        <span className="pk-odds__pipe" aria-hidden="true">
+          |
+        </span>
+        <TicketField
+          game={game}
+          side="home"
+          showMoneyline={showMoneyline}
+          onLineChange={onLineChange}
+        />
+      </div>
+      {total ? <p className="pk-ou">{total}</p> : null}
+      <p className="pk-tip-row">
+        {game.tip ? <span className="pk-tip">{game.tip}</span> : null}
+        {game.tv ? <span className="pk-tv">{game.tv}</span> : null}
+      </p>
+    </div>
+  );
+}
+
+function TicketField({
+  game,
+  side,
+  showMoneyline,
+  onLineChange,
+}: {
+  game: PicksGame;
+  side: PicksSide;
+  showMoneyline: boolean;
+  onLineChange: (gameId: string, side: PicksSide, line: number | null) => void;
+}) {
+  const display = formatPicksLine(picksLineForSide(game.line, side));
+  const shown = picksLineForSide(game.line, side);
+  const abbrev = side === "away" ? game.awayId : game.homeId;
+  const juice = picksJuiceOrMove(game, side);
+  const ml = showMoneyline ? picksMl(game, side) : "";
+  const picked = game.pick === side;
+  const dimmed = Boolean(game.pick && game.pick !== side);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(display);
 
@@ -316,7 +508,7 @@ function LineField({
       return;
     }
     if (parsed !== shown) {
-      onLineChange(game.id, parsed);
+      onLineChange(game.id, side, parsed);
     }
     setEditing(false);
   };
@@ -336,21 +528,34 @@ function LineField({
   };
 
   return (
-    <div className="pk-line-wrap">
-      <input
-        className="pk-line"
-        value={editing ? draft : display}
-        placeholder="—"
-        spellCheck={false}
-        aria-label="Spread"
-        onFocus={() => {
-          setDraft(display);
-          setEditing(true);
-        }}
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={(event) => commit(event.target.value)}
-        onKeyDown={onKeyDown}
-      />
+    <div
+      className={[
+        "pk-ticket",
+        picked ? "is-on" : "",
+        dimmed ? "is-dim" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <div className="pk-ticket__row">
+        {abbrev ? <span className="pk-ticket__id">{abbrev}</span> : null}
+        <input
+          className="pk-line"
+          value={editing ? draft : display}
+          placeholder="—"
+          spellCheck={false}
+          aria-label={`${side} spread`}
+          onFocus={() => {
+            setDraft(display);
+            setEditing(true);
+          }}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={(event) => commit(event.target.value)}
+          onKeyDown={onKeyDown}
+        />
+        {ml ? <span className="pk-ticket__ml">{ml}</span> : null}
+      </div>
+      {juice ? <span className="pk-ticket__juice">{juice}</span> : null}
     </div>
   );
 }

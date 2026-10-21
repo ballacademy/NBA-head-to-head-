@@ -17,11 +17,33 @@ export { DEFAULT_BRAND };
 export const PICKS_SCOREBOARD_URL = (iso: string) =>
   `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
 
-export const PICKS_LIST_TOP = 220;
-export const PICKS_LIST_BOTTOM = 32;
+export const PICKS_LIST_TOP = 198;
+export const PICKS_LIST_BOTTOM = 22;
+export const PICKS_GROUP_H = 18;
+export const PICKS_PLATE_X = 56;
+export const PICKS_PLATE_Y = 42;
+export const PICKS_PLATE_H = 110;
+export const PICKS_TITLE_SIZE = 50;
+export const PICKS_NOTCH_H = 34;
 export const DEFAULT_PICKS_TITLE = "PICKS";
-export const PICKS_TITLE_TRACK = 0.04;
+export const PICKS_TITLE_TRACK = 0.02;
 export const PICKS_CHECK_FILL = "#1B8F5A";
+export const PICKS_LOCK_FILL = "#E8B923";
+export const PICKS_UNITS = ["0.5u", "1u", "2u", "3u"] as const;
+export const NATIONAL_TV = new Set([
+  "ESPN",
+  "ESPN2",
+  "TNT",
+  "ABC",
+  "NBA TV",
+  "NBATV",
+  "NBA",
+  "PEACOCK",
+  "AMAZON",
+  "PRIME",
+  "MAX",
+  "NBC",
+]);
 
 export type PicksSide = "away" | "home";
 
@@ -36,6 +58,19 @@ export interface PicksGame {
   lineEdited?: boolean;
   teamsEdited?: boolean;
   custom?: boolean;
+  tip?: string;
+  awayRecord?: string;
+  homeRecord?: string;
+  awayLast10?: string;
+  homeLast10?: string;
+  total?: number | null;
+  awayMl?: string;
+  homeMl?: string;
+  awayJuice?: string;
+  homeJuice?: string;
+  tv?: string;
+  units?: string;
+  locked?: boolean;
 }
 
 export interface PicksDraft {
@@ -45,6 +80,9 @@ export interface PicksDraft {
   dateLine: string;
   games: PicksGame[];
   showBa?: boolean;
+  showTotal?: boolean;
+  showMoneyline?: boolean;
+  showUnits?: boolean;
 }
 
 const rec = (value: unknown) =>
@@ -155,6 +193,84 @@ export const awayLineFromDisplayed = (
   return displayed;
 };
 
+export const formatPicksSideTicket = (
+  game: PicksGame,
+  side: PicksSide,
+) => {
+  const id = side === "away" ? game.awayId : game.homeId;
+  const line = formatPicksLine(picksLineForSide(game.line, side));
+  if (!id && !line) {
+    return "";
+  }
+  if (!line) {
+    return id;
+  }
+  if (!id) {
+    return line;
+  }
+  return `${id} ${line}`;
+};
+
+export const picksPickCount = (games: PicksGame[]) =>
+  games.filter((game) => game.pick).length;
+
+export const picksDatePill = (dateLine: string, picks: number) => {
+  const date = dateLine.trim().toUpperCase();
+  if (!picks) {
+    return date;
+  }
+  return `${date}  ·  ${picks} PICK${picks === 1 ? "" : "S"}`;
+};
+
+export const formatPicksTotal = (total?: number | null) => {
+  if (total == null || !Number.isFinite(total)) {
+    return "";
+  }
+  return `O/U ${total}`;
+};
+
+export const picksMl = (game: PicksGame, side: PicksSide) =>
+  (side === "away" ? game.awayMl : game.homeMl) || "";
+
+export const picksJuiceOrMove = (game: PicksGame, side: PicksSide) => {
+  if (game.lineEdited) {
+    return "↗";
+  }
+  return (side === "away" ? game.awayJuice : game.homeJuice) || "";
+};
+
+export const nextPicksUnits = (current?: string) => {
+  const index = PICKS_UNITS.indexOf(
+    (current as (typeof PICKS_UNITS)[number]) ?? "1u",
+  );
+  const from = index >= 0 ? index : 0;
+  return PICKS_UNITS[(from + 1) % PICKS_UNITS.length];
+};
+
+export const picksShortName = (teamId: string) => {
+  const team = getTeam(teamId);
+  if (!team) {
+    return teamId || "TEAM";
+  }
+  const short = team.shortName.toUpperCase();
+  if (short === "TRAIL BLAZERS") {
+    return "BLAZERS";
+  }
+  if (short === "TIMBERWOLVES") {
+    return "T-WOLVES";
+  }
+  return short;
+};
+
+export const picksRecordLine = (record?: string, last10?: string) => {
+  const rec = (record ?? "").trim();
+  const ten = (last10 ?? "").trim();
+  if (rec && ten) {
+    return `${rec}  L10 ${ten}`;
+  }
+  return rec;
+};
+
 export const parsePicksLineInput = (raw: string): number | null | undefined => {
   const token = raw
     .trim()
@@ -245,6 +361,117 @@ export const parseEspnAwayLine = (
   return null;
 };
 
+const parseAmericanOdds = (value: unknown): string => {
+  const token = textOf(value);
+  if (/^[+-]\d+$/.test(token)) {
+    return token;
+  }
+  return "";
+};
+
+const closeOdds = (side: unknown): string => {
+  const item = rec(side);
+  const close = rec(item?.close);
+  return parseAmericanOdds(close?.odds) || parseAmericanOdds(item?.odds);
+};
+
+const firstOdds = (competition: unknown) => {
+  const odds = rec(competition)?.odds;
+  return rec(Array.isArray(odds) ? odds[0] : null);
+};
+
+export const parseEspnTotal = (competition: unknown): number | null =>
+  finiteNumber(firstOdds(competition)?.overUnder);
+
+export const parseEspnMoneyline = (
+  competition: unknown,
+  side: PicksSide,
+): string => {
+  const money = rec(firstOdds(competition)?.moneyline);
+  return closeOdds(side === "away" ? money?.away : money?.home);
+};
+
+export const parseEspnJuice = (
+  competition: unknown,
+  side: PicksSide,
+): string => {
+  const spread = rec(firstOdds(competition)?.pointSpread);
+  return closeOdds(side === "away" ? spread?.away : spread?.home);
+};
+
+export const parseEspnRecord = (
+  competitor: unknown,
+  kind: "total" | "lastten" | "home" | "road",
+): string => {
+  const records = Array.isArray(rec(competitor)?.records)
+    ? (rec(competitor)!.records as unknown[])
+    : [];
+  const match = records.find((row) => {
+    const item = rec(row);
+    const type = textOf(item?.type).toLowerCase();
+    const name = textOf(item?.name).toLowerCase();
+    if (kind === "lastten") {
+      return type === "lastten" || name.includes("last 10") || name.includes("last ten");
+    }
+    return type === kind || name === kind;
+  });
+  return textOf(rec(match)?.summary);
+};
+
+export const parseEspnTip = (event: unknown, competition: unknown): string => {
+  const status = rec(rec(event)?.status)?.type ?? rec(rec(competition)?.status)?.type;
+  const shortDetail = textOf(rec(status)?.shortDetail) || textOf(rec(status)?.detail);
+  const cleaned = shortDetail
+    .replace(/^\d{1,2}\/\d{1,2}\s*[-–]\s*/u, "")
+    .replace(/\s*(EDT|EST|ET)\s*$/i, " ET")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+  if (/\d/.test(cleaned) && /AM|PM/i.test(cleaned)) {
+    return cleaned.replace(/\s+/g, " ");
+  }
+  const iso = textOf(rec(event)?.date) || textOf(rec(competition)?.date);
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })
+    .format(date)
+    .toUpperCase()
+    .replace(" ", "")
+    .replace(/([AP]M)/, " $1 ET");
+};
+
+export const parseEspnNationalTv = (competition: unknown): string => {
+  const names: string[] = [];
+  const item = rec(competition);
+  const broadcasts = Array.isArray(item?.broadcasts) ? item.broadcasts : [];
+  broadcasts.forEach((row) => {
+    const list = rec(row)?.names;
+    if (Array.isArray(list)) {
+      list.forEach((name) => names.push(textOf(name)));
+    }
+  });
+  const geo = Array.isArray(item?.geoBroadcasts) ? item.geoBroadcasts : [];
+  geo.forEach((row) => {
+    names.push(textOf(rec(rec(row)?.media)?.shortName));
+  });
+  const hit = names.find((name) => NATIONAL_TV.has(name.toUpperCase().replace(/\s+/g, " ")));
+  if (!hit) {
+    return "";
+  }
+  const token = hit.toUpperCase();
+  if (token === "NBATV" || token === "NBA") {
+    return "NBA TV";
+  }
+  return token;
+};
+
 export const parsePicksScoreboard = (
   payload: unknown,
   slateDate: string,
@@ -262,6 +489,8 @@ export const parsePicksScoreboard = (
       : [];
     let homeId = "";
     let awayId = "";
+    let homeRow: unknown = null;
+    let awayRow: unknown = null;
     competitors.forEach((row) => {
       const side = rec(row);
       const team = rec(side?.team);
@@ -271,8 +500,10 @@ export const parsePicksScoreboard = (
       }
       if (textOf(side?.homeAway) === "home") {
         homeId = id;
+        homeRow = row;
       } else {
         awayId = id;
+        awayRow = row;
       }
     });
     if (!homeId || !awayId) {
@@ -285,6 +516,18 @@ export const parsePicksScoreboard = (
       homeId,
       line: parseEspnAwayLine(competition, awayId, homeId),
       pick: null,
+      tip: parseEspnTip(event, competition),
+      awayRecord: parseEspnRecord(awayRow, "total"),
+      homeRecord: parseEspnRecord(homeRow, "total"),
+      awayLast10: parseEspnRecord(awayRow, "lastten"),
+      homeLast10: parseEspnRecord(homeRow, "lastten"),
+      total: parseEspnTotal(competition),
+      awayMl: parseEspnMoneyline(competition, "away"),
+      homeMl: parseEspnMoneyline(competition, "home"),
+      awayJuice: parseEspnJuice(competition, "away"),
+      homeJuice: parseEspnJuice(competition, "home"),
+      tv: parseEspnNationalTv(competition),
+      units: "1u",
     });
   });
   void slateDate;
@@ -315,6 +558,7 @@ export const emptyPicksGame = (): PicksGame => ({
   line: null,
   pick: null,
   custom: true,
+  units: "1u",
 });
 
 export const isPicksRowEdited = (game: PicksGame) =>
@@ -323,10 +567,14 @@ export const isPicksRowEdited = (game: PicksGame) =>
   game.teamsEdited === true ||
   !game.eventId;
 
-export const togglePicksPick = (game: PicksGame, side: PicksSide): PicksGame => ({
-  ...game,
-  pick: game.pick === side ? null : side,
-});
+export const togglePicksPick = (game: PicksGame, side: PicksSide): PicksGame => {
+  const pick = game.pick === side ? null : side;
+  return {
+    ...game,
+    pick,
+    locked: pick ? game.locked : false,
+  };
+};
 
 export const setPicksLine = (game: PicksGame, line: number | null): PicksGame => ({
   ...game,
@@ -334,12 +582,24 @@ export const setPicksLine = (game: PicksGame, line: number | null): PicksGame =>
   lineEdited: true,
 });
 
-/** Commit a typed number for the side currently on the row (checked, else away). */
+/** Commit a typed number for that side (the ticket you clicked, else the pick). */
 export const setPicksDisplayedLine = (
   game: PicksGame,
   displayed: number | null,
+  side?: PicksSide | null,
 ): PicksGame =>
-  setPicksLine(game, awayLineFromDisplayed(displayed, game.pick));
+  setPicksLine(game, awayLineFromDisplayed(displayed, side ?? game.pick));
+
+export const setPicksLock = (games: PicksGame[], gameId: string): PicksGame[] =>
+  games.map((game) => ({
+    ...game,
+    locked: game.id === gameId ? !game.locked : false,
+  }));
+
+export const cyclePicksUnits = (game: PicksGame): PicksGame => ({
+  ...game,
+  units: nextPicksUnits(game.units),
+});
 
 export const setPicksTeam = (
   game: PicksGame,
@@ -384,6 +644,8 @@ const mergePicksRow = (prev: PicksGame, incoming: PicksGame): PicksGame => {
     teamsEdited: prev.teamsEdited === true,
     custom: prev.custom === true,
     eventId: incoming.eventId || prev.eventId,
+    locked: prev.locked === true,
+    units: prev.units || incoming.units || "1u",
   };
 };
 
@@ -439,6 +701,8 @@ export const refillPicksRow = (
     ...match,
     id: game.id,
     pick,
+    locked: game.locked === true && Boolean(pick),
+    units: game.units || match.units,
   };
 };
 
@@ -451,6 +715,9 @@ export const defaultPicksDraft = (now = new Date()): PicksDraft => {
     dateLine: picksDateLine(date),
     games: [],
     showBa: false,
+    showTotal: false,
+    showMoneyline: false,
+    showUnits: false,
   };
 };
 
@@ -484,6 +751,19 @@ const normalizeGame = (value: unknown): PicksGame | null => {
     lineEdited: row.lineEdited === true,
     teamsEdited: row.teamsEdited === true,
     custom: row.custom === true || !textOf(row.eventId),
+    tip: textOf(row.tip),
+    awayRecord: textOf(row.awayRecord),
+    homeRecord: textOf(row.homeRecord),
+    awayLast10: textOf(row.awayLast10),
+    homeLast10: textOf(row.homeLast10),
+    total: row.total == null || row.total === "" ? null : finiteNumber(row.total),
+    awayMl: parseAmericanOdds(row.awayMl),
+    homeMl: parseAmericanOdds(row.homeMl),
+    awayJuice: parseAmericanOdds(row.awayJuice),
+    homeJuice: parseAmericanOdds(row.homeJuice),
+    tv: textOf(row.tv),
+    units: textOf(row.units) || "1u",
+    locked: row.locked === true,
   };
 };
 
@@ -504,18 +784,46 @@ export const normalizePicksDraft = (
       (draft.dateLine ?? "").trim() || picksDateLine(date),
     games,
     showBa: draft.showBa === true,
+    showTotal: draft.showTotal === true,
+    showMoneyline: draft.showMoneyline === true,
+    showUnits: draft.showUnits === true,
   };
+};
+
+export const picksConferenceGroups = (games: PicksGame[]) => {
+  const east: PicksGame[] = [];
+  const west: PicksGame[] = [];
+  const more: PicksGame[] = [];
+  games.forEach((game) => {
+    const home = getTeam(game.homeId);
+    if (home?.conference === "East") {
+      east.push(game);
+    } else if (home?.conference === "West") {
+      west.push(game);
+    } else {
+      more.push(game);
+    }
+  });
+  return [
+    { key: "east", label: "EAST", games: east },
+    { key: "west", label: "WEST", games: west },
+    { key: "more", label: "MORE", games: more },
+  ].filter((group) => group.games.length);
 };
 
 export const picksFillLayout = (
   count: number,
   boardH = GRAPHIC_HEIGHT,
+  groupCount = 0,
 ) => {
   const games = Math.max(0, count);
   const rows = Math.max(1, games);
+  const groups = Math.max(0, groupCount);
+  const labels = groups > 1 ? groups * PICKS_GROUP_H : 0;
   const listH = boardH - PICKS_LIST_TOP - PICKS_LIST_BOTTOM;
-  const gap = games <= 1 ? 0 : Math.min(8, listH * 0.008);
-  const rowH = (listH - gap * Math.max(0, rows - 1)) / rows;
+  const usable = Math.max(48, listH - labels);
+  const gap = games <= 1 ? 0 : Math.min(6, usable * 0.006);
+  const rowH = (usable - gap * Math.max(0, rows - 1)) / rows;
   const clamp = (min: number, max: number, value: number) =>
     Math.round(Math.min(max, Math.max(min, value)));
   return {
@@ -525,10 +833,12 @@ export const picksFillLayout = (
     rows,
     rowH,
     gap,
-    logo: clamp(34, 86, rowH * 0.7),
-    line: clamp(22, 54, rowH * 0.42),
-    name: clamp(11, 20, rowH * 0.18),
-    check: clamp(18, 34, rowH * 0.3),
+    groupH: groups > 1 ? PICKS_GROUP_H : 0,
+    logo: clamp(48, 96, rowH * 0.82),
+    line: clamp(16, 36, rowH * 0.28),
+    name: clamp(11, 18, rowH * 0.16),
+    meta: clamp(9, 13, rowH * 0.12),
+    check: clamp(16, 28, rowH * 0.26),
   };
 };
 

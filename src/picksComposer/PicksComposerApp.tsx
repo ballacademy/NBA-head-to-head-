@@ -33,10 +33,11 @@ import { PicksGraphic } from "./PicksGraphic";
 import { exportPicksPng } from "./exportPicksPng";
 import { renderPicksCanvas } from "./renderPicksCanvas";
 import {
+  cyclePicksUnits,
   defaultPicksDraft,
   emptyPicksGame,
   fetchPicksSlate,
-  formatPicksGameLine,
+  formatPicksSideTicket,
   isAutoPicksDateLine,
   isPicksDraft,
   mergePicksFill,
@@ -44,12 +45,14 @@ import {
   picksDateLine,
   refillPicksRow,
   setPicksDisplayedLine,
+  setPicksLock,
   setPicksTeam,
   togglePicksPick,
   type PicksDraft,
   type PicksSide,
 } from "./picksState";
 import "@fontsource/montserrat/latin-900.css";
+import "@fontsource/montserrat/latin-900-italic.css";
 import "./picksComposer.css";
 
 const STORAGE_KEY = "ddgm:picks-composer";
@@ -259,6 +262,57 @@ export function PicksComposerApp() {
               }
             />
             <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">O/U</span>
+              <button
+                type="button"
+                className={draft.showTotal ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showTotal === true}
+                aria-label="Show totals"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showTotal: !current.showTotal,
+                  }))
+                }
+              >
+                {draft.showTotal ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Moneyline</span>
+              <button
+                type="button"
+                className={draft.showMoneyline ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showMoneyline === true}
+                aria-label="Show moneylines"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showMoneyline: !current.showMoneyline,
+                  }))
+                }
+              >
+                {draft.showMoneyline ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
+              <span className="sc-toolbar__eyebrow">Units</span>
+              <button
+                type="button"
+                className={draft.showUnits ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={draft.showUnits === true}
+                aria-label="Show units"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    showUnits: !current.showUnits,
+                  }))
+                }
+              >
+                {draft.showUnits ? "On" : "Off"}
+              </button>
+            </label>
+            <label className="sc-field">
               <span className="sc-toolbar__eyebrow">9:16 crop</span>
               <button
                 type="button"
@@ -319,15 +373,16 @@ export function PicksComposerApp() {
                   graphicCaption(
                     draft.title,
                     draft.games.map((game) => {
-                      const line = formatPicksGameLine(game);
+                      const away = formatPicksSideTicket(game, "away") || game.awayId || "TBD";
+                      const home = formatPicksSideTicket(game, "home") || game.homeId || "TBD";
                       const pick =
                         game.pick === "away"
                           ? game.awayId
                           : game.pick === "home"
                             ? game.homeId
                             : "";
-                      return `${game.awayId || "TBD"} ${line || "NL"} ${game.homeId || "TBD"}${
-                        pick ? ` · ${pick}` : ""
+                      return `${away} | ${home}${pick ? ` · ${pick}` : ""}${
+                        game.locked ? " LOCK" : ""
                       }`;
                     }),
                     [draft.dateLine],
@@ -429,18 +484,33 @@ export function PicksComposerApp() {
                   ),
                 }));
               }}
-              onLineChange={(gameId, line) => {
+              onLineChange={(gameId, side, line) => {
                 push(draft);
                 setDraft((current) => ({
                   ...current,
                   games: current.games.map((game) =>
                     game.id === gameId
-                      ? setPicksDisplayedLine(game, line)
+                      ? setPicksDisplayedLine(game, line, side)
                       : game,
                   ),
                 }));
               }}
               onPickTeam={(gameId, side) => setPicker({ gameId, side })}
+              onLockGame={(gameId) => {
+                push(draft);
+                setDraft((current) => ({
+                  ...current,
+                  games: setPicksLock(current.games, gameId),
+                }));
+              }}
+              onCycleUnits={(gameId) => {
+                setDraft((current) => ({
+                  ...current,
+                  games: current.games.map((game) =>
+                    game.id === gameId ? cyclePicksUnits(game) : game,
+                  ),
+                }));
+              }}
               onRemoveGame={(gameId) => {
                 push(draft);
                 setDraft((current) => ({

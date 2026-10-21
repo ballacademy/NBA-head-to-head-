@@ -1,10 +1,14 @@
 import {
+  clipToInnerFrame,
   paintCellFrame,
   paintPurpleBaGlow,
+  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { getTeamColors } from "../lib/teamColors";
 import {
   FIELD_TEXTURE_SRC,
+  drawBannerInterior,
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
@@ -15,11 +19,28 @@ import {
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
-  formatPicksGameLine,
+  formatPicksLine,
+  formatPicksTotal,
   PICKS_CHECK_FILL,
+  PICKS_LOCK_FILL,
+  PICKS_NOTCH_H,
+  PICKS_PLATE_H,
+  PICKS_PLATE_X,
+  PICKS_PLATE_Y,
+  PICKS_TITLE_SIZE,
+  PICKS_TITLE_TRACK,
+  picksConferenceGroups,
   picksFillLayout,
+  picksJuiceOrMove,
+  picksLineForSide,
+  picksMl,
+  picksPickCount,
+  picksRecordLine,
+  picksDatePill,
+  picksShortName,
   splitPicksTitle,
   type PicksDraft,
+  type PicksGame,
   type PicksSide,
 } from "./picksState";
 
@@ -39,30 +60,135 @@ export type PicksRenderInput = PicksDraft & {
   story?: boolean;
 };
 
+const hexAlpha = (hex: string, alpha: number) => {
+  const token = hex.replace("#", "");
+  if (token.length !== 6) {
+    return `rgba(51, 65, 85, ${alpha})`;
+  }
+  const r = Number.parseInt(token.slice(0, 2), 16);
+  const g = Number.parseInt(token.slice(2, 4), 16);
+  const b = Number.parseInt(token.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const roundRectPath = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) => {
+  const radius = Math.min(r, w / 2, h / 2);
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.arcTo(x + w, y, x + w, y + h, radius);
+  context.arcTo(x + w, y + h, x, y + h, radius);
+  context.arcTo(x, y + h, x, y, radius);
+  context.arcTo(x, y, x + w, y, radius);
+  context.closePath();
+};
+
+const setLetterSpacing = (
+  context: CanvasRenderingContext2D,
+  tracking: number,
+) => {
+  const spaced = context as CanvasRenderingContext2D & { letterSpacing: string };
+  if (typeof spaced.letterSpacing === "string") {
+    spaced.letterSpacing = `${tracking}px`;
+    return true;
+  }
+  return false;
+};
+
+const withShadow = (
+  context: CanvasRenderingContext2D,
+  scale: number,
+  paint: () => void,
+) => {
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.82)";
+  context.shadowOffsetX = Math.round(1.2 * scale);
+  context.shadowOffsetY = Math.round(1.5 * scale);
+  context.shadowBlur = 0;
+  paint();
+  context.restore();
+};
+
+const strokeFillText = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  fill: string,
+  stroke: string,
+  strokeWidth: number,
+) => {
+  context.lineJoin = "round";
+  context.miterLimit = 2;
+  context.strokeStyle = stroke;
+  context.lineWidth = strokeWidth;
+  context.strokeText(text, x, y);
+  context.fillStyle = fill;
+  context.fillText(text, x, y);
+};
+
 const paintCheck = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   size: number,
   scale: number,
+  locked: boolean,
 ) => {
   context.save();
-  context.fillStyle = PICKS_CHECK_FILL;
+  context.fillStyle = locked ? PICKS_LOCK_FILL : PICKS_CHECK_FILL;
   context.beginPath();
   context.arc(x, y, size / 2, 0, Math.PI * 2);
   context.fill();
   context.strokeStyle = "#0a0a0a";
   context.lineWidth = Math.max(1, 1.5 * scale);
   context.stroke();
-  context.strokeStyle = "#fff";
-  context.lineWidth = Math.max(2, 2.6 * scale);
-  context.lineCap = "round";
-  context.lineJoin = "round";
+  if (locked) {
+    paintStar(context, x, y, size * 0.32, "#111");
+  } else {
+    context.strokeStyle = "#fff";
+    context.lineWidth = Math.max(2, 2.6 * scale);
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.beginPath();
+    context.moveTo(x - size * 0.2, y + size * 0.02);
+    context.lineTo(x - size * 0.04, y + size * 0.18);
+    context.lineTo(x + size * 0.22, y - size * 0.16);
+    context.stroke();
+  }
+  context.restore();
+};
+
+const paintStar = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  fill: string,
+) => {
+  context.save();
+  context.fillStyle = fill;
   context.beginPath();
-  context.moveTo(x - size * 0.2, y + size * 0.02);
-  context.lineTo(x - size * 0.04, y + size * 0.18);
-  context.lineTo(x + size * 0.22, y - size * 0.16);
-  context.stroke();
+  for (let i = 0; i < 5; i += 1) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const px = x + Math.cos(angle) * r;
+    const py = y + Math.sin(angle) * r;
+    if (i === 0) {
+      context.moveTo(px, py);
+    } else {
+      context.lineTo(px, py);
+    }
+    const inner = angle + Math.PI / 5;
+    context.lineTo(x + Math.cos(inner) * r * 0.42, y + Math.sin(inner) * r * 0.42);
+  }
+  context.closePath();
+  context.fill();
   context.restore();
 };
 
@@ -81,30 +207,79 @@ export const renderPicksCanvas = async (
     return canvas;
   }
   const s = scale;
+  await document.fonts?.load(`italic 900 ${PICKS_TITLE_SIZE * s}px ${POSTER_FONT}`);
   paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 
+  if (!input.showBa) {
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "#fff";
+    context.font = `900 ${22 * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.18 * 22 * s);
+    withShadow(context, s, () => {
+      context.fillText(input.brand.toUpperCase(), width / 2, 24 * s);
+    });
+    setLetterSpacing(context, 0);
+  }
+
+  const plate = {
+    x: PICKS_PLATE_X * s,
+    y: PICKS_PLATE_Y * s,
+    w: width - PICKS_PLATE_X * 2 * s,
+    h: PICKS_PLATE_H * s,
+  };
+  drawBannerInterior(context, plate.x, plate.y, plate.w, plate.h, s, () => {
+    context.beginPath();
+    context.rect(plate.x, plate.y, plate.w, plate.h);
+  });
+  paintCellFrame(context, plate.x, plate.y, plate.w, plate.h, input.look, s);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plate.x, plate.y, plate.w, plate.h, s);
+  }
+
+  const lines = splitPicksTitle(input.title);
+  const lineH = PICKS_TITLE_SIZE * 0.92 * s;
+  const titleBlock = lineH * lines.length;
+  let titleY = plate.y + (plate.h - titleBlock) / 2 + lineH / 2;
+  context.save();
+  clipToInnerFrame(context, plate.x, plate.y, plate.w, plate.h, s, input.look);
+  context.font = `italic 900 ${PICKS_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.fillStyle = "#fff";
-  if (!input.showBa) {
-    context.font = `900 ${22 * s}px ${POSTER_FONT}`;
-    context.shadowColor = "rgba(0,0,0,0.82)";
-    context.shadowOffsetX = 1 * s;
-    context.shadowOffsetY = 1.2 * s;
-    context.fillText(input.brand.toUpperCase(), width / 2, 34 * s);
-    context.shadowColor = "transparent";
-  }
-  const lines = splitPicksTitle(input.title);
-  context.font = `900 ${58 * s}px ${POSTER_FONT}`;
-  lines.forEach((line, index) => {
-    context.fillText(line, width / 2, (96 + index * 58) * s);
+  setLetterSpacing(context, PICKS_TITLE_TRACK * PICKS_TITLE_SIZE * s);
+  lines.forEach((line) => {
+    withShadow(context, s, () => {
+      strokeFillText(context, line, width / 2, titleY, "#fff", "#000", 3.2 * s);
+    });
+    titleY += lineH;
   });
-  context.font = `900 ${16 * s}px ${POSTER_FONT}`;
-  context.fillStyle = "rgba(255,255,255,0.9)";
-  context.fillText((input.dateLine || "").toUpperCase(), width / 2, 196 * s);
+  setLetterSpacing(context, 0);
+  context.restore();
 
-  const fill = picksFillLayout(input.games.length, boardH);
+  const pill = picksDatePill(input.dateLine, picksPickCount(input.games));
+  context.font = `900 ${16 * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, 0.04 * 16 * s);
+  const weekW = Math.max(420 * s, context.measureText(pill).width + 48 * s);
+  const weekH = PICKS_NOTCH_H * s;
+  const weekX = (width - weekW) / 2;
+  const weekY = plate.y + plate.h - 2 * s;
+  context.fillStyle = "#fff";
+  context.beginPath();
+  context.moveTo(weekX + weekW * 0.06, weekY);
+  context.lineTo(weekX + weekW * 0.94, weekY);
+  context.lineTo(weekX + weekW, weekY + weekH);
+  context.lineTo(weekX, weekY + weekH);
+  context.closePath();
+  context.fill();
+  context.fillStyle = "#111";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(pill, width / 2, weekY + weekH / 2);
+  setLetterSpacing(context, 0);
+
+  const groups = picksConferenceGroups(input.games);
+  const fill = picksFillLayout(input.games.length, boardH, groups.length);
   const needed = new Set<string>();
   input.games.forEach((game) => {
     if (game.awayId) {
@@ -124,55 +299,183 @@ export const renderPicksCanvas = async (
 
   const logo = fill.logo * s;
   const check = fill.check * s;
-  const midX = width / 2;
-  const leftLogoX = 72 * s;
-  const rightLogoX = width - 72 * s - logo;
-  const leftCheckX = leftLogoX + logo + 28 * s + check / 2;
-  const rightCheckX = rightLogoX - 28 * s - check / 2;
+  const padX = 28 * s;
+  const rowW = width - padX * 2;
+  let cursorY = fill.listTop * s;
 
   const paintSide = (
-    teamId: string,
-    x: number,
-    y: number,
-    color: string,
+    game: PicksGame,
+    side: PicksSide,
+    cx: number,
+    midY: number,
   ) => {
+    const teamId = side === "away" ? game.awayId : game.homeId;
+    const picked = game.pick === side;
+    const dimmed = Boolean(game.pick && game.pick !== side);
+    const size = picked ? logo * 1.08 : logo;
     const image = logos.get(teamId);
+    context.save();
+    if (dimmed) {
+      context.globalAlpha = 0.42;
+    }
     if (image) {
-      drawCenteredLogo(context, image, x, y - logo / 2, logo, logo, {
-        cacheKey: `${teamId}-pk`,
-        shadow: 0,
-      });
+      drawCenteredLogo(
+        context,
+        image,
+        cx - size / 2,
+        midY - size / 2 - fill.name * 0.45 * s,
+        size,
+        size,
+        {
+          cacheKey: `${teamId}-pk`,
+          shadow: picked ? 8 : 0,
+        },
+      );
     }
     context.textAlign = "center";
-    context.fillStyle = color;
+    context.textBaseline = "middle";
+    context.fillStyle = "#fff";
     context.font = `900 ${fill.name * s}px ${POSTER_FONT}`;
     context.fillText(
-      teamId || "TEAM",
-      x + logo / 2,
-      y + logo / 2 + fill.name * 0.7 * s,
+      picksShortName(teamId),
+      cx,
+      midY + logo / 2 + fill.name * 0.15 * s,
     );
+    const record = picksRecordLine(
+      side === "away" ? game.awayRecord : game.homeRecord,
+      side === "away" ? game.awayLast10 : game.homeLast10,
+    );
+    if (record) {
+      context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
+      context.fillStyle = "rgba(255,255,255,0.7)";
+      context.fillText(record, cx, midY + logo / 2 + fill.name * 1.15 * s);
+    }
+    if (side === "home") {
+      context.fillStyle = "rgba(253,230,138,0.9)";
+      context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
+      context.textAlign = "right";
+      context.fillText("@", cx + logo * 0.72, midY - logo * 0.42);
+    }
+    if (input.showUnits && picked) {
+      context.textAlign = "center";
+      context.fillStyle = "rgba(255,255,255,0.88)";
+      context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
+      context.fillText(
+        game.units || "1u",
+        cx,
+        midY + logo / 2 + fill.name * 2.05 * s,
+      );
+    }
+    context.restore();
   };
 
-  input.games.forEach((game, index) => {
-    const y =
-      (fill.listTop + index * (fill.rowH + fill.gap) + fill.rowH / 2) * s;
-    paintSide(game.awayId, leftLogoX, y, "#93c5fd");
-    paintSide(game.homeId, rightLogoX, y, "#fde68a");
-    const paintSideCheck = (side: PicksSide, x: number) => {
-      if (game.pick !== side) {
-        return;
-      }
-      paintCheck(context, x, y, check, s);
-    };
-    paintSideCheck("away", leftCheckX);
-    paintSideCheck("home", rightCheckX);
-    const line = formatPicksGameLine(game);
-    if (line) {
-      context.textAlign = "center";
-      context.fillStyle = "#fff";
-      context.font = `900 ${fill.line * s}px ${POSTER_FONT}`;
-      context.fillText(line, midX, y);
+  const paintTicket = (
+    game: PicksGame,
+    side: PicksSide,
+    x: number,
+    y: number,
+  ) => {
+    const teamId = side === "away" ? game.awayId : game.homeId;
+    const line = formatPicksLine(picksLineForSide(game.line, side));
+    const picked = game.pick === side;
+    const dimmed = Boolean(game.pick && game.pick !== side);
+    context.save();
+    context.globalAlpha = dimmed ? 0.38 : 1;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "#fff";
+    context.font = `900 ${fill.name * s}px ${POSTER_FONT}`;
+    const ml = input.showMoneyline ? picksMl(game, side) : "";
+    const body = [teamId, line, ml].filter(Boolean).join(" ");
+    context.font = `900 ${fill.line * s}px ${POSTER_FONT}`;
+    context.fillText(body || "—", x, y);
+    const juice = picksJuiceOrMove(game, side);
+    if (juice) {
+      context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
+      context.fillStyle = "rgba(255,255,255,0.7)";
+      context.fillText(juice, x, y + fill.line * 0.62 * s);
     }
+    context.restore();
+  };
+
+  const paintRow = (game: PicksGame, y: number) => {
+    const rowH = fill.rowH * s;
+    const x = padX;
+    const awayColor = getTeamColors(game.awayId).primary;
+    const homeColor = getTeamColors(game.homeId).primary;
+    const gradient = context.createLinearGradient(x, y, x + rowW, y);
+    gradient.addColorStop(0, hexAlpha(awayColor, 0.46));
+    gradient.addColorStop(0.28, hexAlpha(awayColor, 0.12));
+    gradient.addColorStop(0.46, "rgba(16,16,16,0.42)");
+    gradient.addColorStop(0.54, "rgba(16,16,16,0.42)");
+    gradient.addColorStop(0.72, hexAlpha(homeColor, 0.12));
+    gradient.addColorStop(1, hexAlpha(homeColor, 0.46));
+    roundRectPath(context, x, y, rowW, rowH, 8 * s);
+    context.fillStyle = "rgba(22,22,22,0.72)";
+    context.fill();
+    context.fillStyle = gradient;
+    context.fill();
+    context.strokeStyle = "rgba(255,255,255,0.16)";
+    context.lineWidth = Math.max(1, s);
+    context.stroke();
+
+    const midY = y + rowH / 2;
+    const leftLogoX = x + 18 * s + logo / 2;
+    const rightLogoX = x + rowW - 18 * s - logo / 2;
+    paintSide(game, "away", leftLogoX, midY);
+    paintSide(game, "home", rightLogoX, midY);
+
+    const leftCheckX = leftLogoX + logo * 0.62 + check * 0.7;
+    const rightCheckX = rightLogoX - logo * 0.62 - check * 0.7;
+    if (game.pick === "away") {
+      paintCheck(context, leftCheckX, midY, check, s, game.locked === true);
+    }
+    if (game.pick === "home") {
+      paintCheck(context, rightCheckX, midY, check, s, game.locked === true);
+    }
+
+    const midX = width / 2;
+    const ticketY = midY - (game.tip || game.tv || input.showTotal ? 8 * s : 0);
+    paintTicket(game, "away", midX - 92 * s, ticketY);
+    context.fillStyle = "rgba(255,255,255,0.28)";
+    context.font = `900 ${fill.line * 0.72 * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.fillText("|", midX, ticketY);
+    paintTicket(game, "home", midX + 92 * s, ticketY);
+
+    let metaY = ticketY + fill.line * 0.9 * s;
+    if (input.showTotal) {
+      const total = formatPicksTotal(game.total);
+      if (total) {
+        context.fillStyle = "rgba(255,255,255,0.72)";
+        context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
+        context.fillText(total, midX, metaY);
+        metaY += fill.meta * 1.15 * s;
+      }
+    }
+    const tipBits = [game.tip, game.tv].filter(Boolean);
+    if (tipBits.length) {
+      context.fillStyle = "rgba(255,255,255,0.72)";
+      context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
+      context.fillText(tipBits.join("   "), midX, metaY);
+    }
+  };
+
+  groups.forEach((group) => {
+    if (fill.groupH) {
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "rgba(255,255,255,0.55)";
+      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+      setLetterSpacing(context, 0.28 * 11 * s);
+      context.fillText(group.label, width / 2, cursorY + (fill.groupH * s) / 2);
+      setLetterSpacing(context, 0);
+      cursorY += fill.groupH * s;
+    }
+    group.games.forEach((game) => {
+      paintRow(game, cursorY);
+      cursorY += (fill.rowH + fill.gap) * s;
+    });
   });
 
   if (input.showBa) {

@@ -1,19 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import {
+  defaultPicksDraft,
   emptyPicksGame,
   formatPicksGameLine,
   formatPicksLine,
+  formatPicksSideTicket,
+  formatPicksTotal,
   isPicksRowEdited,
   mergePicksFill,
   parseEspnAwayLine,
   parsePicksLineInput,
+  parseEspnNationalTv,
   parsePicksScoreboard,
+  picksConferenceGroups,
+  picksDatePill,
   picksFillLayout,
+  picksJuiceOrMove,
   PICKS_SCOREBOARD_URL,
   refillPicksRow,
   setPicksDisplayedLine,
   setPicksLine,
+  setPicksLock,
   setPicksTeam,
   togglePicksPick,
   type PicksGame,
@@ -247,10 +258,77 @@ describe("picks composer", () => {
     const fill = picksFillLayout(11);
     expect(fill.listTop + fill.listH + fill.listBottom).toBe(GRAPHIC_HEIGHT);
     expect(fill.rowH * 11 + fill.gap * 10).toBeCloseTo(fill.listH);
-    expect(fill.logo).toBeGreaterThanOrEqual(34);
-    expect(fill.line).toBeGreaterThanOrEqual(22);
+    expect(fill.logo).toBeGreaterThanOrEqual(48);
+    expect(fill.line).toBeGreaterThanOrEqual(16);
     const one = picksFillLayout(1);
     expect(one.logo).toBeGreaterThan(fill.logo);
     expect(emptyPicksGame().custom).toBe(true);
+  });
+
+  it("prints both side tickets and groups home conference", () => {
+    const game = row({
+      id: "g",
+      awayId: "ATL",
+      homeId: "ORL",
+      line: 2.5,
+      pick: "home",
+    });
+    expect(formatPicksSideTicket(game, "away")).toBe("ATL +2.5");
+    expect(formatPicksSideTicket(game, "home")).toBe("ORL -2.5");
+    const groups = picksConferenceGroups([
+      row({ id: "e", awayId: "ATL", homeId: "ORL" }),
+      row({ id: "w", awayId: "GSW", homeId: "LAL" }),
+    ]);
+    expect(groups.map((group) => group.label)).toEqual(["EAST", "WEST"]);
+    expect(parseEspnNationalTv({ broadcasts: [{ names: ["ESPN"] }] })).toBe(
+      "ESPN",
+    );
+    expect(
+      parseEspnNationalTv({ broadcasts: [{ names: ["NBA League Pass"] }] }),
+    ).toBe("");
+    expect(picksDatePill("WED, OCT 21", 5)).toBe("WED, OCT 21  ·  5 PICKS");
+  });
+
+  it("keeps one LOCK and leaves O/U, moneyline, and units off", () => {
+    const empty = defaultPicksDraft();
+    expect(empty.showTotal).toBe(false);
+    expect(empty.showMoneyline).toBe(false);
+    expect(empty.showUnits).toBe(false);
+    const games = setPicksLock(
+      [
+        row({ id: "a", awayId: "ATL", homeId: "ORL", pick: "away" }),
+        row({ id: "b", awayId: "GSW", homeId: "LAL", pick: "home", locked: true }),
+      ],
+      "a",
+    );
+    expect(games[0]?.locked).toBe(true);
+    expect(games[1]?.locked).toBe(false);
+    const cleared = togglePicksPick(games[0]!, "away");
+    expect(cleared.pick).toBeNull();
+    expect(cleared.locked).toBe(false);
+    expect(formatPicksTotal(232.5)).toBe("O/U 232.5");
+    expect(formatPicksTotal(null)).toBe("");
+    expect(
+      picksJuiceOrMove(
+        row({ id: "j", awayJuice: "-110", homeJuice: "-110" }),
+        "away",
+      ),
+    ).toBe("-110");
+    expect(
+      picksJuiceOrMove(
+        row({ id: "m", awayJuice: "-110", lineEdited: true }),
+        "away",
+      ),
+    ).toBe("↗");
+  });
+
+  it("packs 9:16 with the same list fill, not a short card on a tall board", () => {
+    const story = picksFillLayout(11, STORY_DESIGN_HEIGHT, 2);
+    const feed = picksFillLayout(11, GRAPHIC_HEIGHT, 2);
+    expect(story.listTop + story.listH + story.listBottom).toBe(
+      STORY_DESIGN_HEIGHT,
+    );
+    expect(story.rowH).toBeGreaterThan(feed.rowH);
+    expect(story.logo).toBeGreaterThanOrEqual(48);
   });
 });
