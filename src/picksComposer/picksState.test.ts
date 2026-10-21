@@ -9,6 +9,7 @@ import {
   parsePicksLineInput,
   parsePicksScoreboard,
   picksFillLayout,
+  PICKS_SCOREBOARD_URL,
   refillPicksRow,
   setPicksLine,
   setPicksTeam,
@@ -59,6 +60,11 @@ const row = (partial: Partial<PicksGame> & { id: string }): PicksGame => ({
 });
 
 describe("picks composer", () => {
+  it("loads the scoreboard from the CORS ESPN host", () => {
+    expect(PICKS_SCOREBOARD_URL("2026-10-21")).toContain("site.web.api.espn.com");
+    expect(PICKS_SCOREBOARD_URL("2026-10-21")).toContain("20261021");
+  });
+
   it("reads a real ESPN spread as the away line and never invents a number", () => {
     const games = parsePicksScoreboard(
       scoreboard([

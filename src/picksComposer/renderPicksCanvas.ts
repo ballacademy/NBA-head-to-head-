@@ -66,22 +66,6 @@ const paintCheck = (
   context.restore();
 };
 
-const paintLogoRing = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  size: number,
-  scale: number,
-) => {
-  context.save();
-  context.strokeStyle = "#facc15";
-  context.lineWidth = Math.max(2, 3 * scale);
-  context.beginPath();
-  context.arc(x + size / 2, y + size / 2, size / 2 + 3 * scale, 0, Math.PI * 2);
-  context.stroke();
-  context.restore();
-};
-
 export const renderPicksCanvas = async (
   input: PicksRenderInput,
   scale = 2,
@@ -151,12 +135,8 @@ export const renderPicksCanvas = async (
     x: number,
     y: number,
     color: string,
-    picked: boolean,
   ) => {
     const image = logos.get(teamId);
-    if (picked) {
-      paintLogoRing(context, x, y - logo / 2, logo, s);
-    }
     if (image) {
       drawCenteredLogo(context, image, x, y - logo / 2, logo, logo, {
         cacheKey: `${teamId}-pk`,
@@ -176,8 +156,8 @@ export const renderPicksCanvas = async (
   input.games.forEach((game, index) => {
     const y =
       (fill.listTop + index * (fill.rowH + fill.gap) + fill.rowH / 2) * s;
-    paintSide(game.awayId, leftLogoX, y, "#93c5fd", game.pick === "away");
-    paintSide(game.homeId, rightLogoX, y, "#fde68a", game.pick === "home");
+    paintSide(game.awayId, leftLogoX, y, "#93c5fd");
+    paintSide(game.homeId, rightLogoX, y, "#fde68a");
     const paintSideCheck = (side: PicksSide, x: number) => {
       if (game.pick !== side) {
         return;

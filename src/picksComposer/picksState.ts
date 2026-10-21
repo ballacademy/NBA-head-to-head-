@@ -3,15 +3,19 @@ import {
   ESPN_ABBREV_TO_TEAM,
   isoDateOnly,
   nbaTodayIso,
+  toEspnDateParam,
 } from "../playerOfTheDayComposer/lastGame";
 import {
   DEFAULT_BRAND,
   GRAPHIC_HEIGHT,
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
-import { ESPN_SCOREBOARD_URL } from "../scheduleComposer/scheduleState";
 
-export { DEFAULT_BRAND, ESPN_SCOREBOARD_URL };
+export { DEFAULT_BRAND };
+
+/** `site.web.api` sends CORS; `site.api` does not from the composer origin. */
+export const PICKS_SCOREBOARD_URL = (iso: string) =>
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
 
 export const PICKS_LIST_TOP = 220;
 export const PICKS_LIST_BOTTOM = 32;
@@ -257,7 +261,7 @@ export const parsePicksScoreboard = (
 export const fetchPicksSlate = async (iso: string): Promise<PicksGame[]> => {
   const date = isoDateOnly(iso) || nbaTodayIso();
   try {
-    const response = await fetch(ESPN_SCOREBOARD_URL(date), {
+    const response = await fetch(PICKS_SCOREBOARD_URL(date), {
       mode: "cors",
       credentials: "omit",
     });
@@ -489,4 +493,4 @@ export const picksFillLayout = (
 };
 
 export const picksScoreboardUrl = (iso: string) =>
-  ESPN_SCOREBOARD_URL(isoDateOnly(iso) || iso);
+  PICKS_SCOREBOARD_URL(isoDateOnly(iso) || iso);
