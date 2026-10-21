@@ -685,13 +685,10 @@ export function PlayerOfTheDayComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={activeIndex === 0 ? "Pick left player" : "Pick right player"}
-          hint="Gold cards are this night’s best remaining lines — same ranking as Fill. Search still lists everyone."
+          hint="Gold cards are this night’s best lines — same ranking as Fill. Already-used names of the pair are marked. Search still lists everyone."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
-          suggested={potdPickerSuggestions(
-            nightBest,
-            new Set(Object.keys(usedPlayerIds(cards))),
-          )}
+          suggested={potdPickerSuggestions(nightBest)}
           suggestedHeading={potdNightHeading(
             night.date,
             night.todayIso,

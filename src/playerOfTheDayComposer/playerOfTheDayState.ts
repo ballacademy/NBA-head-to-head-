@@ -112,14 +112,12 @@ const recBadge = (row: NightStandout, index: number) => {
   return flag ?? `#${index + 1}`;
 };
 
-/** Remaining best-of-night names for the existing picker recs. */
+/** Best-of-night names for the existing picker recs. Used pair stay listed. */
 export const potdPickerSuggestions = (
   rows: NightStandout[],
-  usedIds: ReadonlySet<string>,
   limit = POTD_PICKER_LIMIT,
 ) =>
   rankPotdNightBest(rows)
-    .filter((row) => !usedIds.has(row.athleteId))
     .slice(0, limit)
     .map((row, index) => ({
       id: row.athleteId,

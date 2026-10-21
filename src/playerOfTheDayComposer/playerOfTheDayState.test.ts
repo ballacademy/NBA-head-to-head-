@@ -267,12 +267,13 @@ describe("player of the day state", () => {
     expect(filled[1]?.playerId).toBe("4278073");
     expect(filled[0]?.customPhoto).toBe(false);
     expect(filled[0]?.photoSrc).toBe(getPlayer("3112335")?.headshotUrl);
-    const recs = potdPickerSuggestions(
-      ranked,
-      new Set(["3112335"]),
-    );
-    expect(recs[0]?.id).toBe("4278073");
-    expect(recs.map((row) => row.id)).not.toContain("3112335");
+    const recs = potdPickerSuggestions(ranked);
+    expect(recs[0]?.id).toBe("3112335");
+    expect(recs[1]?.id).toBe("4278073");
+    expect(recs.map((row) => row.id).slice(0, 2)).toEqual([
+      "3112335",
+      "4278073",
+    ]);
     expect(potdNightHeading("2026-10-20", "2026-10-20", "2026-10-19")).toBe(
       "Tonight’s best",
     );
