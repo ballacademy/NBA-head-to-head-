@@ -64,8 +64,11 @@ import {
   isPotdDraft,
   patchCard,
   potdNightHeading,
+  potdPickerHeading,
   potdPickerSuggestions,
+  potdSlotLabel,
   rankPotdNightBest,
+  resizePotdCards,
   setCardPhoto,
   usedPlayerIds,
   type PotdCard,
@@ -266,7 +269,9 @@ export function PlayerOfTheDayComposerApp() {
     setCards(next);
     setDate(formatDateLabel(night.date));
     const names = next.map(cardPlayerName).filter(Boolean);
-    if (names.length >= 2) {
+    if (names.length >= 3) {
+      setStatus(`Filled ${names.slice(0, -1).join(", ")}, and ${names.at(-1)}.`);
+    } else if (names.length === 2) {
       setStatus(`Filled ${names.join(" and ")}.`);
     } else if (names.length === 1) {
       setStatus(`Filled ${names[0]}. Only one line for that night.`);
@@ -421,46 +426,64 @@ export function PlayerOfTheDayComposerApp() {
           <button
             type="button"
             className="sc-chip"
-            aria-label="Fill both players from this night’s best lines"
+            aria-label="Fill players from this night’s best lines"
             onClick={() => void handleFillNight()}
             disabled={nightBestLoading}
           >
             Fill
           </button>
-          <div className="sc-look" role="group" aria-label="Players">
+          <div className="sc-look" role="group" aria-label="Player count">
             <span className="sc-look__label">Players</span>
+            {[2, 3].map((count) => (
+              <button
+                key={count}
+                type="button"
+                className={cards.length === count ? "sc-chip is-on" : "sc-chip"}
+                aria-pressed={cards.length === count}
+                aria-label={`${count} players`}
+                onClick={() => {
+                  if (cards.length === count) {
+                    return;
+                  }
+                  push(cards);
+                  setCards((current) => resizePotdCards(current, count));
+                  if (count === 2 && activeIndex != null && activeIndex > 1) {
+                    setActiveIndex(null);
+                    setPhotoTarget(0);
+                  }
+                }}
+              >
+                {count}
+              </button>
+            ))}
+          </div>
+          <div className="sc-look" role="group" aria-label="Slots">
+            <span className="sc-look__label">Slots</span>
+            {cards.map((_, index) => (
+              <button
+                key={`slot-${index}`}
+                type="button"
+                className="sc-chip"
+                onClick={() => {
+                  setPhotoTarget(index);
+                  setActiveIndex(index);
+                }}
+              >
+                {potdSlotLabel(index, cards.length).replace(" card", "")}
+              </button>
+            ))}
             <button
               type="button"
               className="sc-chip"
-              onClick={() => {
-                setPhotoTarget(0);
-                setActiveIndex(0);
-              }}
-            >
-              Left
-            </button>
-            <button
-              type="button"
-              className="sc-chip"
-              onClick={() => {
-                setPhotoTarget(1);
-                setActiveIndex(1);
-              }}
-            >
-              Right
-            </button>
-            <button
-              type="button"
-              className="sc-chip"
-              aria-label="Add both names to the POTD leaderboard"
+              aria-label="Add names to the POTD leaderboard"
               onClick={() => {
                 const names = cards.map(cardPlayerName).filter(Boolean);
                 if (names.length < 2) {
-                  setStatus("Pick both players first.");
+                  setStatus("Pick at least two players first.");
                   return;
                 }
                 addNamedLeaderboardEntries(names);
-                setStatus("Added both names to the leaderboard.");
+                setStatus("Added names to the leaderboard.");
               }}
             >
               Add both to board
@@ -471,9 +494,7 @@ export function PlayerOfTheDayComposerApp() {
               aria-label="Swap sides"
               onClick={() =>
                 setCards((current) =>
-                  current.length < 2
-                    ? current
-                    : [current[1]!, current[0]!, ...current.slice(2)],
+                  current.length < 2 ? current : current.slice().reverse(),
                 )
               }
             >
@@ -704,8 +725,8 @@ export function PlayerOfTheDayComposerApp() {
 
       {activeIndex != null ? (
         <PlayerPicker
-          heading={activeIndex === 0 ? "Pick left player" : "Pick right player"}
-          hint="Gold cards are this night’s best lines — same ranking as Fill. Already-used names of the pair are marked. Search still lists everyone."
+          heading={potdPickerHeading(activeIndex, cards.length)}
+          hint="Gold cards are this night’s best lines — same ranking as Fill. Already-used names of the set are marked. Search still lists everyone."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
           suggested={potdPickerSuggestions(nightBest)}

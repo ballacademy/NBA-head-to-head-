@@ -175,6 +175,13 @@
   box-sizing: border-box;
 }
 
+.pod-board.is-3up .pod-cards {
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: calc(20 * var(--u));
+  padding-left: calc(40 * var(--u));
+  padding-right: calc(40 * var(--u));
+}
+
 .pod-card {
   --team-fill: #1a1a1a;
   --card-radius: calc(14 * var(--u));
@@ -402,6 +409,25 @@
   text-align: right;
 }
 
+.pod-board.is-3up .pod-card:nth-child(2) .pod-total {
+  left: calc(10 * var(--u));
+  right: auto;
+  text-align: left;
+}
+
+.pod-board.is-3up .pod-stat input,
+.pod-board.is-3up .pod-stat span {
+  font-size: calc(28 * var(--u));
+}
+
+.pod-board.is-3up .pod-name__line {
+  font-size: calc(28 * var(--u));
+}
+
+.pod-board.is-3up .pod-result__line {
+  font-size: calc(15 * var(--u));
+}
+
 .pod-stats {
   position: relative;
   box-sizing: border-box;
@@ -485,6 +511,22 @@
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 40%),
     color-mix(in srgb, var(--team-fill) 82%, #000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(8 * var(--u));
+  min-width: 0;
+}
+
+.pod-result__line {
+  width: auto;
+  min-width: 0;
+  flex: 0 1 auto;
+  field-sizing: content;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #fff;
   caret-color: #fff;
   text-align: center;
@@ -495,19 +537,30 @@
   text-transform: uppercase;
 }
 
-.pod-result.is-win,
-.pod-result.is-loss {
-  text-shadow:
-    0 0 calc(5 * var(--u)) rgba(0, 0, 0, 0.55),
-    calc(1.1 * var(--u)) calc(1.3 * var(--u)) 0 rgba(0, 0, 0, 0.92);
+.pod-wl-chip {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: calc(28 * var(--u));
+  height: calc(26 * var(--u));
+  display: grid;
+  place-items: center;
+  border-radius: calc(6 * var(--u));
+  border: calc(1.2 * var(--u)) solid rgba(0, 0, 0, 0.5);
+  box-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.38);
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(15 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
-.pod-result.is-win {
-  color: #7eff96;
+.pod-wl-chip.is-win {
+  background: #1b8f5a;
 }
 
-.pod-result.is-loss {
-  color: #ff7e7e;
+.pod-wl-chip.is-loss {
+  background: #b84a4a;
 }
 
 .pod-name {
@@ -588,7 +641,7 @@
 .pod-board.is-exporting .pod-title-input:focus,
 .pod-board.is-exporting .pod-date-notch:focus,
 .pod-board.is-exporting .pod-stat input:focus,
-.pod-board.is-exporting .pod-result:focus,
+.pod-board.is-exporting .pod-result__line:focus,
 .pod-board.is-exporting .pod-total:focus {
   outline: none;
 }

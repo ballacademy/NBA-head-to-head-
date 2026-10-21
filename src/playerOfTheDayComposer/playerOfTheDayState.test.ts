@@ -31,9 +31,12 @@ import {
   exportPotdFilename,
   fillCardFromPlayer,
   fillPotdFromStandouts,
+  resizePotdCards,
   photoRotate,
   photoZoom,
-  potdResultFill,
+  potdResultChipFill,
+  potdResultFromDisplay,
+  potdResultLineDisplay,
   potdResultOutcome,
   potdNightHeading,
   potdPickerSuggestions,
@@ -67,16 +70,26 @@ describe("player of the day state", () => {
     );
   });
 
-  it("colors the score-strip lockup green for a win and red for a loss", () => {
+  it("pulls W/L onto a mint/coral chip and leaves the score line white", () => {
     expect(potdResultOutcome("113-121 L vs DET")).toBe("L");
     expect(potdResultOutcome("106-100 W vs NYK")).toBe("W");
     expect(potdResultOutcome("128-110 W VS MIN")).toBe("W");
     expect(potdResultOutcome("")).toBeNull();
     expect(potdResultOutcome("VS DET")).toBeNull();
-    expect(potdResultFill("106-100 W vs NYK", false)).toBeNull();
-    expect(potdResultFill("106-100 W vs NYK", true)).toBe(POTD_WL_WIN);
-    expect(potdResultFill("113-121 L vs DET", true)).toBe(POTD_WL_LOSS);
-    expect(potdResultFill("no result yet", true)).toBeNull();
+    expect(potdResultChipFill("W")).toBe(POTD_WL_WIN);
+    expect(potdResultChipFill("L")).toBe(POTD_WL_LOSS);
+    expect(potdResultLineDisplay("113-121 L vs DET", false)).toBe(
+      "113-121 L vs DET",
+    );
+    expect(potdResultLineDisplay("113-121 L vs DET", true)).toBe(
+      "113-121 vs DET",
+    );
+    expect(potdResultLineDisplay("106-100 W vs NYK", true)).toBe(
+      "106-100 vs NYK",
+    );
+    expect(
+      potdResultFromDisplay("113-121 vs DET", "113-121 L vs DET"),
+    ).toBe("113-121 L vs DET");
   });
 
   it("auto-fills headshot, team, stats, and result from the latest game", () => {
@@ -281,6 +294,19 @@ describe("player of the day state", () => {
     const filled = fillPotdFromStandouts(createEmptyCards(), ranked);
     expect(filled[0]?.playerId).toBe("3112335");
     expect(filled[1]?.playerId).toBe("4278073");
+    expect(filled).toHaveLength(2);
+    const three = fillPotdFromStandouts(createEmptyCards(3), ranked);
+    expect(three).toHaveLength(3);
+    expect(three.map((card) => card.playerId)).toEqual([
+      "3112335",
+      "4278073",
+      "4280245",
+    ]);
+    const grown = resizePotdCards(filled, 3);
+    expect(grown).toHaveLength(3);
+    expect(grown[2]?.playerId).toBeNull();
+    expect(resizePotdCards(grown, 2)).toHaveLength(2);
+    expect(resizePotdCards(grown, 2)[1]?.playerId).toBe("4278073");
     expect(filled[0]?.customPhoto).toBe(false);
     expect(filled[0]?.photoSrc).toBe(getPlayer("3112335")?.headshotUrl);
     const recs = potdPickerSuggestions(ranked);
@@ -353,6 +379,13 @@ describe("player of the day state", () => {
     expect(covered.w).toBeGreaterThanOrEqual(520);
     expect(potdLayout.POTD_NAME_SIZE).toBe(36);
     expect(potdLayout.POTD_STAT_SIZE).toBe(38);
+    expect(potdLayout.potdStatSize(2)).toBe(38);
+    expect(potdLayout.potdStatSize(3)).toBe(28);
+    expect(potdLayout.potdCardW(2)).toBe(potdLayout.POTD_CARD_W);
+    expect(
+      potdLayout.potdCardX(2, 3) + potdLayout.potdCardW(3),
+    ).toBeCloseTo(1200 - potdLayout.potdPadX(3));
+    expect(potdLayout.potdCardX(0, 3)).toBe(potdLayout.potdPadX(3));
     expect(potdLayout.POTD_TITLE_SIZE).toBe(46);
     expect(potdLayout.POTD_TITLE_PAD).toBe(14);
     expect(potdLayout.POTD_HEADER_H).toBe(208);

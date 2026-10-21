@@ -17,17 +17,24 @@ import {
   totwEfficiencyIndex,
   type NightStandout,
 } from "./nightStandouts";
+import {
+  POTD_CARD_MAX,
+  parsePotdCardCount,
+} from "./playerOfTheDayLayout";
+
+export { POTD_CARD_MAX, parsePotdCardCount };
 
 export { DEFAULT_BRAND };
 
 export const DEFAULT_POTD_TITLE = "PLAYER OF THE DAY?";
 export const POTD_TITLE_TRACK = 0.02;
 export const POTD_CARD_COUNT = 2;
-export const POTD_FILL_COUNT = 2;
 export const POTD_PICKER_LIMIT = 8;
-/** Light mint/coral so W/L still reads on dark team-color bars. */
-export const POTD_WL_WIN = "#7EFF96";
-export const POTD_WL_LOSS = "#FF7E7E";
+export const POTD_SLOT_LABELS_2 = ["Left card", "Right card"] as const;
+export const POTD_SLOT_LABELS_3 = ["Left card", "Middle card", "Right card"] as const;
+/** Dark mint/coral chip fills — white letter, readable on team-color bars. */
+export const POTD_WL_WIN = "#1B8F5A";
+export const POTD_WL_LOSS = "#B84A4A";
 
 export const potdResultOutcome = (result: string): "W" | "L" | null => {
   const token = result
@@ -37,18 +44,37 @@ export const potdResultOutcome = (result: string): "W" | "L" | null => {
   return token === "W" || token === "L" ? token : null;
 };
 
-export const potdResultFill = (result: string, on: boolean) => {
-  if (!on) {
-    return null;
+export const potdResultChipFill = (outcome: "W" | "L") =>
+  outcome === "W" ? POTD_WL_WIN : POTD_WL_LOSS;
+
+/** Score / vs-line with the W/L token pulled for the chip. */
+export const potdResultLineDisplay = (result: string, on: boolean) => {
+  if (!on || !potdResultOutcome(result)) {
+    return result;
   }
-  const outcome = potdResultOutcome(result);
-  if (outcome === "W") {
-    return POTD_WL_WIN;
+  return result
+    .replace(/(^|\s)[WL](\s|$)/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+export const potdResultFromDisplay = (display: string, stored: string) => {
+  const outcome = potdResultOutcome(stored);
+  const text = display.replace(/\s+/g, " ").trim();
+  if (!outcome) {
+    return text;
   }
-  if (outcome === "L") {
-    return POTD_WL_LOSS;
+  if (!text) {
+    return outcome;
   }
-  return null;
+  const vs = text.match(/^(\S+)\s+(VS\s+.+)$/i);
+  if (vs) {
+    return `${vs[1]} ${outcome} ${vs[2]}`;
+  }
+  if (potdResultOutcome(text)) {
+    return text;
+  }
+  return `${outcome} ${text}`;
 };
 
 export const potdNightHeading = (
@@ -107,9 +133,6 @@ export const fillPotdFromStandouts = (
 ): PotdCard[] => {
   const ranked = rankPotdNightBest(rows);
   const next = cards.map((card, index) => {
-    if (index >= POTD_FILL_COUNT) {
-      return { ...card };
-    }
     const row = ranked[index];
     if (!row) {
       return createEmptyCard();
@@ -137,7 +160,7 @@ const recBadge = (row: NightStandout, index: number) => {
   return flag ?? `#${index + 1}`;
 };
 
-/** Best-of-night names for the existing picker recs. Used pair stay listed. */
+/** Best-of-night names for the existing picker recs. Used slots stay listed. */
 export const potdPickerSuggestions = (
   rows: NightStandout[],
   limit = POTD_PICKER_LIMIT,
@@ -236,8 +259,40 @@ export const createEmptyCard = (): PotdCard => ({
   result: "",
 });
 
-export const createEmptyCards = (): PotdCard[] =>
-  Array.from({ length: POTD_CARD_COUNT }, createEmptyCard);
+export const createEmptyCards = (count = POTD_CARD_COUNT): PotdCard[] =>
+  Array.from({ length: parsePotdCardCount(count) }, createEmptyCard);
+
+export const resizePotdCards = (cards: PotdCard[], count: unknown): PotdCard[] => {
+  const next = parsePotdCardCount(count);
+  if (cards.length === next) {
+    return cards;
+  }
+  if (cards.length > next) {
+    return cards.slice(0, next);
+  }
+  return [
+    ...cards,
+    ...Array.from({ length: next - cards.length }, createEmptyCard),
+  ];
+};
+
+export const potdSlotLabel = (index: number, count: number) => {
+  const labels =
+    parsePotdCardCount(count) === POTD_CARD_MAX
+      ? POTD_SLOT_LABELS_3
+      : POTD_SLOT_LABELS_2;
+  return labels[index] ?? `Card ${index + 1}`;
+};
+
+export const potdPickerHeading = (index: number, count: number) => {
+  if (parsePotdCardCount(count) === POTD_CARD_MAX) {
+    return (
+      ["Pick left player", "Pick middle player", "Pick right player"][index] ??
+      "Pick player"
+    );
+  }
+  return index === 0 ? "Pick left player" : "Pick right player";
+};
 
 export const isPhotoPan = (value: unknown): value is PhotoPan =>
   Boolean(
@@ -308,7 +363,8 @@ export const isPotdDraft = (value: unknown): value is PotdDraft =>
       typeof (value as PotdDraft).title === "string" &&
       typeof (value as PotdDraft).date === "string" &&
       Array.isArray((value as PotdDraft).cards) &&
-      (value as PotdDraft).cards.length === POTD_CARD_COUNT &&
+      ((value as PotdDraft).cards.length === POTD_CARD_COUNT ||
+        (value as PotdDraft).cards.length === POTD_CARD_MAX) &&
       (value as PotdDraft).cards.every(isPotdCard),
   );
 
@@ -412,7 +468,7 @@ export const usedPlayerIds = (cards: PotdCard[]) => {
   const used: Record<string, string> = {};
   cards.forEach((card, index) => {
     if (card.playerId) {
-      used[card.playerId] = index === 0 ? "Left card" : "Right card";
+      used[card.playerId] = potdSlotLabel(index, cards.length);
     }
   });
   return used;

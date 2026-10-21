@@ -14,12 +14,36 @@ export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 
 export const POTD_PAD_X = 64;
 export const POTD_GAP = 32;
-export const POTD_CARD_W = (GRAPHIC_WIDTH - POTD_PAD_X * 2 - POTD_GAP) / 2;
+export const POTD_CARD_MIN = 2;
+export const POTD_CARD_MAX = 3;
+export const POTD_PAD_X_3 = 40;
+export const POTD_GAP_3 = 20;
+
+export const parsePotdCardCount = (value: unknown) =>
+  Number(value) === POTD_CARD_MAX ? POTD_CARD_MAX : POTD_CARD_MIN;
+
+export const potdPadX = (count = POTD_CARD_MIN) =>
+  parsePotdCardCount(count) === POTD_CARD_MAX ? POTD_PAD_X_3 : POTD_PAD_X;
+
+export const potdGap = (count = POTD_CARD_MIN) =>
+  parsePotdCardCount(count) === POTD_CARD_MAX ? POTD_GAP_3 : POTD_GAP;
+
+export const potdCardW = (count = POTD_CARD_MIN) => {
+  const n = parsePotdCardCount(count);
+  return (GRAPHIC_WIDTH - potdPadX(n) * 2 - potdGap(n) * (n - 1)) / n;
+};
+
+export const POTD_CARD_W = potdCardW(POTD_CARD_MIN);
 
 export const POTD_HEADER_H = 208;
 export const POTD_FOOTER = 28;
 export const POTD_NAME_H = 116;
 export const POTD_RESULT_H = 52;
+export const POTD_WL_CHIP_W = 28;
+export const POTD_WL_CHIP_H = 26;
+export const POTD_WL_CHIP_RADIUS = 6;
+export const POTD_WL_CHIP_GAP = 8;
+export const POTD_WL_CHIP_SIZE = 15;
 export const POTD_STATS_H = 236;
 /** Small enough that two italic lines plus stroke sit inside the plate padding. */
 export const POTD_TITLE_SIZE = 46;
@@ -42,8 +66,19 @@ export const POTD_CARD_RADIUS = 14;
 export const POTD_TOTAL_SIZE = 20;
 export const POTD_LOGO_WATERMARK = 0.2;
 
-export const potdCardX = (index: number) =>
-  POTD_PAD_X + index * (POTD_CARD_W + POTD_GAP);
+export const potdCardX = (index: number, count = POTD_CARD_MIN) => {
+  const n = parsePotdCardCount(count);
+  return potdPadX(n) + index * (potdCardW(n) + potdGap(n));
+};
+
+export const potdStatSize = (count = POTD_CARD_MIN) =>
+  parsePotdCardCount(count) === POTD_CARD_MAX ? 28 : POTD_STAT_SIZE;
+
+export const potdNameSize = (count = POTD_CARD_MIN) =>
+  parsePotdCardCount(count) === POTD_CARD_MAX ? 28 : POTD_NAME_SIZE;
+
+export const potdResultSize = (count = POTD_CARD_MIN) =>
+  parsePotdCardCount(count) === POTD_CARD_MAX ? 15 : 20;
 
 export const mixHex = (hex: string, other: string, amount: number) => {
   const parse = (value: string) => {

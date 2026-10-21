@@ -17,7 +17,10 @@ import { getTeam } from "../standingsComposer/teams";
 import { PhotoFrame } from "./PhotoFrame";
 import { statsFillForTeam } from "./playerOfTheDayLayout";
 import {
+  potdResultFromDisplay,
+  potdResultLineDisplay,
   potdResultOutcome,
+  potdSlotLabel,
   splitPotdTitle,
   type PhotoPan,
   type PotdCard,
@@ -121,7 +124,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
   return (
     <article
       ref={setRefs}
-      className={["pod-board", exporting ? "is-exporting" : "", composerLookClass(look), composerFlairClass(purpleFlair), composerGradeClass(photoGrade)]
+      className={["pod-board", exporting ? "is-exporting" : "", cards.length === 3 ? "is-3up" : "", composerLookClass(look), composerFlairClass(purpleFlair), composerGradeClass(photoGrade)]
         .filter(Boolean)
         .join(" ")}
       style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
@@ -188,7 +191,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   ["--team-fill" as string]: statsFillForTeam(card.teamId),
                 } as React.CSSProperties
               }
-              aria-label={index === 0 ? "Left player" : "Right player"}
+              aria-label={potdSlotLabel(index, cards.length)}
             >
               <div className="pod-photo-stack">
                 <PhotoFrame
@@ -209,7 +212,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
                     className="pod-total"
                     value={`TOTAL: ${card.total}`}
                     maxLength={18}
-                    aria-label={index === 0 ? "Left total" : "Right total"}
+                    aria-label={`${potdSlotLabel(index, cards.length)} total`}
                     onChange={(event) => {
                       const raw = event.target.value.replace(/^total:\s*/i, "");
                       onTotalChange(index, raw.slice(0, 8));
@@ -242,26 +245,36 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   ))}
                 </div>
               </div>
-              <input
-                className={[
-                  "pod-result",
-                  wlColor && potdResultOutcome(card.result) === "W"
-                    ? "is-win"
-                    : "",
-                  wlColor && potdResultOutcome(card.result) === "L"
-                    ? "is-loss"
-                    : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                value={card.result}
-                maxLength={32}
-                placeholder="SCORE W/L VS OPP"
-                aria-label={index === 0 ? "Left result" : "Right result"}
-                onChange={(event) =>
-                  onResultChange(index, event.target.value.slice(0, 32))
-                }
-              />
+              <div className="pod-result">
+                {wlColor && potdResultOutcome(card.result) ? (
+                  <span
+                    className={
+                      potdResultOutcome(card.result) === "W"
+                        ? "pod-wl-chip is-win"
+                        : "pod-wl-chip is-loss"
+                    }
+                    aria-hidden="true"
+                  >
+                    {potdResultOutcome(card.result)}
+                  </span>
+                ) : null}
+                <input
+                  className="pod-result__line"
+                  value={potdResultLineDisplay(card.result, wlColor)}
+                  maxLength={32}
+                  placeholder="SCORE W/L VS OPP"
+                  aria-label={`${potdSlotLabel(index, cards.length)} result`}
+                  onChange={(event) =>
+                    onResultChange(
+                      index,
+                      potdResultFromDisplay(
+                        event.target.value.slice(0, 32),
+                        card.result,
+                      ),
+                    )
+                  }
+                />
+              </div>
               <button
                 type="button"
                 className="pod-name"

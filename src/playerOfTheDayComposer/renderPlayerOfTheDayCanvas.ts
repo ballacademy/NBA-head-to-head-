@@ -32,7 +32,6 @@ import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   POTD_BRAND_SIZE,
-  POTD_CARD_W,
   POTD_DATE_SIZE,
   POTD_FOOTER,
   POTD_HEADER_H,
@@ -41,28 +40,37 @@ import {
   POTD_PLATE_Y,
   POTD_LOGO_WATERMARK,
   POTD_NAME_H,
-  POTD_NAME_SIZE,
   POTD_RESULT_H,
-  POTD_STAT_SIZE,
   POTD_STATS_H,
   POTD_TITLE_PAD,
   POTD_TITLE_SIZE,
   POTD_TOTAL_SIZE,
   POTD_CARD_RADIUS,
   POTD_PHOTO_BORDER,
+  POTD_WL_CHIP_GAP,
+  POTD_WL_CHIP_H,
+  POTD_WL_CHIP_RADIUS,
+  POTD_WL_CHIP_SIZE,
+  POTD_WL_CHIP_W,
   addRoundRectPath,
   coverPanDraw,
   paintPotdPhotoBorder,
   paintPotdPlateBorder,
+  potdCardW,
   potdCardX,
+  potdNameSize,
+  potdResultSize,
   potdStatCell,
+  potdStatSize,
   statsFillForTeam,
 } from "./playerOfTheDayLayout";
 import {
   POTD_TITLE_TRACK,
   photoRotate,
   photoZoom,
-  potdResultFill,
+  potdResultChipFill,
+  potdResultLineDisplay,
+  potdResultOutcome,
   splitPotdTitle,
   type PotdCard,
 } from "./playerOfTheDayState";
@@ -116,6 +124,36 @@ const withShadow = (
   context.shadowOffsetY = Math.round(1.5 * scale);
   context.shadowBlur = 0;
   paint();
+  context.restore();
+};
+
+const paintWlChip = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  outcome: "W" | "L",
+) => {
+  const w = POTD_WL_CHIP_W * s;
+  const h = POTD_WL_CHIP_H * s;
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.38)";
+  context.shadowOffsetX = Math.round(1 * s);
+  context.shadowOffsetY = Math.round(1.2 * s);
+  context.shadowBlur = 0;
+  context.beginPath();
+  addRoundRectPath(context, x, y, w, h, POTD_WL_CHIP_RADIUS * s);
+  context.fillStyle = potdResultChipFill(outcome);
+  context.fill();
+  context.shadowColor = "transparent";
+  context.lineWidth = Math.max(1, 1.2 * s);
+  context.strokeStyle = "rgba(0, 0, 0, 0.5)";
+  context.stroke();
+  context.fillStyle = "#fff";
+  context.font = `900 ${POTD_WL_CHIP_SIZE * s}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(outcome, x + w / 2, y + h / 2 + 0.4 * s);
   context.restore();
 };
 
@@ -271,11 +309,12 @@ export const renderPlayerOfTheDayCanvas = async (
   const resultH = POTD_RESULT_H * s;
   const statsH = POTD_STATS_H * s;
   const photoH = bodyH - nameH - resultH - statsH;
+  const cardCount = input.cards.length;
 
-  for (let index = 0; index < input.cards.length; index += 1) {
+  for (let index = 0; index < cardCount; index += 1) {
     const card = input.cards[index]!;
-    const x = potdCardX(index) * s;
-    const w = POTD_CARD_W * s;
+    const x = potdCardX(index, cardCount) * s;
+    const w = potdCardW(cardCount) * s;
     const photoY = bodyTop;
     const statsY = photoY + photoH;
     const resultY = statsY + statsH;
@@ -393,7 +432,7 @@ export const renderPlayerOfTheDayCanvas = async (
         context.globalAlpha = 1;
       }
     }
-    context.font = `900 ${POTD_STAT_SIZE * s}px ${POSTER_FONT}`;
+    context.font = `900 ${potdStatSize(cardCount) * s}px ${POSTER_FONT}`;
     context.fillStyle = "#fff";
     context.textBaseline = "middle";
     context.textAlign = "center";
@@ -417,23 +456,41 @@ export const renderPlayerOfTheDayCanvas = async (
     context.globalAlpha = 0.92;
     context.fillRect(x, resultY, w, resultH);
     context.globalAlpha = 1;
-    const resultColor =
-      potdResultFill(card.result, input.wlColor === true) ?? "#fff";
-    context.font = `900 ${20 * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
+    const outcome =
+      input.wlColor === true ? potdResultOutcome(card.result) : null;
+    const resultText = potdResultLineDisplay(
+      card.result,
+      Boolean(outcome),
+    ).toUpperCase();
+    const resultSize = potdResultSize(cardCount);
+    context.font = `900 ${resultSize * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.04 * resultSize * s);
     context.textBaseline = "middle";
-    const resultText = (card.result || "").toUpperCase();
-    const resultX = x + w / 2;
+    context.fillStyle = "#fff";
+    const lineW = resultText ? context.measureText(resultText).width : 0;
+    const chipW = POTD_WL_CHIP_W * s;
+    const gap = POTD_WL_CHIP_GAP * s;
+    const groupW = outcome
+      ? chipW + (lineW ? gap + lineW : 0)
+      : lineW;
+    let cursor = x + (w - groupW) / 2;
     const resultMid = resultY + resultH / 2;
-    if (resultColor === "#fff") {
-      context.fillStyle = resultColor;
-      context.fillText(resultText, resultX, resultMid);
-    } else {
-      withShadow(context, s, () => {
-        context.fillStyle = resultColor;
-        context.fillText(resultText, resultX, resultMid);
-      });
+    if (outcome) {
+      paintWlChip(
+        context,
+        cursor,
+        resultMid - (POTD_WL_CHIP_H * s) / 2,
+        s,
+        outcome,
+      );
+      cursor += chipW + gap;
     }
+    if (resultText) {
+      context.textAlign = "left";
+      context.fillStyle = "#fff";
+      context.fillText(resultText, cursor, resultMid);
+    }
+    setLetterSpacing(context, 0);
     paintPotdPlateBorder(context, x, resultY, w, resultH, s, input.look);
 
     context.fillStyle = "#0a0a0a";
@@ -455,9 +512,9 @@ export const renderPlayerOfTheDayCanvas = async (
     nameShade.addColorStop(1, "rgba(0, 0, 0, 0.82)");
     context.fillStyle = nameShade;
     context.fillRect(x, nameY, w, nameH);
-    context.font = `900 ${POTD_NAME_SIZE * s}px ${POSTER_FONT}`;
+    context.font = `900 ${potdNameSize(cardCount) * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
-    setLetterSpacing(context, 0.04 * POTD_NAME_SIZE * s);
+    setLetterSpacing(context, 0.04 * potdNameSize(cardCount) * s);
     const nameCX = x + w / 2;
     context.lineJoin = "round";
     context.strokeStyle = "#000";

@@ -422,7 +422,9 @@ describe("composer chrome", () => {
     expect(rankedExport).not.toContain("toStoryCanvas");
     expect(potdApp).toContain("Export pack");
     expect(potdApp).toContain("renderPotdLeaderboardCanvas");
-    expect(potdApp).toContain('aria-label="Fill both players from this night’s best lines"');
+    expect(potdApp).toContain('aria-label="Fill players from this night’s best lines"');
+    expect(potdApp).toContain('aria-label={`${count} players`}');
+    expect(potdApp).toContain("resizePotdCards");
     expect(potdApp).toContain("fillPotdFromStandouts");
     expect(potdApp).toContain("rankPotdNightBest");
     expect(potdApp).toContain("potdPickerSuggestions");
@@ -440,10 +442,13 @@ describe("composer chrome", () => {
       join(root, "playerOfTheDayComposer/renderPlayerOfTheDayCanvas.ts"),
       "utf8",
     );
-    expect(potdGraphic).toContain('? "is-win"');
-    expect(potdGraphic).toContain('? "is-loss"');
-    expect(potdCanvas).toContain("potdResultFill");
+    expect(potdGraphic).toContain("pod-wl-chip is-win");
+    expect(potdGraphic).toContain("pod-wl-chip is-loss");
+    expect(potdGraphic).toContain("is-3up");
+    expect(potdCanvas).toContain("paintWlChip");
+    expect(potdCanvas).toContain("potdResultChipFill");
     expect(potdCanvas).toContain("wlColor?: boolean");
+    expect(potdCanvas).toContain("potdCardW(cardCount)");
     expect(pyramidApp).toContain("PYRAMID_AWARD_GROUPS");
     expect(appMain).toContain("applyComposerFavicon");
     const rankedApp = readFileSync(
