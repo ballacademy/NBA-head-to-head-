@@ -9,10 +9,7 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
-import {
-  nightStandoutPickerRows,
-  useComposerNight,
-} from "../instagramComposer/composerNight";
+import { useComposerNight } from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   copyGraphicCaption,
@@ -34,7 +31,12 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { showComposerToast } from "../instagramComposer/composerFillToast";
 import { fetchRecentGames, formatDateLabel, type LastGame } from "./lastGame";
+import {
+  fetchNightBoxAppearances,
+  type NightStandout,
+} from "./nightStandouts";
 import { GamePicker } from "./GamePicker";
 import { POTD_TITLE_PRESETS, exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
@@ -54,12 +56,16 @@ import {
   applyLeaderboardTotals,
   applyPlayerPick,
   cardPlayerName,
+  fillPotdFromStandouts,
   hasCustomPhoto,
   leaderboardTotalForName,
   clearCard,
   defaultPotdDraft,
   isPotdDraft,
   patchCard,
+  potdNightHeading,
+  potdPickerSuggestions,
+  rankPotdNightBest,
   setCardPhoto,
   usedPlayerIds,
   type PotdCard,
@@ -126,6 +132,8 @@ export function PlayerOfTheDayComposerApp() {
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<PotdCard[]>();
   const night = useComposerNight();
+  const [nightBest, setNightBest] = useState<NightStandout[]>([]);
+  const [nightBestLoading, setNightBestLoading] = useState(false);
 
   useEffect(() => {
     document.title = "Player of the Day graphic";
@@ -217,12 +225,53 @@ export function PlayerOfTheDayComposerApp() {
     setStatus("Blank post.");
   };
 
+  const loadNightBest = useCallback(async (iso = night.date) => {
+    setNightBestLoading(true);
+    try {
+      const rows = rankPotdNightBest(await fetchNightBoxAppearances(iso));
+      setNightBest(rows);
+      return rows;
+    } catch (error) {
+      console.error(error);
+      return [] as NightStandout[];
+    } finally {
+      setNightBestLoading(false);
+    }
+  }, [night.date]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    void loadNightBest(night.date);
+  }, [hydrated, night.date, loadNightBest]);
+
   useEffect(() => {
     if (activeIndex == null) {
       return;
     }
-    void night.ensureStandouts(night.date);
-  }, [activeIndex, night.date, night.ensureStandouts]);
+    void loadNightBest(night.date);
+  }, [activeIndex, night.date, loadNightBest]);
+
+  const handleFillNight = async () => {
+    setStatus("Loading this night’s box scores…");
+    const rows = await loadNightBest(night.date);
+    push(cards);
+    const next = fillPotdFromStandouts(cards, rows);
+    setCards(next);
+    setDate(formatDateLabel(night.date));
+    const names = next.map(cardPlayerName).filter(Boolean);
+    if (names.length >= 2) {
+      setStatus(`Filled ${names.join(" and ")}.`);
+    } else if (names.length === 1) {
+      setStatus(`Filled ${names[0]}. Only one line for that night.`);
+    } else {
+      setStatus("No box scores for that night yet — pick players for the empty slots.");
+    }
+    if (statsSample === "preseason") {
+      showComposerToast("Fill is preseason.");
+    }
+  };
 
   const handlePick = async (playerId: string) => {
     if (activeIndex == null) {
@@ -232,7 +281,7 @@ export function PlayerOfTheDayComposerApp() {
     if (!player) {
       return;
     }
-    const standout = night.standouts.find((row) => row.athleteId === playerId);
+    const standout = nightBest.find((row) => row.athleteId === playerId);
     pendingPick.current = {
       index: activeIndex,
       playerId: player.id,
@@ -364,6 +413,15 @@ export function PlayerOfTheDayComposerApp() {
               setDate(formatDateLabel(iso));
             }}
           />
+          <button
+            type="button"
+            className="sc-chip"
+            aria-label="Fill both players from this night’s best lines"
+            onClick={() => void handleFillNight()}
+            disabled={nightBestLoading}
+          >
+            Fill
+          </button>
           <div className="sc-look" role="group" aria-label="Players">
             <span className="sc-look__label">Players</span>
             <button
@@ -627,12 +685,20 @@ export function PlayerOfTheDayComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={activeIndex === 0 ? "Pick left player" : "Pick right player"}
-          hint="Search a name. We’ll fill the latest game, team color, and headshot."
+          hint="Gold cards are this night’s best remaining lines — same ranking as Fill. Search still lists everyone."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
-          suggested={nightStandoutPickerRows(night.standouts)}
-          suggestedHeading={night.heading}
-          suggestedLoading={night.loading}
+          suggested={potdPickerSuggestions(
+            nightBest,
+            new Set(Object.keys(usedPlayerIds(cards))),
+          )}
+          suggestedHeading={potdNightHeading(
+            night.date,
+            night.todayIso,
+            night.yesterdayIso,
+          )}
+          suggestedLoading={nightBestLoading}
+          suggestedEmpty="No box scores for this night yet."
           onPick={(playerId) => {
             void handlePick(playerId);
           }}

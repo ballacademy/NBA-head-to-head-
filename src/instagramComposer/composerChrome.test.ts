@@ -265,6 +265,12 @@ describe("composer chrome", () => {
     expect(totwPlusState).toContain("totwEfficiencyIndex");
     expect(totwPlusState).toContain("TOTW_MIN_GAMES");
     expect(totwPlusState).toContain("TOTW_TS_REF");
+    const nightStandouts = readFileSync(
+      join(root, "playerOfTheDayComposer/nightStandouts.ts"),
+      "utf8",
+    );
+    expect(nightStandouts).toContain("export const totwCountingScore");
+    expect(nightStandouts).toContain("export const totwEfficiencyIndex");
     expect(totwPlusState).toContain("TOTW_EFF_MAX");
     expect(totwPlusState).toContain("TOTW_EFF_FGA_REF");
     expect(totwPlusState).toContain("TOTW_GROUP_SOFT_MAX");
@@ -416,6 +422,12 @@ describe("composer chrome", () => {
     expect(rankedExport).not.toContain("toStoryCanvas");
     expect(potdApp).toContain("Export pack");
     expect(potdApp).toContain("renderPotdLeaderboardCanvas");
+    expect(potdApp).toContain('aria-label="Fill both players from this night’s best lines"');
+    expect(potdApp).toContain("fillPotdFromStandouts");
+    expect(potdApp).toContain("rankPotdNightBest");
+    expect(potdApp).toContain("potdPickerSuggestions");
+    expect(potdApp).toContain("fetchNightBoxAppearances");
+    expect(potdApp).not.toContain("nightStandoutPickerRows(night.standouts)");
     expect(pyramidApp).toContain("PYRAMID_AWARD_GROUPS");
     expect(appMain).toContain("applyComposerFavicon");
     const rankedApp = readFileSync(

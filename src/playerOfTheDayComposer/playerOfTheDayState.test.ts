@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
-import { parseLastGamePayload } from "./lastGame";
+import { emptyStats, parseLastGamePayload } from "./lastGame";
+import type { NightStandout } from "./nightStandouts";
+import { rankNightStandouts } from "./nightStandouts";
 import {
   BANNER_FILL_BASE,
   BANNER_STUD_FILL,
@@ -26,8 +28,12 @@ import {
   createEmptyCards,
   exportPotdFilename,
   fillCardFromPlayer,
+  fillPotdFromStandouts,
   photoRotate,
   photoZoom,
+  potdNightHeading,
+  potdPickerSuggestions,
+  rankPotdNightBest,
   setCardPhoto,
   splitPlayerName,
   splitPotdTitle,
@@ -148,6 +154,130 @@ describe("player of the day state", () => {
     expect(clampZoom(9)).toBe(MAX_PHOTO_ZOOM);
     expect(photoZoom({ x: 0.5, y: 0.5 })).toBe(DEFAULT_PHOTO_ZOOM);
     expect(usedPlayerIds(withPhoto)["3945274"]).toBe("Left card");
+  });
+
+  const nightRow = (
+    id: string,
+    name: string,
+    stats: Partial<ReturnType<typeof emptyStats>>,
+    score = 0,
+    flags: string[] = [],
+  ): NightStandout => {
+    const line = { ...emptyStats(), min: "32", ...stats };
+    return {
+      athleteId: id,
+      name,
+      teamId: "DEN",
+      badge: flags[0] ?? "Standout",
+      flags,
+      line: `${line.pts} PTS`,
+      score,
+      game: {
+        eventId: "1",
+        gameDate: "2026-10-20",
+        teamId: "DEN",
+        opponentId: "LAL",
+        opponentAbbrev: "LAL",
+        result: "W",
+        playerScore: "120",
+        opponentScore: "110",
+        resultLine: "W 120-110 LAL",
+        dateLabel: "10/20",
+        stats: line,
+      },
+    };
+  };
+
+  it("ranks POTD by best counting × efficiency, not surprise standouts", () => {
+    const jokic = nightRow(
+      "3112335",
+      "Nikola Jokic",
+      {
+        pts: "32",
+        reb: "14",
+        ast: "11",
+        stl: "1",
+        blk: "1",
+        fg: "12-22",
+        three: "1-3",
+        ft: "7-8",
+        tov: "3",
+        min: "36",
+      },
+      40,
+      ["Triple-double"],
+    );
+    const bouyea = nightRow(
+      "4280245",
+      "Jamaree Bouyea",
+      {
+        pts: "15",
+        reb: "4",
+        ast: "8",
+        fg: "6-9",
+        three: "3-4",
+        ft: "0-0",
+        tov: "1",
+        min: "28",
+      },
+      80,
+      ["Hot night"],
+    );
+    const emptyLuka = nightRow(
+      "3945274",
+      "Luka Doncic",
+      {
+        pts: "28",
+        reb: "4",
+        ast: "4",
+        fg: "10-28",
+        three: "1-10",
+        ft: "7-10",
+        tov: "8",
+        min: "36",
+      },
+      50,
+      ["30+ PTS"],
+    );
+    const efficient = nightRow(
+      "4278073",
+      "Shai Gilgeous-Alexander",
+      {
+        pts: "20",
+        reb: "6",
+        ast: "5",
+        fg: "8-12",
+        three: "4-6",
+        ft: "0-0",
+        tov: "1",
+        min: "34",
+      },
+      30,
+    );
+    const ranked = rankPotdNightBest([bouyea, emptyLuka, efficient, jokic]);
+    expect(ranked[0]?.athleteId).toBe("3112335");
+    expect(ranked.map((row) => row.athleteId).slice(0, 2)).not.toContain(
+      "4280245",
+    );
+    expect(
+      ranked.findIndex((row) => row.athleteId === "4278073"),
+    ).toBeLessThan(ranked.findIndex((row) => row.athleteId === "3945274"));
+    const filled = fillPotdFromStandouts(createEmptyCards(), ranked);
+    expect(filled[0]?.playerId).toBe("3112335");
+    expect(filled[1]?.playerId).toBe("4278073");
+    expect(filled[0]?.customPhoto).toBe(false);
+    expect(filled[0]?.photoSrc).toBe(getPlayer("3112335")?.headshotUrl);
+    const recs = potdPickerSuggestions(
+      ranked,
+      new Set(["3112335"]),
+    );
+    expect(recs[0]?.id).toBe("4278073");
+    expect(recs.map((row) => row.id)).not.toContain("3112335");
+    expect(potdNightHeading("2026-10-20", "2026-10-20", "2026-10-19")).toBe(
+      "Tonight’s best",
+    );
+    const surpriseFirst = rankNightStandouts([bouyea, jokic]);
+    expect(surpriseFirst[0]?.athleteId).toBe("4280245");
   });
 
   it("clears a player if they are already on the other card", () => {

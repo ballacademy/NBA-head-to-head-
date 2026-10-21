@@ -12,12 +12,120 @@ import {
   type LastGame,
   type LastGameStats,
 } from "./lastGame";
+import {
+  totwCountingScore,
+  totwEfficiencyIndex,
+  type NightStandout,
+} from "./nightStandouts";
 
 export { DEFAULT_BRAND };
 
 export const DEFAULT_POTD_TITLE = "PLAYER OF THE DAY?";
 export const POTD_TITLE_TRACK = 0.02;
 export const POTD_CARD_COUNT = 2;
+export const POTD_FILL_COUNT = 2;
+export const POTD_PICKER_LIMIT = 8;
+
+export const potdNightHeading = (
+  date: string,
+  todayIso: string,
+  yesterdayIso: string,
+) => {
+  if (date === todayIso) {
+    return "Tonight’s best";
+  }
+  if (date === yesterdayIso) {
+    return "Last night’s best";
+  }
+  return `Best · ${date}`;
+};
+
+const minutesPlayed = (stats: LastGameStats) => {
+  const value = Number.parseFloat(stats.min);
+  return Number.isFinite(value) ? value : 0;
+};
+
+/** TOTW counting × efficiency on one night — no surprise / over-expectation. */
+export const potdNightScore = (row: NightStandout) =>
+  totwCountingScore(row.game.stats) * totwEfficiencyIndex(row.game.stats);
+
+export const rankPotdNightBest = (rows: NightStandout[]) => {
+  const seen = new Set<string>();
+  const eligible: NightStandout[] = [];
+  for (const row of rows) {
+    if (minutesPlayed(row.game.stats) <= 0 || seen.has(row.athleteId)) {
+      continue;
+    }
+    if (!getPlayer(row.athleteId)) {
+      continue;
+    }
+    seen.add(row.athleteId);
+    eligible.push(row);
+  }
+  return eligible.sort((left, right) => {
+    const score = potdNightScore(right) - potdNightScore(left);
+    if (score) {
+      return score;
+    }
+    const counting =
+      totwCountingScore(right.game.stats) - totwCountingScore(left.game.stats);
+    if (counting) {
+      return counting;
+    }
+    return right.score - left.score;
+  });
+};
+
+export const fillPotdFromStandouts = (
+  cards: PotdCard[],
+  rows: NightStandout[],
+): PotdCard[] => {
+  const ranked = rankPotdNightBest(rows);
+  const next = cards.map((card, index) => {
+    if (index >= POTD_FILL_COUNT) {
+      return { ...card };
+    }
+    const row = ranked[index];
+    if (!row) {
+      return createEmptyCard();
+    }
+    const player = getPlayer(row.athleteId);
+    if (!player) {
+      return createEmptyCard();
+    }
+    return fillCardFromPlayer(
+      player,
+      row.game,
+      card,
+      leaderboardTotalForName(player.name),
+      false,
+    );
+  });
+  return applyLeaderboardTotals(next);
+};
+
+const recBadge = (row: NightStandout, index: number) => {
+  const flag = row.flags.find((item) => item !== "Hot night");
+  if (index === 0) {
+    return flag ?? "#1";
+  }
+  return flag ?? `#${index + 1}`;
+};
+
+/** Remaining best-of-night names for the existing picker recs. */
+export const potdPickerSuggestions = (
+  rows: NightStandout[],
+  usedIds: ReadonlySet<string>,
+  limit = POTD_PICKER_LIMIT,
+) =>
+  rankPotdNightBest(rows)
+    .filter((row) => !usedIds.has(row.athleteId))
+    .slice(0, limit)
+    .map((row, index) => ({
+      id: row.athleteId,
+      badge: recBadge(row, index),
+      meta: row.line,
+    }));
 
 export interface PhotoPan {
   x: number;

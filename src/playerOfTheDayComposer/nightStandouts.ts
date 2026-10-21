@@ -285,6 +285,62 @@ export const isNotableNight = (
   return isSurpriseNight(extra, usual);
 };
 
+export const TOTW_TS_REF = 0.55;
+export const TOTW_EFG_REF = 0.52;
+export const TOTW_TS_SHARE = 0.75;
+export const TOTW_EFG_SHARE = 0.25;
+export const TOTW_EFF_MIN = 0.88;
+export const TOTW_EFF_MAX = 1.12;
+export const TOTW_EFF_FGA_REF = 12;
+export const TOTW_MIN_FGA = 5;
+export const TOTW_STOCKS_WEIGHT = 4;
+export const TOTW_TENS_WEIGHT = 10;
+export const TOTW_PRA_WEIGHT = 0.35;
+export const TOTW_TOV_WEIGHT = 2.5;
+
+export const totwShooting = (stats: LastGameStats) => {
+  const fg = parseMadeAttempted(stats.fg);
+  const three = parseMadeAttempted(stats.three);
+  const ft = parseMadeAttempted(stats.ft);
+  const pts = Number.parseFloat(stats.pts);
+  const efg =
+    fg.attempted > 0 ? (fg.made + 0.5 * three.made) / fg.attempted : null;
+  const tsDenom = 2 * (fg.attempted + 0.44 * ft.attempted);
+  const ts =
+    tsDenom > 0 && Number.isFinite(pts) ? pts / tsDenom : null;
+  return { fg, three, ft, efg, ts, fga: fg.attempted };
+};
+
+/** Counting line. Turnovers dock empty-calorie scoring volume. */
+export const totwCountingScore = (stats: LastGameStats) => {
+  const extra = nightFlagsFor(stats);
+  const tov = Number.parseFloat(stats.tov);
+  const turnovers = Number.isFinite(tov) ? tov : 0;
+  return (
+    extra.pts +
+    extra.pra * TOTW_PRA_WEIGHT +
+    extra.stocks * TOTW_STOCKS_WEIGHT +
+    extra.tens * TOTW_TENS_WEIGHT -
+    turnovers * TOTW_TOV_WEIGHT
+  );
+};
+
+/**
+ * Blend TS% vs 55% and eFG% vs 52%. Tiny samples stay neutral.
+ * Clamped ±12% so counting still carries.
+ */
+export const totwEfficiencyIndex = (stats: LastGameStats) => {
+  const { efg, ts, fga } = totwShooting(stats);
+  if (fga < TOTW_MIN_FGA || ts == null || efg == null) {
+    return 1;
+  }
+  const raw =
+    TOTW_TS_SHARE * (ts / TOTW_TS_REF) + TOTW_EFG_SHARE * (efg / TOTW_EFG_REF);
+  const clamped = Math.min(TOTW_EFF_MAX, Math.max(TOTW_EFF_MIN, raw));
+  const volume = Math.min(1, fga / TOTW_EFF_FGA_REF);
+  return 1 + (clamped - 1) * volume;
+};
+
 export const surpriseBonus = (
   extra: ReturnType<typeof nightFlagsFor>,
   usual: UsualLine,
@@ -481,6 +537,16 @@ export const parseSummaryBoxAppearances = (
 
 const boxCache = new Map<string, NightStandout[]>();
 const cache = new Map<string, NightStandout[]>();
+
+export const fetchNightBoxAppearances = async (
+  iso: string,
+): Promise<NightStandout[]> => {
+  const date = isoDateOnly(iso);
+  if (!date) {
+    return [];
+  }
+  return loadNightBoxAppearances(date);
+};
 
 const loadNightBoxAppearances = async (date: string): Promise<NightStandout[]> => {
   if (boxCache.has(date)) {

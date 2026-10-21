@@ -1,11 +1,17 @@
 import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
 import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters";
-import type { LastGameStats } from "../playerOfTheDayComposer/lastGame";
 import {
   isSurpriseNight,
   nightFlagsFor,
-  parseMadeAttempted,
   surpriseBonus,
+  totwCountingScore,
+  totwEfficiencyIndex,
+  totwShooting,
+  TOTW_EFF_FGA_REF,
+  TOTW_EFF_MAX,
+  TOTW_MIN_FGA,
+  TOTW_TOV_WEIGHT,
+  TOTW_TS_REF,
   usualLineFor,
   type NightStandout,
 } from "../playerOfTheDayComposer/nightStandouts";
@@ -29,6 +35,17 @@ import {
   swapStrips,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
+
+export {
+  totwCountingScore,
+  totwEfficiencyIndex,
+  totwShooting,
+  TOTW_EFF_FGA_REF,
+  TOTW_EFF_MAX,
+  TOTW_MIN_FGA,
+  TOTW_TOV_WEIGHT,
+  TOTW_TS_REF,
+};
 
 export {
   applyPlayerPick,
@@ -266,20 +283,6 @@ export const totwGames = (row: NightStandout) =>
   Math.max(1, Math.round(row.games ?? 1));
 
 export const TOTW_MIN_GAMES = 2;
-export const TOTW_TS_REF = 0.55;
-export const TOTW_EFG_REF = 0.52;
-export const TOTW_TS_SHARE = 0.75;
-export const TOTW_EFG_SHARE = 0.25;
-/** Modest mix — ±40% heaters were dropping 21-point star weeks like Tatum. */
-export const TOTW_EFF_MIN = 0.88;
-export const TOTW_EFF_MAX = 1.12;
-/** Full efficiency swing at this FGA; quieter samples shrink toward 1.0. */
-export const TOTW_EFF_FGA_REF = 12;
-export const TOTW_MIN_FGA = 5;
-export const TOTW_STOCKS_WEIGHT = 4;
-export const TOTW_TENS_WEIGHT = 10;
-export const TOTW_PRA_WEIGHT = 0.35;
-export const TOTW_TOV_WEIGHT = 2.5;
 /**
  * Close-call only: 2 GP is 1.0; each extra game (capped at +2) adds this
  * fraction. +10%/game was enough for a 5-game camp week (Lendeborg) to sit
@@ -292,55 +295,6 @@ export const TOTW_PICKER_LIMIT = 8;
 
 export const qualifyTotwRows = (rows: NightStandout[]) =>
   rows.filter((row) => totwGames(row) >= TOTW_MIN_GAMES);
-
-export const totwShooting = (stats: LastGameStats) => {
-  const fg = parseMadeAttempted(stats.fg);
-  const three = parseMadeAttempted(stats.three);
-  const ft = parseMadeAttempted(stats.ft);
-  const pts = Number.parseFloat(stats.pts);
-  const efg =
-    fg.attempted > 0 ? (fg.made + 0.5 * three.made) / fg.attempted : null;
-  const tsDenom = 2 * (fg.attempted + 0.44 * ft.attempted);
-  const ts =
-    tsDenom > 0 && Number.isFinite(pts) ? pts / tsDenom : null;
-  return { fg, three, ft, efg, ts, fga: fg.attempted };
-};
-
-/**
- * Counting line for the window (per-game averages). Quieter tens/stocks than
- * Cover’s single-night score. Turnovers dock empty-calorie scoring volume
- * that doesn’t bring AST/REB with it.
- */
-export const totwCountingScore = (stats: LastGameStats) => {
-  const extra = nightFlagsFor(stats);
-  const tov = Number.parseFloat(stats.tov);
-  const turnovers = Number.isFinite(tov) ? tov : 0;
-  return (
-    extra.pts +
-    extra.pra * TOTW_PRA_WEIGHT +
-    extra.stocks * TOTW_STOCKS_WEIGHT +
-    extra.tens * TOTW_TENS_WEIGHT -
-    turnovers * TOTW_TOV_WEIGHT
-  );
-};
-
-/**
- * Blend TS% vs 55% and eFG% vs 52%. Tiny shooting samples stay neutral.
- * Clamped ±12% so counting still carries: a 7-shot 85% TS heater cannot
- * outrank a 21-point star week. Below 12 FGA the bump/haircut shrinks
- * toward 1.0 — efficient volume ranks, empty volume still pays.
- */
-export const totwEfficiencyIndex = (stats: LastGameStats) => {
-  const { efg, ts, fga } = totwShooting(stats);
-  if (fga < TOTW_MIN_FGA || ts == null || efg == null) {
-    return 1;
-  }
-  const raw =
-    TOTW_TS_SHARE * (ts / TOTW_TS_REF) + TOTW_EFG_SHARE * (efg / TOTW_EFG_REF);
-  const clamped = Math.min(TOTW_EFF_MAX, Math.max(TOTW_EFF_MIN, raw));
-  const volume = Math.min(1, fga / TOTW_EFF_FGA_REF);
-  return 1 + (clamped - 1) * volume;
-};
 
 /** Extra games in the window count; 2 GP is 1.0, 3 GP +2%, 4+ GP +4%. */
 export const totwAvailabilityIndex = (row: NightStandout) => {
