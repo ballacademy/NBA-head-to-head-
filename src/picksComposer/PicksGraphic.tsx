@@ -258,8 +258,6 @@ function PicksRow({
   onLockGame: (gameId: string) => void;
   onCycleUnits: (gameId: string) => void;
 }) {
-  const away = getTeam(game.awayId);
-  const home = getTeam(game.homeId);
   const awayColor = getTeamColors(game.awayId).primary;
   const homeColor = getTeamColors(game.homeId).primary;
   return (
@@ -285,63 +283,29 @@ function PicksRow({
         record={picksRecordLine(game.awayRecord, game.awayLast10)}
         picked={game.pick === "away"}
         dimmed={game.pick === "home"}
+        locked={game.locked === true && game.pick === "away"}
         gameId={game.id}
         units={showUnits && game.pick === "away" ? game.units || "1u" : ""}
+        onPickSide={onPickSide}
         onPickTeam={onPickTeam}
         onCycleUnits={onCycleUnits}
       />
-      <button
-        type="button"
-        className={[
-          "pk-check",
-          game.pick === "away" ? "is-on" : "",
-          game.locked && game.pick === "away" ? "is-lock" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        aria-pressed={game.pick === "away"}
-        aria-label={
-          game.pick === "away"
-            ? `Clear ${away?.id ?? "away"} pick`
-            : `Pick ${away?.id ?? "away"}`
-        }
-        onClick={() => onPickSide(game.id, "away")}
-      >
-        {game.pick === "away" ? (game.locked ? "★" : "✓") : ""}
-      </button>
       <OddsBlock
         game={game}
         showTotal={showTotal}
         showMoneyline={showMoneyline}
         onLineChange={onLineChange}
       />
-      <button
-        type="button"
-        className={[
-          "pk-check",
-          game.pick === "home" ? "is-on" : "",
-          game.locked && game.pick === "home" ? "is-lock" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        aria-pressed={game.pick === "home"}
-        aria-label={
-          game.pick === "home"
-            ? `Clear ${home?.id ?? "home"} pick`
-            : `Pick ${home?.id ?? "home"}`
-        }
-        onClick={() => onPickSide(game.id, "home")}
-      >
-        {game.pick === "home" ? (game.locked ? "★" : "✓") : ""}
-      </button>
       <PicksSideBlock
         side="home"
         teamId={game.homeId}
         record={picksRecordLine(game.homeRecord, game.homeLast10)}
         picked={game.pick === "home"}
         dimmed={game.pick === "away"}
+        locked={game.locked === true && game.pick === "home"}
         gameId={game.id}
         units={showUnits && game.pick === "home" ? game.units || "1u" : ""}
+        onPickSide={onPickSide}
         onPickTeam={onPickTeam}
         onCycleUnits={onCycleUnits}
       />
@@ -384,8 +348,10 @@ function PicksSideBlock({
   record,
   picked,
   dimmed,
+  locked,
   gameId,
   units,
+  onPickSide,
   onPickTeam,
   onCycleUnits,
 }: {
@@ -394,8 +360,10 @@ function PicksSideBlock({
   record: string;
   picked: boolean;
   dimmed: boolean;
+  locked: boolean;
   gameId: string;
   units: string;
+  onPickSide: (gameId: string, side: PicksSide) => void;
   onPickTeam: (gameId: string, side: PicksSide) => void;
   onCycleUnits: (gameId: string) => void;
 }) {
@@ -411,6 +379,23 @@ function PicksSideBlock({
         .filter(Boolean)
         .join(" ")}
     >
+      <button
+        type="button"
+        className={[
+          "pk-check",
+          picked ? "is-on" : "",
+          locked ? "is-lock" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        aria-pressed={picked}
+        aria-label={
+          picked
+            ? `Clear ${team?.id ?? side} pick`
+            : `Pick ${team?.id ?? side}`
+        }
+        onClick={() => onPickSide(gameId, side)}
+      />
       <button
         type="button"
         className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]

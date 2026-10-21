@@ -23,7 +23,6 @@ import {
   DEFAULT_PICKS_PLATE_OPACITY,
   formatPicksLine,
   formatPicksTotal,
-  PICKS_CHECK_FILL,
   PICKS_LOCK_FILL,
   PICKS_NOTCH_H,
   PICKS_PLATE_X,
@@ -135,7 +134,7 @@ const strokeFillText = (
   context.fillText(text, x, y);
 };
 
-const paintCheck = (
+const paintLogoRing = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -144,25 +143,19 @@ const paintCheck = (
   locked: boolean,
 ) => {
   context.save();
-  context.fillStyle = locked ? PICKS_LOCK_FILL : PICKS_CHECK_FILL;
+  context.strokeStyle = locked ? PICKS_LOCK_FILL : "rgba(255, 255, 255, 0.92)";
+  context.lineWidth = Math.max(1.5, 1.5 * scale);
   context.beginPath();
-  context.arc(x, y, size / 2, 0, Math.PI * 2);
-  context.fill();
-  context.strokeStyle = "#0a0a0a";
-  context.lineWidth = Math.max(1, 1.5 * scale);
+  context.arc(x, y, size / 2 + 2.5 * scale, 0, Math.PI * 2);
   context.stroke();
   if (locked) {
-    paintStar(context, x, y, size * 0.32, "#111");
-  } else {
-    context.strokeStyle = "#fff";
-    context.lineWidth = Math.max(2, 2.6 * scale);
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    context.beginPath();
-    context.moveTo(x - size * 0.2, y + size * 0.02);
-    context.lineTo(x - size * 0.04, y + size * 0.18);
-    context.lineTo(x + size * 0.22, y - size * 0.16);
-    context.stroke();
+    paintStar(
+      context,
+      x + size * 0.42,
+      y + size * 0.4,
+      size * 0.14,
+      PICKS_LOCK_FILL,
+    );
   }
   context.restore();
 };
@@ -322,7 +315,6 @@ export const renderPicksCanvas = async (
   );
 
   const logo = fill.logo * s;
-  const check = fill.check * s;
   const padX = 28 * s;
   const rowW = width - padX * 2;
   let cursorY = fill.listTop * s;
@@ -340,20 +332,31 @@ export const renderPicksCanvas = async (
     const image = logos.get(teamId);
     context.save();
     if (dimmed) {
-      context.globalAlpha = 0.62;
+      context.globalAlpha = 0.36;
     }
+    const logoY = midY - size / 2 - fill.name * 0.45 * s;
     if (image) {
       drawCenteredLogo(
         context,
         image,
         cx - size / 2,
-        midY - size / 2 - fill.name * 0.45 * s,
+        logoY,
         size,
         size,
         {
           cacheKey: `${teamId}-pk`,
           shadow: 0,
         },
+      );
+    }
+    if (picked) {
+      paintLogoRing(
+        context,
+        cx,
+        logoY + size / 2,
+        size,
+        s,
+        game.locked === true,
       );
     }
     context.textAlign = "center";
@@ -398,14 +401,14 @@ export const renderPicksCanvas = async (
     const picked = game.pick === side;
     const dimmed = Boolean(game.pick && game.pick !== side);
     context.save();
-    context.globalAlpha = dimmed ? 0.55 : 1;
+    context.globalAlpha = dimmed ? 0.32 : 1;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#fff";
-    context.font = `900 ${fill.name * s}px ${POSTER_FONT}`;
     const ml = input.showMoneyline ? picksMl(game, side) : "";
     const body = [teamId, line, ml].filter(Boolean).join(" ");
-    context.font = `900 ${fill.line * s}px ${POSTER_FONT}`;
+    const lineSize = picked ? fill.line * 1.14 : dimmed ? fill.line * 0.86 : fill.line;
+    context.font = `900 ${lineSize * s}px ${POSTER_FONT}`;
     context.fillText(body || "—", x, y);
     const juice = picksJuiceOrMove(game, side);
     if (juice) {
@@ -446,15 +449,6 @@ export const renderPicksCanvas = async (
     const rightLogoX = x + rowW - 18 * s - logo / 2;
     paintSide(game, "away", leftLogoX, midY);
     paintSide(game, "home", rightLogoX, midY);
-
-    const leftCheckX = leftLogoX + logo * 0.62 + check * 0.7;
-    const rightCheckX = rightLogoX - logo * 0.62 - check * 0.7;
-    if (game.pick === "away") {
-      paintCheck(context, leftCheckX, midY, check, s, game.locked === true);
-    }
-    if (game.pick === "home") {
-      paintCheck(context, rightCheckX, midY, check, s, game.locked === true);
-    }
 
     const midX = width / 2;
     const ticketY = midY - (game.tip || game.tv || input.showTotal ? 8 * s : 0);
