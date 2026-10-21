@@ -616,6 +616,15 @@
   color: rgba(255, 255, 255, 0.28);
 }
 
+.pk-notes:placeholder-shown {
+  opacity: 0;
+}
+
+.pk-row:hover .pk-notes:placeholder-shown,
+.pk-row:focus-within .pk-notes:placeholder-shown {
+  opacity: 1;
+}
+
 .pk-conf {
   position: absolute;
   right: calc(28 * var(--u));

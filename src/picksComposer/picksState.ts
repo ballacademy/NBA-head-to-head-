@@ -1495,7 +1495,7 @@ export const picksFillLayout = (
     line: clamp(16, 36, rowH * 0.28),
     name: clamp(11, 18, rowH * 0.16),
     meta: clamp(9, 13, rowH * 0.12),
-    check: clamp(32, 52, rowH * 0.5),
+    check: clamp(30, 64, rowH * 0.45),
   };
 };
 

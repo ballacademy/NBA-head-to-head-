@@ -256,7 +256,7 @@ export const renderPicksCanvas = async (
   const parlay = picked.map(picksParlayLabel).filter(Boolean);
   const mode: PicksResultMode = input.resultMode === "su" ? "su" : "ats";
   const footer = (input.footer ?? "").trim();
-  const pill = picksDatePill(allGames.length);
+  const pill = picksDatePill(games.length);
   context.font = `900 ${16 * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.04 * 16 * s);
   const weekW = Math.max(280 * s, context.measureText(pill).width + 48 * s);
