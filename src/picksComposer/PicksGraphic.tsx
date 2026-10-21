@@ -22,6 +22,8 @@ import {
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  clampPicksPlateOpacity,
+  DEFAULT_PICKS_PLATE_OPACITY,
   formatPicksLine,
   formatPicksTotal,
   parsePicksLineInput,
@@ -141,6 +143,11 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             ["--pk-gap" as string]: String(fill.gap),
             ["--pk-row-h" as string]: String(fill.rowH),
             ["--pk-group-h" as string]: String(fill.groupH),
+            ["--pk-plate-opacity" as string]: String(
+              clampPicksPlateOpacity(
+                draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
+              ),
+            ),
           } as CSSProperties
         }
         aria-label="Instagram daily spread picks poster"
@@ -417,7 +424,7 @@ function PicksSideBlock({
         onClick={() => onPickTeam(gameId, side)}
       >
         {team ? (
-          <TeamLogo src={team.logoSrc} label={team.id} shadow={picked ? 10 : 0} />
+          <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
         ) : (
           "+"
         )}

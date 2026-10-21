@@ -4,6 +4,8 @@ import {
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 import {
+  clampPicksPlateOpacity,
+  DEFAULT_PICKS_PLATE_OPACITY,
   defaultPicksDraft,
   emptyPicksGame,
   formatPicksGameLine,
@@ -301,6 +303,10 @@ describe("picks composer", () => {
     expect(empty.showTotal).toBe(false);
     expect(empty.showMoneyline).toBe(false);
     expect(empty.showUnits).toBe(false);
+    expect(empty.plateOpacity).toBe(DEFAULT_PICKS_PLATE_OPACITY);
+    expect(empty.plateOpacity).toBeGreaterThanOrEqual(85);
+    expect(clampPicksPlateOpacity(-10)).toBe(0);
+    expect(clampPicksPlateOpacity(140)).toBe(100);
     const games = setPicksLock(
       [
         row({ id: "a", awayId: "ATL", homeId: "ORL", pick: "away" }),

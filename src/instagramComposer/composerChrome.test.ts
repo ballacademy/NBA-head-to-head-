@@ -833,6 +833,8 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("mergePicksFill");
     expect(picksApp).toContain("setPicksTeam");
     expect(picksApp).toContain("showTotal");
+    expect(picksApp).toContain("Plate opacity");
+    expect(picksCss).toContain("--pk-plate-opacity");
     expect(picksCss).toContain(".pk-check.is-on");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
     expect(picksCss).toContain(".pk-title-plate");

@@ -19,6 +19,8 @@ import {
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
+  clampPicksPlateOpacity,
+  DEFAULT_PICKS_PLATE_OPACITY,
   formatPicksLine,
   formatPicksTotal,
   PICKS_CHECK_FILL,
@@ -27,6 +29,7 @@ import {
   PICKS_PLATE_H,
   PICKS_PLATE_X,
   PICKS_PLATE_Y,
+  PICKS_TITLE_PAD,
   PICKS_TITLE_SIZE,
   PICKS_TITLE_TRACK,
   picksConferenceGroups,
@@ -243,7 +246,24 @@ export const renderPicksCanvas = async (
   const titleBlock = lineH * lines.length;
   let titleY = plate.y + (plate.h - titleBlock) / 2 + lineH / 2;
   context.save();
-  clipToInnerFrame(context, plate.x, plate.y, plate.w, plate.h, s, input.look);
+  const titleInner = clipToInnerFrame(
+    context,
+    plate.x,
+    plate.y,
+    plate.w,
+    plate.h,
+    s,
+    input.look,
+  );
+  const titlePad = PICKS_TITLE_PAD * s;
+  context.beginPath();
+  context.rect(
+    titleInner.x + titlePad,
+    titleInner.y + titlePad,
+    titleInner.w - titlePad * 2,
+    titleInner.h - titlePad * 2,
+  );
+  context.clip();
   context.font = `italic 900 ${PICKS_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -312,11 +332,11 @@ export const renderPicksCanvas = async (
     const teamId = side === "away" ? game.awayId : game.homeId;
     const picked = game.pick === side;
     const dimmed = Boolean(game.pick && game.pick !== side);
-    const size = picked ? logo * 1.08 : logo;
+    const size = logo;
     const image = logos.get(teamId);
     context.save();
     if (dimmed) {
-      context.globalAlpha = 0.42;
+      context.globalAlpha = 0.62;
     }
     if (image) {
       drawCenteredLogo(
@@ -328,7 +348,7 @@ export const renderPicksCanvas = async (
         size,
         {
           cacheKey: `${teamId}-pk`,
-          shadow: picked ? 8 : 0,
+          shadow: 0,
         },
       );
     }
@@ -374,7 +394,7 @@ export const renderPicksCanvas = async (
     const picked = game.pick === side;
     const dimmed = Boolean(game.pick && game.pick !== side);
     context.save();
-    context.globalAlpha = dimmed ? 0.38 : 1;
+    context.globalAlpha = dimmed ? 0.55 : 1;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#fff";
@@ -397,19 +417,21 @@ export const renderPicksCanvas = async (
     const x = padX;
     const awayColor = getTeamColors(game.awayId).primary;
     const homeColor = getTeamColors(game.homeId).primary;
+    const opacity =
+      clampPicksPlateOpacity(
+        input.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
+      ) / 100;
     const gradient = context.createLinearGradient(x, y, x + rowW, y);
-    gradient.addColorStop(0, hexAlpha(awayColor, 0.46));
-    gradient.addColorStop(0.28, hexAlpha(awayColor, 0.12));
-    gradient.addColorStop(0.46, "rgba(16,16,16,0.42)");
-    gradient.addColorStop(0.54, "rgba(16,16,16,0.42)");
-    gradient.addColorStop(0.72, hexAlpha(homeColor, 0.12));
-    gradient.addColorStop(1, hexAlpha(homeColor, 0.46));
-    roundRectPath(context, x, y, rowW, rowH, 8 * s);
-    context.fillStyle = "rgba(22,22,22,0.72)";
+    gradient.addColorStop(0, hexAlpha(awayColor, 0.38 * opacity));
+    gradient.addColorStop(0.16, `rgba(22,22,22,${opacity})`);
+    gradient.addColorStop(0.84, `rgba(22,22,22,${opacity})`);
+    gradient.addColorStop(1, hexAlpha(homeColor, 0.38 * opacity));
+    roundRectPath(context, x, y, rowW, rowH, 2 * s);
+    context.fillStyle = `rgba(22,22,22,${opacity})`;
     context.fill();
     context.fillStyle = gradient;
     context.fill();
-    context.strokeStyle = "rgba(255,255,255,0.16)";
+    context.strokeStyle = "rgba(255,255,255,0.14)";
     context.lineWidth = Math.max(1, s);
     context.stroke();
 

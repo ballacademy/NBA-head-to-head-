@@ -23,8 +23,10 @@ export const PICKS_GROUP_H = 18;
 export const PICKS_PLATE_X = 56;
 export const PICKS_PLATE_Y = 42;
 export const PICKS_PLATE_H = 110;
-export const PICKS_TITLE_SIZE = 50;
+export const PICKS_TITLE_SIZE = 38;
+export const PICKS_TITLE_PAD = 16;
 export const PICKS_NOTCH_H = 34;
+export const DEFAULT_PICKS_PLATE_OPACITY = 92;
 export const DEFAULT_PICKS_TITLE = "PICKS";
 export const PICKS_TITLE_TRACK = 0.02;
 export const PICKS_CHECK_FILL = "#1B8F5A";
@@ -83,6 +85,8 @@ export interface PicksDraft {
   showTotal?: boolean;
   showMoneyline?: boolean;
   showUnits?: boolean;
+  /** 0–100. Default is solid metal, not a glass wash. */
+  plateOpacity?: number;
 }
 
 const rec = (value: unknown) =>
@@ -213,6 +217,15 @@ export const formatPicksSideTicket = (
 
 export const picksPickCount = (games: PicksGame[]) =>
   games.filter((game) => game.pick).length;
+
+export const clampPicksPlateOpacity = (value: unknown) => {
+  const parsed =
+    typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+  if (!Number.isFinite(parsed)) {
+    return DEFAULT_PICKS_PLATE_OPACITY;
+  }
+  return Math.round(Math.min(100, Math.max(0, parsed)));
+};
 
 export const picksDatePill = (dateLine: string, picks: number) => {
   const date = dateLine.trim().toUpperCase();
@@ -719,6 +732,7 @@ export const defaultPicksDraft = (now = new Date()): PicksDraft => {
     showTotal: false,
     showMoneyline: false,
     showUnits: false,
+    plateOpacity: DEFAULT_PICKS_PLATE_OPACITY,
   };
 };
 
@@ -788,6 +802,9 @@ export const normalizePicksDraft = (
     showTotal: draft.showTotal === true,
     showMoneyline: draft.showMoneyline === true,
     showUnits: draft.showUnits === true,
+    plateOpacity: clampPicksPlateOpacity(
+      draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
+    ),
   };
 };
 

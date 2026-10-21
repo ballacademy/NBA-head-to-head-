@@ -37,8 +37,10 @@ import { PicksGraphic } from "./PicksGraphic";
 import { exportPicksPng } from "./exportPicksPng";
 import { renderPicksCanvas } from "./renderPicksCanvas";
 import {
+  clampPicksPlateOpacity,
   cyclePicksUnits,
   defaultPicksDraft,
+  DEFAULT_PICKS_PLATE_OPACITY,
   emptyPicksGame,
   fetchPicksSlate,
   formatPicksSideTicket,
@@ -265,6 +267,42 @@ export function PicksComposerApp() {
                 setDraft((current) => ({ ...current, showBa }))
               }
             />
+            <label className="sc-field sc-field--range">
+              <span className="sc-toolbar__eyebrow">
+                Plates{" "}
+                <span className="sc-range__value">
+                  {clampPicksPlateOpacity(
+                    draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
+                  )}
+                </span>
+              </span>
+              <span className="sc-range">
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={clampPicksPlateOpacity(
+                    draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
+                  )}
+                  aria-label="Plate opacity"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={clampPicksPlateOpacity(
+                    draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
+                  )}
+                  onPointerDown={(event) => {
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                  }}
+                  onChange={(event) => {
+                    const plateOpacity = clampPicksPlateOpacity(
+                      Number(event.target.value),
+                    );
+                    setDraft((current) => ({ ...current, plateOpacity }));
+                  }}
+                />
+              </span>
+            </label>
             <label className="sc-field">
               <span className="sc-toolbar__eyebrow">O/U</span>
               <button
