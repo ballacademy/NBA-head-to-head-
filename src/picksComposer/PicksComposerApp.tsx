@@ -45,8 +45,11 @@ import {
   fetchPicksSlate,
   formatPicksSideTicket,
   isAutoPicksDateLine,
+  isAutoPicksTitle,
   isPicksDraft,
   mergePicksFill,
+  picksDefaultTitle,
+  sortPicksGames,
   normalizePicksDraft,
   picksDateLine,
   refillPicksRow,
@@ -122,6 +125,9 @@ export function PicksComposerApp() {
           dateLine: isAutoPicksDateLine(current.dateLine, current.date)
             ? picksDateLine(date)
             : current.dateLine,
+          title: isAutoPicksTitle(current.title)
+            ? picksDefaultTitle(date)
+            : current.title,
           games,
         };
       });
@@ -216,7 +222,7 @@ export function PicksComposerApp() {
             </label>
             <TitlePresetSelect
               value={draft.title}
-              presets={PICKS_TITLE_PRESETS}
+              presets={[picksDefaultTitle(draft.date), ...PICKS_TITLE_PRESETS]}
               onChange={(title) => setDraft((current) => ({ ...current, title }))}
             />
           </>
@@ -414,7 +420,7 @@ export function PicksComposerApp() {
                 void copyGraphicCaption(
                   graphicCaption(
                     draft.title,
-                    draft.games.map((game) => {
+                    sortPicksGames(draft.games).map((game) => {
                       const away = formatPicksSideTicket(game, "away") || game.awayId || "TBD";
                       const home = formatPicksSideTicket(game, "home") || game.homeId || "TBD";
                       const pick =

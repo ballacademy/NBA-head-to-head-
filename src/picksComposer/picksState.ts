@@ -17,17 +17,42 @@ export { DEFAULT_BRAND };
 export const PICKS_SCOREBOARD_URL = (iso: string) =>
   `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
 
-export const PICKS_LIST_TOP = 198;
 export const PICKS_LIST_BOTTOM = 22;
 export const PICKS_GROUP_H = 18;
 export const PICKS_PLATE_X = 56;
-export const PICKS_PLATE_Y = 42;
-export const PICKS_PLATE_H = 110;
+export const PICKS_HEADER_PAD = 8;
+export const PICKS_BRAND_H = 32;
+export const PICKS_PLATE_Y = PICKS_HEADER_PAD + PICKS_BRAND_H;
 export const PICKS_TITLE_SIZE = 38;
-export const PICKS_TITLE_PAD = 16;
+export const PICKS_TITLE_LINE = 0.92;
+export const PICKS_TITLE_PAD = 12;
 export const PICKS_NOTCH_H = 34;
+export const PICKS_NOTCH_OVERLAP = 2;
+export const PICKS_AFTER_NOTCH = 8;
+
+/** Tight plate: frame + padding + type (+ italic stroke), not a vacant block. */
+export const picksTitlePlateH = (lineCount = 1) => {
+  const lines = Math.max(1, Math.min(2, lineCount));
+  return (
+    8 +
+    PICKS_TITLE_PAD * 2 +
+    Math.ceil(PICKS_TITLE_SIZE * PICKS_TITLE_LINE * lines) +
+    6
+  );
+};
+
+export const picksListTop = (lineCount = 1) =>
+  PICKS_PLATE_Y +
+  picksTitlePlateH(lineCount) +
+  PICKS_NOTCH_H -
+  PICKS_NOTCH_OVERLAP +
+  PICKS_AFTER_NOTCH;
+
+export const PICKS_PLATE_H = picksTitlePlateH(1);
+export const PICKS_LIST_TOP = picksListTop(1);
 export const DEFAULT_PICKS_PLATE_OPACITY = 92;
-export const DEFAULT_PICKS_TITLE = "PICKS";
+export const PICKS_TITLE_SUFFIX = "NBA SPREAD PREDICTIONS";
+export const DEFAULT_PICKS_TITLE = PICKS_TITLE_SUFFIX;
 export const PICKS_TITLE_TRACK = 0.02;
 export const PICKS_CHECK_FILL = "#1B8F5A";
 export const PICKS_LOCK_FILL = "#E8B923";
@@ -73,6 +98,8 @@ export interface PicksGame {
   tv?: string;
   units?: string;
   locked?: boolean;
+  /** ESPN tip-off epoch ms. Missing/custom rows sort last. */
+  startMs?: number;
 }
 
 export interface PicksDraft {
@@ -113,8 +140,38 @@ export const resolvePicksTeam = (abbrev: string) => {
   return ESPN_ABBREV_TO_TEAM[token] ?? "";
 };
 
-export const splitPicksTitle = (title: string) =>
-  splitBalancedTitle(title, DEFAULT_PICKS_TITLE, PICKS_TITLE_TRACK);
+export const picksDefaultTitle = (iso: string) => {
+  const token = isoDateOnly(iso);
+  if (!token) {
+    return DEFAULT_PICKS_TITLE;
+  }
+  const parts = token.split("-");
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  if (!Number.isFinite(month) || !Number.isFinite(day) || month < 1 || day < 1) {
+    return DEFAULT_PICKS_TITLE;
+  }
+  return `${month}/${day} ${PICKS_TITLE_SUFFIX}`;
+};
+
+export const isAutoPicksTitle = (title: string) => {
+  const current = title.trim().toUpperCase();
+  if (
+    !current ||
+    current === "PICKS" ||
+    current === PICKS_TITLE_SUFFIX
+  ) {
+    return true;
+  }
+  return /^\d{1,2}\/\d{1,2}\s+NBA SPREAD PREDICTIONS$/.test(current);
+};
+
+export const splitPicksTitle = (title: string, iso = "") =>
+  splitBalancedTitle(
+    title,
+    iso ? picksDefaultTitle(iso) : DEFAULT_PICKS_TITLE,
+    PICKS_TITLE_TRACK,
+  );
 
 export const picksDateLine = (iso: string) => {
   const token = isoDateOnly(iso);
@@ -215,9 +272,6 @@ export const formatPicksSideTicket = (
   return `${id} ${line}`;
 };
 
-export const picksPickCount = (games: PicksGame[]) =>
-  games.filter((game) => game.pick).length;
-
 export const clampPicksPlateOpacity = (value: unknown) => {
   const parsed =
     typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
@@ -227,12 +281,12 @@ export const clampPicksPlateOpacity = (value: unknown) => {
   return Math.round(Math.min(100, Math.max(0, parsed)));
 };
 
-export const picksDatePill = (dateLine: string, picks: number) => {
+export const picksDatePill = (dateLine: string, games: number) => {
   const date = dateLine.trim().toUpperCase();
-  if (!picks) {
+  if (!games) {
     return date;
   }
-  return `${date}  ·  ${picks} PICK${picks === 1 ? "" : "S"}`;
+  return `${date}  ·  ${games} GAME${games === 1 ? "" : "S"}`;
 };
 
 export const formatPicksTotal = (total?: number | null) => {
@@ -431,6 +485,33 @@ export const parseEspnRecord = (
   return textOf(rec(match)?.summary);
 };
 
+export const parseEspnStartMs = (event: unknown, competition: unknown): number => {
+  const iso = textOf(rec(event)?.date) || textOf(rec(competition)?.date);
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+};
+
+export const picksStartMs = (game: Pick<PicksGame, "startMs">) => {
+  const ms = game.startMs;
+  if (typeof ms === "number" && Number.isFinite(ms) && ms > 0) {
+    return ms;
+  }
+  return Number.MAX_SAFE_INTEGER;
+};
+
+export const sortPicksGames = (games: PicksGame[]) =>
+  [...games].sort((left, right) => {
+    const start = picksStartMs(left) - picksStartMs(right);
+    if (start !== 0) {
+      return start;
+    }
+    const away = left.awayId.localeCompare(right.awayId);
+    if (away !== 0) {
+      return away;
+    }
+    return left.homeId.localeCompare(right.homeId);
+  });
+
 export const parseEspnTip = (event: unknown, competition: unknown): string => {
   const status = rec(rec(event)?.status)?.type ?? rec(rec(competition)?.status)?.type;
   const shortDetail = textOf(rec(status)?.shortDetail) || textOf(rec(status)?.detail);
@@ -530,6 +611,7 @@ export const parsePicksScoreboard = (
       homeId,
       line: parseEspnAwayLine(competition, awayId, homeId),
       pick: null,
+      startMs: parseEspnStartMs(event, competition),
       tip: parseEspnTip(event, competition),
       awayRecord: parseEspnRecord(awayRow, "total"),
       homeRecord: parseEspnRecord(homeRow, "total"),
@@ -545,7 +627,7 @@ export const parsePicksScoreboard = (
     });
   });
   void slateDate;
-  return games;
+  return sortPicksGames(games);
 };
 
 export const fetchPicksSlate = async (iso: string): Promise<PicksGame[]> => {
@@ -573,6 +655,7 @@ export const emptyPicksGame = (): PicksGame => ({
   pick: null,
   custom: true,
   units: "1u",
+  startMs: 0,
 });
 
 export const isPicksRowEdited = (game: PicksGame) =>
@@ -690,7 +773,7 @@ export const mergePicksFill = (
       next.push(game);
     }
   });
-  return next;
+  return sortPicksGames(next);
 };
 
 /** Re-apply slate data to one row, dropping that row's manual flags. */
@@ -724,7 +807,7 @@ export const defaultPicksDraft = (now = new Date()): PicksDraft => {
   const date = nbaTodayIso(now);
   return {
     brand: DEFAULT_BRAND,
-    title: DEFAULT_PICKS_TITLE,
+    title: picksDefaultTitle(date),
     date,
     dateLine: picksDateLine(date),
     games: [],
@@ -779,6 +862,7 @@ const normalizeGame = (value: unknown): PicksGame | null => {
     tv: textOf(row.tv),
     units: textOf(row.units) || "1u",
     locked: row.locked === true,
+    startMs: finiteNumber(row.startMs) ?? 0,
   };
 };
 
@@ -795,6 +879,9 @@ export const normalizePicksDraft = (
     ...empty,
     ...draft,
     date,
+    title: isAutoPicksTitle(draft.title)
+      ? picksDefaultTitle(date)
+      : draft.title || picksDefaultTitle(date),
     dateLine:
       (draft.dateLine ?? "").trim() || picksDateLine(date),
     games,
@@ -808,44 +895,25 @@ export const normalizePicksDraft = (
   };
 };
 
-export const picksConferenceGroups = (games: PicksGame[]) => {
-  const east: PicksGame[] = [];
-  const west: PicksGame[] = [];
-  const more: PicksGame[] = [];
-  games.forEach((game) => {
-    const home = getTeam(game.homeId);
-    if (home?.conference === "East") {
-      east.push(game);
-    } else if (home?.conference === "West") {
-      west.push(game);
-    } else {
-      more.push(game);
-    }
-  });
-  return [
-    { key: "east", label: "EAST", games: east },
-    { key: "west", label: "WEST", games: west },
-    { key: "more", label: "MORE", games: more },
-  ].filter((group) => group.games.length);
-};
-
 export const picksFillLayout = (
   count: number,
   boardH = GRAPHIC_HEIGHT,
   groupCount = 0,
+  lineCount = 1,
 ) => {
   const games = Math.max(0, count);
   const rows = Math.max(1, games);
   const groups = Math.max(0, groupCount);
   const labels = groups > 1 ? groups * PICKS_GROUP_H : 0;
-  const listH = boardH - PICKS_LIST_TOP - PICKS_LIST_BOTTOM;
+  const listTop = picksListTop(lineCount);
+  const listH = boardH - listTop - PICKS_LIST_BOTTOM;
   const usable = Math.max(48, listH - labels);
   const gap = games <= 1 ? 0 : Math.min(6, usable * 0.006);
   const rowH = (usable - gap * Math.max(0, rows - 1)) / rows;
   const clamp = (min: number, max: number, value: number) =>
     Math.round(Math.min(max, Math.max(min, value)));
   return {
-    listTop: PICKS_LIST_TOP,
+    listTop,
     listBottom: PICKS_LIST_BOTTOM,
     listH,
     rows,

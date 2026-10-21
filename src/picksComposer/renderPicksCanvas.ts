@@ -26,21 +26,20 @@ import {
   PICKS_CHECK_FILL,
   PICKS_LOCK_FILL,
   PICKS_NOTCH_H,
-  PICKS_PLATE_H,
   PICKS_PLATE_X,
   PICKS_PLATE_Y,
   PICKS_TITLE_PAD,
+  picksTitlePlateH,
   PICKS_TITLE_SIZE,
   PICKS_TITLE_TRACK,
-  picksConferenceGroups,
   picksFillLayout,
   picksJuiceOrMove,
   picksLineForSide,
   picksMl,
-  picksPickCount,
   picksRecordLine,
   picksDatePill,
   picksShortName,
+  sortPicksGames,
   splitPicksTitle,
   type PicksDraft,
   type PicksGame,
@@ -226,11 +225,12 @@ export const renderPicksCanvas = async (
     setLetterSpacing(context, 0);
   }
 
+  const lines = splitPicksTitle(input.title, input.date);
   const plate = {
     x: PICKS_PLATE_X * s,
     y: PICKS_PLATE_Y * s,
     w: width - PICKS_PLATE_X * 2 * s,
-    h: PICKS_PLATE_H * s,
+    h: picksTitlePlateH(lines.length) * s,
   };
   drawBannerInterior(context, plate.x, plate.y, plate.w, plate.h, s, () => {
     context.beginPath();
@@ -241,7 +241,6 @@ export const renderPicksCanvas = async (
     paintPurplePlateEdge(context, plate.x, plate.y, plate.w, plate.h, s);
   }
 
-  const lines = splitPicksTitle(input.title);
   const lineH = PICKS_TITLE_SIZE * 0.92 * s;
   const titleBlock = lineH * lines.length;
   let titleY = plate.y + (plate.h - titleBlock) / 2 + lineH / 2;
@@ -277,7 +276,8 @@ export const renderPicksCanvas = async (
   setLetterSpacing(context, 0);
   context.restore();
 
-  const pill = picksDatePill(input.dateLine, picksPickCount(input.games));
+  const games = sortPicksGames(input.games);
+  const pill = picksDatePill(input.dateLine, games.length);
   context.font = `900 ${16 * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.04 * 16 * s);
   const weekW = Math.max(420 * s, context.measureText(pill).width + 48 * s);
@@ -298,10 +298,14 @@ export const renderPicksCanvas = async (
   context.fillText(pill, width / 2, weekY + weekH / 2);
   setLetterSpacing(context, 0);
 
-  const groups = picksConferenceGroups(input.games);
-  const fill = picksFillLayout(input.games.length, boardH, groups.length);
+  const fill = picksFillLayout(
+    games.length,
+    boardH,
+    0,
+    lines.length,
+  );
   const needed = new Set<string>();
-  input.games.forEach((game) => {
+  games.forEach((game) => {
     if (game.awayId) {
       needed.add(game.awayId);
     }
@@ -477,21 +481,9 @@ export const renderPicksCanvas = async (
     }
   };
 
-  groups.forEach((group) => {
-    if (fill.groupH) {
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillStyle = "rgba(255,255,255,0.55)";
-      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
-      setLetterSpacing(context, 0.28 * 11 * s);
-      context.fillText(group.label, width / 2, cursorY + (fill.groupH * s) / 2);
-      setLetterSpacing(context, 0);
-      cursorY += fill.groupH * s;
-    }
-    group.games.forEach((game) => {
-      paintRow(game, cursorY);
-      cursorY += (fill.rowH + fill.gap) * s;
-    });
+  games.forEach((game) => {
+    paintRow(game, cursorY);
+    cursorY += (fill.rowH + fill.gap) * s;
   });
 
   if (input.showBa) {

@@ -829,7 +829,11 @@ describe("composer chrome", () => {
     expect(picksGraphic).toContain("pk-check");
     expect(picksGraphic).toContain("pk-line");
     expect(picksGraphic).toContain("picksShortName");
+    expect(picksGraphic).toContain("sortPicksGames");
+    expect(picksGraphic).not.toContain("picksConferenceGroups");
     expect(picksApp).toContain("TeamPicker");
+    expect(picksApp).toContain("picksDefaultTitle");
+    expect(picksApp).toContain("isAutoPicksTitle");
     expect(picksApp).toContain("mergePicksFill");
     expect(picksApp).toContain("setPicksTeam");
     expect(picksApp).toContain("showTotal");

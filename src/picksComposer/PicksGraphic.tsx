@@ -27,14 +27,15 @@ import {
   formatPicksLine,
   formatPicksTotal,
   parsePicksLineInput,
-  picksConferenceGroups,
   picksFillLayout,
+  picksListTop,
+  picksTitlePlateH,
   picksJuiceOrMove,
   picksLineForSide,
   picksMl,
-  picksPickCount,
   picksRecordLine,
   picksShortName,
+  sortPicksGames,
   splitPicksTitle,
   type PicksDraft,
   type PicksGame,
@@ -82,14 +83,14 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
   ) {
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
-    const titleLines = splitPicksTitle(draft.title);
-    const groups = picksConferenceGroups(draft.games);
+    const titleLines = splitPicksTitle(draft.title, draft.date);
+    const games = sortPicksGames(draft.games);
     const fill = picksFillLayout(
-      draft.games.length,
+      games.length,
       story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
-      groups.length,
+      0,
+      titleLines.length,
     );
-    const pickCount = picksPickCount(draft.games);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -143,6 +144,8 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             ["--pk-gap" as string]: String(fill.gap),
             ["--pk-row-h" as string]: String(fill.rowH),
             ["--pk-group-h" as string]: String(fill.groupH),
+            ["--pk-plate-h" as string]: String(picksTitlePlateH(titleLines.length)),
+            ["--pk-header-h" as string]: String(picksListTop(titleLines.length)),
             ["--pk-plate-opacity" as string]: String(
               clampPicksPlateOpacity(
                 draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
@@ -195,38 +198,31 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
               size={Math.max(12, draft.dateLine.trim().length + 1)}
               onChange={(event) => onDateLineChange(event.target.value.slice(0, 40))}
             />
-            {pickCount ? (
+            {games.length ? (
               <span className="pk-date-count">
                 {" · "}
-                {pickCount} PICK{pickCount === 1 ? "" : "S"}
+                {games.length} GAME{games.length === 1 ? "" : "S"}
               </span>
             ) : null}
           </div>
         </header>
         <div className="pk-list">
-          {draft.games.length ? (
-            groups.map((group) => (
-              <section key={group.key} className="pk-group">
-                {fill.groupH ? (
-                  <p className="pk-group__label">{group.label}</p>
-                ) : null}
-                {group.games.map((game) => (
-                  <PicksRow
-                    key={game.id}
-                    game={game}
-                    showTotal={draft.showTotal === true}
-                    showMoneyline={draft.showMoneyline === true}
-                    showUnits={draft.showUnits === true}
-                    onPickSide={onPickSide}
-                    onLineChange={onLineChange}
-                    onPickTeam={onPickTeam}
-                    onRemoveGame={onRemoveGame}
-                    onRefillGame={onRefillGame}
-                    onLockGame={onLockGame}
-                    onCycleUnits={onCycleUnits}
-                  />
-                ))}
-              </section>
+          {games.length ? (
+            games.map((game) => (
+              <PicksRow
+                key={game.id}
+                game={game}
+                showTotal={draft.showTotal === true}
+                showMoneyline={draft.showMoneyline === true}
+                showUnits={draft.showUnits === true}
+                onPickSide={onPickSide}
+                onLineChange={onLineChange}
+                onPickTeam={onPickTeam}
+                onRemoveGame={onRemoveGame}
+                onRefillGame={onRefillGame}
+                onLockGame={onLockGame}
+                onCycleUnits={onCycleUnits}
+              />
             ))
           ) : (
             <p className="pk-empty">Fill tonight’s slate</p>

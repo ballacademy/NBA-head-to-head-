@@ -143,6 +143,7 @@ export const SHOT_CHART_TITLE_PRESETS = [
 ];
 
 export const PICKS_TITLE_PRESETS = [
+  "NBA SPREAD PREDICTIONS",
   "PICKS",
   "LOCKS",
   "SPREADS",
