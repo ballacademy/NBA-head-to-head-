@@ -26,6 +26,8 @@ import {
   picksFillLayout,
   picksTitlePlateH,
   picksJuiceOrMove,
+  picksNameLabel,
+  picksShortName,
   PICKS_SCOREBOARD_URL,
   sortPicksGames,
   refillPicksRow,
@@ -291,6 +293,10 @@ describe("picks composer", () => {
     });
     expect(formatPicksSideTicket(game, "away")).toBe("ATL +2.5");
     expect(formatPicksSideTicket(game, "home")).toBe("ORL -2.5");
+    expect(picksShortName("LAL")).toBe("LAKERS");
+    expect(picksNameLabel("LAL", "away")).toBe("LAKERS");
+    expect(picksNameLabel("LAL", "home")).toBe("@ LAKERS");
+    expect(picksNameLabel("MIN", "home")).toBe("@ T-WOLVES");
     expect(
       sortPicksGames([
         row({ id: "custom", awayId: "DEN", homeId: "UTA", custom: true }),

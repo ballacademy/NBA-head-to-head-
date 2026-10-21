@@ -329,6 +329,15 @@ export const picksShortName = (teamId: string) => {
   return short;
 };
 
+/** Home name is `@ LAKERS` — never a trailing `LAKERS @`. */
+export const picksNameLabel = (teamId: string, side: PicksSide) => {
+  const name = picksShortName(teamId);
+  if (!name) {
+    return "";
+  }
+  return side === "home" ? `@ ${name}` : name;
+};
+
 export const picksRecordLine = (record?: string, last10?: string) => {
   const rec = (record ?? "").trim();
   const ten = (last10 ?? "").trim();

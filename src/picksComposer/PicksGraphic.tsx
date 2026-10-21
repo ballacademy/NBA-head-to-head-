@@ -34,7 +34,7 @@ import {
   picksLineForSide,
   picksMl,
   picksRecordLine,
-  picksShortName,
+  picksNameLabel,
   sortPicksGames,
   splitPicksTitle,
   type PicksDraft,
@@ -425,10 +425,7 @@ function PicksSideBlock({
           "+"
         )}
       </button>
-      <span className="pk-name">
-        {picksShortName(teamId)}
-        {side === "home" ? <span className="pk-home-pip"> @</span> : null}
-      </span>
+      <span className="pk-name">{picksNameLabel(teamId, side)}</span>
       {record ? <span className="pk-record">{record}</span> : null}
       {units ? (
         <button

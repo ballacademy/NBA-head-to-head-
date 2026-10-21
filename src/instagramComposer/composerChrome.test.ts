@@ -828,7 +828,9 @@ describe("composer chrome", () => {
     expect(picksGraphic).toContain("pk-logo");
     expect(picksGraphic).toContain("pk-check");
     expect(picksGraphic).toContain("pk-line");
-    expect(picksGraphic).toContain("picksShortName");
+    expect(picksGraphic).toContain("picksNameLabel");
+    expect(picksGraphic).not.toContain(" @</span>");
+    expect(picksCanvas).toContain("picksNameLabel");
     expect(picksGraphic).toContain("sortPicksGames");
     expect(picksGraphic).not.toContain("picksConferenceGroups");
     expect(picksApp).toContain("TeamPicker");
@@ -839,6 +841,9 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("showTotal");
     expect(picksApp).toContain("Plate opacity");
     expect(picksCss).toContain("--pk-plate-opacity");
+    expect(picksCss).toContain("#161616 36%");
+    expect(picksCss).not.toContain("#161616 16%");
+    expect(picksCanvas).toContain("addColorStop(0.36");
     expect(picksCss).toContain(".pk-check.is-on");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
     expect(picksCss).toContain(".pk-title-plate");

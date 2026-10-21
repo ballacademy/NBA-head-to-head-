@@ -235,10 +235,12 @@
   opacity: var(--pk-plate);
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--pk-away, #334155) 38%, #161616) 0%,
-    #161616 16%,
-    #161616 84%,
-    color-mix(in srgb, var(--pk-home, #334155) 38%, #161616) 100%
+    color-mix(in srgb, var(--pk-away, #334155) 42%, #161616) 0%,
+    color-mix(in srgb, var(--pk-away, #334155) 26%, #161616) 20%,
+    #161616 36%,
+    #161616 64%,
+    color-mix(in srgb, var(--pk-home, #334155) 26%, #161616) 80%,
+    color-mix(in srgb, var(--pk-home, #334155) 42%, #161616) 100%
   );
 }
 
@@ -255,11 +257,6 @@
 
 .pk-side.is-dim {
   opacity: 0.62;
-}
-
-.pk-home-pip {
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.02em;
 }
 
 .pk-logo {

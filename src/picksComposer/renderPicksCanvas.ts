@@ -38,7 +38,7 @@ import {
   picksMl,
   picksRecordLine,
   picksDatePill,
-  picksShortName,
+  picksNameLabel,
   sortPicksGames,
   splitPicksTitle,
   type PicksDraft,
@@ -361,7 +361,7 @@ export const renderPicksCanvas = async (
     context.fillStyle = "#fff";
     context.font = `900 ${fill.name * s}px ${POSTER_FONT}`;
     context.fillText(
-      `${picksShortName(teamId)}${side === "home" ? " @" : ""}`,
+      picksNameLabel(teamId, side),
       cx,
       midY + logo / 2 + fill.name * 0.15 * s,
     );
@@ -426,10 +426,12 @@ export const renderPicksCanvas = async (
         input.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
       ) / 100;
     const gradient = context.createLinearGradient(x, y, x + rowW, y);
-    gradient.addColorStop(0, hexAlpha(awayColor, 0.38 * opacity));
-    gradient.addColorStop(0.16, `rgba(22,22,22,${opacity})`);
-    gradient.addColorStop(0.84, `rgba(22,22,22,${opacity})`);
-    gradient.addColorStop(1, hexAlpha(homeColor, 0.38 * opacity));
+    gradient.addColorStop(0, hexAlpha(awayColor, 0.42 * opacity));
+    gradient.addColorStop(0.2, hexAlpha(awayColor, 0.26 * opacity));
+    gradient.addColorStop(0.36, `rgba(22,22,22,${opacity})`);
+    gradient.addColorStop(0.64, `rgba(22,22,22,${opacity})`);
+    gradient.addColorStop(0.8, hexAlpha(homeColor, 0.26 * opacity));
+    gradient.addColorStop(1, hexAlpha(homeColor, 0.42 * opacity));
     roundRectPath(context, x, y, rowW, rowH, 2 * s);
     context.fillStyle = `rgba(22,22,22,${opacity})`;
     context.fill();
