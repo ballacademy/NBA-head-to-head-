@@ -28,6 +28,10 @@ import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { isoDateOnly } from "../playerOfTheDayComposer/lastGame";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { PicksGraphic } from "./PicksGraphic";
 import { exportPicksPng } from "./exportPicksPng";
@@ -459,7 +463,9 @@ export function PicksComposerApp() {
       />
       <main className="sc-stage">
         <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
-          <ComposerBoard>
+          <ComposerBoard
+            height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}
+          >
             <PicksGraphic
               ref={boardRef}
               draft={draft}

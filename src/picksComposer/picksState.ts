@@ -428,7 +428,7 @@ export const parseEspnTip = (event: unknown, competition: unknown): string => {
     .trim()
     .toUpperCase();
   if (/\d/.test(cleaned) && /AM|PM/i.test(cleaned)) {
-    return cleaned.replace(/\s+/g, " ");
+    return cleaned.replace(/\s+/g, " ").replace(/\s*[AP]M\s*/i, " ").replace(/\s+/g, " ").trim();
   }
   const iso = textOf(rec(event)?.date) || textOf(rec(competition)?.date);
   const date = new Date(iso);
@@ -444,7 +444,8 @@ export const parseEspnTip = (event: unknown, competition: unknown): string => {
     .format(date)
     .toUpperCase()
     .replace(" ", "")
-    .replace(/([AP]M)/, " $1 ET");
+    .replace(/\s*[AP]M/i, "")
+    .trim() + " ET";
 };
 
 export const parseEspnNationalTv = (competition: unknown): string => {

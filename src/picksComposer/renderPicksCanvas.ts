@@ -337,7 +337,7 @@ export const renderPicksCanvas = async (
     context.fillStyle = "#fff";
     context.font = `900 ${fill.name * s}px ${POSTER_FONT}`;
     context.fillText(
-      picksShortName(teamId),
+      `${picksShortName(teamId)}${side === "home" ? " @" : ""}`,
       cx,
       midY + logo / 2 + fill.name * 0.15 * s,
     );
@@ -349,12 +349,6 @@ export const renderPicksCanvas = async (
       context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
       context.fillStyle = "rgba(255,255,255,0.7)";
       context.fillText(record, cx, midY + logo / 2 + fill.name * 1.15 * s);
-    }
-    if (side === "home") {
-      context.fillStyle = "rgba(253,230,138,0.9)";
-      context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
-      context.textAlign = "right";
-      context.fillText("@", cx + logo * 0.72, midY - logo * 0.42);
     }
     if (input.showUnits && picked) {
       context.textAlign = "center";

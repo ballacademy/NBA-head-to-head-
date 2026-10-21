@@ -408,7 +408,6 @@ function PicksSideBlock({
         .filter(Boolean)
         .join(" ")}
     >
-      {side === "home" ? <span className="pk-home-mark">@</span> : null}
       <button
         type="button"
         className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]
@@ -423,7 +422,10 @@ function PicksSideBlock({
           "+"
         )}
       </button>
-      <span className="pk-name">{picksShortName(teamId)}</span>
+      <span className="pk-name">
+        {picksShortName(teamId)}
+        {side === "home" ? <span className="pk-home-pip"> @</span> : null}
+      </span>
       {record ? <span className="pk-record">{record}</span> : null}
       {units ? (
         <button

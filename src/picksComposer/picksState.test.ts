@@ -15,6 +15,7 @@ import {
   parseEspnAwayLine,
   parsePicksLineInput,
   parseEspnNationalTv,
+  parseEspnTip,
   parsePicksScoreboard,
   picksConferenceGroups,
   picksDatePill,
@@ -280,6 +281,12 @@ describe("picks composer", () => {
       row({ id: "w", awayId: "GSW", homeId: "LAL" }),
     ]);
     expect(groups.map((group) => group.label)).toEqual(["EAST", "WEST"]);
+    expect(
+      parseEspnTip(
+        { date: "2026-10-21T23:30:00Z", status: { type: { shortDetail: "7:30 PM ET" } } },
+        {},
+      ),
+    ).toBe("7:30 ET");
     expect(parseEspnNationalTv({ broadcasts: [{ names: ["ESPN"] }] })).toBe(
       "ESPN",
     );

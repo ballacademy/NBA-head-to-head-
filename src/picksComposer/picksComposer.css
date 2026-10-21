@@ -250,16 +250,9 @@
   filter: grayscale(0.2);
 }
 
-.pk-home-mark {
-  position: absolute;
-  top: calc(2 * var(--u));
-  right: calc(2 * var(--u));
-  z-index: 1;
-  font-family: var(--ig-poster);
-  font-size: calc(var(--pk-meta, 10) * var(--u));
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  color: rgba(253, 230, 138, 0.9);
+.pk-home-pip {
+  color: rgba(253, 230, 138, 0.92);
+  letter-spacing: 0.02em;
 }
 
 .pk-logo {
@@ -485,10 +478,13 @@
   cursor: pointer;
 }
 
+.pk-lock {
+  color: #fff;
+}
+
 .pk-lock.is-on {
   background: var(--pk-lock);
   color: #111;
-  opacity: 1;
 }
 
 .pk-empty {
