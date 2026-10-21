@@ -27,6 +27,7 @@ export const COMPOSER_DRAFT_KEYS: Partial<Record<ComposerMode, string[]>> = {
   injury: ["ddgm:injury-composer"],
   schedule: ["ddgm:schedule-composer"],
   "shot-chart": ["ddgm:shot-chart-composer"],
+  picks: ["ddgm:picks-composer"],
 };
 
 const notify = () => {

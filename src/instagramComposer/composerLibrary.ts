@@ -35,6 +35,7 @@ export const COMPOSER_LIBRARY_KEYS = [
   "ddgm:injury-composer:saves",
   "ddgm:schedule-composer:saves",
   "ddgm:shot-chart-composer:saves",
+  "ddgm:picks-composer:saves",
 ] as const;
 
 export interface ComposerLibraryFile {

@@ -52,6 +52,7 @@ export const COMPOSER_TAB_GROUPS: {
       { mode: "team-of-the-week", label: "TOTW" },
       { mode: "team-of-the-week-plus", label: "TOTW Plus" },
       { mode: "shot-chart", label: "Shot chart" },
+      { mode: "picks", label: "Picks" },
     ],
   },
   {
@@ -89,6 +90,7 @@ export const COMPOSER_MODE_LABEL: Record<ComposerMode, string> = {
   injury: "Injury",
   schedule: "Schedule",
   "shot-chart": "Shot chart",
+  picks: "Picks",
 };
 
 export function ComposerTabs({

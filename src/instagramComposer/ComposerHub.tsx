@@ -30,6 +30,7 @@ import { PlotComposerApp } from "../plotComposer/PlotComposerApp";
 import { InjuryComposerApp } from "../injuryComposer/InjuryComposerApp";
 import { ScheduleComposerApp } from "../scheduleComposer/ScheduleComposerApp";
 import { ShotChartComposerApp } from "../shotChartComposer/ShotChartComposerApp";
+import { PicksComposerApp } from "../picksComposer/PicksComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -62,6 +63,7 @@ import "../plotComposer/plotComposer.css";
 import "../injuryComposer/injuryComposer.css";
 import "../scheduleComposer/scheduleComposer.css";
 import "../shotChartComposer/shotChartComposer.css";
+import "../picksComposer/picksComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -219,6 +221,8 @@ export function ComposerHub() {
         <ScheduleComposerApp />
       ) : mode === "shot-chart" ? (
         <ShotChartComposerApp />
+      ) : mode === "picks" ? (
+        <PicksComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

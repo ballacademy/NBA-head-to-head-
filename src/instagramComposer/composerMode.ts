@@ -19,7 +19,8 @@ export type ComposerMode =
   | "plot"
   | "injury"
   | "schedule"
-  | "shot-chart";
+  | "shot-chart"
+  | "picks";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -127,6 +128,8 @@ const SCHEDULE_PATHS = new Set(["/schedule", "/schedule-poster", "/this-week"]);
 const SCHEDULE_QUERY = new Set(["schedule", "schedule-poster", "this-week"]);
 const SHOT_CHART_PATHS = new Set(["/shot-chart", "/shotchart", "/shots"]);
 const SHOT_CHART_QUERY = new Set(["shot-chart", "shotchart", "shots"]);
+const PICKS_PATHS = new Set(["/picks", "/locks", "/spreads"]);
+const PICKS_QUERY = new Set(["picks", "locks", "spread", "spreads"]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -337,6 +340,12 @@ export const isShotChartPath = (pathname: string) =>
 export const isShotChartQuery = (search: string) =>
   SHOT_CHART_QUERY.has(queryToken(search));
 
+export const isPicksPath = (pathname: string) =>
+  PICKS_PATHS.has(normalizePath(pathname));
+
+export const isPicksQuery = (search: string) =>
+  PICKS_QUERY.has(queryToken(search));
+
 export const isMockTradeQuery = (search: string) =>
   MOCK_TRADE_QUERY.has(queryToken(search));
 
@@ -344,6 +353,9 @@ export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isPicksPath(pathname)) {
+    return "picks";
+  }
   if (isShotChartPath(pathname)) {
     return "shot-chart";
   }
@@ -403,6 +415,9 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isPicksQuery(search)) {
+    return "picks";
   }
   if (isShotChartQuery(search)) {
     return "shot-chart";
@@ -506,6 +521,9 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "shot-chart") {
     return "/shot-chart";
+  }
+  if (mode === "picks") {
+    return "/picks";
   }
   if (mode === "mock-trade") {
     return "/mock-trade";

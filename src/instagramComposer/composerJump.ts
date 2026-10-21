@@ -12,6 +12,9 @@ const ALIASES: Array<{ needle: string; mode: ComposerMode }> = [
   { needle: "totw+", mode: "team-of-the-week-plus" },
   { needle: "totw plus", mode: "team-of-the-week-plus" },
   { needle: "shots", mode: "shot-chart" },
+  { needle: "picks", mode: "picks" },
+  { needle: "locks", mode: "picks" },
+  { needle: "spreads", mode: "picks" },
   { needle: "xy", mode: "plot" },
   { needle: "scatter", mode: "plot" },
 ];

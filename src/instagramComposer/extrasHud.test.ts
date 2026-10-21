@@ -25,6 +25,8 @@ describe("extras 17–32 HUD helpers", () => {
     expect(jumpComposerMode("totw", tabs)).toBe("team-of-the-week");
     expect(jumpComposerMode("to", tabs)).toBeNull();
     expect(jumpComposerMode("shots", tabs)).toBe("shot-chart");
+    expect(jumpComposerMode("picks", tabs)).toBe("picks");
+    expect(jumpComposerMode("locks", tabs)).toBe("picks");
   });
 
   it("parses carry and recent player ids", () => {

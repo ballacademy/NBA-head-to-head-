@@ -691,6 +691,8 @@ describe("composer chrome", () => {
     expect(tabs).toContain('mode: "injury"');
     expect(tabs).toContain('mode: "schedule"');
     expect(tabs).toContain('mode: "shot-chart"');
+    expect(tabs).toContain('mode: "picks"');
+    expect(hub).toContain("PicksComposerApp");
     expect(hub).toContain("is-hud-simple");
     expect(hub).toContain("InjuryComposerApp");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__filters");
@@ -798,6 +800,22 @@ describe("composer chrome", () => {
       join(root, "scheduleComposer/scheduleComposer.css"),
       "utf8",
     );
+    const picksGraphic = readFileSync(
+      join(root, "picksComposer/PicksGraphic.tsx"),
+      "utf8",
+    );
+    const picksApp = readFileSync(
+      join(root, "picksComposer/PicksComposerApp.tsx"),
+      "utf8",
+    );
+    const picksCss = readFileSync(
+      join(root, "picksComposer/picksComposer.css"),
+      "utf8",
+    );
+    const picksCanvas = readFileSync(
+      join(root, "picksComposer/renderPicksCanvas.ts"),
+      "utf8",
+    );
     expect(injuryGraphic).toContain("inj-team__logo");
     expect(injuryGraphic).toContain("injuryFillLayout");
     expect(scheduleGraphic).toContain("sch-game__logo");
@@ -807,6 +825,16 @@ describe("composer chrome", () => {
     expect(injuryCss).toMatch(/\.inj-team__logo \{[\s\S]*?position:\s*relative/);
     expect(scheduleCss).toContain(".sch-day__games");
     expect(scheduleCss).toMatch(/\.sch-game__logo \{[\s\S]*?position:\s*relative/);
+    expect(picksGraphic).toContain("pk-logo");
+    expect(picksGraphic).toContain("pk-check");
+    expect(picksGraphic).toContain("pk-line");
+    expect(picksApp).toContain("TeamPicker");
+    expect(picksApp).toContain("mergePicksFill");
+    expect(picksApp).toContain("setPicksTeam");
+    expect(picksCss).toContain(".pk-check.is-on");
+    expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
+    expect(picksCanvas).toContain("paintCheck");
+    expect(picksCanvas).toContain("formatPicksLine");
     const coverNameFade = readFileSync(
       join(root, "instagramComposer/PlayerNameFade.tsx"),
       "utf8",

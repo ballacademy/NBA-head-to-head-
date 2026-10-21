@@ -97,6 +97,7 @@ describe("composer mode", () => {
       "team-of-the-week",
       "team-of-the-week-plus",
       "shot-chart",
+      "picks",
     ]);
     expect(COMPOSER_TAB_GROUPS[2]!.tabs.map((tab) => tab.mode)).toEqual([
       "headline",
@@ -110,7 +111,7 @@ describe("composer mode", () => {
       group.tabs.map((tab) => tab.mode),
     );
     expect(new Set(modes).size).toBe(modes.length);
-    expect(modes).toHaveLength(21);
+    expect(modes).toHaveLength(22);
   });
 
   it("opens pyramid and headline from path or query", () => {
@@ -156,6 +157,10 @@ describe("composer mode", () => {
     expect(readComposerMode("", "/shot-chart")).toBe("shot-chart");
     expect(readComposerMode("?composer=shots", "/")).toBe("shot-chart");
     expect(composerHref("shot-chart")).toBe("/shot-chart");
+    expect(readComposerMode("", "/picks")).toBe("picks");
+    expect(readComposerMode("", "/locks")).toBe("picks");
+    expect(readComposerMode("?composer=spreads", "/")).toBe("picks");
+    expect(composerHref("picks")).toBe("/picks");
   });
 
   it("opens ranked lineups from path or query", () => {

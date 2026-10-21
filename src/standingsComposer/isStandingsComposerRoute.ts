@@ -82,7 +82,10 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/this-week" ||
     path === "/shot-chart" ||
     path === "/shotchart" ||
-    path === "/shots"
+    path === "/shots" ||
+    path === "/picks" ||
+    path === "/locks" ||
+    path === "/spreads"
   );
 };
 

@@ -142,6 +142,12 @@ export const SHOT_CHART_TITLE_PRESETS = [
   "HOT ZONES",
 ];
 
+export const PICKS_TITLE_PRESETS = [
+  "PICKS",
+  "LOCKS",
+  "SPREADS",
+];
+
 export const MOCK_TRADE_TITLE_PRESETS = [
   "MOCK TRADE",
   "3-TEAM TRADE",
