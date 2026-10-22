@@ -31,9 +31,14 @@ export const PICKS_TITLE_LINE = 0.92;
 export const PICKS_TITLE_PAD = 12;
 export const PICKS_NOTCH_H = 36;
 export const PICKS_NOTCH_OVERLAP = 2;
-/** Gap under the GAMES notch so the compact ATS line (`12-8`) can sit there. */
-export const PICKS_AFTER_NOTCH = 24;
-export const PICKS_ATS_SIZE = 15;
+/** Air under the GAMES notch before the first row. Record lives in the bottom lockup. */
+export const PICKS_AFTER_NOTCH = 12;
+export const PICKS_ATS_SIZE = 54;
+export const PICKS_ATS_KICKER_SIZE = 13;
+export const PICKS_RECORD_PLATE_H = 92;
+export const PICKS_RECORD_GAP = 18;
+export const PICKS_RECORD_PAD = 20;
+export const PICKS_RECORD_PLATE_W = 528;
 
 /** Tight plate: frame + padding + type (+ italic stroke), not a vacant block. */
 export const picksTitlePlateH = (lineCount = 1) => {
@@ -534,6 +539,10 @@ export const formatPicksGraphicRecord = (
   ledger: PicksLedger,
   mode: PicksResultMode = "ats",
 ) => formatPicksAtsRecord(picksDisplayTally(ledger, mode));
+
+/** Small kicker so the lockup reads as a record, not a score. */
+export const picksRecordKicker = (mode: PicksResultMode = "ats") =>
+  mode === "su" ? "SU" : "ATS";
 
 export const setPicksRecordField = (
   ledger: PicksLedger,
@@ -1556,21 +1565,24 @@ export const normalizePicksDraft = (
   };
 };
 
-export const picksBoardBottom = (_parlay = false) => PICKS_LIST_BOTTOM;
+export const picksBoardBottom = (showRecord = false) =>
+  showRecord
+    ? PICKS_RECORD_GAP + PICKS_RECORD_PLATE_H + PICKS_RECORD_PAD
+    : PICKS_LIST_BOTTOM;
 
 export const picksFillLayout = (
   count: number,
   boardH = GRAPHIC_HEIGHT,
   groupCount = 0,
   lineCount = 1,
-  parlay = false,
+  showRecord = false,
 ) => {
   const games = Math.max(0, count);
   const rows = Math.max(1, games);
   const groups = Math.max(0, groupCount);
   const labels = groups > 1 ? groups * PICKS_GROUP_H : 0;
   const listTop = picksListTop(lineCount);
-  const listBottom = picksBoardBottom(parlay);
+  const listBottom = picksBoardBottom(showRecord);
   const listH = boardH - listTop - listBottom;
   const usable = Math.max(48, listH - labels);
   const gap = games <= 1 ? 0 : Math.min(6, usable * 0.006);

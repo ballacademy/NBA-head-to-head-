@@ -9,7 +9,10 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(var(--pk-header-h, 154) * var(--u)) 1fr;
+  grid-template-rows:
+    calc(var(--pk-header-h, 154) * var(--u))
+    1fr
+    calc(var(--pk-lockup-h, 0) * var(--u));
   padding: 0 calc(28 * var(--u)) calc(var(--pk-bottom, 16) * var(--u));
   box-sizing: border-box;
   background-color: #0b0b0b;
@@ -182,16 +185,51 @@
   outline-offset: 2px;
 }
 
-.pk-ats {
-  margin: calc(6 * var(--u)) 0 0;
-  color: #fff;
+.pk-ats-lockup {
+  grid-row: 3;
+  align-self: end;
+  justify-self: center;
+  box-sizing: border-box;
+  width: calc(528 * var(--u));
+  max-width: 72%;
+  height: calc(var(--pk-record-h, 92) * var(--u));
+  margin-top: calc(var(--pk-record-gap, 18) * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(4 * var(--u));
+  padding: calc(8 * var(--u)) calc(20 * var(--u)) calc(10 * var(--u));
+  border: var(--frame-w) solid var(--frame-color);
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
+}
+
+.pk-ats-kicker {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
   font-family: var(--ig-poster);
-  font-size: calc(15 * var(--u));
+  font-size: calc(13 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   text-align: center;
   line-height: 1;
+}
+
+.pk-ats {
+  margin: 0;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(54 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 0.88;
+  font-variant-numeric: tabular-nums;
   text-shadow:
     calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
     calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);

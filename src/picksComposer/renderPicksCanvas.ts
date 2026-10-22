@@ -24,12 +24,16 @@ import {
   effectivePicksResult,
   formatPicksLine,
   formatPicksTotal,
+  PICKS_ATS_KICKER_SIZE,
   PICKS_ATS_SIZE,
   PICKS_CHECK_FILL,
   PICKS_LOCK_FILL,
   PICKS_NOTCH_H,
   PICKS_PLATE_X,
   PICKS_PLATE_Y,
+  PICKS_RECORD_PAD,
+  PICKS_RECORD_PLATE_H,
+  PICKS_RECORD_PLATE_W,
   PICKS_TITLE_PAD,
   picksTitlePlateH,
   PICKS_TITLE_SIZE,
@@ -40,6 +44,7 @@ import {
   picksMl,
   picksDatePill,
   picksNameLabel,
+  picksRecordKicker,
   sortPicksGames,
   splitPicksTitle,
   visiblePicksGames,
@@ -217,6 +222,7 @@ export const renderPicksCanvas = async (
   }
   const s = scale;
   await document.fonts?.load(`italic 900 ${PICKS_TITLE_SIZE * s}px ${POSTER_FONT}`);
+  await document.fonts?.load(`900 ${PICKS_ATS_SIZE * s}px ${POSTER_FONT}`);
   paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 
@@ -307,17 +313,13 @@ export const renderPicksCanvas = async (
   context.fillText(pill, width / 2, weekY + weekH / 2);
   setLetterSpacing(context, 0);
   const atsRecord = (input.atsRecord ?? "").trim();
-  if (atsRecord) {
-    context.fillStyle = "#fff";
-    context.font = `900 ${PICKS_ATS_SIZE * s}px ${POSTER_FONT}`;
-    setLetterSpacing(context, 0.14 * PICKS_ATS_SIZE * s);
-    withShadow(context, s, () => {
-      context.fillText(atsRecord, width / 2, weekY + weekH + 12 * s);
-    });
-    setLetterSpacing(context, 0);
-  }
-
-  const fill = picksFillLayout(games.length, boardH, 0, lines.length);
+  const fill = picksFillLayout(
+    games.length,
+    boardH,
+    0,
+    lines.length,
+    Boolean(atsRecord),
+  );
   const needed = new Set<string>();
   games.forEach((game) => {
     if (game.awayId) {
@@ -524,6 +526,65 @@ export const renderPicksCanvas = async (
     paintRow(game, cursorY);
     cursorY += (fill.rowH + fill.gap) * s;
   });
+
+  if (atsRecord) {
+    const lockup = {
+      x: (width - PICKS_RECORD_PLATE_W * s) / 2,
+      y: height - (PICKS_RECORD_PAD + PICKS_RECORD_PLATE_H) * s,
+      w: PICKS_RECORD_PLATE_W * s,
+      h: PICKS_RECORD_PLATE_H * s,
+    };
+    drawBannerInterior(
+      context,
+      lockup.x,
+      lockup.y,
+      lockup.w,
+      lockup.h,
+      s,
+      () => {
+        context.beginPath();
+        context.rect(lockup.x, lockup.y, lockup.w, lockup.h);
+      },
+    );
+    paintCellFrame(
+      context,
+      lockup.x,
+      lockup.y,
+      lockup.w,
+      lockup.h,
+      input.look,
+      s,
+    );
+    if (input.purpleFlair) {
+      paintPurplePlateEdge(
+        context,
+        lockup.x,
+        lockup.y,
+        lockup.w,
+        lockup.h,
+        s,
+      );
+    }
+    const kicker = picksRecordKicker(mode);
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "rgba(255,255,255,0.72)";
+    context.font = `900 ${PICKS_ATS_KICKER_SIZE * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.32 * PICKS_ATS_KICKER_SIZE * s);
+    context.fillText(
+      kicker,
+      width / 2,
+      lockup.y + lockup.h * 0.28,
+    );
+    setLetterSpacing(context, 0);
+    context.fillStyle = "#fff";
+    context.font = `900 ${PICKS_ATS_SIZE * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.04 * PICKS_ATS_SIZE * s);
+    withShadow(context, s, () => {
+      context.fillText(atsRecord, width / 2, lockup.y + lockup.h * 0.64);
+    });
+    setLetterSpacing(context, 0);
+  }
 
   if (input.showBa) {
     const ba = await loadImage("/ba-logo-circled.png");

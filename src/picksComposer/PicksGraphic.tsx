@@ -28,6 +28,9 @@ import {
   formatPicksLine,
   formatPicksTotal,
   parsePicksLineInput,
+  PICKS_RECORD_GAP,
+  PICKS_RECORD_PAD,
+  PICKS_RECORD_PLATE_H,
   picksDatePill,
   picksFillLayout,
   picksJuiceOrMove,
@@ -35,6 +38,7 @@ import {
   picksListTop,
   picksMl,
   picksNameLabel,
+  picksRecordKicker,
   picksTitlePlateH,
   sortPicksGames,
   splitPicksTitle,
@@ -48,7 +52,7 @@ import {
 
 interface PicksGraphicProps {
   draft: PicksDraft;
-  /** Compact ATS `12-8` / `12-8-1` under the GAMES notch. */
+  /** Season ATS/SU `12-8` / `12-8-1` for the bottom lockup. */
   atsRecord?: string;
   look?: ComposerLook;
   purpleFlair?: boolean;
@@ -97,14 +101,16 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
     const titleLines = splitPicksTitle(draft.title, draft.date);
     const allGames = sortPicksGames(draft.games);
     const games = visiblePicksGames(allGames, exporting);
+    const mode: PicksResultMode = draft.resultMode === "su" ? "su" : "ats";
+    const showRecord = Boolean(atsRecord.trim());
     const fill = picksFillLayout(
       games.length,
       story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
       0,
       titleLines.length,
+      showRecord,
     );
     const notch = picksDatePill(exporting ? games.length : allGames.length);
-    const mode: PicksResultMode = draft.resultMode === "su" ? "su" : "ats";
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -160,7 +166,14 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             ["--pk-group-h" as string]: String(fill.groupH),
             ["--pk-plate-h" as string]: String(picksTitlePlateH(titleLines.length)),
             ["--pk-header-h" as string]: String(picksListTop(titleLines.length)),
-            ["--pk-bottom" as string]: String(fill.listBottom),
+            ["--pk-lockup-h" as string]: String(
+              showRecord ? PICKS_RECORD_GAP + PICKS_RECORD_PLATE_H : 0,
+            ),
+            ["--pk-record-h" as string]: String(PICKS_RECORD_PLATE_H),
+            ["--pk-record-gap" as string]: String(PICKS_RECORD_GAP),
+            ["--pk-bottom" as string]: String(
+              showRecord ? PICKS_RECORD_PAD : fill.listBottom,
+            ),
             ["--pk-plate-opacity" as string]: String(
               clampPicksPlateOpacity(
                 draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
@@ -208,11 +221,6 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
               <span className="pk-date">{notch}</span>
             </div>
           ) : null}
-          {atsRecord ? (
-            <p className="pk-ats" aria-label="ATS record">
-              {atsRecord}
-            </p>
-          ) : null}
         </header>
         <div className="pk-list">
           {games.length ? (
@@ -242,6 +250,15 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             <p className="pk-empty">Fill tonight’s slate</p>
           )}
         </div>
+        {showRecord ? (
+          <div
+            className="pk-ats-lockup"
+            aria-label={`${picksRecordKicker(mode)} record`}
+          >
+            <p className="pk-ats-kicker">{picksRecordKicker(mode)}</p>
+            <p className="pk-ats">{atsRecord}</p>
+          </div>
+        ) : null}
       </article>
     );
   },

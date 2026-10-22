@@ -29,9 +29,13 @@ import {
   parseEspnNationalTv,
   parseEspnTip,
   parsePicksScoreboard,
+  PICKS_RECORD_GAP,
+  PICKS_RECORD_PAD,
+  PICKS_RECORD_PLATE_H,
   picksDatePill,
   picksDefaultTitle,
   picksFillLayout,
+  picksRecordKicker,
   picksTitlePlateH,
   picksJuiceOrMove,
   picksNameLabel,
@@ -448,6 +452,26 @@ describe("picks composer", () => {
     expect(seven.rowH).toBeGreaterThan(eleven.rowH);
     expect(seven.listBottom).toBe(eleven.listBottom);
     expect(seven.listBottom).toBeLessThan(40);
+  });
+
+  it("reserves a bottom ATS lockup and leaves the GAMES notch alone", () => {
+    const plain = picksFillLayout(11);
+    const withRecord = picksFillLayout(11, GRAPHIC_HEIGHT, 0, 1, true);
+    const story = picksFillLayout(11, STORY_DESIGN_HEIGHT, 0, 1, true);
+    expect(plain.listBottom).toBeLessThan(40);
+    expect(withRecord.listBottom).toBe(
+      PICKS_RECORD_GAP + PICKS_RECORD_PLATE_H + PICKS_RECORD_PAD,
+    );
+    expect(withRecord.listBottom).toBeGreaterThan(plain.listBottom);
+    expect(withRecord.listTop).toBe(plain.listTop);
+    expect(withRecord.rowH * 11 + withRecord.gap * 10).toBeCloseTo(
+      withRecord.listH,
+    );
+    expect(withRecord.logo).toBeGreaterThanOrEqual(48);
+    expect(story.listBottom).toBe(withRecord.listBottom);
+    expect(picksRecordKicker("ats")).toBe("ATS");
+    expect(picksRecordKicker("su")).toBe("SU");
+    expect(PICKS_RECORD_PLATE_H).toBeGreaterThan(70);
   });
 
   it("grades ATS, straight up, pushes, and skips unfinished games", () => {

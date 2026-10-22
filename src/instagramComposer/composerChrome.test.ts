@@ -851,6 +851,9 @@ describe("composer chrome", () => {
     expect(picksCss).not.toContain(".pk-mark");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
     expect(picksCss).toContain(".pk-ats");
+    expect(picksCss).toContain(".pk-ats-lockup");
+    expect(picksCss).toContain(".pk-ats-kicker");
+    expect(picksCss).toContain("calc(54 * var(--u))");
     expect(picksCss).not.toContain(".pk-footer");
     expect(picksCss).not.toContain(".pk-parlay");
     expect(picksCss).not.toContain(".pk-side.is-dim");
@@ -870,6 +873,8 @@ describe("composer chrome", () => {
     expect(picksGraphic).not.toContain("pk-mark");
     expect(picksGraphic).not.toContain("picksRecordLine");
     expect(picksGraphic).toContain("pk-ats");
+    expect(picksGraphic).toContain("pk-ats-lockup");
+    expect(picksGraphic).toContain("picksRecordKicker");
     expect(picksGraphic).not.toContain("pk-footer");
     expect(picksGraphic).not.toContain("pk-parlay");
     expect(picksGraphic).toContain("muted ? \"is-dim\"");
@@ -885,6 +890,9 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("applyScoresToPicksLedger");
     expect(picksCanvas).toContain("arc(x, y, size / 2");
     expect(picksCanvas).toContain("atsRecord");
+    expect(picksCanvas).toContain("PICKS_RECORD_PLATE_H");
+    expect(picksCanvas).toContain("picksRecordKicker");
+    expect(picksCanvas).not.toContain("weekY + weekH + 12");
     expect(picksCanvas).not.toContain("picksRecordLine");
     expect(picksApp).toContain("Show juice");
     expect(picksApp).toContain("Show confidence ticks");
