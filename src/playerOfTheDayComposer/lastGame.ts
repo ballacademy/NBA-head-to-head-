@@ -149,6 +149,77 @@ export const shiftIsoDate = (iso: string, days: number) => {
   return next.toISOString().slice(0, 10);
 };
 
+/** First integer in an ESPN score field (`132`, `132-125`, `{ displayValue: "132" }`). */
+export const scorePoints = (value: unknown): number | null => {
+  if (value && typeof value === "object" && "displayValue" in value) {
+    return scorePoints((value as { displayValue?: unknown }).displayValue);
+  }
+  const match = String(value ?? "").match(/(\d+)/);
+  if (!match) {
+    return null;
+  }
+  const parsed = Number(match[1]);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+/**
+ * W/L token from a result string. Exact `W`/`L` only — `ORL` must not count as a loss.
+ */
+export const wlToken = (result: unknown): "W" | "L" | "" => {
+  const token = String(result ?? "")
+    .trim()
+    .toUpperCase();
+  if (token === "W" || token === "L") {
+    return token;
+  }
+  const found = token.split(/\s+/).find((part) => part === "W" || part === "L");
+  return found === "W" || found === "L" ? found : "";
+};
+
+/**
+ * Final W/L for the player's club. Prefer the two team scores so a missing or
+ * opponent-side `winner` flag cannot mark a win as L.
+ */
+export const playerGameResult = (
+  playerScore: unknown,
+  opponentScore: unknown,
+  fallback?: unknown,
+): "W" | "L" | "" => {
+  const ours = scorePoints(playerScore);
+  const theirs = scorePoints(opponentScore);
+  if (ours != null && theirs != null && ours !== theirs) {
+    return ours > theirs ? "W" : "L";
+  }
+  if (fallback === true) {
+    return "W";
+  }
+  if (fallback === false) {
+    return "L";
+  }
+  return wlToken(fallback);
+};
+
+/** Player's team is home unless ESPN marks the game `@` / away. */
+export const playerIsHomeSide = (
+  atVs?: string | null,
+  homeTeamId?: string | number | null,
+  teamId?: string | number | null,
+) => {
+  const token = String(atVs ?? "")
+    .trim()
+    .toLowerCase();
+  if (token === "@" || token === "at") {
+    return false;
+  }
+  if (token === "vs" || token === "v") {
+    return true;
+  }
+  if (homeTeamId == null || teamId == null || String(teamId) === "") {
+    return true;
+  }
+  return String(homeTeamId) === String(teamId);
+};
+
 export const formatDateLabel = (iso: string) => {
   const match = nbaSlateDate(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!match) {
@@ -303,6 +374,7 @@ export const gameOnOrBeforeDate = (
 export const resolveTeamId = (
   abbreviation?: string | null,
   displayName?: string | null,
+  espnNumericId?: string | number | null,
 ): string | null => {
   const name = displayName?.trim();
   if (name) {
@@ -314,11 +386,21 @@ export const resolveTeamId = (
     }
   }
   const token = (abbreviation ?? "").trim().toUpperCase();
-  if (!token) {
-    return null;
+  if (token) {
+    const mapped = ESPN_ABBREV_TO_TEAM[token] ?? token;
+    if (NBA_TEAMS_BY_ID[mapped]) {
+      return mapped;
+    }
   }
-  const mapped = ESPN_ABBREV_TO_TEAM[token] ?? token;
-  return NBA_TEAMS_BY_ID[mapped] ? mapped : null;
+  if (espnNumericId != null && String(espnNumericId) !== "") {
+    const hit = Object.entries(ESPN_TEAM_IDS).find(
+      ([, id]) => String(id) === String(espnNumericId),
+    );
+    if (hit) {
+      return hit[0];
+    }
+  }
+  return null;
 };
 
 const STAT_KEYS = {
@@ -350,6 +432,8 @@ interface EspnEvent {
   id?: string;
   gameDate?: string;
   score?: string;
+  /** `@` away, `vs` home — athlete-relative, unlike homeTeamId. */
+  atVs?: string;
   homeTeamId?: string | number;
   awayTeamId?: string | number;
   homeTeamScore?: string | number;
@@ -455,15 +539,19 @@ export const gameFromEvent = (
     opponentId ||
     (event.opponent?.abbreviation ?? "").toUpperCase() ||
     "OPP";
-  const playerIsHome =
-    String(event.homeTeamId ?? "") === String(event.team?.id ?? "");
+  const playerIsHome = playerIsHomeSide(
+    event.atVs,
+    event.homeTeamId,
+    event.team?.id,
+  );
   const playerScore = String(
     playerIsHome ? (event.homeTeamScore ?? "") : (event.awayTeamScore ?? ""),
   );
   const opponentScore = String(
     playerIsHome ? (event.awayTeamScore ?? "") : (event.homeTeamScore ?? ""),
   );
-  const result = String(event.gameResult ?? "").toUpperCase() || "—";
+  const result =
+    playerGameResult(playerScore, opponentScore, event.gameResult) || "—";
   const gameDate = event.gameDate ?? "";
 
   return {
@@ -675,7 +763,7 @@ export const parseTeamScheduleLastNight = (
       resolveTeamId(opp.team?.abbreviation, opp.team?.displayName) ?? "";
     const playerScore = competitorScore(ours);
     const opponentScore = competitorScore(opp);
-    const result = ours.winner ? "W" : "L";
+    const result = playerGameResult(playerScore, opponentScore, ours.winner);
     const gameDate = event.date ?? "";
     completed.push({
       eventId: String(event.id ?? ""),

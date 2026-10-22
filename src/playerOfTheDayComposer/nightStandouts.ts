@@ -9,6 +9,7 @@ import {
   formatDateLabel,
   formatResultLine,
   isoDateOnly,
+  playerGameResult,
   resolveTeamId,
   shiftIsoDate,
   toEspnDateParam,
@@ -62,7 +63,7 @@ interface EspnBoxAthlete {
 }
 
 interface EspnBoxTeam {
-  team?: { abbreviation?: string; displayName?: string };
+  team?: { abbreviation?: string; displayName?: string; id?: string };
   statistics?: Array<{
     keys?: string[];
     labels?: string[];
@@ -434,7 +435,7 @@ export const nightStandoutFromBox = (
     !extra.flags.includes("40+ PTS")
       ? [...extra.flags, "Hot night"]
       : extra.flags;
-  const result = ours.winner ? "W" : "L";
+  const result = playerGameResult(ours.score, opponent.score, ours.winner);
   return {
     athleteId,
     name,
@@ -477,14 +478,26 @@ const parseSummaryPlayers = (
   const headerComps = payload?.header?.competitions?.[0]?.competitors ?? [];
   for (const side of payload?.boxscore?.players ?? []) {
     const teamId =
-      resolveTeamId(side.team?.abbreviation, side.team?.displayName) ?? "";
+      resolveTeamId(
+        side.team?.abbreviation,
+        side.team?.displayName,
+        side.team?.id,
+      ) ?? "";
     const ours = headerComps.find((item) => {
-      const id = resolveTeamId(item.team?.abbreviation, item.team?.displayName);
+      const id = resolveTeamId(
+        item.team?.abbreviation,
+        item.team?.displayName,
+        item.team?.id,
+      );
       return id === teamId;
     });
     const opp = headerComps.find((item) => item !== ours);
     const opponentId =
-      resolveTeamId(opp?.team?.abbreviation, opp?.team?.displayName) ?? "";
+      resolveTeamId(
+        opp?.team?.abbreviation,
+        opp?.team?.displayName,
+        opp?.team?.id,
+      ) ?? "";
     const opponentAbbrev =
       opponentId || (opp?.team?.abbreviation ?? "OPP").toUpperCase();
     const group = side.statistics?.[0];

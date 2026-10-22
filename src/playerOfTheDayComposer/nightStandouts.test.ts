@@ -424,4 +424,89 @@ describe("night standouts", () => {
     expect(merged[0]!.game.stats.ft).toBe("5-6");
     expect(merged[0]!.game.stats.pts).toBe("20");
   });
+
+  it("uses the player's club score vs Orlando even if the home row is listed first without winner", () => {
+    const rows = parseSummaryStandouts(
+      {
+        header: {
+          competitions: [
+            {
+              competitors: [
+                {
+                  score: "125",
+                  homeAway: "home",
+                  team: {
+                    id: "19",
+                    abbreviation: "ORL",
+                    displayName: "Orlando Magic",
+                  },
+                },
+                {
+                  score: "132",
+                  homeAway: "away",
+                  team: {
+                    id: "1",
+                    abbreviation: "ATL",
+                    displayName: "Atlanta Hawks",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        boxscore: {
+          players: [
+            {
+              team: {
+                id: "1",
+                abbreviation: "ATL",
+                displayName: "Atlanta Hawks",
+              },
+              statistics: [
+                {
+                  keys: KEYS,
+                  athletes: [
+                    {
+                      athlete: {
+                        id: "4278039",
+                        displayName: "Nickeil Alexander-Walker",
+                      },
+                      stats: box("34", "31", "4", "5", "1", "1"),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              team: {
+                id: "19",
+                abbreviation: "ORL",
+                displayName: "Orlando Magic",
+              },
+              statistics: [
+                {
+                  keys: KEYS,
+                  athletes: [
+                    {
+                      athlete: { id: "4433134", displayName: "Paolo Banchero" },
+                      stats: box("36", "28", "8", "4", "1", "1"),
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+      "401909834",
+      "2026-10-21",
+    );
+    const naw = rows.find((row) => row.athleteId === "4278039");
+    expect(naw?.teamId).toBe("ATL");
+    expect(naw?.game.opponentAbbrev).toBe("ORL");
+    expect(naw?.game.home).toBe(false);
+    expect(naw?.game.playerScore).toBe("132");
+    expect(naw?.game.opponentScore).toBe("125");
+    expect(naw?.game.result).toBe("W");
+  });
 });

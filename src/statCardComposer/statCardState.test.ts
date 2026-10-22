@@ -616,6 +616,24 @@ describe("stat card composer", () => {
         home: false,
       }),
     ).toBe("L 103–129 @ IND");
+    expect(
+      formatStatCardMatchup({
+        result: "L",
+        playerScore: "132",
+        opponentScore: "125",
+        opponentAbbrev: "ORL",
+        home: false,
+      }),
+    ).toBe("W 132–125 @ ORL");
+    expect(
+      formatStatCardMatchup({
+        result: "ORL",
+        playerScore: "132",
+        opponentScore: "125",
+        opponentAbbrev: "ORL",
+        home: false,
+      }),
+    ).toBe("W 132–125 @ ORL");
     const filled = fillStatCardFromGame(
       defaultStatCardDraft(),
       gameFrom(

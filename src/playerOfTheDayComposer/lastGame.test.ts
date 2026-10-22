@@ -9,7 +9,10 @@ import {
   parseGamelogGames,
   parseLastGamePayload,
   parseTeamScheduleLastNight,
+  playerGameResult,
+  playerIsHomeSide,
   resolveTeamId,
+  wlToken,
   ESPN_TEAM_IDS,
   ESPN_TEAM_SCHEDULE_URL,
   gameInSeasonWindow,
@@ -317,6 +320,73 @@ describe("last NBA game parsing", () => {
     expect(resolveTeamId("NO")).toBe("NOP");
     expect(ESPN_ABBREV_TO_TEAM.WSH).toBe("WAS");
     expect(resolveTeamId("PHI", "Philadelphia 76ers")).toBe("PHI");
+    expect(resolveTeamId(undefined, undefined, 1)).toBe("ATL");
+    expect(resolveTeamId(undefined, undefined, "19")).toBe("ORL");
+  });
+
+  it("takes W/L from the player's score, not an opponent winner flag or ORL", () => {
+    expect(wlToken("ORL")).toBe("");
+    expect(wlToken("W")).toBe("W");
+    expect(playerGameResult("132", "125", false)).toBe("W");
+    expect(playerGameResult("132", "125", "L")).toBe("W");
+    expect(playerGameResult("125", "132", true)).toBe("L");
+    expect(playerIsHomeSide("@", "19", "1")).toBe(false);
+    expect(playerIsHomeSide("vs", "1", "1")).toBe(true);
+    const naw: EspnGamelogPayload = {
+      labels: labels(),
+      events: {
+        "401909834": {
+          id: "401909834",
+          gameDate: "2026-10-21T23:00:00.000+00:00",
+          atVs: "@",
+          homeTeamId: "19",
+          awayTeamId: "1",
+          homeTeamScore: "125",
+          awayTeamScore: "132",
+          gameResult: "L",
+          opponent: { abbreviation: "ORL", displayName: "Orlando Magic" },
+          team: { id: "1", abbreviation: "ATL", displayName: "Atlanta Hawks" },
+        },
+      },
+      seasonTypes: [
+        {
+          displayName: "2026-27 Regular Season",
+          categories: [
+            {
+              events: [
+                {
+                  eventId: "401909834",
+                  stats: row(
+                    "34",
+                    "11-20",
+                    "55.0",
+                    "5-10",
+                    "50.0",
+                    "4-4",
+                    "100",
+                    "4",
+                    "5",
+                    "1",
+                    "1",
+                    "2",
+                    "2",
+                    "31",
+                  ),
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const game = parseLastGamePayload(naw, "regular", CURRENT_SEASON);
+    expect(game?.teamId).toBe("ATL");
+    expect(game?.opponentAbbrev).toBe("ORL");
+    expect(game?.home).toBe(false);
+    expect(game?.playerScore).toBe("132");
+    expect(game?.opponentScore).toBe("125");
+    expect(game?.result).toBe("W");
+    expect(game?.resultLine).toBe("132-125 W VS ORL");
   });
 
   it("asks ESPN for the current season's ending year", () => {
@@ -331,7 +401,7 @@ describe("last NBA game parsing", () => {
   it("prefers the most recent preseason game by default", () => {
     const game = parseLastGamePayload(payload(), "preseason", PRIOR_SEASON);
     expect(game?.eventId).toBe("401812725");
-    expect(game?.resultLine).toBe("90-100 W VS LAC");
+    expect(game?.resultLine).toBe("90-100 L VS LAC");
     expect(game?.home).toBe(false);
     expect(game?.dateLabel).toBe("10/7");
     expect(game?.stats.min).toBe("23");
@@ -440,7 +510,7 @@ describe("last NBA game parsing", () => {
     };
     const game = parseLastGamePayload(onlyPre, "regular", PRIOR_SEASON);
     expect(game?.eventId).toBe("401812725");
-    expect(game?.resultLine).toBe("90-100 W VS LAC");
+    expect(game?.resultLine).toBe("90-100 L VS LAC");
   });
 
   it("formats date and result helpers", () => {

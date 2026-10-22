@@ -12,6 +12,7 @@ import { readJson, writeJson } from "../lib/browserStorage";
 import {
   isoDateOnly,
   nbaTodayIso,
+  playerGameResult,
   type LastGame,
   type LastGameStats,
 } from "../playerOfTheDayComposer/lastGame";
@@ -302,23 +303,12 @@ export const clipStatLabel = (value: string) =>
 export const clipStatMatchup = (value: string) =>
   value.replace(/\s+/g, " ").trim().slice(0, STC_MATCHUP_MAX);
 
-const wlToken = (result: string) => {
-  const token = String(result ?? "").trim().toUpperCase();
-  if (token.startsWith("W")) {
-    return "W";
-  }
-  if (token.startsWith("L")) {
-    return "L";
-  }
-  return "";
-};
-
 const scoreToken = (value: string) => {
   const match = String(value ?? "").match(/(\d+)/);
   return match?.[1] ?? "";
 };
 
-/** Home: `W vs OKC 111–109`. Away: `L 103–129 @ IND`. */
+/** Home: `W vs OKC 111–109`. Away: `L 103–129 @ IND`. Player-team W/L and score. */
 export const formatStatCardMatchup = (
   game: Pick<
     LastGame,
@@ -328,9 +318,9 @@ export const formatStatCardMatchup = (
   if (!game) {
     return "";
   }
-  const result = wlToken(game.result);
   const ours = scoreToken(game.playerScore);
   const theirs = scoreToken(game.opponentScore);
+  const result = playerGameResult(game.playerScore, game.opponentScore, game.result);
   const opp = String(game.opponentAbbrev ?? "")
     .trim()
     .toUpperCase()
