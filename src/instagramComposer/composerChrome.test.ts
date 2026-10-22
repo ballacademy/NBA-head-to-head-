@@ -1091,6 +1091,8 @@ describe("composer chrome", () => {
     expect(nights).toContain("rankNightDuds");
     expect(nights).not.toMatch(/eventIsPlayed[\s\S]*?state === "in"[\s\S]{0,80}return false/);
     expect(picker).toContain("LIVE / IN GAME");
+    expect(picker).toContain("const searching = Boolean(query.trim());");
+    expect(picker).toMatch(/searching\s*\?\s*players/);
     expect(sheet).toContain(".sc-picker__suggested--dud");
     expect(sheet).toContain(".sc-team.is-live");
     expect(sheet).toContain(".sc-team__live");

@@ -238,7 +238,10 @@ export function PlayerPicker({
     depthReady,
   ]);
 
-  const restPlayers = players.filter((player) => !recIds.has(player.id));
+  const searching = Boolean(query.trim());
+  const restPlayers = searching
+    ? players
+    : players.filter((player) => !recIds.has(player.id));
   const visibleIds = useMemo(
     () => [
       ...(showSuggested ? suggestedRows.map((row) => row.id) : []),
