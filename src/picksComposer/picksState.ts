@@ -36,7 +36,7 @@ export const PICKS_AFTER_NOTCH = 12;
 export const PICKS_ATS_SIZE = 54;
 export const PICKS_ATS_KICKER_SIZE = 13;
 export const PICKS_RECORD_PLATE_H = 92;
-export const PICKS_RECORD_GAP = 18;
+export const PICKS_RECORD_GAP = 28;
 export const PICKS_RECORD_PAD = 20;
 export const PICKS_RECORD_PLATE_W = 528;
 
