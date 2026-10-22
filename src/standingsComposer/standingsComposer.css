@@ -374,8 +374,34 @@
   max-width: 520px;
 }
 
+.sc-stat-slots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+.sc-stat-slots .sc-toolbar__eyebrow {
+  flex: 0 0 auto;
+}
+
+.sc-stat-slots .sc-hint {
+  flex: 1 1 180px;
+  margin: 0;
+}
+
+.sc-stat-slots__add {
+  flex: 0 0 auto;
+  height: 38px;
+  min-height: 38px;
+  font-weight: 800;
+}
+
 .sc-field--stat-slot {
   max-width: 360px;
+  flex: 0 1 160px;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;

@@ -446,6 +446,11 @@ const standoutLine = (
   return bits.join(" · ");
 };
 
+/** Big counting nights still sit in Standouts even with TOs or a cold TS. */
+export const isStandoutOverRoughNight = (
+  extra: ReturnType<typeof nightFlagsFor>,
+) => extra.pts >= 30 || extra.tens >= 2 || extra.flags.length > 0;
+
 /** Whole notable slate — no per-game or global star cap. Picker scrolls. */
 export const rankNightStandouts = (rows: NightStandout[]) => {
   const seen = new Set<string>();
@@ -456,6 +461,13 @@ export const rankNightStandouts = (rows: NightStandout[]) => {
     }
     const extra = nightFlagsFor(row.game.stats);
     const usual = usualLineFor(row.athleteId);
+    /** Brick / 6+ TO nights belong on Rough night, not the impressive strip. */
+    if (
+      isRoughNight(row.game.stats, usual, row.athleteId) &&
+      !isStandoutOverRoughNight(extra)
+    ) {
+      continue;
+    }
     if (!isNotableNight(extra, usual)) {
       continue;
     }
@@ -906,36 +918,46 @@ export const roughNightScore = (stats: LastGameStats, usual: UsualLine) => {
   return tsHole + efgHole + tovPain + collapse;
 };
 
+export const isHighTovNight = (stats: LastGameStats) => {
+  const tov = Number.parseFloat(stats.tov);
+  const turnovers = Number.isFinite(tov) ? tov : 0;
+  const shooting = totwShooting(stats);
+  return (
+    turnovers >= DUD_TOV_HIGH ||
+    (turnovers >= DUD_TOV_VOLUME && shooting.fga >= DUD_MIN_FGA)
+  );
+};
+
 export const isRoughNight = (
   stats: LastGameStats,
   usual: UsualLine,
   athleteId: string,
 ) => {
-  if (isCampUsualLine(athleteId)) {
-    return false;
-  }
   const min = n(stats.min);
-  if (min < DUD_MIN_MINUTES) {
+  if (min <= 0) {
     return false;
   }
   const extra = nightFlagsFor(stats);
   const shooting = totwShooting(stats);
-  const tov = Number.parseFloat(stats.tov);
-  const turnovers = Number.isFinite(tov) ? tov : 0;
   const fgPct = shooting.fga > 0 ? shooting.fg.made / shooting.fga : 1;
   const brick =
     shooting.fga >= DUD_MIN_FGA &&
     ((shooting.ts != null && shooting.ts < DUD_POOR_TS) ||
       (shooting.efg != null && shooting.efg < DUD_POOR_EFG) ||
       (shooting.fga >= 10 && fgPct < 0.36));
-  const tovNight =
-    turnovers >= DUD_TOV_HIGH ||
-    (turnovers >= DUD_TOV_VOLUME && shooting.fga >= DUD_MIN_FGA);
+  const tovNight = isHighTovNight(stats);
   const collapse =
     usual.pts >= DUD_STAR_USUAL_PTS &&
     extra.pts <= Math.max(8, usual.pts * 0.4) &&
     min >= 20;
-  return brick || tovNight || collapse;
+  /** 6+ TO (or 5 TO on real FGA) is the story — even a rookie / short night. */
+  if (tovNight) {
+    return true;
+  }
+  if (isCampUsualLine(athleteId) || min < DUD_MIN_MINUTES) {
+    return false;
+  }
+  return brick || collapse;
 };
 
 export const asNightDud = (row: NightStandout): NightStandout | null => {

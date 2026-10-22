@@ -286,6 +286,40 @@ describe("stat card composer", () => {
       "AST",
       "MIN",
     ]);
+    const night = box({
+      pts: "29",
+      reb: "4",
+      ast: "6",
+      stl: "1",
+      blk: "0",
+      fg: "11-20",
+      three: "6-11",
+      tov: "2",
+      min: "34",
+    });
+    const added = fillStatCardFromGame(
+      { ...filled, stats: addStatCardLine(filled.stats) },
+      gameFrom(night),
+    );
+    expect(added.stats.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "29 PTS",
+      "4 REB",
+      "6 AST",
+      "34 MIN",
+    ]);
+    const swapped = fillStatCardFromGame(
+      {
+        ...added,
+        stats: setStatCardLineKey(added.stats, 1, "tov", "last-game", night),
+      },
+      gameFrom(night),
+    );
+    expect(swapped.stats.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "29 PTS",
+      "2 TOV",
+      "6 AST",
+      "34 MIN",
+    ]);
   });
 
   it("adds unused counting stats through 8 without changing the photo column", () => {
@@ -740,5 +774,23 @@ describe("stat card composer", () => {
       "28 MIN",
     ]);
     expect(bricks[0]?.key).toBe("pts");
+    const wilson = notableRoughNightLines(
+      box({
+        pts: "16",
+        reb: "4",
+        ast: "0",
+        fg: "7-21",
+        three: "1-8",
+        tov: "9",
+        min: "32",
+      }),
+    );
+    expect(wilson[0]?.key).toBe("pts");
+    expect(wilson.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "16 PTS",
+      "7-21 FG",
+      "1-8 3PM",
+      "9 TOV",
+    ]);
   });
 });

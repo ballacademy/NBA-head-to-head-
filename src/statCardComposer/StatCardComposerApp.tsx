@@ -93,6 +93,7 @@ import {
   STC_STAT_COUNT,
   STC_STAT_MAX,
   type StatCardDraft,
+  type StatCardLine,
   type StatCardSource,
 } from "./statCardState";
 import "@fontsource/montserrat/latin-900.css";
@@ -134,6 +135,8 @@ export function StatCardComposerApp() {
   } | null>(null);
   const [storyCrop, setStoryCrop] = useState(false);
   const lastGameRef = useRef<LastGame | null>(null);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
   const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
   const night = useComposerNight();
   const { range, setRange } = useComposerDateRange();
@@ -198,17 +201,15 @@ export function StatCardComposerApp() {
                 ? next.gameDate || range.to
                 : null,
             ));
-      lastGameRef.current = game;
+      if (game) {
+        lastGameRef.current = game;
+      }
       setDraft((current) => {
         if (current.playerId !== next.playerId) {
           return current;
         }
         if (!game) {
-          return {
-            ...current,
-            matchup: "",
-            stats: current.stats.map((line) => ({ ...line, value: "", high: null })),
-          };
+          return current;
         }
         return applyStatCardHighs(
           fillStatCardFromGame(current, game),
@@ -218,6 +219,27 @@ export function StatCardComposerApp() {
       });
     } catch {
       /* still editable */
+    }
+  };
+
+  const applyHudStats = (current: StatCardDraft, stats: StatCardLine[]) => {
+    const next = { ...current, stats };
+    if (parseStatCardSource(current.source) === "season") {
+      return fillStatCardFromSeason(next, next.season, statsSample);
+    }
+    const game = lastGameRef.current;
+    return game ? fillStatCardFromGame(next, game) : next;
+  };
+
+  const commitHudStats = (stats: StatCardLine[]) => {
+    const next = applyHudStats(draftRef.current, stats);
+    setDraft(next);
+    if (
+      parseStatCardSource(next.source) === "last-game" &&
+      next.playerId &&
+      !lastGameRef.current
+    ) {
+      void fillStats(next);
     }
   };
 
@@ -236,19 +258,28 @@ export function StatCardComposerApp() {
   };
 
   useEffect(() => {
-    if (!hydrated || source !== "last-game") {
+    if (!hydrated) {
       return;
     }
-    if (draft.gameDate !== range.to) {
+    const current = draftRef.current;
+    if (!current.playerId) {
+      return;
+    }
+    if (
+      parseStatCardSource(current.source) === "last-game" &&
+      current.gameDate !== range.to
+    ) {
       const next = {
-        ...draft,
+        ...current,
         gameDate: range.to,
         statsLeft: peekStatCardStatsLeft(range.to),
       };
       setDraft(next);
       void fillStats(next);
+      return;
     }
-  }, [hydrated, range.from, range.to, source]);
+    void fillStats(current);
+  }, [hydrated, range.from, range.to, source, draft.playerId]);
 
   useEffect(() => {
     if (!pickerOpen || source !== "last-game") {
@@ -413,6 +444,68 @@ export function StatCardComposerApp() {
         }
         data={
           <>
+          <div className="sc-stat-slots" role="group" aria-label="On-card stats">
+            <span className="sc-toolbar__eyebrow">On-card stats</span>
+            <button
+              type="button"
+              className="sc-chip sc-stat-slots__add"
+              disabled={draft.stats.length >= STC_STAT_MAX}
+              aria-label={nextLine ? `Add ${nextLine.label} slot` : "8 stats"}
+              onClick={() =>
+                commitHudStats(addStatCardLine(draftRef.current.stats))
+              }
+            >
+              {nextLine ? `Add ${nextLine.label}` : "8 stats"}
+            </button>
+            <p className="sc-hint">Drag a row on the graphic to reorder these slots.</p>
+            {draft.stats.map((line, index) => (
+              <div
+                key={`slot-${index}`}
+                className="sc-field sc-field--stat-slot"
+              >
+                {`Stat ${index + 1}`}
+                <div className="sc-stat-slot">
+                  <select
+                    value={line.key}
+                    aria-label={`Stat ${index + 1} on card`}
+                    onChange={(event) => {
+                      const key = parseStatCardKey(event.target.value);
+                      const current = draftRef.current;
+                      commitHudStats(
+                        setStatCardLineKey(
+                          current.stats,
+                          index,
+                          key,
+                          parseStatCardSource(current.source),
+                          lastGameRef.current?.stats,
+                        ),
+                      );
+                    }}
+                  >
+                    {STAT_CARD_LINE_OPTIONS.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {draft.stats.length > 1 ? (
+                    <button
+                      type="button"
+                      className="sc-chip sc-stat-slot__remove"
+                      aria-label={`Remove stat ${index + 1} ${line.label}`}
+                      onClick={() =>
+                        commitHudStats(
+                          removeStatCardLine(draftRef.current.stats, index),
+                        )
+                      }
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
         <div className="sc-look" role="group" aria-label="Stat source">
           <span className="sc-look__label">Stats</span>
           <button
@@ -485,78 +578,6 @@ export function StatCardComposerApp() {
               setStatus("Photo cropped inside the frame — pinch or drag.");
             }}
           />
-          <span className="sc-toolbar__eyebrow">On-card stats</span>
-          <p className="sc-hint">Drag a row on the graphic to reorder these slots.</p>
-          {draft.stats.map((line, index) => (
-            <div
-              key={`${line.key}-${index}`}
-              className="sc-field sc-field--stat-slot"
-            >
-              {`Stat ${index + 1}`}
-              <div className="sc-stat-slot">
-                <select
-                  value={line.key}
-                  aria-label={`Stat ${index + 1} on card`}
-                  onChange={(event) => {
-                    const key = parseStatCardKey(event.target.value);
-                    setDraft((current) => {
-                      const nextStats = setStatCardLineKey(
-                        current.stats,
-                        index,
-                        key,
-                        parseStatCardSource(current.source),
-                        lastGameRef.current?.stats,
-                      );
-                      const next = { ...current, stats: nextStats };
-                      if (parseStatCardSource(current.source) === "season") {
-                        return fillStatCardFromSeason(
-                          next,
-                          next.season,
-                          statsSample,
-                        );
-                      }
-                      return next;
-                    });
-                  }}
-                >
-                  {STAT_CARD_LINE_OPTIONS.map((option) => (
-                    <option key={option.key} value={option.key}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                {draft.stats.length > 1 ? (
-                  <button
-                    type="button"
-                    className="sc-chip sc-stat-slot__remove"
-                    aria-label={`Remove stat ${index + 1} ${line.label}`}
-                    onClick={() => {
-                      setDraft((current) => ({
-                        ...current,
-                        stats: removeStatCardLine(current.stats, index),
-                      }));
-                    }}
-                  >
-                    Remove
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          ))}
-          <button
-            type="button"
-            className="sc-chip"
-            disabled={draft.stats.length >= STC_STAT_MAX}
-            aria-label={nextLine ? `Add ${nextLine.label} slot` : "8 stats"}
-            onClick={() => {
-              setDraft((current) => ({
-                ...current,
-                stats: addStatCardLine(current.stats),
-              }));
-            }}
-          >
-            {nextLine ? `Add ${nextLine.label}` : "8 stats"}
-          </button>
           </>
         }
         board={

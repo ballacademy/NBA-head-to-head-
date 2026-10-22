@@ -1108,6 +1108,8 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain('"Rough night"');
     expect(statCardApp).toContain("fillStatCardFromRoughNight");
     expect(statCardApp).toContain("fillStatCardFromGame(current, game)");
+    expect(statCardApp).toContain("applyHudStats");
+    expect(statCardApp).toContain("commitHudStats");
     expect(statCardState).toContain("ensurePtsFirst");
     expect(statCardState).toContain("withAutoFillStatOrder");
     expect(statCardApp).not.toContain("filters=");
@@ -1122,7 +1124,18 @@ describe("composer chrome", () => {
     expect(hudSlots).toContain("setStatCardLineKey");
     expect(hudSlots).toContain("removeStatCardLine");
     expect(hudSlots).toContain("addStatCardLine");
-    expect(hudSlots).not.toContain("fillStats");
+    expect(hudSlots).toContain("commitHudStats");
+    expect(hudSlots).toContain("sc-stat-slots");
+    const slotBlock = hudSlots.slice(
+      0,
+      hudSlots.indexOf('aria-label="Stat source"'),
+    );
+    expect(slotBlock).not.toContain("fillStats");
+    const addAt = slotBlock.indexOf("sc-stat-slots__add");
+    const firstSlotAt = slotBlock.indexOf("Stat ${index + 1}");
+    expect(addAt).toBeGreaterThan(0);
+    expect(addAt).toBeLessThan(firstSlotAt);
+    expect(sheet).toContain(".sc-stat-slots");
     expect(picker).toContain('aria-label="Recs"');
     expect(picker).toContain("Standouts");
     expect(picker).toContain("Rough night");
@@ -1140,6 +1153,8 @@ describe("composer chrome", () => {
     expect(nights).toContain("espnEventIsFinal");
     expect(nights).toContain("espnEventIsLive");
     expect(nights).toContain("rankNightDuds");
+    expect(nights).toContain("isHighTovNight");
+    expect(nights).toContain("isStandoutOverRoughNight");
     expect(nights).not.toMatch(/eventIsPlayed[\s\S]*?state === "in"[\s\S]{0,80}return false/);
     expect(picker).toContain("LIVE / IN GAME");
     expect(picker).toContain("const searching = Boolean(query.trim());");

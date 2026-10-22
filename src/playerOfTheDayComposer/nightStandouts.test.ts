@@ -8,6 +8,8 @@ import {
   isFreakNonScoringNight,
   isNotableNight,
   isRoughNight,
+  isHighTovNight,
+  isCampUsualLine,
   isSurpriseNight,
   mergeRangeProduction,
   mergeWeekStandouts,
@@ -759,6 +761,43 @@ describe("night standouts", () => {
     expect(tatumRow?.badge).toMatch(/Bricks|Stinker/);
     expect(ranked.map((row) => row.athleteId)).not.toContain("4684208");
     expect(ranked.map((row) => row.athleteId)).not.toContain("1966");
+    const wilson = getPlayer("5095151");
+    expect(wilson?.name).toMatch(/Caleb Wilson/);
+    expect(isCampUsualLine("5095151")).toBe(true);
+    const wilsonNight = gameRow(
+      "5095151",
+      "Caleb Wilson",
+      {
+        pts: "16",
+        reb: "4",
+        ast: "0",
+        min: "32",
+        fg: "7-21",
+        three: "1-8",
+        ft: "1-2",
+        tov: "9",
+        stl: "3",
+        blk: "1",
+      },
+      8,
+    );
+    expect(isHighTovNight(wilsonNight.game.stats)).toBe(true);
+    expect(
+      isRoughNight(
+        wilsonNight.game.stats,
+        usualLineFor("5095151"),
+        "5095151",
+      ),
+    ).toBe(true);
+    const withWilson = rankNightDuds([wilsonNight, camp, brick]);
+    const wilsonRow = withWilson.find((row) => row.athleteId === "5095151");
+    expect(wilsonRow?.badge).toBe("Turnovers");
+    expect(wilsonRow?.line).toContain("7-21 FG");
+    expect(wilsonRow?.line).toContain("9 TO");
+    expect(wilsonRow?.line).toContain("16 PTS");
+    expect(
+      rankNightStandouts([wilsonNight, brick]).map((row) => row.athleteId),
+    ).not.toContain("5095151");
     const collapse = gameRow(
       "1966",
       "LeBron James",
