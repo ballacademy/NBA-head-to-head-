@@ -110,6 +110,21 @@ export const STAT_CARD_LINE_OPTIONS: StatCardLine[] = [
   { key: "three", label: "3PM", value: "" },
 ];
 
+/** Slot 1 is always PTS on auto-fill. User reorder still wins after. */
+export const ensurePtsFirst = (stats: StatCardLine[]): StatCardLine[] => {
+  const pts = stats.findIndex((line) => line.key === "pts");
+  if (pts <= 0) {
+    return stats;
+  }
+  const next = stats.slice();
+  const [row] = next.splice(pts, 1);
+  if (!row) {
+    return stats;
+  }
+  next.unshift(row);
+  return next;
+};
+
 /** When both FGM and 3PM are on the card, FGM stays first. User reorder still wins after. */
 export const ensureFgBeforeThree = (stats: StatCardLine[]): StatCardLine[] => {
   const fg = stats.findIndex((line) => line.key === "fg");
@@ -125,6 +140,9 @@ export const ensureFgBeforeThree = (stats: StatCardLine[]): StatCardLine[] => {
   next.splice(three, 0, fgLine);
   return next;
 };
+
+const withAutoFillStatOrder = (stats: StatCardLine[]) =>
+  ensureFgBeforeThree(ensurePtsFirst(stats));
 
 export const visibleStatCardLines = (
   stats: StatCardLine[],
@@ -508,9 +526,17 @@ export const notableStatCardLines = (
   const fgAtt = statAttempts(stats.fg);
   const fgPct = fgAtt > 0 ? fgMakes / fgAtt : 0;
   const fgFloor = FG_PCT_FLOOR[fgPositionGroup(playerOrGroup)];
-  const picks: NotablePick[] = [];
-  if (pts > 0) {
-    picks.push({ key: "pts" });
+  const picks: NotablePick[] = [{ key: "pts" }];
+  const fgEfficient = fgAtt >= FG_MIN_ATTEMPTS && fgPct > fgFloor;
+  const fgVolume = fgMakes >= 10;
+  if (fgEfficient || fgVolume) {
+    picks.push({ key: "fg" });
+  }
+  if (threeMakes >= THREE_MIN_MAKES) {
+    picks.push({ key: "three", label: "3PM", value: stats.three });
+  }
+  if (tov >= 6 || (tov >= 5 && pts >= 30)) {
+    picks.push({ key: "tov" });
   }
   if (reb >= 4) {
     picks.push({ key: "reb" });
@@ -524,17 +550,6 @@ export const notableStatCardLines = (
   if (blk >= 2) {
     picks.push({ key: "blk" });
   }
-  const fgEfficient = fgAtt >= FG_MIN_ATTEMPTS && fgPct > fgFloor;
-  const fgVolume = fgMakes >= 10;
-  if (fgEfficient || fgVolume) {
-    picks.push({ key: "fg" });
-  }
-  if (threeMakes >= THREE_MIN_MAKES) {
-    picks.push({ key: "three", label: "3PM", value: stats.three });
-  }
-  if (tov >= 6 || (tov >= 5 && pts >= 30)) {
-    picks.push({ key: "tov" });
-  }
   /** Short nights and heavy minutes read; a boring 30–35 can skip. Always last. */
   const showMin = min > 0 && (min < 30 || min >= 36);
   const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
@@ -543,7 +558,7 @@ export const notableStatCardLines = (
     picked.push(lineFromGame("min", stats));
   }
   const lines = picked.length ? picked : [lineFromGame("pts", stats)];
-  return ensureFgBeforeThree(lines);
+  return withAutoFillStatOrder(lines);
 };
 
 export const fillStatCardFromGame = (
@@ -585,14 +600,13 @@ export const notableRoughNightLines = (
   stats: LastGameStats,
   _playerOrGroup?: NotableStatPosition,
 ): StatCardLine[] => {
-  const pts = statCount(stats.pts);
   const min = statCount(stats.min);
   const tov = statCount(stats.tov);
   const threeMakes = statCount(stats.three);
   const threeAtt = statAttempts(stats.three);
   const fgMakes = statCount(stats.fg);
   const fgAtt = statAttempts(stats.fg);
-  const picks: NotablePick[] = [];
+  const picks: NotablePick[] = [{ key: "pts" }];
   if (fgAtt > 0 || fgMakes > 0) {
     picks.push({ key: "fg" });
   }
@@ -601,9 +615,6 @@ export const notableRoughNightLines = (
   }
   if (tov > 0) {
     picks.push({ key: "tov" });
-  }
-  if (pts > 0) {
-    picks.push({ key: "pts" });
   }
   const showMin = min > 0 && (min < 30 || min >= 36);
   const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
@@ -614,7 +625,7 @@ export const notableRoughNightLines = (
     picked.push(lineFromGame("min", stats));
   }
   const lines = picked.length ? picked : [lineFromGame("pts", stats)];
-  return ensureFgBeforeThree(lines);
+  return withAutoFillStatOrder(lines);
 };
 
 export const fillStatCardFromRoughNight = (

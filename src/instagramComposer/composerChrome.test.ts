@@ -1098,12 +1098,18 @@ describe("composer chrome", () => {
       join(root, "playerOfTheDayComposer/nightStandouts.ts"),
       "utf8",
     );
+    const statCardState = readFileSync(
+      join(root, "statCardComposer/statCardState.ts"),
+      "utf8",
+    );
     expect(statCardApp).toContain("completedNightRows");
     expect(statCardApp).toContain("fetchDudsInRange");
     expect(statCardApp).toContain("extraSuggestedHeading");
     expect(statCardApp).toContain('"Rough night"');
     expect(statCardApp).toContain("fillStatCardFromRoughNight");
     expect(statCardApp).toContain("fillStatCardFromGame(current, game)");
+    expect(statCardState).toContain("ensurePtsFirst");
+    expect(statCardState).toContain("withAutoFillStatOrder");
     expect(statCardApp).not.toContain("filters=");
     expect(statCardApp).toContain("nightStandoutPickerRows(completedNightRows(rangeStandouts))");
     const dataAt = statCardApp.indexOf("data=");

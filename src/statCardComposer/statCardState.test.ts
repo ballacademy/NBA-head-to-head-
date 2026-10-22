@@ -406,14 +406,15 @@ describe("stat card composer", () => {
     );
     expect(loaded.map((line) => line.label)).toEqual([
       "PTS",
+      "FG",
+      "3PM",
+      "TOV",
       "REB",
       "AST",
       "STL",
-      "BLK",
-      "FG",
-      "3PM",
       "MIN",
     ]);
+    expect(loaded[0]?.key).toBe("pts");
     const fgIndex = loaded.findIndex((line) => line.key === "fg");
     const threeIndex = loaded.findIndex((line) => line.key === "three");
     expect(fgIndex).toBeGreaterThanOrEqual(0);
@@ -457,10 +458,12 @@ describe("stat card composer", () => {
       gameFrom({ pts: "0", reb: "12", ast: "9", min: "28", fg: "0-0" }),
     );
     expect(noShot.stats.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "0 PTS",
       "12 REB",
       "9 AST",
       "28 MIN",
     ]);
+    expect(noShot.stats[0]?.key).toBe("pts");
   });
 
   it("shows FG / 3PM as makes-attempts, with MIN last", () => {
@@ -516,12 +519,13 @@ describe("stat card composer", () => {
     );
     expect(wemby.map((line) => `${line.value} ${line.label}`)).toEqual([
       "19 PTS",
+      "9-14 FG",
       "4 REB",
       "2 STL",
       "4 BLK",
-      "9-14 FG",
       "23 MIN",
     ]);
+    expect(wemby[0]?.key).toBe("pts");
     const brick = notableStatCardLines(
       box({ pts: "18", fg: "1-1", three: "1-1", min: "26" }),
     );
@@ -554,7 +558,7 @@ describe("stat card composer", () => {
       notableStatCardLines(wigNight, wiggins).map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["19 PTS", "6 REB", "8-15 FG", "22 MIN"]);
+    ).toEqual(["19 PTS", "8-15 FG", "6 REB", "22 MIN"]);
     const fromStandout = fillStatCardFromStandout(
       { ...defaultStatCardDraft(), playerId: wiggins.id },
       gameFrom(wigNight),
@@ -706,7 +710,8 @@ describe("stat card composer", () => {
       notableRoughNightLines(dudBox).map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["2-12 FG", "1-8 3PM", "6 TOV", "8 PTS"]);
+    ).toEqual(["8 PTS", "2-12 FG", "1-8 3PM", "6 TOV"]);
+    expect(notableRoughNightLines(dudBox)[0]?.key).toBe("pts");
     expect(
       notableStatCardLines(dudBox).map((line) => line.label),
     ).not.toContain("FG");
@@ -715,11 +720,12 @@ describe("stat card composer", () => {
       gameFrom(dudBox),
     );
     expect(filled.stats.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "8 PTS",
       "2-12 FG",
       "1-8 3PM",
       "6 TOV",
-      "8 PTS",
     ]);
+    expect(filled.stats[0]?.key).toBe("pts");
     const fgIndex = filled.stats.findIndex((line) => line.key === "fg");
     const threeIndex = filled.stats.findIndex((line) => line.key === "three");
     expect(fgIndex).toBeGreaterThanOrEqual(0);
@@ -728,10 +734,11 @@ describe("stat card composer", () => {
       box({ pts: "8", fg: "2-12", three: "0-2", tov: "6", min: "28" }),
     );
     expect(bricks.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "8 PTS",
       "2-12 FG",
       "6 TOV",
-      "8 PTS",
       "28 MIN",
     ]);
+    expect(bricks[0]?.key).toBe("pts");
   });
 });
