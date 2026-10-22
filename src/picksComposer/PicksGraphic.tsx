@@ -35,7 +35,6 @@ import {
   picksListTop,
   picksMl,
   picksNameLabel,
-  picksRecordLine,
   picksTitlePlateH,
   sortPicksGames,
   splitPicksTitle,
@@ -49,6 +48,8 @@ import {
 
 interface PicksGraphicProps {
   draft: PicksDraft;
+  /** Compact ATS `12-8` / `12-8-1` under the GAMES notch. */
+  atsRecord?: string;
   look?: ComposerLook;
   purpleFlair?: boolean;
   exporting?: boolean;
@@ -71,6 +72,7 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
   function PicksGraphic(
     {
       draft,
+      atsRecord = "",
       look = "white",
       purpleFlair = false,
       exporting = false,
@@ -206,6 +208,11 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
               <span className="pk-date">{notch}</span>
             </div>
           ) : null}
+          {atsRecord ? (
+            <p className="pk-ats" aria-label="ATS record">
+              {atsRecord}
+            </p>
+          ) : null}
         </header>
         <div className="pk-list">
           {games.length ? (
@@ -303,14 +310,20 @@ function PicksRow({
       <PicksSideBlock
         side="away"
         teamId={game.awayId}
-        record={picksRecordLine(game.awayRecord, game.awayLast10)}
         picked={game.pick === "away"}
-        locked={game.locked === true && game.pick === "away"}
         gameId={game.id}
         units={showUnits && game.pick === "away" ? game.units || "1u" : ""}
         onPickSide={onPickSide}
         onPickTeam={onPickTeam}
         onCycleUnits={onCycleUnits}
+      />
+      <PickCheck
+        side="away"
+        teamId={game.awayId}
+        picked={game.pick === "away"}
+        locked={game.locked === true && game.pick === "away"}
+        gameId={game.id}
+        onPickSide={onPickSide}
       />
       <OddsBlock
         game={game}
@@ -322,12 +335,18 @@ function PicksRow({
         onLineChange={onLineChange}
         onCycleGrade={onCycleGrade}
       />
+      <PickCheck
+        side="home"
+        teamId={game.homeId}
+        picked={game.pick === "home"}
+        locked={game.locked === true && game.pick === "home"}
+        gameId={game.id}
+        onPickSide={onPickSide}
+      />
       <PicksSideBlock
         side="home"
         teamId={game.homeId}
-        record={picksRecordLine(game.homeRecord, game.homeLast10)}
         picked={game.pick === "home"}
-        locked={game.locked === true && game.pick === "home"}
         gameId={game.id}
         units={showUnits && game.pick === "home" ? game.units || "1u" : ""}
         onPickSide={onPickSide}
@@ -387,12 +406,48 @@ function PicksRow({
   );
 }
 
+function PickCheck({
+  side,
+  teamId,
+  picked,
+  locked,
+  gameId,
+  onPickSide,
+}: {
+  side: PicksSide;
+  teamId: string;
+  picked: boolean;
+  locked: boolean;
+  gameId: string;
+  onPickSide: (gameId: string, side: PicksSide) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={[
+        "pk-check",
+        picked ? "is-on" : "",
+        locked ? "is-lock" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      aria-pressed={picked}
+      aria-label={
+        picked
+          ? `Clear ${teamId || side} pick`
+          : `Pick ${teamId || side}`
+      }
+      onClick={() => onPickSide(gameId, side)}
+    >
+      {picked ? (locked ? "★" : "✓") : ""}
+    </button>
+  );
+}
+
 function PicksSideBlock({
   side,
   teamId,
-  record,
   picked,
-  locked,
   gameId,
   units,
   onPickSide,
@@ -401,9 +456,7 @@ function PicksSideBlock({
 }: {
   side: PicksSide;
   teamId: string;
-  record: string;
   picked: boolean;
-  locked: boolean;
   gameId: string;
   units: string;
   onPickSide: (gameId: string, side: PicksSide) => void;
@@ -416,48 +469,18 @@ function PicksSideBlock({
       className={["pk-side", `is-${side}`, picked ? "is-on" : ""]
         .filter(Boolean)
         .join(" ")}
+      onClick={() => onPickSide(gameId, side)}
     >
-      <button
-        type="button"
-        className={[
-          "pk-check",
-          picked ? "is-on" : "",
-          locked ? "is-lock" : "",
-        ]
+      <div
+        className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]
           .filter(Boolean)
           .join(" ")}
-        aria-pressed={picked}
-        aria-label={
-          picked
-            ? `Clear ${team?.id ?? side} pick`
-            : `Pick ${team?.id ?? side}`
-        }
-        onClick={() => onPickSide(gameId, side)}
-      />
-      <div className="pk-side__lockup">
-        <div
-          className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {team ? (
-            <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
-          ) : (
-            "+"
-          )}
-        </div>
-        <span
-          className={[
-            "pk-mark",
-            picked ? "is-on" : "",
-            locked ? "is-lock" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          aria-hidden="true"
-        >
-          {picked ? (locked ? "★" : "✓") : ""}
-        </span>
+      >
+        {team ? (
+          <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
+        ) : (
+          "+"
+        )}
       </div>
       <button
         type="button"
@@ -471,13 +494,15 @@ function PicksSideBlock({
         ✎
       </button>
       <span className="pk-name">{picksNameLabel(teamId, side)}</span>
-      {record ? <span className="pk-record">{record}</span> : null}
       {units ? (
         <button
           type="button"
           className="pk-units"
           aria-label="Cycle units"
-          onClick={() => onCycleUnits(gameId)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onCycleUnits(gameId);
+          }}
         >
           {units}
         </button>

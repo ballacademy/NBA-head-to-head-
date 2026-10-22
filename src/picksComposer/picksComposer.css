@@ -182,6 +182,21 @@
   outline-offset: 2px;
 }
 
+.pk-ats {
+  margin: calc(6 * var(--u)) 0 0;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(15 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
+}
+
 .pk-list {
   grid-row: 2;
   min-height: 0;
@@ -221,9 +236,11 @@
   height: calc(var(--pk-row-h, 64) * var(--u));
   display: grid;
   grid-template-columns:
-    minmax(0, 1.12fr)
-    minmax(calc(176 * var(--u)), 1.4fr)
-    minmax(0, 1.12fr);
+    minmax(0, 1.05fr)
+    calc(var(--pk-check-size, 22) * var(--u))
+    minmax(calc(168 * var(--u)), 1.35fr)
+    calc(var(--pk-check-size, 22) * var(--u))
+    minmax(0, 1.05fr);
   align-items: center;
   gap: calc(4 * var(--u));
   padding: calc(2 * var(--u)) calc(10 * var(--u));
@@ -260,21 +277,7 @@
   gap: calc(1 * var(--u));
   min-width: 0;
   min-height: 0;
-}
-
-.pk-side__lockup {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: calc(6 * var(--u));
-  position: relative;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.pk-side.is-home .pk-side__lockup {
-  flex-direction: row-reverse;
+  cursor: pointer;
 }
 
 .pk-logo {
@@ -305,7 +308,6 @@
 }
 
 .pk-name,
-.pk-record,
 .pk-units,
 .pk-ticket__id,
 .pk-ticket__juice,
@@ -329,16 +331,6 @@
   font-size: calc(var(--pk-name, 13) * var(--u));
 }
 
-.pk-record {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: calc(var(--pk-meta, 10) * var(--u));
-  letter-spacing: 0.04em;
-  opacity: 0.7;
-}
-
 .pk-units {
   position: relative;
   z-index: 1;
@@ -353,48 +345,36 @@
 }
 
 .pk-check {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 2;
-  width: auto;
-  height: auto;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--pk-check-size, 22) * var(--u));
+  height: calc(var(--pk-check-size, 22) * var(--u));
   padding: 0;
-  border: 0;
+  border: calc(2 * var(--u)) solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
   background: transparent;
   color: transparent;
-  font-size: 0;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--pk-check-size, 22) * 0.58 * var(--u));
+  font-weight: 900;
+  line-height: 1;
   cursor: pointer;
 }
 
 .pk-check.is-on {
-  cursor: pointer;
+  border-color: #0a0a0a;
+  background: var(--pk-check);
+  color: #fff;
+  box-shadow: calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.55);
 }
 
-.pk-mark {
-  flex: 0 0 calc(var(--pk-check-size, 36) * 0.72 * var(--u));
-  width: calc(var(--pk-check-size, 36) * 0.72 * var(--u));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: transparent;
-  font-family: var(--ig-poster);
-  font-size: calc(var(--pk-check-size, 36) * var(--u));
-  font-weight: 900;
-  line-height: 1;
-  pointer-events: none;
-}
-
-.pk-mark.is-on {
-  color: var(--pk-check);
-  text-shadow:
-    calc(1.4 * var(--u)) calc(1.6 * var(--u)) 0 #000,
-    0 0 calc(2 * var(--u)) rgba(0, 0, 0, 0.55);
-  -webkit-text-stroke: calc(1.1 * var(--u)) #062a18;
-}
-
-.pk-mark.is-lock {
-  color: var(--pk-lock);
-  -webkit-text-stroke: calc(1.1 * var(--u)) #3a2a00;
+.pk-check.is-lock {
+  background: var(--pk-lock);
+  color: #111;
 }
 
 .pk-logo-edit {
@@ -668,6 +648,51 @@
 
 .pk-units {
   z-index: 4;
+}
+
+.pk-hud-ats {
+  min-width: 220px;
+  max-width: 360px;
+  flex: 1 1 220px;
+}
+
+.pk-hud-ats__row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pk-hud-ats__row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.pk-hud-ats__row input {
+  width: 100%;
+  height: 38px;
+  padding: 0 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #1a1c21;
+  color: #fafafa;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pk-hud-ats__row input:focus {
+  outline: 2px solid #f4f4f5;
+  outline-offset: 1px;
 }
 
 .pk-board.is-exporting .pk-row__tools,

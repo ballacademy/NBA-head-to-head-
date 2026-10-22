@@ -13,6 +13,7 @@ import {
   effectivePicksResult,
   formatPicksAtsRecord,
   formatPicksFooter,
+  formatPicksGraphicRecord,
   formatPicksGameLine,
   formatPicksLine,
   formatPicksSideTicket,
@@ -46,7 +47,9 @@ import {
   setPicksDisplayedLine,
   setPicksLine,
   setPicksLock,
+  setPicksRecordField,
   setPicksTeam,
+  applyScoresToPicksLedger,
   togglePicksPick,
   upsertPicksLedger,
   visiblePicksGames,
@@ -294,6 +297,8 @@ describe("picks composer", () => {
     expect(fill.rowH * 11 + fill.gap * 10).toBeCloseTo(fill.listH);
     expect(fill.logo).toBeGreaterThanOrEqual(48);
     expect(fill.line).toBeGreaterThanOrEqual(16);
+    expect(fill.check).toBeGreaterThanOrEqual(16);
+    expect(fill.check).toBeLessThanOrEqual(28);
     const one = picksFillLayout(1);
     expect(one.logo).toBeGreaterThan(fill.logo);
     expect(emptyPicksGame().custom).toBe(true);
@@ -475,6 +480,7 @@ describe("picks composer", () => {
     expect(picksRecordLine("0-0", "0-0")).toBe("");
     expect(picksRecordLine("12-8", "7-3")).toBe("12-8 · L10 7-3");
     expect(picksRecordLine("12-8-1")).toBe("12-8-1");
+    expect(formatPicksGraphicRecord(emptyPicksLedger())).toBe("");
     const slate = [
       row({ id: "a", awayId: "ATL", homeId: "ORL", pick: "away" }),
       row({ id: "b", awayId: "BOS", homeId: "NYK" }),
@@ -544,6 +550,7 @@ describe("picks composer", () => {
       },
     };
     expect(formatPicksAtsRecord(summarizePicksLedger(ledger))).toBe("12-8-1");
+    expect(formatPicksGraphicRecord(ledger)).toBe("12-8-1");
     expect(formatPicksAtsRecord(summarizePicksLast10(ledger))).toBe("7-3");
     expect(formatPicksUnitsPl(summarizePicksUnitsPl(ledger))).toBe("+4u");
     expect(formatPicksFooter(ledger, "2026-10-21")).toBe(
@@ -562,5 +569,40 @@ describe("picks composer", () => {
     ]);
     expect(seeded.slates["2026-10-21"]?.[0]?.pick).toBe("home");
     expect(seeded.slates["2026-10-21"]?.[0]?.units).toBe("0.5u");
+    const typed = setPicksRecordField(ledger, "wins", 20);
+    expect(formatPicksGraphicRecord(typed)).toBe("20-8-1");
+    expect(
+      upsertPicksLedger(typed, "2026-10-22", [
+        row({ id: "keep-adj", eventId: "900", pick: "away" }),
+      ]).adjust?.wins,
+    ).toBe(typed.adjust?.wins);
+    const open = upsertPicksLedger(emptyPicksLedger(), "2026-10-20", [
+      row({
+        id: "g",
+        eventId: "501",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 2.5,
+        pick: "away",
+      }),
+    ]);
+    expect(formatPicksGraphicRecord(open)).toBe("");
+    const fromSave = setPicksRecordField(open, "wins", 12);
+    expect(formatPicksGraphicRecord(fromSave)).toBe("12-0");
+    const gradedNight = applyScoresToPicksLedger(fromSave, "2026-10-20", [
+      row({
+        id: "g",
+        eventId: "501",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 2.5,
+        pick: "away",
+        awayScore: 110,
+        homeScore: 100,
+        final: true,
+      }),
+    ]);
+    expect(gradedNight.slates["2026-10-20"]?.[0]?.result).toBe("W");
+    expect(formatPicksGraphicRecord(gradedNight)).toBe("13-0");
   });
 });

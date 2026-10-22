@@ -31,7 +31,9 @@ export const PICKS_TITLE_LINE = 0.92;
 export const PICKS_TITLE_PAD = 12;
 export const PICKS_NOTCH_H = 36;
 export const PICKS_NOTCH_OVERLAP = 2;
-export const PICKS_AFTER_NOTCH = 8;
+/** Gap under the GAMES notch so the compact ATS line (`12-8`) can sit there. */
+export const PICKS_AFTER_NOTCH = 24;
+export const PICKS_ATS_SIZE = 15;
 
 /** Tight plate: frame + padding + type (+ italic stroke), not a vacant block. */
 export const picksTitlePlateH = (lineCount = 1) => {
@@ -148,6 +150,11 @@ export interface PicksLedgerEntry {
 
 export interface PicksLedger {
   slates: Record<string, PicksLedgerEntry[]>;
+  /**
+   * Offset from graded W/L/P so HUD typing is the current total.
+   * Later auto-grades add on top: display = tally + adjust.
+   */
+  adjust?: PicksAtsTally;
 }
 
 export interface PicksAtsTally {
@@ -485,7 +492,65 @@ export const formatPicksAtsRecord = (tally: PicksAtsTally) => {
   return `${tally.wins}-${tally.losses}-${tally.pushes}`;
 };
 
-export const emptyPicksLedger = (): PicksLedger => ({ slates: {} });
+export const emptyPicksAdjust = (): PicksAtsTally => ({
+  wins: 0,
+  losses: 0,
+  pushes: 0,
+});
+
+export const emptyPicksLedger = (): PicksLedger => ({
+  slates: {},
+  adjust: emptyPicksAdjust(),
+});
+
+export const ledgerAdjust = (ledger: PicksLedger): PicksAtsTally => ({
+  ...emptyPicksAdjust(),
+  ...ledger.adjust,
+});
+
+const truncInt = (value: unknown) => {
+  const n = finiteNumber(value);
+  return n == null ? 0 : Math.trunc(n);
+};
+
+export const parsePicksRecordCount = (value: unknown) =>
+  Math.max(0, truncInt(value));
+
+export const picksDisplayTally = (
+  ledger: PicksLedger,
+  mode: PicksResultMode = "ats",
+): PicksAtsTally => {
+  const graded = summarizePicksLedger(ledger, mode);
+  const adjust = ledgerAdjust(ledger);
+  return {
+    wins: Math.max(0, graded.wins + adjust.wins),
+    losses: Math.max(0, graded.losses + adjust.losses),
+    pushes: Math.max(0, graded.pushes + adjust.pushes),
+  };
+};
+
+/** Compact `12-8` / `12-8-1` for the graphic. Empty when still 0-0. */
+export const formatPicksGraphicRecord = (
+  ledger: PicksLedger,
+  mode: PicksResultMode = "ats",
+) => formatPicksAtsRecord(picksDisplayTally(ledger, mode));
+
+export const setPicksRecordField = (
+  ledger: PicksLedger,
+  field: keyof PicksAtsTally,
+  value: unknown,
+  mode: PicksResultMode = "ats",
+): PicksLedger => {
+  const graded = summarizePicksLedger(ledger, mode);
+  const next = parsePicksRecordCount(value);
+  return {
+    ...ledger,
+    adjust: {
+      ...ledgerAdjust(ledger),
+      [field]: next - graded[field],
+    },
+  };
+};
 
 const tallyResults = (results: PicksAtsResult[]): PicksAtsTally => {
   const tally: PicksAtsTally = { wins: 0, losses: 0, pushes: 0 };
@@ -566,7 +631,7 @@ export const formatPicksFooter = (
   date: string,
   mode: PicksResultMode = "ats",
 ) => {
-  const season = formatPicksAtsRecord(summarizePicksLedger(ledger, mode));
+  const season = formatPicksGraphicRecord(ledger, mode);
   if (!season) {
     return "";
   }
@@ -659,7 +724,7 @@ export const upsertPicksLedger = (
   } else {
     slates[token] = nextRows;
   }
-  return { slates };
+  return { ...ledger, slates };
 };
 
 export const applyScoresToPicksLedger = (
@@ -695,11 +760,33 @@ export const applyScoresToPicksLedger = (
     };
   });
   return {
+    ...ledger,
     slates: {
       ...ledger.slates,
       [token]: nextRows,
     },
   };
+};
+
+export const applyScoresToPicksGames = (
+  games: PicksGame[],
+  incoming: PicksGame[],
+): PicksGame[] => {
+  const byEvent = new Map(
+    incoming.filter((game) => game.eventId).map((game) => [game.eventId, game]),
+  );
+  return games.map((game) => {
+    const match = game.eventId ? byEvent.get(game.eventId) : undefined;
+    if (!match) {
+      return game;
+    }
+    return {
+      ...game,
+      awayScore: match.awayScore ?? game.awayScore ?? null,
+      homeScore: match.homeScore ?? game.homeScore ?? null,
+      final: match.final === true || game.final === true,
+    };
+  });
 };
 
 export const ungradedPicksDates = (ledger: PicksLedger) =>
@@ -771,7 +858,15 @@ export const normalizePicksLedger = (value: unknown): PicksLedger => {
       next[token] = list;
     }
   });
-  return { slates: next };
+  const adjustRow = rec(root?.adjust);
+  return {
+    slates: next,
+    adjust: {
+      wins: truncInt(adjustRow?.wins),
+      losses: truncInt(adjustRow?.losses),
+      pushes: truncInt(adjustRow?.pushes),
+    },
+  };
 };
 
 export const formatPicksTotal = (total?: number | null) => {
@@ -1494,7 +1589,7 @@ export const picksFillLayout = (
     line: clamp(16, 36, rowH * 0.28),
     name: clamp(11, 18, rowH * 0.16),
     meta: clamp(9, 13, rowH * 0.12),
-    check: clamp(30, 64, rowH * 0.45),
+    check: clamp(16, 28, rowH * 0.26),
   };
 };
 

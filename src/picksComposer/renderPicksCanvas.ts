@@ -24,6 +24,7 @@ import {
   effectivePicksResult,
   formatPicksLine,
   formatPicksTotal,
+  PICKS_ATS_SIZE,
   PICKS_CHECK_FILL,
   PICKS_LOCK_FILL,
   PICKS_NOTCH_H,
@@ -37,7 +38,6 @@ import {
   picksJuiceOrMove,
   picksLineForSide,
   picksMl,
-  picksRecordLine,
   picksDatePill,
   picksNameLabel,
   sortPicksGames,
@@ -63,7 +63,7 @@ export type PicksRenderInput = PicksDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
   story?: boolean;
-  footer?: string;
+  atsRecord?: string;
 };
 
 const hexAlpha = (hex: string, alpha: number) => {
@@ -139,29 +139,65 @@ const strokeFillText = (
   context.fillText(text, x, y);
 };
 
+const paintStar = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  fill: string,
+) => {
+  context.save();
+  context.fillStyle = fill;
+  context.beginPath();
+  for (let i = 0; i < 5; i += 1) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const px = x + Math.cos(angle) * r;
+    const py = y + Math.sin(angle) * r;
+    if (i === 0) {
+      context.moveTo(px, py);
+    } else {
+      context.lineTo(px, py);
+    }
+    const inner = angle + Math.PI / 5;
+    context.lineTo(
+      x + Math.cos(inner) * r * 0.42,
+      y + Math.sin(inner) * r * 0.42,
+    );
+  }
+  context.closePath();
+  context.fill();
+  context.restore();
+};
+
 const paintCheck = (
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
   size: number,
+  scale: number,
   locked: boolean,
 ) => {
   context.save();
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.font = `900 ${size}px ${POSTER_FONT}`;
-  context.lineJoin = "round";
-  context.miterLimit = 2;
-  context.strokeStyle = locked ? "#3a2a00" : "#062a18";
-  context.lineWidth = Math.max(1.5, size * 0.06);
-  context.shadowColor = "rgba(0, 0, 0, 0.85)";
-  context.shadowOffsetX = Math.max(1, size * 0.04);
-  context.shadowOffsetY = Math.max(1, size * 0.045);
-  context.shadowBlur = 0;
   context.fillStyle = locked ? PICKS_LOCK_FILL : PICKS_CHECK_FILL;
-  const mark = locked ? "★" : "✓";
-  context.strokeText(mark, x, y);
-  context.fillText(mark, x, y);
+  context.beginPath();
+  context.arc(x, y, size / 2, 0, Math.PI * 2);
+  context.fill();
+  context.strokeStyle = "#0a0a0a";
+  context.lineWidth = Math.max(1, 1.5 * scale);
+  context.stroke();
+  if (locked) {
+    paintStar(context, x, y, size * 0.32, "#111");
+  } else {
+    context.strokeStyle = "#fff";
+    context.lineWidth = Math.max(2, 2.6 * scale);
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.beginPath();
+    context.moveTo(x - size * 0.2, y + size * 0.02);
+    context.lineTo(x - size * 0.04, y + size * 0.18);
+    context.lineTo(x + size * 0.22, y - size * 0.16);
+    context.stroke();
+  }
   context.restore();
 };
 
@@ -270,6 +306,16 @@ export const renderPicksCanvas = async (
   context.textBaseline = "middle";
   context.fillText(pill, width / 2, weekY + weekH / 2);
   setLetterSpacing(context, 0);
+  const atsRecord = (input.atsRecord ?? "").trim();
+  if (atsRecord) {
+    context.fillStyle = "#fff";
+    context.font = `900 ${PICKS_ATS_SIZE * s}px ${POSTER_FONT}`;
+    setLetterSpacing(context, 0.14 * PICKS_ATS_SIZE * s);
+    withShadow(context, s, () => {
+      context.fillText(atsRecord, width / 2, weekY + weekH + 12 * s);
+    });
+    setLetterSpacing(context, 0);
+  }
 
   const fill = picksFillLayout(games.length, boardH, 0, lines.length);
   const needed = new Set<string>();
@@ -290,6 +336,7 @@ export const renderPicksCanvas = async (
   );
 
   const logo = fill.logo * s;
+  const check = fill.check * s;
   const padX = 28 * s;
   const rowW = width - padX * 2;
   let cursorY = fill.listTop * s;
@@ -304,15 +351,12 @@ export const renderPicksCanvas = async (
     const pickedSide = game.pick === side;
     const size = logo;
     const image = logos.get(teamId);
-    const markGap = fill.check * 0.72 * s;
-    const logoCx =
-      side === "away" ? cx - markGap / 2 : cx + markGap / 2;
     const logoY = midY - size / 2 - fill.name * 0.45 * s;
     if (image) {
       drawCenteredLogo(
         context,
         image,
-        logoCx - size / 2,
+        cx - size / 2,
         logoY,
         size,
         size,
@@ -329,41 +373,19 @@ export const renderPicksCanvas = async (
     context.font = `900 ${fill.name * s}px ${POSTER_FONT}`;
     context.fillText(
       picksNameLabel(teamId, side),
-      logoCx,
+      cx,
       midY + logo / 2 + fill.name * 0.15 * s,
     );
-    const record = picksRecordLine(
-      side === "away" ? game.awayRecord : game.homeRecord,
-      side === "away" ? game.awayLast10 : game.homeLast10,
-    );
-    if (record) {
-      context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
-      context.fillStyle = "rgba(255,255,255,0.7)";
-      context.fillText(record, logoCx, midY + logo / 2 + fill.name * 1.15 * s);
-    }
     if (input.showUnits && pickedSide) {
       context.fillStyle = "rgba(255,255,255,0.88)";
       context.font = `900 ${fill.meta * s}px ${POSTER_FONT}`;
       context.fillText(
         game.units || "1u",
-        logoCx,
-        midY + logo / 2 + fill.name * 2.05 * s,
+        cx,
+        midY + logo / 2 + fill.name * 1.15 * s,
       );
     }
     context.restore();
-    if (pickedSide) {
-      const markX =
-        side === "away"
-          ? logoCx + size / 2 + markGap * 0.55
-          : logoCx - size / 2 - markGap * 0.55;
-      paintCheck(
-        context,
-        markX,
-        logoY + size / 2,
-        fill.check * s,
-        game.locked === true,
-      );
-    }
   };
 
   const paintTicket = (
@@ -423,6 +445,15 @@ export const renderPicksCanvas = async (
     const rightLogoX = x + rowW - 18 * s - logo / 2;
     paintSide(game, "away", leftLogoX, midY);
     paintSide(game, "home", rightLogoX, midY);
+
+    const leftCheckX = leftLogoX + logo * 0.62 + check * 0.7;
+    const rightCheckX = rightLogoX - logo * 0.62 - check * 0.7;
+    if (game.pick === "away") {
+      paintCheck(context, leftCheckX, midY, check, s, game.locked === true);
+    }
+    if (game.pick === "home") {
+      paintCheck(context, rightCheckX, midY, check, s, game.locked === true);
+    }
 
     const midX = width / 2;
     const ticketY = midY - (game.tip || game.tv || input.showTotal ? 8 * s : 0);

@@ -37,6 +37,7 @@ import { PicksGraphic } from "./PicksGraphic";
 import { exportPicksPng } from "./exportPicksPng";
 import { renderPicksCanvas } from "./renderPicksCanvas";
 import {
+  applyScoresToPicksGames,
   applyScoresToPicksLedger,
   clampPicksPlateOpacity,
   cyclePicksConfidence,
@@ -48,7 +49,7 @@ import {
   emptyPicksGame,
   emptyPicksLedger,
   fetchPicksSlate,
-  formatPicksFooter,
+  formatPicksGraphicRecord,
   formatPicksSideTicket,
   isAutoPicksDateLine,
   isAutoPicksTitle,
@@ -57,16 +58,19 @@ import {
   normalizePicksLedger,
   PICKS_LEDGER_KEY,
   picksDefaultTitle,
+  picksDisplayTally,
   sortPicksGames,
   normalizePicksDraft,
   picksDateLine,
   refillPicksRow,
   setPicksDisplayedLine,
   setPicksLock,
+  setPicksRecordField,
   setPicksTeam,
   togglePicksPick,
   ungradedPicksDates,
   upsertPicksLedger,
+  type PicksAtsTally,
   type PicksDraft,
   type PicksLedger,
   type PicksSide,
@@ -131,23 +135,30 @@ export function PicksComposerApp() {
     }
   }, [ledger, hydrated]);
 
+  const gradeOpenSlates = async (current: PicksLedger, currentDate: string) => {
+    const dates = ungradedPicksDates(current);
+    await Promise.all(
+      dates.map(async (iso) => {
+        const incoming = await fetchPicksSlate(iso);
+        if (!incoming.length) {
+          return;
+        }
+        setLedger((led) => applyScoresToPicksLedger(led, iso, incoming));
+        if (iso === currentDate) {
+          setDraft((board) => ({
+            ...board,
+            games: applyScoresToPicksGames(board.games, incoming),
+          }));
+        }
+      }),
+    );
+  };
+
   useEffect(() => {
     if (!hydrated) {
       return;
     }
-    let cancelled = false;
-    const dates = ungradedPicksDates(ledger);
-    void Promise.all(
-      dates.map(async (iso) => {
-        const incoming = await fetchPicksSlate(iso);
-        if (!cancelled && incoming.length) {
-          setLedger((current) => applyScoresToPicksLedger(current, iso, incoming));
-        }
-      }),
-    );
-    return () => {
-      cancelled = true;
-    };
+    void gradeOpenSlates(ledger, draft.date);
     // Grade leftover slates once after hydrate; later fills upsert scores.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
@@ -178,6 +189,9 @@ export function PicksComposerApp() {
           games,
         };
       });
+      const nextLedger = applyScoresToPicksLedger(ledger, date, incoming);
+      setLedger((current) => applyScoresToPicksLedger(current, date, incoming));
+      void gradeOpenSlates(nextLedger, date);
       if (forceRowId) {
         setStatus("Re-filled that row from the slate.");
       } else {
@@ -206,11 +220,9 @@ export function PicksComposerApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
-  const footer = formatPicksFooter(
-    ledger,
-    draft.date,
-    draft.resultMode === "su" ? "su" : "ats",
-  );
+  const resultMode = draft.resultMode === "su" ? "su" : "ats";
+  const atsRecord = formatPicksGraphicRecord(ledger, resultMode);
+  const hudRecord = picksDisplayTally(ledger, resultMode);
 
   const handleExport = async (story = false, square = false) => {
     const node = boardRef.current;
@@ -223,7 +235,7 @@ export function PicksComposerApp() {
       await exportPicksPng(
         node,
         exportFilenameFromTitle(draft.title, "picks", draft.date),
-        { ...draft, look, purpleFlair, footer },
+        { ...draft, look, purpleFlair, atsRecord },
         story,
         square,
       );
@@ -463,12 +475,40 @@ export function PicksComposerApp() {
                 {draft.resultMode === "su" ? "SU" : "ATS"}
               </button>
             </label>
-            <label className="sc-field sc-field--wide">
+            <div className="sc-field sc-field--wide pk-hud-ats">
               <span className="sc-toolbar__eyebrow">Record</span>
-              <span className="sc-chip" aria-label="Picks record">
-                {footer || "—"}
-              </span>
-            </label>
+              <div className="pk-hud-ats__row" aria-label="Picks record">
+                {(
+                  [
+                    ["wins", "W", "Record wins"],
+                    ["losses", "L", "Record losses"],
+                    ["pushes", "P", "Record pushes"],
+                  ] as const
+                ).map(([field, label, aria]) => (
+                  <label key={field}>
+                    {label}
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      inputMode="numeric"
+                      aria-label={aria}
+                      value={hudRecord[field]}
+                      onChange={(event) =>
+                        setLedger((current) =>
+                          setPicksRecordField(
+                            current,
+                            field as keyof PicksAtsTally,
+                            event.target.value,
+                            resultMode,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
             <label className="sc-field">
               <span className="sc-toolbar__eyebrow">9:16 crop</span>
               <button
@@ -581,7 +621,7 @@ export function PicksComposerApp() {
                     await downloadExportPack(
                       () =>
                         renderPicksCanvas(
-                          { ...draft, look, purpleFlair, footer },
+                          { ...draft, look, purpleFlair, atsRecord },
                           2,
                         ),
                       filename,
@@ -590,7 +630,7 @@ export function PicksComposerApp() {
                           filename: storyFilename(filename),
                           render: () =>
                             renderPicksCanvas(
-                              { ...draft, look, purpleFlair, story: true, footer },
+                              { ...draft, look, purpleFlair, story: true, atsRecord },
                               2,
                             ),
                         },
@@ -626,6 +666,7 @@ export function PicksComposerApp() {
             <PicksGraphic
               ref={boardRef}
               draft={draft}
+              atsRecord={atsRecord}
               look={look}
               purpleFlair={purpleFlair}
               exporting={exporting}

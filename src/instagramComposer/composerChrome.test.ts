@@ -847,8 +847,10 @@ describe("composer chrome", () => {
     expect(picksCanvas).toContain("addColorStop(0.22");
     expect(picksCss).not.toContain(".pk-logo.is-on:not(.is-empty)::after");
     expect(picksCss).toContain(".pk-check.is-on");
-    expect(picksCss).toContain(".pk-mark.is-on");
+    expect(picksCss).toContain("border-radius: 50%");
+    expect(picksCss).not.toContain(".pk-mark");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
+    expect(picksCss).toContain(".pk-ats");
     expect(picksCss).not.toContain(".pk-footer");
     expect(picksCss).not.toContain(".pk-parlay");
     expect(picksCss).not.toContain(".pk-side.is-dim");
@@ -865,7 +867,9 @@ describe("composer chrome", () => {
     expect(picksCanvas).toContain("muted ? 0.4");
     expect(picksCanvas).toContain("muted ? 700 : 900");
     expect(picksGraphic).toContain("pk-logo-edit");
-    expect(picksGraphic).toContain("pk-mark");
+    expect(picksGraphic).not.toContain("pk-mark");
+    expect(picksGraphic).not.toContain("picksRecordLine");
+    expect(picksGraphic).toContain("pk-ats");
     expect(picksGraphic).not.toContain("pk-footer");
     expect(picksGraphic).not.toContain("pk-parlay");
     expect(picksGraphic).toContain("muted ? \"is-dim\"");
@@ -873,6 +877,15 @@ describe("composer chrome", () => {
     expect(picksGraphic).toContain("visiblePicksGames");
     expect(picksApp).toContain("PICKS_LEDGER_KEY");
     expect(picksApp).toContain("Picks record");
+    expect(picksApp).toContain("Record wins");
+    expect(picksApp).toContain("Record losses");
+    expect(picksApp).toContain("Record pushes");
+    expect(picksApp).toContain("setPicksRecordField");
+    expect(picksApp).toContain("ungradedPicksDates");
+    expect(picksApp).toContain("applyScoresToPicksLedger");
+    expect(picksCanvas).toContain("arc(x, y, size / 2");
+    expect(picksCanvas).toContain("atsRecord");
+    expect(picksCanvas).not.toContain("picksRecordLine");
     expect(picksApp).toContain("Show juice");
     expect(picksApp).toContain("Show confidence ticks");
     expect(picksApp).toContain("Toggle ATS or straight up");
