@@ -35,7 +35,6 @@ import {
   picksListTop,
   picksMl,
   picksNameLabel,
-  picksParlayLabel,
   picksRecordLine,
   picksTitlePlateH,
   sortPicksGames,
@@ -54,7 +53,6 @@ interface PicksGraphicProps {
   purpleFlair?: boolean;
   exporting?: boolean;
   story?: boolean;
-  footer?: string;
   onBrandChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onPickSide: (gameId: string, side: PicksSide) => void;
@@ -77,7 +75,6 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
       purpleFlair = false,
       exporting = false,
       story = false,
-      footer = "",
       onBrandChange,
       onTitleChange,
       onPickSide,
@@ -98,14 +95,11 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
     const titleLines = splitPicksTitle(draft.title, draft.date);
     const allGames = sortPicksGames(draft.games);
     const games = visiblePicksGames(allGames, exporting);
-    const picked = allGames.filter((game) => game.pick);
-    const parlay = picked.map(picksParlayLabel).filter(Boolean);
     const fill = picksFillLayout(
       games.length,
       story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
       0,
       titleLines.length,
-      parlay.length > 0,
     );
     const notch = picksDatePill(exporting ? games.length : allGames.length);
     const mode: PicksResultMode = draft.resultMode === "su" ? "su" : "ats";
@@ -241,12 +235,6 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             <p className="pk-empty">Fill tonight’s slate</p>
           )}
         </div>
-        <div className="pk-bottom">
-          {parlay.length ? (
-            <p className="pk-parlay">{parlay.join("   ·   ")}</p>
-          ) : null}
-          {footer ? <p className="pk-footer">{footer}</p> : null}
-        </div>
       </article>
     );
   },
@@ -317,7 +305,6 @@ function PicksRow({
         teamId={game.awayId}
         record={picksRecordLine(game.awayRecord, game.awayLast10)}
         picked={game.pick === "away"}
-        dimmed={game.pick === "home"}
         locked={game.locked === true && game.pick === "away"}
         gameId={game.id}
         units={showUnits && game.pick === "away" ? game.units || "1u" : ""}
@@ -340,7 +327,6 @@ function PicksRow({
         teamId={game.homeId}
         record={picksRecordLine(game.homeRecord, game.homeLast10)}
         picked={game.pick === "home"}
-        dimmed={game.pick === "away"}
         locked={game.locked === true && game.pick === "home"}
         gameId={game.id}
         units={showUnits && game.pick === "home" ? game.units || "1u" : ""}
@@ -406,7 +392,6 @@ function PicksSideBlock({
   teamId,
   record,
   picked,
-  dimmed,
   locked,
   gameId,
   units,
@@ -418,7 +403,6 @@ function PicksSideBlock({
   teamId: string;
   record: string;
   picked: boolean;
-  dimmed: boolean;
   locked: boolean;
   gameId: string;
   units: string;
@@ -429,12 +413,7 @@ function PicksSideBlock({
   const team = getTeam(teamId);
   return (
     <div
-      className={[
-        "pk-side",
-        `is-${side}`,
-        picked ? "is-on" : "",
-        dimmed ? "is-dim" : "",
-      ]
+      className={["pk-side", `is-${side}`, picked ? "is-on" : ""]
         .filter(Boolean)
         .join(" ")}
     >
@@ -454,19 +433,31 @@ function PicksSideBlock({
             : `Pick ${team?.id ?? side}`
         }
         onClick={() => onPickSide(gameId, side)}
-      >
-        {picked ? (locked ? "★" : "✓") : ""}
-      </button>
-      <div
-        className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {team ? (
-          <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
-        ) : (
-          "+"
-        )}
+      />
+      <div className="pk-side__lockup">
+        <div
+          className={["pk-logo", picked ? "is-on" : "", team ? "" : "is-empty"]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {team ? (
+            <TeamLogo src={team.logoSrc} label={team.id} shadow={0} />
+          ) : (
+            "+"
+          )}
+        </div>
+        <span
+          className={[
+            "pk-mark",
+            picked ? "is-on" : "",
+            locked ? "is-lock" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-hidden="true"
+        >
+          {picked ? (locked ? "★" : "✓") : ""}
+        </span>
       </div>
       <button
         type="button"
@@ -572,7 +563,6 @@ function TicketField({
   const juice = showJuice ? picksJuiceOrMove(game, side) : "";
   const ml = showMoneyline ? picksMl(game, side) : "";
   const picked = game.pick === side;
-  const dimmed = Boolean(game.pick && game.pick !== side);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(display);
 
@@ -604,15 +594,7 @@ function TicketField({
   };
 
   return (
-    <div
-      className={[
-        "pk-ticket",
-        picked ? "is-on" : "",
-        dimmed ? "is-dim" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
+    <div className={picked ? "pk-ticket is-on" : "pk-ticket"}>
       <div className="pk-ticket__row">
         {abbrev ? <span className="pk-ticket__id">{abbrev}</span> : null}
         <input

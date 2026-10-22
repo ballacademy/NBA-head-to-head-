@@ -435,14 +435,14 @@ describe("picks composer", () => {
     expect(story.logo).toBeGreaterThanOrEqual(48);
   });
 
-  it("keeps even row height for 7 or 11 games and rooms a footer", () => {
+  it("keeps even row height for 7 or 11 games without a footer strip", () => {
     const seven = picksFillLayout(7);
     const eleven = picksFillLayout(11);
     expect(seven.rowH * 7 + seven.gap * 6).toBeCloseTo(seven.listH);
     expect(eleven.rowH * 11 + eleven.gap * 10).toBeCloseTo(eleven.listH);
     expect(seven.rowH).toBeGreaterThan(eleven.rowH);
-    const withParlay = picksFillLayout(7, GRAPHIC_HEIGHT, 0, 1, true);
-    expect(withParlay.listBottom).toBeGreaterThan(seven.listBottom);
+    expect(seven.listBottom).toBe(eleven.listBottom);
+    expect(seven.listBottom).toBeLessThan(40);
   });
 
   it("grades ATS, straight up, pushes, and skips unfinished games", () => {

@@ -20,7 +20,7 @@ export const PICKS_SCOREBOARD_URL = (iso: string) =>
 
 export const PICKS_FOOTER_H = 28;
 export const PICKS_PARLAY_H = 32;
-export const PICKS_LIST_BOTTOM = PICKS_FOOTER_H + 8;
+export const PICKS_LIST_BOTTOM = 16;
 export const PICKS_GROUP_H = 18;
 export const PICKS_PLATE_X = 56;
 export const PICKS_HEADER_PAD = 8;
@@ -29,7 +29,7 @@ export const PICKS_PLATE_Y = PICKS_HEADER_PAD + PICKS_BRAND_H;
 export const PICKS_TITLE_SIZE = 38;
 export const PICKS_TITLE_LINE = 0.92;
 export const PICKS_TITLE_PAD = 12;
-export const PICKS_NOTCH_H = 34;
+export const PICKS_NOTCH_H = 36;
 export const PICKS_NOTCH_OVERLAP = 2;
 export const PICKS_AFTER_NOTCH = 8;
 
@@ -1461,8 +1461,7 @@ export const normalizePicksDraft = (
   };
 };
 
-export const picksBoardBottom = (parlay = false) =>
-  PICKS_FOOTER_H + (parlay ? PICKS_PARLAY_H : 0) + 8;
+export const picksBoardBottom = (_parlay = false) => PICKS_LIST_BOTTOM;
 
 export const picksFillLayout = (
   count: number,

@@ -463,6 +463,12 @@ export function PicksComposerApp() {
                 {draft.resultMode === "su" ? "SU" : "ATS"}
               </button>
             </label>
+            <label className="sc-field sc-field--wide">
+              <span className="sc-toolbar__eyebrow">Record</span>
+              <span className="sc-chip" aria-label="Picks record">
+                {footer || "—"}
+              </span>
+            </label>
             <label className="sc-field">
               <span className="sc-toolbar__eyebrow">9:16 crop</span>
               <button
@@ -624,7 +630,6 @@ export function PicksComposerApp() {
               purpleFlair={purpleFlair}
               exporting={exporting}
               story={storyCrop}
-              footer={footer}
               onBrandChange={(brand) =>
                 setDraft((current) => ({ ...current, brand }))
               }
