@@ -9,6 +9,7 @@ import {
   parseGamelogGames,
   parseLastGamePayload,
   parseTeamScheduleLastNight,
+  playerClubScores,
   playerGameResult,
   playerIsHomeSide,
   resolveTeamId,
@@ -332,6 +333,39 @@ describe("last NBA game parsing", () => {
     expect(playerGameResult("125", "132", true)).toBe("L");
     expect(playerIsHomeSide("@", "19", "1")).toBe(false);
     expect(playerIsHomeSide("vs", "1", "1")).toBe(true);
+    expect(playerIsHomeSide("vs", "14", "16", "16")).toBe(false);
+    expect(
+      playerClubScores({
+        teamId: "16",
+        atVs: "vs",
+        homeTeamId: "14",
+        awayTeamId: "16",
+        homeTeamScore: "106",
+        awayTeamScore: "131",
+        fallbackResult: "L",
+      }),
+    ).toEqual({
+      home: false,
+      playerScore: "131",
+      opponentScore: "106",
+      result: "W",
+    });
+    expect(
+      playerClubScores({
+        teamId: "MIN",
+        atVs: "vs",
+        homeTeamId: 14,
+        awayTeamId: 16,
+        homeTeamScore: { value: 106 },
+        awayTeamScore: { value: 131 },
+        fallbackResult: false,
+      }),
+    ).toEqual({
+      home: false,
+      playerScore: "131",
+      opponentScore: "106",
+      result: "W",
+    });
     const naw: EspnGamelogPayload = {
       labels: labels(),
       events: {
@@ -386,7 +420,69 @@ describe("last NBA game parsing", () => {
     expect(game?.playerScore).toBe("132");
     expect(game?.opponentScore).toBe("125");
     expect(game?.result).toBe("W");
-    expect(game?.resultLine).toBe("132-125 W VS ORL");
+    expect(game?.resultLine).toBe("132-125 W @ ORL");
+  });
+
+  it("takes Edwards / Minnesota vs Miami from MIN's 131, not MIA's 106 or atVs", () => {
+    const edwards: EspnGamelogPayload = {
+      labels: labels(),
+      events: {
+        "401909091": {
+          id: "401909091",
+          gameDate: "2026-10-21T23:30:00.000+00:00",
+          atVs: "vs",
+          homeTeamId: "14",
+          awayTeamId: "16",
+          homeTeamScore: "106",
+          awayTeamScore: "131",
+          gameResult: "L",
+          opponent: { abbreviation: "MIA", displayName: "Miami Heat" },
+          team: {
+            id: "16",
+            abbreviation: "MIN",
+            displayName: "Minnesota Timberwolves",
+          },
+        },
+      },
+      seasonTypes: [
+        {
+          displayName: "2026-27 Regular Season",
+          categories: [
+            {
+              events: [
+                {
+                  eventId: "401909091",
+                  stats: row(
+                    "33",
+                    "16-29",
+                    "55.2",
+                    "9-17",
+                    "52.9",
+                    "4-5",
+                    "80.0",
+                    "10",
+                    "3",
+                    "1",
+                    "2",
+                    "2",
+                    "4",
+                    "45",
+                  ),
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const game = parseLastGamePayload(edwards, "regular", CURRENT_SEASON);
+    expect(game?.teamId).toBe("MIN");
+    expect(game?.opponentAbbrev).toBe("MIA");
+    expect(game?.home).toBe(false);
+    expect(game?.playerScore).toBe("131");
+    expect(game?.opponentScore).toBe("106");
+    expect(game?.result).toBe("W");
+    expect(game?.resultLine).toBe("131-106 W @ MIA");
   });
 
   it("asks ESPN for the current season's ending year", () => {
@@ -401,7 +497,7 @@ describe("last NBA game parsing", () => {
   it("prefers the most recent preseason game by default", () => {
     const game = parseLastGamePayload(payload(), "preseason", PRIOR_SEASON);
     expect(game?.eventId).toBe("401812725");
-    expect(game?.resultLine).toBe("90-100 L VS LAC");
+    expect(game?.resultLine).toBe("90-100 L @ LAC");
     expect(game?.home).toBe(false);
     expect(game?.dateLabel).toBe("10/7");
     expect(game?.stats.min).toBe("23");
@@ -420,7 +516,7 @@ describe("last NBA game parsing", () => {
     expect(game?.stats.fg).toBe("9-14");
     expect(game?.stats.three).toBe("4-6");
     expect(game?.stats.tov).toBe("4");
-    expect(game?.resultLine).toBe("112-114 L VS OKC");
+    expect(game?.resultLine).toBe("112-114 L @ OKC");
     expect(game?.dateLabel).toBe("10/13");
     expect(game?.teamId).toBe("IND");
     expect(game?.opponentId).toBe("OKC");
@@ -510,7 +606,7 @@ describe("last NBA game parsing", () => {
     };
     const game = parseLastGamePayload(onlyPre, "regular", PRIOR_SEASON);
     expect(game?.eventId).toBe("401812725");
-    expect(game?.resultLine).toBe("90-100 L VS LAC");
+    expect(game?.resultLine).toBe("90-100 L @ LAC");
   });
 
   it("formats date and result helpers", () => {

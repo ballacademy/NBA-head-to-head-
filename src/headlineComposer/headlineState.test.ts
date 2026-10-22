@@ -293,6 +293,24 @@ describe("headline composer", () => {
     expect(formatHeadlineBody(spurs, lastNight, { wins: 1, losses: 0 })).toBe(
       "AFTER BEATING OKC 111–109\nLAST NIGHT, THE SPURS\nHAVE A RECORD OF 1–0",
     );
+    const wolves = getTeam("MIN")!;
+    const edwardsNight = {
+      ...lastNight,
+      teamId: "MIN",
+      opponentId: "MIA",
+      opponentAbbrev: "MIA",
+      result: "L" as const,
+      playerScore: "131",
+      opponentScore: "106",
+      home: false,
+      resultLine: "131-106 W @ MIA",
+    };
+    expect(formatHeadlineBodyLines(wolves, edwardsNight, { wins: 1, losses: 0 })[0]).toBe(
+      "AFTER BEATING MIA 131–106",
+    );
+    expect(formatHeadlineMeta({ wins: 1, losses: 0 }, "2026-10-21", edwardsNight)).toMatch(
+      /W 131–106/,
+    );
     expect(
       headlineBodyLines(
         "AFTER LOSING TO IND 103-129 LAST NIGHT, THE TRAIL BLAZERS HAVE A RECORD OF 2-1",

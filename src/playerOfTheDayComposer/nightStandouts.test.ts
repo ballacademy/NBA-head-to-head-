@@ -515,6 +515,94 @@ describe("night standouts", () => {
     expect(naw?.game.result).toBe("W");
   });
 
+  it("uses Minnesota's 131 vs Miami, not the home Heat row listed first", () => {
+    const rows = parseSummaryStandouts(
+      {
+        header: {
+          competitions: [
+            {
+              competitors: [
+                {
+                  score: "106",
+                  winner: false,
+                  homeAway: "home",
+                  team: {
+                    id: "14",
+                    abbreviation: "MIA",
+                    displayName: "Miami Heat",
+                  },
+                },
+                {
+                  score: { value: 131 },
+                  winner: true,
+                  homeAway: "away",
+                  team: {
+                    id: "16",
+                    abbreviation: "MIN",
+                    displayName: "Minnesota Timberwolves",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        boxscore: {
+          players: [
+            {
+              team: {
+                id: "16",
+                abbreviation: "MIN",
+                displayName: "Minnesota Timberwolves",
+              },
+              statistics: [
+                {
+                  keys: KEYS,
+                  athletes: [
+                    {
+                      athlete: {
+                        id: "4594268",
+                        displayName: "Anthony Edwards",
+                      },
+                      stats: box("33", "45", "10", "3", "1", "2"),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              team: {
+                id: "14",
+                abbreviation: "MIA",
+                displayName: "Miami Heat",
+              },
+              statistics: [
+                {
+                  keys: KEYS,
+                  athletes: [
+                    {
+                      athlete: { id: "4066261", displayName: "Bam Adebayo" },
+                      stats: box("34", "22", "8", "4", "1", "1"),
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+      "401909091",
+      "2026-10-21",
+    );
+    const ant = rows.find((row) => row.athleteId === "4594268");
+    expect(ant?.teamId).toBe("MIN");
+    expect(ant?.game.opponentAbbrev).toBe("MIA");
+    expect(ant?.game.home).toBe(false);
+    expect(ant?.game.playerScore).toBe("131");
+    expect(ant?.game.opponentScore).toBe("106");
+    expect(ant?.game.result).toBe("W");
+    expect(ant?.game.resultLine).toBe("131-106 W @ MIA");
+  });
+
   it("treats only ESPN finals as done — Q4 and OT stay live", () => {
     const q4 = {
       status: {

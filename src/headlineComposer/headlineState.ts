@@ -9,7 +9,10 @@ import {
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { getTeam, type NbaTeam } from "../standingsComposer/teams";
-import type { LastGame } from "../playerOfTheDayComposer/lastGame";
+import {
+  playerGameResult,
+  type LastGame,
+} from "../playerOfTheDayComposer/lastGame";
 import type { StandingRecord } from "../standingsComposer/rankingState";
 import {
   hasCustomPhoto as stripHasCustomPhoto,
@@ -446,10 +449,17 @@ export const formatHeadlineMeta = (
   if (record) {
     bits.push(formatHeadlineRecord(record));
   }
-  if (game?.result) {
-    bits.push(
-      `${game.result} ${formatHeadlineScore(game.playerScore, game.opponentScore)}`,
+  if (game) {
+    const result = playerGameResult(
+      game.playerScore,
+      game.opponentScore,
+      game.result,
     );
+    if (result) {
+      bits.push(
+        `${result} ${formatHeadlineScore(game.playerScore, game.opponentScore)}`,
+      );
+    }
   }
   const date = headlineDateKicker(gameDate ?? game?.gameDate, "date");
   if (date) {
@@ -471,8 +481,11 @@ export const formatHeadlineBodyLines = (
   const lines: string[] = [];
   if (game) {
     const score = formatHeadlineScore(game.playerScore, game.opponentScore);
+    const won =
+      playerGameResult(game.playerScore, game.opponentScore, game.result) ===
+      "W";
     lines.push(
-      game.result === "W"
+      won
         ? `AFTER BEATING ${game.opponentAbbrev} ${score}`
         : `AFTER LOSING TO ${game.opponentAbbrev} ${score}`,
     );

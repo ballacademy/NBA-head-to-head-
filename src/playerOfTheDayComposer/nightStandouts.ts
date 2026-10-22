@@ -5,6 +5,7 @@ import {
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { datesInInclusiveRange } from "../instagramComposer/composerDateRange";
 import {
+  competitorScore,
   emptyStats,
   formatDateLabel,
   formatResultLine,
@@ -216,16 +217,6 @@ const averageMadeAttempted = (value: string | undefined, games: number) => {
   const { made, attempted } = parseMadeAttempted(value);
   const gp = Math.max(1, games);
   return formatMadeAttempted(made / gp, attempted / gp);
-};
-
-const competitorScore = (item: EspnCompetitor | undefined) => {
-  if (!item) {
-    return "";
-  }
-  if (typeof item.score === "string") {
-    return item.score;
-  }
-  return String(item.score?.displayValue ?? "");
 };
 
 export const statsFromBoxRow = (
@@ -521,6 +512,7 @@ export const nightStandoutFromBox = (
       ? [...extra.flags, "Hot night"]
       : extra.flags;
   const result = playerGameResult(ours.score, opponent.score, ours.winner);
+  const home = ours.home === true;
   return {
     athleteId,
     name,
@@ -540,12 +532,13 @@ export const nightStandoutFromBox = (
       result,
       playerScore: ours.score,
       opponentScore: opponent.score,
-      home: ours.home !== false,
+      home,
       resultLine: formatResultLine(
         ours.score,
         opponent.score,
         result,
         opponent.abbrev,
+        home,
       ),
       dateLabel: formatDateLabel(gameDate),
       stats,
@@ -577,9 +570,12 @@ const parseSummaryPlayers = (
         item.team?.displayName,
         item.team?.id,
       );
-      return id === teamId;
+      return Boolean(teamId) && id === teamId;
     });
-    const opp = headerComps.find((item) => item !== ours);
+    const opp = headerComps.find((item) => ours != null && item !== ours);
+    if (!ours || !opp || !teamId) {
+      continue;
+    }
     const opponentId =
       resolveTeamId(
         opp?.team?.abbreviation,
@@ -608,7 +604,12 @@ const parseSummaryPlayers = (
         {
           score: competitorScore(ours),
           winner: ours?.winner,
-          home: ours?.homeAway !== "away",
+          home:
+            ours?.homeAway === "away"
+              ? false
+              : ours?.homeAway === "home"
+                ? true
+                : opp?.homeAway === "away",
         },
         eventId,
         gameDate,
