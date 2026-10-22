@@ -59,10 +59,24 @@ interface PlayerPickerProps {
   showDepthSort?: boolean;
   scoringLabel?: string;
   toolbarExtra?: ReactNode;
-  suggested?: Array<{ id: string; badge?: string; meta?: string }>;
+  suggested?: Array<{
+    id: string;
+    badge?: string;
+    meta?: string;
+    live?: boolean;
+  }>;
   suggestedHeading?: string;
   suggestedLoading?: boolean;
   suggestedEmpty?: string;
+  extraSuggested?: Array<{
+    id: string;
+    badge?: string;
+    meta?: string;
+    live?: boolean;
+  }>;
+  extraSuggestedHeading?: string;
+  extraSuggestedLoading?: boolean;
+  extraSuggestedEmpty?: string;
   onPick: (playerId: string) => void;
   onClear?: () => void;
   onClose: () => void;
@@ -88,6 +102,10 @@ export function PlayerPicker({
   suggestedHeading,
   suggestedLoading = false,
   suggestedEmpty,
+  extraSuggested = [],
+  extraSuggestedHeading,
+  extraSuggestedLoading = false,
+  extraSuggestedEmpty,
   onPick,
   onClear,
   onClose,
@@ -139,38 +157,54 @@ export function PlayerPicker({
       });
   }, [depthReady]);
 
+  type PickerSuggestedRow = {
+    id: string;
+    badge?: string;
+    meta?: string;
+    live?: boolean;
+    player: TierPlayer;
+  };
+  const resolveSuggested = (
+    rows: Array<{ id: string; badge?: string; meta?: string; live?: boolean }>,
+  ): PickerSuggestedRow[] =>
+    rows
+      .map((row) => {
+        const player =
+          (rosterPlayers ?? NBA_ACTIVE_PLAYERS).find(
+            (item) => item.id === row.id,
+          ) ?? null;
+        return player ? { ...row, player } : null;
+      })
+      .filter((row): row is PickerSuggestedRow => Boolean(row));
   const suggestedRows = useMemo(
-    () =>
-      suggested
-        .map((row) => {
-          const player =
-            (rosterPlayers ?? NBA_ACTIVE_PLAYERS).find(
-              (item) => item.id === row.id,
-            ) ?? null;
-          return player ? { ...row, player } : null;
-        })
-        .filter(
-          (
-            row,
-          ): row is {
-            id: string;
-            badge?: string;
-            meta?: string;
-            player: TierPlayer;
-          } => Boolean(row),
-        ),
+    () => resolveSuggested(suggested),
     [suggested, rosterPlayers],
   );
+  const extraSuggestedRows = useMemo(
+    () => resolveSuggested(extraSuggested),
+    [extraSuggested, rosterPlayers],
+  );
   const standoutHeading = suggestedHeading ?? "Standouts";
+  const dudHeading = extraSuggestedHeading ?? "Rough night";
   const showSuggested = suggestedRows.length > 0 && !query.trim();
+  const showExtraSuggested = extraSuggestedRows.length > 0 && !query.trim();
   const showSuggestedSection =
     !query.trim() &&
     (suggestedLoading ||
       suggestedRows.length > 0 ||
       suggestedHeading != null);
-  const suggestedIds = useMemo(
-    () => new Set(suggestedRows.map((row) => row.id)),
-    [suggestedRows],
+  const showExtraSuggestedSection =
+    !query.trim() &&
+    (extraSuggestedLoading ||
+      extraSuggestedRows.length > 0 ||
+      extraSuggestedHeading != null);
+  const recIds = useMemo(
+    () =>
+      new Set([
+        ...suggestedRows.map((row) => row.id),
+        ...extraSuggestedRows.map((row) => row.id),
+      ]),
+    [suggestedRows, extraSuggestedRows],
   );
 
   const handlePick = (playerId: string) => {
@@ -204,15 +238,20 @@ export function PlayerPicker({
     depthReady,
   ]);
 
-  const restPlayers = players.filter(
-    (player) => !suggestedIds.has(player.id),
-  );
+  const restPlayers = players.filter((player) => !recIds.has(player.id));
   const visibleIds = useMemo(
     () => [
       ...(showSuggested ? suggestedRows.map((row) => row.id) : []),
+      ...(showExtraSuggested ? extraSuggestedRows.map((row) => row.id) : []),
       ...restPlayers.map((player) => player.id),
     ],
-    [showSuggested, suggestedRows, restPlayers],
+    [
+      showSuggested,
+      suggestedRows,
+      showExtraSuggested,
+      extraSuggestedRows,
+      restPlayers,
+    ],
   );
 
   useEffect(() => {
@@ -492,6 +531,7 @@ export function PlayerPicker({
                     showDepth={false}
                     badge={row.badge}
                     metaOverride={row.meta}
+                    live={row.live}
                     deserving
                     highlighted={activeIndex === index}
                     onPick={handlePick}
@@ -501,9 +541,46 @@ export function PlayerPicker({
             )}
           </div>
         ) : null}
+        {showExtraSuggestedSection ? (
+          <div className="sc-picker__suggested sc-picker__suggested--dud">
+            <p className="sc-picker__suggested-label">{dudHeading}</p>
+            {extraSuggestedLoading && extraSuggestedRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">Loading box scores…</p>
+            ) : extraSuggestedRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">
+                {extraSuggestedEmpty ?? "No rough nights for this slate yet."}
+              </p>
+            ) : (
+              <div
+                className="sc-picker__grid sc-picker__grid--suggested"
+                aria-label={dudHeading}
+              >
+                {extraSuggestedRows.map((row, index) => (
+                  <PlayerButton
+                    key={`dud-${row.id}`}
+                    player={row.player}
+                    currentId={currentId}
+                    usedLabel={usedLabels[row.id]}
+                    showPpg={false}
+                    showDepth={false}
+                    badge={row.badge}
+                    metaOverride={row.meta}
+                    live={row.live}
+                    dud
+                    highlighted={
+                      activeIndex ===
+                      (showSuggested ? suggestedRows.length : 0) + index
+                    }
+                    onPick={handlePick}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
         <div
           className={
-            showSuggested
+            showSuggested || showExtraSuggested
               ? "sc-picker__grid sc-picker__grid--rest"
               : "sc-picker__grid"
           }
@@ -519,7 +596,9 @@ export function PlayerPicker({
               ppgEmptyLabel={simple ? "No stats" : undefined}
               highlighted={
                 activeIndex ===
-                (showSuggested ? suggestedRows.length : 0) + index
+                (showSuggested ? suggestedRows.length : 0) +
+                  (showExtraSuggested ? extraSuggestedRows.length : 0) +
+                  index
               }
               onPick={handlePick}
             />
@@ -527,7 +606,9 @@ export function PlayerPicker({
         </div>
         <div className="sc-picker__footer">
           <p className="sc-picker__count">
-            {restPlayers.length + (showSuggested ? suggestedRows.length : 0)}{" "}
+            {restPlayers.length +
+              (showSuggested ? suggestedRows.length : 0) +
+              (showExtraSuggested ? extraSuggestedRows.length : 0)}{" "}
             {includeCoaches ? "people" : "players"}
           </p>
           <button
@@ -554,6 +635,8 @@ function PlayerButton({
   badge,
   metaOverride,
   deserving = false,
+  dud = false,
+  live = false,
   highlighted = false,
   onPick,
 }: {
@@ -566,6 +649,8 @@ function PlayerButton({
   badge?: string;
   metaOverride?: string;
   deserving?: boolean;
+  dud?: boolean;
+  live?: boolean;
   highlighted?: boolean;
   onPick: (playerId: string) => void;
 }) {
@@ -587,7 +672,9 @@ function PlayerButton({
         "sc-team",
         isUsed ? "is-used" : "",
         isCurrent ? "is-current" : "",
-        deserving ? "is-deserving" : "",
+        deserving && !dud && !live ? "is-deserving" : "",
+        dud && !live ? "is-dud" : "",
+        live ? "is-live" : "",
         highlighted ? "is-active" : "",
       ]
         .filter(Boolean)
@@ -615,7 +702,13 @@ function PlayerButton({
       <span>
         <span className="sc-team__name">{player.name}</span>
         <span className="sc-team__meta">{meta}</span>
-        {badge ? <span className="sc-team__badge">{badge}</span> : null}
+        {live ? (
+          <span className="sc-team__live" aria-label="Live in game">
+            LIVE / IN GAME
+          </span>
+        ) : badge ? (
+          <span className="sc-team__badge">{badge}</span>
+        ) : null}
         {isUsed && usedLabel ? (
           <span className="sc-team__used">{usedChipLabel(usedLabel)}</span>
         ) : null}

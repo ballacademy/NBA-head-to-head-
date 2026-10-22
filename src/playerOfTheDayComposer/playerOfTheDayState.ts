@@ -13,6 +13,7 @@ import {
   type LastGameStats,
 } from "./lastGame";
 import {
+  isCompletedNightRow,
   totwCountingScore,
   totwEfficiencyIndex,
   type NightStandout,
@@ -104,7 +105,11 @@ export const rankPotdNightBest = (rows: NightStandout[]) => {
   const seen = new Set<string>();
   const eligible: NightStandout[] = [];
   for (const row of rows) {
-    if (minutesPlayed(row.game.stats) <= 0 || seen.has(row.athleteId)) {
+    if (
+      !isCompletedNightRow(row) ||
+      minutesPlayed(row.game.stats) <= 0 ||
+      seen.has(row.athleteId)
+    ) {
       continue;
     }
     if (!getPlayer(row.athleteId)) {
@@ -169,8 +174,9 @@ export const potdPickerSuggestions = (
     .slice(0, limit)
     .map((row, index) => ({
       id: row.athleteId,
-      badge: recBadge(row, index),
+      badge: row.live ? "LIVE / IN GAME" : recBadge(row, index),
       meta: row.line,
+      live: Boolean(row.live),
     }));
 
 export interface PhotoPan {

@@ -34,6 +34,10 @@ export interface NightStandout {
   game: LastGame;
   /** Minute-played appearances in a merged range. One game if omitted. */
   games?: number;
+  /** ESPN in-progress (Q4 / OT / halftime). Recs for Stat card + POTD skip these. */
+  live?: boolean;
+  /** ESPN final (including Final/OT). Undefined on fixtures means completed. */
+  final?: boolean;
 }
 
 interface EspnCompetitor {
@@ -43,15 +47,95 @@ interface EspnCompetitor {
   team?: { abbreviation?: string; displayName?: string; id?: string };
 }
 
+interface EspnStatusType {
+  completed?: boolean;
+  state?: string;
+  description?: string;
+  name?: string;
+  detail?: string;
+  shortDetail?: string;
+}
+
 interface EspnScoreboardEvent {
   id?: string;
   date?: string;
-  status?: { type?: { completed?: boolean; state?: string; description?: string } };
+  status?: { type?: EspnStatusType };
   competitions?: Array<{
     competitors?: EspnCompetitor[];
-    status?: { type?: { completed?: boolean; state?: string } };
+    status?: { type?: EspnStatusType };
   }>;
 }
+
+export type EspnGameStatus = {
+  live: boolean;
+  final: boolean;
+};
+
+const upperStatus = (value: unknown) => String(value ?? "").toUpperCase();
+
+const espnStatusTypeOf = (event: EspnScoreboardEvent) =>
+  event.status?.type ?? event.competitions?.[0]?.status?.type;
+
+/** Q4 / OT / halftime / in-progress — never a final. */
+export const espnEventIsLive = (event: EspnScoreboardEvent) => {
+  const type = espnStatusTypeOf(event);
+  if (!type || type.completed === true) {
+    return false;
+  }
+  const state = String(type.state ?? "").toLowerCase();
+  const name = upperStatus(type.name);
+  const desc = upperStatus(type.description);
+  const detail = upperStatus(type.detail ?? type.shortDetail);
+  if (state === "in") {
+    return true;
+  }
+  if (
+    name === "STATUS_IN_PROGRESS" ||
+    name === "STATUS_HALFTIME" ||
+    name.includes("END_PERIOD") ||
+    name.includes("END_OF_PERIOD")
+  ) {
+    return true;
+  }
+  return /\b(Q[1-4]|OT|HALFTIME)\b/.test(`${desc} ${detail}`);
+};
+
+/** Finals only — `completed` or STATUS_FINAL / Final/OT. Q4 and OT clocks are live. */
+export const espnEventIsFinal = (event: EspnScoreboardEvent) => {
+  if (espnEventIsLive(event)) {
+    return false;
+  }
+  const type = espnStatusTypeOf(event);
+  if (!type) {
+    return false;
+  }
+  if (type.completed === true) {
+    return true;
+  }
+  const name = upperStatus(type.name);
+  const desc = upperStatus(type.description).trim();
+  return (
+    name === "STATUS_FINAL" ||
+    name === "STATUS_FINAL_OT" ||
+    /_FINAL$/.test(name) ||
+    /^FINAL(\b|\/OT)/.test(desc)
+  );
+};
+
+export const espnGameStatus = (event: EspnScoreboardEvent): EspnGameStatus => ({
+  live: espnEventIsLive(event),
+  final: espnEventIsFinal(event),
+});
+
+/** Stat card + POTD recs default to completed games. Fixtures without flags count as done. */
+export const isCompletedNightRow = (row: {
+  live?: boolean;
+  final?: boolean;
+}) => row.live !== true && row.final !== false;
+
+export const completedNightRows = <T extends { live?: boolean; final?: boolean }>(
+  rows: T[],
+) => rows.filter(isCompletedNightRow);
 
 export interface EspnScoreboardPayload {
   events?: EspnScoreboardEvent[];
@@ -415,6 +499,7 @@ export const nightStandoutFromBox = (
   gameDate: string,
   stats: LastGameStats,
   includeQuiet = false,
+  gameStatus?: EspnGameStatus,
 ): NightStandout | null => {
   if (!athleteId || n(stats.min) <= 0) {
     return null;
@@ -465,6 +550,8 @@ export const nightStandoutFromBox = (
       dateLabel: formatDateLabel(gameDate),
       stats,
     },
+    live: gameStatus?.live === true,
+    final: gameStatus ? gameStatus.final : true,
   };
 };
 
@@ -473,6 +560,7 @@ const parseSummaryPlayers = (
   eventId: string,
   gameDate: string,
   includeQuiet: boolean,
+  gameStatus?: EspnGameStatus,
 ): NightStandout[] => {
   const rows: NightStandout[] = [];
   const headerComps = payload?.header?.competitions?.[0]?.competitors ?? [];
@@ -526,6 +614,7 @@ const parseSummaryPlayers = (
         gameDate,
         stats,
         includeQuiet,
+        gameStatus,
       );
       if (row) {
         rows.push(row);
@@ -539,14 +628,18 @@ export const parseSummaryStandouts = (
   payload: EspnSummaryPayload | null | undefined,
   eventId: string,
   gameDate: string,
-): NightStandout[] => parseSummaryPlayers(payload, eventId, gameDate, false);
+  gameStatus?: EspnGameStatus,
+): NightStandout[] =>
+  parseSummaryPlayers(payload, eventId, gameDate, false, gameStatus);
 
 /** Every minute-played box line — quiet 4-point nights stay in the sample. */
 export const parseSummaryBoxAppearances = (
   payload: EspnSummaryPayload | null | undefined,
   eventId: string,
   gameDate: string,
-): NightStandout[] => parseSummaryPlayers(payload, eventId, gameDate, true);
+  gameStatus?: EspnGameStatus,
+): NightStandout[] =>
+  parseSummaryPlayers(payload, eventId, gameDate, true, gameStatus);
 
 const boxCache = new Map<string, NightStandout[]>();
 const cache = new Map<string, NightStandout[]>();
@@ -591,7 +684,12 @@ const loadNightBoxAppearances = async (date: string): Promise<NightStandout[]> =
           return [] as NightStandout[];
         }
         const summary = (await response.json()) as EspnSummaryPayload;
-        return parseSummaryBoxAppearances(summary, eventId, date);
+        return parseSummaryBoxAppearances(
+          summary,
+          eventId,
+          date,
+          espnGameStatus(event),
+        );
       }),
     );
     const rows = batches.flat();
@@ -738,6 +836,171 @@ export const fetchRangeProduction = async (
   toIso: string,
 ): Promise<NightStandout[]> =>
   mergeRangeProduction(
+    await fetchNightsInRange(fromIso, toIso, loadNightBoxAppearances),
+  );
+
+export const DUD_CAMP_PPG = 5;
+export const DUD_MIN_MINUTES = 18;
+export const DUD_MIN_FGA = 8;
+export const DUD_POOR_TS = 0.45;
+export const DUD_POOR_EFG = 0.42;
+export const DUD_TOV_HIGH = 6;
+export const DUD_TOV_VOLUME = 5;
+export const DUD_STAR_USUAL_PTS = 15;
+export const DUD_LIMIT = 8;
+
+export const isCampUsualLine = (athleteId: string) => {
+  const player = getPlayer(athleteId);
+  const usual = usualLineFor(athleteId).pts;
+  return usual < DUD_CAMP_PPG && (player?.ppg ?? 0) < DUD_CAMP_PPG;
+};
+
+export const roughNightBadge = (stats: LastGameStats) => {
+  const shooting = totwShooting(stats);
+  const tov = Number.parseFloat(stats.tov);
+  const turnovers = Number.isFinite(tov) ? tov : 0;
+  const fgPct = shooting.fga > 0 ? shooting.fg.made / shooting.fga : 1;
+  if (turnovers >= DUD_TOV_HIGH) {
+    return "Turnovers";
+  }
+  if (shooting.fga >= DUD_MIN_FGA && fgPct < 0.4) {
+    return "Bricks";
+  }
+  return "Stinker";
+};
+
+export const roughNightLine = (stats: LastGameStats) => {
+  const bits: string[] = [];
+  if (stats.fg && stats.fg !== "0-0") {
+    bits.push(`${stats.fg} FG`);
+  }
+  const tov = Number.parseFloat(stats.tov);
+  if (Number.isFinite(tov) && tov > 0) {
+    bits.push(`${stats.tov} TO`);
+  }
+  bits.push(`${stats.pts} PTS`);
+  return bits.join(" · ");
+};
+
+export const roughNightScore = (stats: LastGameStats, usual: UsualLine) => {
+  const extra = nightFlagsFor(stats);
+  const shooting = totwShooting(stats);
+  const tov = Number.parseFloat(stats.tov);
+  const turnovers = Number.isFinite(tov) ? tov : 0;
+  const volume = Math.min(2, shooting.fga / TOTW_EFF_FGA_REF);
+  const tsHole =
+    shooting.ts != null && shooting.fga >= DUD_MIN_FGA
+      ? Math.max(0, TOTW_TS_REF - shooting.ts) * 120 * volume
+      : 0;
+  const efgHole =
+    shooting.efg != null && shooting.fga >= DUD_MIN_FGA
+      ? Math.max(0, TOTW_EFG_REF - shooting.efg) * 90 * volume
+      : 0;
+  const tovPain = turnovers * 9 + (turnovers >= DUD_TOV_HIGH ? 18 : 0);
+  const collapse =
+    usual.pts >= DUD_STAR_USUAL_PTS
+      ? Math.max(0, usual.pts - extra.pts) * 2.4 +
+        Math.max(0, usual.pts + usual.reb + usual.ast - extra.pra) * 0.5
+      : 0;
+  return tsHole + efgHole + tovPain + collapse;
+};
+
+export const isRoughNight = (
+  stats: LastGameStats,
+  usual: UsualLine,
+  athleteId: string,
+) => {
+  if (isCampUsualLine(athleteId)) {
+    return false;
+  }
+  const min = n(stats.min);
+  if (min < DUD_MIN_MINUTES) {
+    return false;
+  }
+  const extra = nightFlagsFor(stats);
+  const shooting = totwShooting(stats);
+  const tov = Number.parseFloat(stats.tov);
+  const turnovers = Number.isFinite(tov) ? tov : 0;
+  const fgPct = shooting.fga > 0 ? shooting.fg.made / shooting.fga : 1;
+  const brick =
+    shooting.fga >= DUD_MIN_FGA &&
+    ((shooting.ts != null && shooting.ts < DUD_POOR_TS) ||
+      (shooting.efg != null && shooting.efg < DUD_POOR_EFG) ||
+      (shooting.fga >= 10 && fgPct < 0.36));
+  const tovNight =
+    turnovers >= DUD_TOV_HIGH ||
+    (turnovers >= DUD_TOV_VOLUME && shooting.fga >= DUD_MIN_FGA);
+  const collapse =
+    usual.pts >= DUD_STAR_USUAL_PTS &&
+    extra.pts <= Math.max(8, usual.pts * 0.4) &&
+    min >= 20;
+  return brick || tovNight || collapse;
+};
+
+export const asNightDud = (row: NightStandout): NightStandout | null => {
+  if (!isCompletedNightRow(row) || n(row.game.stats.min) <= 0) {
+    return null;
+  }
+  const usual = usualLineFor(row.athleteId);
+  if (!isRoughNight(row.game.stats, usual, row.athleteId)) {
+    return null;
+  }
+  const badge = roughNightBadge(row.game.stats);
+  return {
+    ...row,
+    badge,
+    flags: [badge],
+    line: roughNightLine(row.game.stats),
+    score: roughNightScore(row.game.stats, usual),
+  };
+};
+
+/** Worst completed nights — bricks / turnovers / star stinkers, not camp 2-point DNPs. */
+export const rankNightDuds = (
+  rows: NightStandout[],
+  excludeIds?: Iterable<string>,
+) => {
+  const skip = new Set(excludeIds);
+  const seen = new Set<string>();
+  const duds: NightStandout[] = [];
+  for (const row of rows) {
+    if (seen.has(row.athleteId) || skip.has(row.athleteId)) {
+      continue;
+    }
+    const dud = asNightDud(row);
+    if (!dud) {
+      continue;
+    }
+    seen.add(row.athleteId);
+    duds.push(dud);
+  }
+  return duds.sort((left, right) => right.score - left.score).slice(0, DUD_LIMIT);
+};
+
+export const mergeWeekDuds = (nights: NightStandout[][]) => {
+  const worst = new Map<string, NightStandout>();
+  for (const rows of nights) {
+    for (const row of rows) {
+      const dud = asNightDud(row);
+      if (!dud) {
+        continue;
+      }
+      const previous = worst.get(dud.athleteId);
+      if (!previous || dud.score > previous.score) {
+        worst.set(dud.athleteId, dud);
+      }
+    }
+  }
+  return [...worst.values()]
+    .sort((left, right) => right.score - left.score)
+    .slice(0, DUD_LIMIT);
+};
+
+export const fetchDudsInRange = async (
+  fromIso: string,
+  toIso: string,
+): Promise<NightStandout[]> =>
+  mergeWeekDuds(
     await fetchNightsInRange(fromIso, toIso, loadNightBoxAppearances),
   );
 

@@ -321,6 +321,33 @@ describe("player of the day state", () => {
     );
     const surpriseFirst = rankNightStandouts([bouyea, jokic]);
     expect(surpriseFirst[0]?.athleteId).toBe("4280245");
+    const liveBest = nightRow(
+      "1966",
+      "LeBron James",
+      {
+        pts: "50",
+        reb: "10",
+        ast: "10",
+        fg: "18-24",
+        three: "4-6",
+        ft: "10-10",
+        tov: "1",
+        min: "38",
+      },
+      90,
+      ["40+ PTS"],
+    );
+    liveBest.live = true;
+    liveBest.final = false;
+    const withoutLive = rankPotdNightBest([liveBest, jokic, efficient]);
+    expect(withoutLive.map((row) => row.athleteId)).not.toContain("1966");
+    expect(withoutLive[0]?.athleteId).toBe("3112335");
+    expect(fillPotdFromStandouts(createEmptyCards(), [liveBest, jokic])[0]?.playerId).toBe(
+      "3112335",
+    );
+    expect(potdPickerSuggestions([liveBest, jokic]).map((row) => row.id)).not.toContain(
+      "1966",
+    );
   });
 
   it("clears a player if they are already on the other card", () => {

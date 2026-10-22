@@ -35,6 +35,7 @@ import {
   PLB_PAD_X,
   PLB_PIP_BAR_H,
   PLB_PIP_BAR_W,
+  PLB_COL_GAP,
   PLB_HEAD_SIZE,
   PLB_HEAD_W,
   PLB_PIP_SIZE,
@@ -42,6 +43,7 @@ import {
   PLB_POTD_FILL,
   PLB_META_SIZE,
   PLB_RANK_W,
+  PLB_WINS_W,
   PLB_ROW_H,
   PLB_ROW_SIZE,
   PLB_ROW_TRACK,
@@ -234,10 +236,20 @@ export const renderPotdLeaderboardCanvas = async (
   const innerX = listX + inset;
   const innerW = listW - inset * 2;
   const innerY = listY + 18 * s;
-  const pipW = showPips ? PLB_PIP_W * s : 0;
-  const headW = PLB_HEAD_W * s;
+  const gap = PLB_COL_GAP * s;
+  const pipCol = showPips ? PLB_PIP_W * s : 0;
+  const headCol = PLB_HEAD_W * s;
   const rankW = PLB_RANK_W * s;
-  const nameX = innerX + pipW + headW + rankW;
+  const winsW = PLB_WINS_W * s;
+  const colGaps = (showPips ? 4 : 3) * gap;
+  const nameW = Math.max(
+    0,
+    innerW - rankW - headCol - pipCol - winsW - colGaps,
+  );
+  const rankX = innerX;
+  const nameX = rankX + rankW + gap;
+  const headColX = nameX + nameW + gap;
+  const pipColX = headColX + headCol + gap;
   const logos = new Map<string, HTMLImageElement>();
   const heads = new Map<string, HTMLImageElement>();
   if (showPips) {
@@ -296,52 +308,6 @@ export const renderPotdLeaderboardCanvas = async (
       context.fillRect(innerX, top + 4 * s, 4 * s, rowH - 8 * s);
     }
 
-    if (showPips) {
-      const pipSize = Math.min(PLB_PIP_SIZE * s, rowH - 8 * s);
-      const pipX = innerX + (pipW - pipSize) / 2;
-      const pipY = y - pipSize / 2;
-      const logo = entry.teamId ? logos.get(entry.teamId) : undefined;
-      if (logo) {
-        context.save();
-        context.beginPath();
-        context.rect(pipX, pipY, pipSize, pipSize);
-        context.clip();
-        drawCenteredLogo(context, logo, pipX, pipY, pipSize, pipSize, {
-          fitX: 0.88,
-          fitY: 0.88,
-          cacheKey: entry.teamId ?? undefined,
-          shadow: 0,
-        });
-        context.restore();
-      } else {
-        const barW = PLB_PIP_BAR_W * s;
-        const barH = Math.min(PLB_PIP_BAR_H * s, rowH - 12 * s);
-        const team = entry.teamId ? getTeam(entry.teamId) : null;
-        context.fillStyle = team?.cellFrom ?? "rgba(245, 196, 0, 0.55)";
-        context.fillRect(
-          innerX + (pipW - barW) / 2,
-          y - barH / 2,
-          barW,
-          barH,
-        );
-      }
-    }
-
-    const headSize = Math.min(PLB_HEAD_SIZE * s, rowH - 10 * s);
-    const headX = innerX + pipW + (headW - headSize) / 2;
-    const headY = y - headSize / 2;
-    const head = entry.headshotUrl ? heads.get(entry.headshotUrl) : undefined;
-    if (head) {
-      context.save();
-      context.beginPath();
-      context.arc(headX + headSize / 2, y, headSize / 2, 0, Math.PI * 2);
-      context.clip();
-      drawCoverHeadshot(context, head, headX, headY, headSize, headSize, {
-        silhouette: false,
-      });
-      context.restore();
-    }
-
     const size = PLB_ROW_SIZE * entry.nameScale * s;
     const meta = PLB_META_SIZE * s;
     context.textBaseline = "middle";
@@ -350,7 +316,7 @@ export const renderPotdLeaderboardCanvas = async (
     context.textAlign = "left";
     context.font = `900 ${meta}px ${POSTER_FONT}`;
     setLetterSpacing(context, PLB_ROW_TRACK * meta);
-    context.fillText(entry.rankLabel, innerX + pipW + headW, y);
+    context.fillText(entry.rankLabel, rankX, y);
     context.fillStyle = PLB_YELLOW;
     context.font = `900 ${size}px ${POSTER_FONT}`;
     setLetterSpacing(context, PLB_ROW_TRACK * size);
@@ -374,6 +340,53 @@ export const renderPotdLeaderboardCanvas = async (
         y,
       );
     }
+
+    const headSize = Math.min(PLB_HEAD_SIZE * s, rowH - 10 * s);
+    const headX = headColX + (headCol - headSize) / 2;
+    const headY = y - headSize / 2;
+    const head = entry.headshotUrl ? heads.get(entry.headshotUrl) : undefined;
+    if (head) {
+      context.save();
+      context.beginPath();
+      context.arc(headX + headSize / 2, y, headSize / 2, 0, Math.PI * 2);
+      context.clip();
+      drawCoverHeadshot(context, head, headX, headY, headSize, headSize, {
+        silhouette: false,
+      });
+      context.restore();
+    }
+
+    if (showPips) {
+      const pipSize = Math.min(PLB_PIP_SIZE * s, rowH - 8 * s);
+      const pipX = pipColX + (pipCol - pipSize) / 2;
+      const pipY = y - pipSize / 2;
+      const logo = entry.teamId ? logos.get(entry.teamId) : undefined;
+      if (logo) {
+        context.save();
+        context.beginPath();
+        context.rect(pipX, pipY, pipSize, pipSize);
+        context.clip();
+        drawCenteredLogo(context, logo, pipX, pipY, pipSize, pipSize, {
+          fitX: 0.88,
+          fitY: 0.88,
+          cacheKey: entry.teamId ?? undefined,
+          shadow: 0,
+        });
+        context.restore();
+      } else {
+        const barW = PLB_PIP_BAR_W * s;
+        const barH = Math.min(PLB_PIP_BAR_H * s, rowH - 12 * s);
+        const team = entry.teamId ? getTeam(entry.teamId) : null;
+        context.fillStyle = team?.cellFrom ?? "rgba(245, 196, 0, 0.55)";
+        context.fillRect(
+          pipColX + (pipCol - barW) / 2,
+          y - barH / 2,
+          barW,
+          barH,
+        );
+      }
+    }
+
     context.font = `900 ${meta}px ${POSTER_FONT}`;
     setLetterSpacing(context, PLB_ROW_TRACK * meta);
     context.textAlign = "right";

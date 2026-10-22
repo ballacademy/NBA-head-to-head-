@@ -45,7 +45,11 @@ import {
   isoDateOnly,
   type LastGame,
 } from "../playerOfTheDayComposer/lastGame";
-import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
+import {
+  completedNightRows,
+  fetchDudsInRange,
+  fetchStandoutsInRange,
+} from "../playerOfTheDayComposer/nightStandouts";
 import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
 import {
   everyTeamCurrentSeason,
@@ -133,6 +137,9 @@ export function StatCardComposerApp() {
   const night = useComposerNight();
   const { range, setRange } = useComposerDateRange();
   const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
+  const [rangeDuds, setRangeDuds] = useState<NightStandout[]>([]);
+  const [standoutsLoading, setStandoutsLoading] = useState(false);
+  const [dudsLoading, setDudsLoading] = useState(false);
   const source = parseStatCardSource(draft.source);
   const todayIso = night.todayIso;
   const yesterdayIso = night.yesterdayIso;
@@ -246,7 +253,34 @@ export function StatCardComposerApp() {
     if (!pickerOpen || source !== "last-game") {
       return;
     }
-    void fetchStandoutsInRange(range.from, range.to).then(setRangeStandouts);
+    let cancelled = false;
+    setStandoutsLoading(true);
+    setDudsLoading(true);
+    void fetchStandoutsInRange(range.from, range.to)
+      .then((rows) => {
+        if (!cancelled) {
+          setRangeStandouts(rows);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setStandoutsLoading(false);
+        }
+      });
+    void fetchDudsInRange(range.from, range.to)
+      .then((rows) => {
+        if (!cancelled) {
+          setRangeDuds(rows);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setDudsLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [pickerOpen, source, range.from, range.to]);
 
   const handleExport = async (
@@ -299,7 +333,11 @@ export function StatCardComposerApp() {
     }
     push(draft);
     let next = fillStatCardFromPlayer(player, draft, keepCustomPhoto);
-    const standout = rangeStandouts.find((row) => row.athleteId === playerId);
+    const standout =
+      completedNightRows(rangeStandouts).find(
+        (row) => row.athleteId === playerId,
+      ) ??
+      completedNightRows(rangeDuds).find((row) => row.athleteId === playerId);
     if (standout && parseStatCardSource(next.source) === "last-game") {
       lastGameRef.current = standout.game;
       next = fillStatCardFromStandout(next, standout.game);
@@ -834,11 +872,26 @@ export function StatCardComposerApp() {
           usedLabels={draft.playerId ? { [draft.playerId]: "Stat card" } : {}}
           suggested={
             source === "last-game"
-              ? nightStandoutPickerRows(rangeStandouts)
+              ? nightStandoutPickerRows(completedNightRows(rangeStandouts))
               : []
           }
           suggestedHeading="Range standouts"
-          suggestedLoading={false}
+          suggestedLoading={standoutsLoading}
+          extraSuggested={
+            source === "last-game"
+              ? nightStandoutPickerRows(
+                  completedNightRows(rangeDuds).filter(
+                    (row) =>
+                      !completedNightRows(rangeStandouts).some(
+                        (standout) => standout.athleteId === row.athleteId,
+                      ),
+                  ),
+                )
+              : []
+          }
+          extraSuggestedHeading="Rough night"
+          extraSuggestedLoading={dudsLoading}
+          extraSuggestedEmpty="No rough nights for this slate yet."
           onPick={handlePick}
           onClear={() => {
             push(draft);

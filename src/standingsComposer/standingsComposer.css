@@ -1589,6 +1589,24 @@ label.sc-chip {
   overflow: hidden;
 }
 
+.sc-picker__suggested--dud {
+  flex: 1 1 38%;
+  min-height: 140px;
+  max-height: min(28vh, 260px);
+  border-bottom-color: #fb7185;
+  background: linear-gradient(180deg, rgba(251, 113, 133, 0.14), transparent 72%);
+}
+
+.sc-picker:has(.sc-picker__suggested--dud) .sc-picker__suggested:not(.sc-picker__suggested--dud) {
+  flex: 1 1 40%;
+  max-height: min(32vh, 280px);
+}
+
+.sc-picker__suggested--dud .sc-picker__suggested-label,
+.sc-picker__suggested--dud .sc-picker__suggested-status {
+  color: #fb7185;
+}
+
 .sc-picker__suggested-label,
 .sc-picker__suggested-status {
   margin: 0 0 8px;
@@ -1697,6 +1715,57 @@ label.sc-chip {
 .sc-team.is-deserving .sc-team__name {
   color: #fffbeb;
   font-weight: 800;
+}
+
+.sc-team.is-dud {
+  border: 2px solid #fb7185;
+  background: #2a1218;
+  box-shadow:
+    0 0 0 1px rgba(251, 113, 133, 0.45),
+    0 10px 22px rgba(0, 0, 0, 0.35);
+}
+
+.sc-team.is-dud:hover,
+.sc-team.is-dud:focus-visible {
+  border-color: #fda4af;
+  background: #3a161c;
+}
+
+.sc-team.is-dud .sc-team__badge {
+  background: #fb7185;
+  color: #1a0508;
+}
+
+.sc-team.is-dud .sc-team__name {
+  color: #fff1f2;
+  font-weight: 800;
+}
+
+.sc-team.is-live {
+  border: 3px solid #fb7185;
+  background: #3f1018;
+  box-shadow:
+    0 0 0 2px rgba(251, 113, 133, 0.55),
+    0 10px 22px rgba(0, 0, 0, 0.4);
+}
+
+.sc-team.is-live .sc-team__name {
+  color: #fff;
+  font-weight: 800;
+}
+
+.sc-team__live {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #fb7185;
+  color: #1a0508;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .sc-team.is-active {

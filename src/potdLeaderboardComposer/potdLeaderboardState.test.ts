@@ -7,6 +7,7 @@ import { EXPORT_HEIGHT, EXPORT_WIDTH, GRAPHIC_WIDTH } from "../standingsComposer
 import {
   PLB_INK,
   PLB_META_SIZE,
+  PLB_HEAD_SIZE,
   PLB_PIP_SIZE,
   PLB_PIP_W,
   PLB_RANK_W,
@@ -143,7 +144,7 @@ describe("POTD leaderboard ranks", () => {
     const blanks = leaderboardBlankCount(five);
     expect(blanks).toBeGreaterThanOrEqual(0);
     expect(blanks).toBeLessThanOrEqual(2);
-    expect(PLB_ROW_H).toBe(52);
+    expect(PLB_ROW_H).toBe(78);
     expect(five.length + blanks).toBeLessThanOrEqual(7);
     expect(leaderboardBlankCount([])).toBe(2);
     expect(leaderboardBlankCount([])).toBeLessThanOrEqual(2);
@@ -151,6 +152,8 @@ describe("POTD leaderboard ranks", () => {
 
   it("defaults team pips on and stores the toggle", () => {
     expect(defaultLeaderboardDraft().showPips).toBe(true);
+    expect(PLB_HEAD_SIZE).toBeGreaterThanOrEqual(56);
+    expect(PLB_PIP_SIZE).toBeGreaterThanOrEqual(48);
     expect(PLB_PIP_SIZE).toBeLessThanOrEqual(PLB_PIP_W);
     expect(PLB_PIP_W).toBeLessThan(PLB_RANK_W);
     expect(PLB_PIP_W).toBeLessThan(GRAPHIC_WIDTH / 10);

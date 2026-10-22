@@ -1018,7 +1018,11 @@ describe("composer chrome", () => {
     expect(picker).not.toContain("rememberRecentPlayer");
     expect(picker).not.toContain("recentPickerPlayers");
     expect(picker).toContain("suggestedHeading");
+    expect(picker).toContain("extraSuggestedHeading");
     expect(picker).toContain("sc-picker__suggested");
+    expect(picker).toContain("sc-picker__suggested--dud");
+    expect(picker).toContain("LIVE / IN GAME");
+    expect(picker).toContain("sc-team__live");
     expect(photo).toContain("ArrowLeft");
     expect(ba).toContain("Top left");
     expect(ba).toContain("Bottom right");
@@ -1050,5 +1054,54 @@ describe("composer chrome", () => {
     expect(shotGraphic).toContain("shotChartBoardRects");
     expect(shotCanvas).toContain("shotChartBoardRects");
     expect(shotCanvas).toContain("paintHalfCourt");
+  });
+
+  it("keeps Stat card + POTD recs on finals and leaderboard rows name then photo then logo", () => {
+    const picker = readFileSync(
+      join(root, "tierListComposer/PlayerPicker.tsx"),
+      "utf8",
+    );
+    const potdState = readFileSync(
+      join(root, "playerOfTheDayComposer/playerOfTheDayState.ts"),
+      "utf8",
+    );
+    const potdGraphic = readFileSync(
+      join(root, "potdLeaderboardComposer/PotdLeaderboardGraphic.tsx"),
+      "utf8",
+    );
+    const plbCss = readFileSync(
+      join(root, "potdLeaderboardComposer/potdLeaderboardComposer.css"),
+      "utf8",
+    );
+    const nights = readFileSync(
+      join(root, "playerOfTheDayComposer/nightStandouts.ts"),
+      "utf8",
+    );
+    expect(statCardApp).toContain("completedNightRows");
+    expect(statCardApp).toContain("fetchDudsInRange");
+    expect(statCardApp).toContain("extraSuggestedHeading=\"Rough night\"");
+    expect(statCardApp).toContain("nightStandoutPickerRows(completedNightRows(rangeStandouts))");
+    expect(coverApp).not.toContain("completedNightRows");
+    expect(coverApp).not.toContain("fetchDudsInRange");
+    expect(coverApp).not.toContain("extraSuggested");
+    expect(potdState).toContain("isCompletedNightRow");
+    expect(potdState).toContain("LIVE / IN GAME");
+    expect(nights).toContain("espnEventIsFinal");
+    expect(nights).toContain("espnEventIsLive");
+    expect(nights).toContain("rankNightDuds");
+    expect(nights).not.toMatch(/eventIsPlayed[\s\S]*?state === "in"[\s\S]{0,80}return false/);
+    expect(picker).toContain("LIVE / IN GAME");
+    expect(sheet).toContain(".sc-picker__suggested--dud");
+    expect(sheet).toContain(".sc-team.is-live");
+    expect(sheet).toContain(".sc-team__live");
+    expect(potdGraphic).toMatch(
+      /plb-rank[\s\S]*plb-name-cell[\s\S]*plb-head[\s\S]*plb-pip[\s\S]*plb-wins/,
+    );
+    expect(plbCss).toMatch(
+      /\.plb-board\.is-pips-on \.plb-row \{[\s\S]*118 \* var\(--u\)\) minmax\(0, 1fr\) calc\(70 \* var\(--u\)\) calc\(64 \* var\(--u\)\)/,
+    );
+    expect(plbCss).toContain("min-height: calc(78 * var(--u))");
+    expect(plbCss).toContain("width: calc(62 * var(--u))");
+    expect(plbCss).toContain("width: calc(56 * var(--u))");
   });
 });

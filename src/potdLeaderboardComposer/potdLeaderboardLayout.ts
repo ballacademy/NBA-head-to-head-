@@ -22,13 +22,14 @@ export const PLB_TITLE_H = 100;
 export const PLB_GAP = 28;
 export const PLB_STROKE = 8;
 export const PLB_LIST_INSET = 28;
-/** Left-column mark only — never a row-width watermark. */
-export const PLB_PIP_W = 40;
-export const PLB_HEAD_W = 44;
-export const PLB_HEAD_SIZE = 36;
-export const PLB_PIP_SIZE = 36;
+/** Marks sit after the name — never a row-width watermark. */
+export const PLB_PIP_W = 64;
+export const PLB_HEAD_W = 70;
+export const PLB_HEAD_SIZE = 62;
+export const PLB_PIP_SIZE = 56;
 export const PLB_PIP_BAR_W = 6;
-export const PLB_PIP_BAR_H = 28;
+export const PLB_PIP_BAR_H = 44;
+export const PLB_COL_GAP = 8;
 /** Wide enough for T11. / (12) inside the row at PLB_META_SIZE. */
 export const PLB_RANK_W = 118;
 export const PLB_WINS_W = 118;
@@ -37,8 +38,8 @@ export const PLB_NAME_ADVANCE = 12.2;
 export const PLB_HAIRLINE = "rgba(245, 196, 0, 0.22)";
 export const PLB_ALT_FILL = "rgba(245, 196, 0, 0.05)";
 export const PLB_POTD_FILL = "rgba(245, 196, 0, 0.16)";
-export const PLB_ROW_H = 52;
-export const PLB_WRAP_ROW_H = 68;
+export const PLB_ROW_H = 78;
+export const PLB_WRAP_ROW_H = 102;
 export const PLB_LIST_PAD_TOP = 18;
 export const PLB_LIST_PAD_BOTTOM = 14;
 

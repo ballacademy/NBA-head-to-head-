@@ -146,6 +146,48 @@ export const PotdLeaderboardGraphic = forwardRef<
                   .filter(Boolean)
                   .join(" ")}
               >
+                <span
+                  className={["plb-rank", medal ? `is-${medal}` : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {entry.rankLabel}
+                </span>
+                <div className="plb-name-cell">
+                  <textarea
+                    className="plb-name"
+                    rows={wrap ? 2 : 1}
+                    value={
+                      nameFocus === entry.id
+                        ? entry.name
+                        : formatComposerPersonName(entry.name, nameStyle) ||
+                          entry.name
+                    }
+                    maxLength={40}
+                    spellCheck={false}
+                    aria-label="Player name"
+                    style={{
+                      fontSize: `calc(${42 * entry.nameScale} * var(--u))`,
+                    }}
+                    onFocus={() => setNameFocus(entry.id)}
+                    onBlur={() => setNameFocus(null)}
+                    onChange={(event) =>
+                      onNameChange(
+                        entry.id,
+                        event.target.value.replace(/[\r\n]+/g, " "),
+                      )
+                    }
+                  />
+                </div>
+                <span className="plb-head" aria-hidden="true">
+                  {entry.headshotUrl ? (
+                    <PlayerHeadshot
+                      className="plb-head__img"
+                      src={entry.headshotUrl}
+                      label={entry.name}
+                    />
+                  ) : null}
+                </span>
                 {showPips ? (
                   <span className="plb-pip" aria-hidden="true">
                     {team ? (
@@ -161,46 +203,6 @@ export const PotdLeaderboardGraphic = forwardRef<
                     )}
                   </span>
                 ) : null}
-                <span className="plb-head" aria-hidden="true">
-                  {entry.headshotUrl ? (
-                    <PlayerHeadshot
-                      className="plb-head__img"
-                      src={entry.headshotUrl}
-                      label={entry.name}
-                    />
-                  ) : null}
-                </span>
-                <span
-                  className={["plb-rank", medal ? `is-${medal}` : ""]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  {entry.rankLabel}
-                </span>
-                <textarea
-                  className="plb-name"
-                  rows={wrap ? 2 : 1}
-                  value={
-                    nameFocus === entry.id
-                      ? entry.name
-                      : formatComposerPersonName(entry.name, nameStyle) ||
-                        entry.name
-                  }
-                  maxLength={40}
-                  spellCheck={false}
-                  aria-label="Player name"
-                  style={{
-                    fontSize: `calc(${42 * entry.nameScale} * var(--u))`,
-                  }}
-                  onFocus={() => setNameFocus(entry.id)}
-                  onBlur={() => setNameFocus(null)}
-                  onChange={(event) =>
-                    onNameChange(
-                      entry.id,
-                      event.target.value.replace(/[\r\n]+/g, " "),
-                    )
-                  }
-                />
                 <input
                   className="plb-wins"
                   value={formatWinsLabel(entry.wins)}

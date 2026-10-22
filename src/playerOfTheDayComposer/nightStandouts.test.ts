@@ -2,14 +2,19 @@ import { describe, expect, it } from "vitest";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { emptyStats } from "./lastGame";
 import {
+  completedNightRows,
+  espnEventIsFinal,
+  espnEventIsLive,
   isFreakNonScoringNight,
   isNotableNight,
+  isRoughNight,
   isSurpriseNight,
   mergeRangeProduction,
   mergeWeekStandouts,
   nightFlagsFor,
   nightStandoutFromBox,
   parseSummaryStandouts,
+  rankNightDuds,
   rankNightStandouts,
   statsFromBoxRow,
   usualLineFor,
@@ -508,5 +513,163 @@ describe("night standouts", () => {
     expect(naw?.game.playerScore).toBe("132");
     expect(naw?.game.opponentScore).toBe("125");
     expect(naw?.game.result).toBe("W");
+  });
+
+  it("treats only ESPN finals as done — Q4 and OT stay live", () => {
+    const q4 = {
+      status: {
+        type: {
+          completed: false,
+          state: "in",
+          name: "STATUS_IN_PROGRESS",
+          description: "Q4",
+          detail: "3:11 - 4th Qtr",
+        },
+      },
+    };
+    const ot = {
+      status: {
+        type: {
+          completed: false,
+          state: "in",
+          name: "STATUS_IN_PROGRESS",
+          description: "OT",
+          detail: "1:02 - OT",
+        },
+      },
+    };
+    const final = {
+      status: {
+        type: {
+          completed: true,
+          state: "post",
+          name: "STATUS_FINAL",
+          description: "Final",
+        },
+      },
+    };
+    const finalOt = {
+      status: {
+        type: {
+          completed: true,
+          state: "post",
+          name: "STATUS_FINAL_OT",
+          description: "Final/OT",
+        },
+      },
+    };
+    expect(espnEventIsLive(q4)).toBe(true);
+    expect(espnEventIsFinal(q4)).toBe(false);
+    expect(espnEventIsLive(ot)).toBe(true);
+    expect(espnEventIsFinal(ot)).toBe(false);
+    expect(espnEventIsLive(final)).toBe(false);
+    expect(espnEventIsFinal(final)).toBe(true);
+    expect(espnEventIsLive(finalOt)).toBe(false);
+    expect(espnEventIsFinal(finalOt)).toBe(true);
+    expect(
+      completedNightRows([
+        { live: true, final: false },
+        { live: false, final: true },
+        {},
+      ]),
+    ).toEqual([{ live: false, final: true }, {}]);
+  });
+
+  it("ranks star stinkers and bricks, skips camp 2-point nights and live games", () => {
+    const luka = getPlayer("3945274");
+    const tatum = getPlayer("4065648");
+    const barnhizer = getPlayer("4684208");
+    expect(luka?.name).toMatch(/Doncic/);
+    expect(tatum?.name).toMatch(/Tatum/);
+    expect(barnhizer?.name).toMatch(/Barnhizer/);
+    expect(usualLineFor("3945274").pts).toBeGreaterThanOrEqual(15);
+    expect(usualLineFor("4065648").pts).toBeGreaterThanOrEqual(15);
+
+    const brick = gameRow(
+      "3945274",
+      "Luka Doncic",
+      {
+        pts: "22",
+        reb: "7",
+        ast: "9",
+        min: "36",
+        fg: "8-18",
+        three: "2-10",
+        ft: "4-6",
+        tov: "8",
+      },
+      10,
+    );
+    const stinker = gameRow(
+      "4065648",
+      "Jayson Tatum",
+      {
+        pts: "6",
+        reb: "4",
+        ast: "3",
+        min: "34",
+        fg: "2-12",
+        three: "0-6",
+        ft: "2-2",
+        tov: "3",
+      },
+      4,
+    );
+    const camp = gameRow(
+      "4684208",
+      "Brooks Barnhizer",
+      {
+        pts: "2",
+        reb: "1",
+        ast: "0",
+        min: "22",
+        fg: "1-6",
+        three: "0-3",
+        ft: "0-0",
+        tov: "1",
+      },
+      2,
+    );
+    const liveStar = {
+      ...gameRow(
+        "1966",
+        "LeBron James",
+        {
+          pts: "8",
+          reb: "3",
+          ast: "2",
+          min: "28",
+          fg: "3-16",
+          three: "0-7",
+          ft: "2-2",
+          tov: "7",
+        },
+        3,
+      ),
+      live: true,
+      final: false,
+    };
+    expect(isRoughNight(brick.game.stats, usualLineFor("3945274"), "3945274")).toBe(
+      true,
+    );
+    expect(
+      isRoughNight(stinker.game.stats, usualLineFor("4065648"), "4065648"),
+    ).toBe(true);
+    expect(
+      isRoughNight(camp.game.stats, usualLineFor("4684208"), "4684208"),
+    ).toBe(false);
+    const ranked = rankNightDuds([brick, stinker, camp, liveStar]);
+    expect(ranked.map((row) => row.athleteId).sort()).toEqual([
+      "3945274",
+      "4065648",
+    ]);
+    const lukaRow = ranked.find((row) => row.athleteId === "3945274");
+    const tatumRow = ranked.find((row) => row.athleteId === "4065648");
+    expect(lukaRow?.badge).toBe("Turnovers");
+    expect(lukaRow?.line).toContain("8-18 FG");
+    expect(lukaRow?.line).toContain("8 TO");
+    expect(tatumRow?.badge).toMatch(/Bricks|Stinker/);
+    expect(ranked.map((row) => row.athleteId)).not.toContain("4684208");
+    expect(ranked.map((row) => row.athleteId)).not.toContain("1966");
   });
 });

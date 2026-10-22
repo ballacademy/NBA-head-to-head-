@@ -111,10 +111,10 @@
   position: relative;
   display: grid;
   grid-template-columns:
-    calc(44 * var(--u)) calc(118 * var(--u)) minmax(0, 1fr) calc(118 * var(--u));
+    calc(118 * var(--u)) minmax(0, 1fr) calc(70 * var(--u)) calc(118 * var(--u));
   align-items: center;
-  column-gap: calc(6 * var(--u));
-  min-height: calc(52 * var(--u));
+  column-gap: calc(8 * var(--u));
+  min-height: calc(78 * var(--u));
   flex: 0 0 auto;
   padding-right: calc(4 * var(--u));
   box-sizing: border-box;
@@ -123,7 +123,7 @@
 
 .plb-board.is-pips-on .plb-row {
   grid-template-columns:
-    calc(40 * var(--u)) calc(44 * var(--u)) calc(118 * var(--u)) minmax(0, 1fr)
+    calc(118 * var(--u)) minmax(0, 1fr) calc(70 * var(--u)) calc(64 * var(--u))
     calc(118 * var(--u));
 }
 
@@ -139,7 +139,7 @@
 }
 
 .plb-row.is-wrap {
-  min-height: calc(68 * var(--u));
+  min-height: calc(102 * var(--u));
 }
 
 .plb-row.is-blank {
@@ -150,9 +150,10 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  width: calc(36 * var(--u));
-  height: calc(36 * var(--u));
+  width: calc(56 * var(--u));
+  height: calc(56 * var(--u));
   justify-self: center;
+  align-self: center;
   pointer-events: none;
 }
 
@@ -181,9 +182,10 @@
 
 .plb-head {
   position: relative;
-  width: calc(36 * var(--u));
-  height: calc(36 * var(--u));
+  width: calc(62 * var(--u));
+  height: calc(62 * var(--u));
   justify-self: center;
+  align-self: center;
   overflow: hidden;
   border-radius: 50%;
   background: rgba(245, 196, 0, 0.08);
@@ -225,8 +227,20 @@
   z-index: 2;
 }
 
+.plb-name-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
 .plb-rank {
+  display: flex;
+  align-items: center;
+  height: 100%;
   font-size: calc(32 * var(--u));
+  line-height: 1;
   text-align: left;
   padding-left: calc(2 * var(--u));
   padding-right: calc(4 * var(--u));
@@ -264,7 +278,12 @@
 }
 
 .plb-wins {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
   font-size: calc(32 * var(--u));
+  line-height: 1;
   text-align: right;
   width: 100%;
   box-sizing: border-box;
