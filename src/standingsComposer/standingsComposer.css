@@ -1590,17 +1590,26 @@ label.sc-chip {
   overflow: hidden;
 }
 
-.sc-picker__suggested--dud {
-  flex: 1 1 38%;
-  min-height: 140px;
-  max-height: min(28vh, 260px);
-  border-bottom-color: #fb7185;
-  background: linear-gradient(180deg, rgba(251, 113, 133, 0.14), transparent 72%);
+.sc-picker__suggested-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin: 0 0 8px;
 }
 
-.sc-picker:has(.sc-picker__suggested--dud) .sc-picker__suggested:not(.sc-picker__suggested--dud) {
-  flex: 1 1 40%;
-  max-height: min(32vh, 280px);
+.sc-picker__suggested-head .sc-picker__suggested-label {
+  margin: 0;
+}
+
+.sc-picker__recs {
+  margin: 0;
+}
+
+.sc-picker__suggested--dud {
+  border-bottom-color: #fb7185;
+  background: linear-gradient(180deg, rgba(251, 113, 133, 0.14), transparent 72%);
 }
 
 .sc-picker__suggested--dud .sc-picker__suggested-label,

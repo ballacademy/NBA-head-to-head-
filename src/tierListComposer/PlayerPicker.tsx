@@ -114,6 +114,9 @@ export function PlayerPicker({
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [recsStrip, setRecsStrip] = useState<"standouts" | "rough-night">(
+    "standouts",
+  );
   const [sort, setSort] = useState<PlayerPickerSort>(() => {
     const storedRaw = readJson(sortStorageKey);
     if (storedRaw == null) {
@@ -186,25 +189,27 @@ export function PlayerPicker({
   );
   const standoutHeading = suggestedHeading ?? "Standouts";
   const dudHeading = extraSuggestedHeading ?? "Rough night";
-  const showSuggested = suggestedRows.length > 0 && !query.trim();
-  const showExtraSuggested = extraSuggestedRows.length > 0 && !query.trim();
-  const showSuggestedSection =
+  const hasRecToggle =
+    extraSuggestedHeading != null ||
+    extraSuggested.length > 0 ||
+    extraSuggestedLoading;
+  const showDudRecs = hasRecToggle && recsStrip === "rough-night";
+  const recRows = showDudRecs ? extraSuggestedRows : suggestedRows;
+  const recLoading = showDudRecs ? extraSuggestedLoading : suggestedLoading;
+  const recHeading = showDudRecs ? dudHeading : standoutHeading;
+  const recEmpty = showDudRecs
+    ? extraSuggestedEmpty ?? "No rough nights for this slate yet."
+    : suggestedEmpty ?? "No standouts for this night yet.";
+  const showRecsSection =
     !query.trim() &&
-    (suggestedLoading ||
+    (hasRecToggle ||
+      suggestedLoading ||
       suggestedRows.length > 0 ||
       suggestedHeading != null);
-  const showExtraSuggestedSection =
-    !query.trim() &&
-    (extraSuggestedLoading ||
-      extraSuggestedRows.length > 0 ||
-      extraSuggestedHeading != null);
+  const showSuggested = recRows.length > 0 && showRecsSection;
   const recIds = useMemo(
-    () =>
-      new Set([
-        ...suggestedRows.map((row) => row.id),
-        ...extraSuggestedRows.map((row) => row.id),
-      ]),
-    [suggestedRows, extraSuggestedRows],
+    () => new Set(showRecsSection ? recRows.map((row) => row.id) : []),
+    [showRecsSection, recRows],
   );
 
   const handlePick = (playerId: string) => {
@@ -244,17 +249,10 @@ export function PlayerPicker({
     : players.filter((player) => !recIds.has(player.id));
   const visibleIds = useMemo(
     () => [
-      ...(showSuggested ? suggestedRows.map((row) => row.id) : []),
-      ...(showExtraSuggested ? extraSuggestedRows.map((row) => row.id) : []),
+      ...(showSuggested ? recRows.map((row) => row.id) : []),
       ...restPlayers.map((player) => player.id),
     ],
-    [
-      showSuggested,
-      suggestedRows,
-      showExtraSuggested,
-      extraSuggestedRows,
-      restPlayers,
-    ],
+    [showSuggested, recRows, restPlayers],
   );
 
   useEffect(() => {
@@ -510,70 +508,65 @@ export function PlayerPicker({
           </div>
         )}
         </div>
-        {showSuggestedSection ? (
-          <div className="sc-picker__suggested">
-            <p className="sc-picker__suggested-label">{standoutHeading}</p>
-            {suggestedLoading && suggestedRows.length === 0 ? (
-              <p className="sc-picker__suggested-status">Loading box scores…</p>
-            ) : suggestedRows.length === 0 ? (
-              <p className="sc-picker__suggested-status">
-                {suggestedEmpty ?? "No standouts for this night yet."}
-              </p>
-            ) : (
-              <div
-                className="sc-picker__grid sc-picker__grid--suggested"
-                aria-label={standoutHeading}
-              >
-                {suggestedRows.map((row, index) => (
-                  <PlayerButton
-                    key={`sug-${row.id}`}
-                    player={row.player}
-                    currentId={currentId}
-                    usedLabel={usedLabels[row.id]}
-                    showPpg={false}
-                    showDepth={false}
-                    badge={row.badge}
-                    metaOverride={row.meta}
-                    live={row.live}
-                    deserving
-                    highlighted={activeIndex === index}
-                    onPick={handlePick}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : null}
-        {showExtraSuggestedSection ? (
-          <div className="sc-picker__suggested sc-picker__suggested--dud">
-            <p className="sc-picker__suggested-label">{dudHeading}</p>
-            {extraSuggestedLoading && extraSuggestedRows.length === 0 ? (
-              <p className="sc-picker__suggested-status">Loading box scores…</p>
-            ) : extraSuggestedRows.length === 0 ? (
-              <p className="sc-picker__suggested-status">
-                {extraSuggestedEmpty ?? "No rough nights for this slate yet."}
-              </p>
-            ) : (
-              <div
-                className="sc-picker__grid sc-picker__grid--suggested"
-                aria-label={dudHeading}
-              >
-                {extraSuggestedRows.map((row, index) => (
-                  <PlayerButton
-                    key={`dud-${row.id}`}
-                    player={row.player}
-                    currentId={currentId}
-                    usedLabel={usedLabels[row.id]}
-                    showPpg={false}
-                    showDepth={false}
-                    badge={row.badge}
-                    metaOverride={row.meta}
-                    live={row.live}
-                    dud
-                    highlighted={
-                      activeIndex ===
-                      (showSuggested ? suggestedRows.length : 0) + index
+        {showRecsSection ? (
+          <div
+            className={
+              showDudRecs
+                ? "sc-picker__suggested sc-picker__suggested--dud"
+                : "sc-picker__suggested"
+            }
+          >
+            <div className="sc-picker__suggested-head">
+              {hasRecToggle ? (
+                <div className="sc-look sc-picker__recs" role="group" aria-label="Recs">
+                  <button
+                    type="button"
+                    className={
+                      recsStrip === "standouts" ? "sc-chip is-on" : "sc-chip"
                     }
+                    aria-pressed={recsStrip === "standouts"}
+                    onClick={() => setRecsStrip("standouts")}
+                  >
+                    Standouts
+                  </button>
+                  <button
+                    type="button"
+                    className={
+                      recsStrip === "rough-night" ? "sc-chip is-on" : "sc-chip"
+                    }
+                    aria-pressed={recsStrip === "rough-night"}
+                    onClick={() => setRecsStrip("rough-night")}
+                  >
+                    Rough night
+                  </button>
+                </div>
+              ) : (
+                <p className="sc-picker__suggested-label">{recHeading}</p>
+              )}
+            </div>
+            {recLoading && recRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">Loading box scores…</p>
+            ) : recRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">{recEmpty}</p>
+            ) : (
+              <div
+                className="sc-picker__grid sc-picker__grid--suggested"
+                aria-label={recHeading}
+              >
+                {recRows.map((row, index) => (
+                  <PlayerButton
+                    key={`${showDudRecs ? "dud" : "sug"}-${row.id}`}
+                    player={row.player}
+                    currentId={currentId}
+                    usedLabel={usedLabels[row.id]}
+                    showPpg={false}
+                    showDepth={false}
+                    badge={row.badge}
+                    metaOverride={row.meta}
+                    live={row.live}
+                    deserving={!showDudRecs}
+                    dud={showDudRecs}
+                    highlighted={activeIndex === index}
                     onPick={handlePick}
                   />
                 ))}
@@ -583,7 +576,7 @@ export function PlayerPicker({
         ) : null}
         <div
           className={
-            showSuggested || showExtraSuggested
+            showSuggested
               ? "sc-picker__grid sc-picker__grid--rest"
               : "sc-picker__grid"
           }
@@ -599,9 +592,7 @@ export function PlayerPicker({
               ppgEmptyLabel={simple ? "No stats" : undefined}
               highlighted={
                 activeIndex ===
-                (showSuggested ? suggestedRows.length : 0) +
-                  (showExtraSuggested ? extraSuggestedRows.length : 0) +
-                  index
+                (showSuggested ? recRows.length : 0) + index
               }
               onPick={handlePick}
             />
@@ -609,9 +600,7 @@ export function PlayerPicker({
         </div>
         <div className="sc-picker__footer">
           <p className="sc-picker__count">
-            {restPlayers.length +
-              (showSuggested ? suggestedRows.length : 0) +
-              (showExtraSuggested ? extraSuggestedRows.length : 0)}{" "}
+            {restPlayers.length + (showSuggested ? recRows.length : 0)}{" "}
             {includeCoaches ? "people" : "players"}
           </p>
           <button

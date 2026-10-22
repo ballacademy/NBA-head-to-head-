@@ -580,6 +580,58 @@ export const fillStatCardFromStandout = (
   };
 };
 
+/** Brick / TO night — FG makes-attempts, volume 3s, turnovers, PTS. Not the standout set. */
+export const notableRoughNightLines = (
+  stats: LastGameStats,
+  _playerOrGroup?: NotableStatPosition,
+): StatCardLine[] => {
+  const pts = statCount(stats.pts);
+  const min = statCount(stats.min);
+  const tov = statCount(stats.tov);
+  const threeMakes = statCount(stats.three);
+  const threeAtt = statAttempts(stats.three);
+  const fgMakes = statCount(stats.fg);
+  const fgAtt = statAttempts(stats.fg);
+  const picks: NotablePick[] = [];
+  if (fgAtt > 0 || fgMakes > 0) {
+    picks.push({ key: "fg" });
+  }
+  if (threeMakes >= THREE_MIN_MAKES || threeAtt >= FG_MIN_ATTEMPTS) {
+    picks.push({ key: "three", label: "3PM", value: stats.three });
+  }
+  if (tov > 0) {
+    picks.push({ key: "tov" });
+  }
+  if (pts > 0) {
+    picks.push({ key: "pts" });
+  }
+  const showMin = min > 0 && (min < 30 || min >= 36);
+  const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
+  const picked = picks
+    .slice(0, room)
+    .map((item) => lineFromGame(item.key, stats, item));
+  if (showMin) {
+    picked.push(lineFromGame("min", stats));
+  }
+  const lines = picked.length ? picked : [lineFromGame("pts", stats)];
+  return ensureFgBeforeThree(lines);
+};
+
+export const fillStatCardFromRoughNight = (
+  draft: StatCardDraft,
+  game: LastGame | null,
+): StatCardDraft => {
+  if (!game) {
+    return draft;
+  }
+  return {
+    ...draft,
+    source: "last-game",
+    matchup: formatStatCardMatchup(game),
+    stats: notableRoughNightLines(game.stats, getPlayer(draft.playerId)),
+  };
+};
+
 const HIGH_FLOOR: Partial<Record<StatCardKey, number>> = {
   pts: 20,
   reb: 10,

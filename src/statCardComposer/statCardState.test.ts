@@ -35,6 +35,8 @@ import {
   fillStatCardFromPlayer,
   fillStatCardFromSeason,
   fillStatCardFromStandout,
+  fillStatCardFromRoughNight,
+  notableRoughNightLines,
   statCardFromCoverSlot,
   formatStatCardMatchup,
   keepMinLast,
@@ -686,5 +688,50 @@ describe("stat card composer", () => {
     const fitted = statCardRows(3, GRAPHIC_HEIGHT - STC_MATCHUP_H);
     expect(fitted[2]!.y + fitted[2]!.h).toBe(GRAPHIC_HEIGHT - STC_MATCHUP_H);
     expect(statCardRows(3)[2]!.h).toBeGreaterThan(fitted[2]!.h);
+  });
+
+  it("fills a rough night with poor shooting and turnovers, not the standout set", () => {
+    const dudBox = box({
+      pts: "8",
+      reb: "4",
+      ast: "5",
+      stl: "1",
+      blk: "0",
+      fg: "2-12",
+      three: "1-8",
+      tov: "6",
+      min: "32",
+    });
+    expect(
+      notableRoughNightLines(dudBox).map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["2-12 FG", "1-8 3PM", "6 TOV", "8 PTS"]);
+    expect(
+      notableStatCardLines(dudBox).map((line) => line.label),
+    ).not.toContain("FG");
+    const filled = fillStatCardFromRoughNight(
+      defaultStatCardDraft(),
+      gameFrom(dudBox),
+    );
+    expect(filled.stats.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "2-12 FG",
+      "1-8 3PM",
+      "6 TOV",
+      "8 PTS",
+    ]);
+    const fgIndex = filled.stats.findIndex((line) => line.key === "fg");
+    const threeIndex = filled.stats.findIndex((line) => line.key === "three");
+    expect(fgIndex).toBeGreaterThanOrEqual(0);
+    expect(threeIndex).toBeGreaterThan(fgIndex);
+    const bricks = notableRoughNightLines(
+      box({ pts: "8", fg: "2-12", three: "0-2", tov: "6", min: "28" }),
+    );
+    expect(bricks.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "2-12 FG",
+      "6 TOV",
+      "8 PTS",
+      "28 MIN",
+    ]);
   });
 });

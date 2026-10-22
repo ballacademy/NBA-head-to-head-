@@ -759,5 +759,26 @@ describe("night standouts", () => {
     expect(tatumRow?.badge).toMatch(/Bricks|Stinker/);
     expect(ranked.map((row) => row.athleteId)).not.toContain("4684208");
     expect(ranked.map((row) => row.athleteId)).not.toContain("1966");
+    const collapse = gameRow(
+      "1966",
+      "LeBron James",
+      {
+        pts: "8",
+        reb: "5",
+        ast: "4",
+        min: "32",
+        fg: "4-8",
+        three: "0-1",
+        ft: "0-0",
+        tov: "1",
+      },
+      1,
+    );
+    expect(isRoughNight(collapse.game.stats, usualLineFor("1966"), "1966")).toBe(
+      true,
+    );
+    const scored = rankNightDuds([brick, collapse]);
+    expect(scored[0]?.athleteId).toBe("3945274");
+    expect(scored.map((row) => row.athleteId)).toContain("1966");
   });
 });

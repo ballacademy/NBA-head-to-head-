@@ -1100,8 +1100,32 @@ describe("composer chrome", () => {
     );
     expect(statCardApp).toContain("completedNightRows");
     expect(statCardApp).toContain("fetchDudsInRange");
-    expect(statCardApp).toContain("extraSuggestedHeading=\"Rough night\"");
+    expect(statCardApp).toContain("extraSuggestedHeading");
+    expect(statCardApp).toContain('"Rough night"');
+    expect(statCardApp).toContain("fillStatCardFromRoughNight");
+    expect(statCardApp).toContain("fillStatCardFromGame(current, game)");
+    expect(statCardApp).not.toContain("filters=");
     expect(statCardApp).toContain("nightStandoutPickerRows(completedNightRows(rangeStandouts))");
+    const dataAt = statCardApp.indexOf("data=");
+    const onCardAt = statCardApp.indexOf("On-card stats");
+    const boardAt = statCardApp.indexOf("board=");
+    expect(dataAt).toBeGreaterThan(0);
+    expect(onCardAt).toBeGreaterThan(dataAt);
+    expect(onCardAt).toBeLessThan(boardAt);
+    const hudSlots = statCardApp.slice(onCardAt, boardAt);
+    expect(hudSlots).toContain("setStatCardLineKey");
+    expect(hudSlots).toContain("removeStatCardLine");
+    expect(hudSlots).toContain("addStatCardLine");
+    expect(hudSlots).not.toContain("fillStats");
+    expect(picker).toContain('aria-label="Recs"');
+    expect(picker).toContain("Standouts");
+    expect(picker).toContain("Rough night");
+    expect(picker).toContain('useState<"standouts" | "rough-night">');
+    expect(picker).not.toContain("showExtraSuggestedSection");
+    expect(sheet).toContain(".sc-picker__recs");
+    expect(sheet).not.toContain(
+      ".sc-picker:has(.sc-picker__suggested--dud) .sc-picker__suggested:not(.sc-picker__suggested--dud)",
+    );
     expect(coverApp).not.toContain("completedNightRows");
     expect(coverApp).not.toContain("fetchDudsInRange");
     expect(coverApp).not.toContain("extraSuggested");
