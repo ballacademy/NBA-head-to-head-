@@ -465,6 +465,17 @@
 
 .pk-ticket.is-on .pk-line {
   color: #fff;
+  opacity: 1;
+  font-weight: 900;
+}
+
+.pk-ticket.is-dim {
+  opacity: 0.4;
+}
+
+.pk-ticket.is-dim .pk-line {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .pk-ticket__row {

@@ -563,6 +563,7 @@ function TicketField({
   const juice = showJuice ? picksJuiceOrMove(game, side) : "";
   const ml = showMoneyline ? picksMl(game, side) : "";
   const picked = game.pick === side;
+  const muted = Boolean(game.pick && game.pick !== side);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(display);
 
@@ -594,7 +595,15 @@ function TicketField({
   };
 
   return (
-    <div className={picked ? "pk-ticket is-on" : "pk-ticket"}>
+    <div
+      className={[
+        "pk-ticket",
+        picked ? "is-on" : "",
+        muted ? "is-dim" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="pk-ticket__row">
         {abbrev ? <span className="pk-ticket__id">{abbrev}</span> : null}
         <input

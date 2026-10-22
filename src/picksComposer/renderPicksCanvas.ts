@@ -374,13 +374,15 @@ export const renderPicksCanvas = async (
   ) => {
     const teamId = side === "away" ? game.awayId : game.homeId;
     const line = formatPicksLine(picksLineForSide(game.line, side));
+    const muted = Boolean(game.pick && game.pick !== side);
     context.save();
+    context.globalAlpha = muted ? 0.4 : 1;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillStyle = "#fff";
+    context.fillStyle = muted ? "rgba(255,255,255,0.72)" : "#fff";
     const ml = input.showMoneyline ? picksMl(game, side) : "";
     const body = [teamId, line, ml].filter(Boolean).join(" ");
-    context.font = `900 ${fill.line * s}px ${POSTER_FONT}`;
+    context.font = `${muted ? 700 : 900} ${fill.line * s}px ${POSTER_FONT}`;
     context.fillText(body || "—", x, y);
     const juice = input.showJuice ? picksJuiceOrMove(game, side) : "";
     if (juice) {
