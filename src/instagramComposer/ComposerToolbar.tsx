@@ -20,6 +20,7 @@ export function ComposerToolbar({
   actions,
 }: ComposerToolbarProps) {
   return (
+    <>
     <header className="sc-toolbar">
       <div className="sc-toolbar__body">
         <div className="sc-toolbar__pinned">
@@ -83,14 +84,15 @@ export function ComposerToolbar({
           ) : null}
         </div>
       </div>
-      <div
-        className="sc-toolbar__row sc-toolbar__row--actions sc-toolbar__actions"
-        data-slot="Export"
-        role="group"
-        aria-label="Export"
-      >
-        {actions}
-      </div>
     </header>
+    <div
+      className="sc-toolbar__row sc-toolbar__row--actions sc-toolbar__actions"
+      data-slot="Export"
+      role="group"
+      aria-label="Export"
+    >
+      {actions}
+    </div>
+    </>
   );
 }

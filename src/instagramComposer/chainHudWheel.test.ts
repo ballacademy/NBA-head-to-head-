@@ -16,12 +16,15 @@ describe("chainHudWheel", () => {
     );
     expect(source).toContain("document.scrollingElement");
     expect(source).toContain("page.scrollBy");
-    expect(source).toContain(".sc-picker, dialog, .sc-modal");
+    expect(source).toContain(".sc-picker, dialog, .sc-modal, .sc-hud-select__menu");
+    expect(source).toContain("syncComposerVisualViewport");
+    expect(source).toContain("visualViewport");
     const hub = readFileSync(
       join(root, "instagramComposer/ComposerHub.tsx"),
       "utf8",
     );
     expect(hub).toContain("chainHudWheel(root)");
+    expect(hub).toContain("syncComposerVisualViewport()");
     expect(hub).toContain('data-scroller="page"');
   });
 

@@ -3,11 +3,12 @@
 .sc-root {
   min-height: 100vh;
   min-height: 100dvh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   overflow-x: clip;
   overflow-y: visible;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(255, 255, 255, 0.05), transparent 55%),
     #101114;
@@ -200,7 +201,8 @@
 }
 
 .sc-root.is-hud-focus .sc-tabs,
-.sc-root.is-hud-focus .sc-toolbar {
+.sc-root.is-hud-focus .sc-toolbar,
+.sc-root.is-hud-focus .sc-toolbar__row--actions {
   display: none;
 }
 
@@ -576,7 +578,9 @@ body:has(.sc-root) {
   overflow-x: clip;
   overflow-y: auto;
   overscroll-behavior-x: none;
-  scroll-padding-bottom: 72px;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
 .sc-root main.sc-stage,
@@ -1314,8 +1318,10 @@ main.sc-stage {
   margin: 0;
   padding: 6px;
   list-style: none;
-  max-height: min(50vh, 320px);
+  max-height: min(50dvh, 320px);
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: #16181d;
@@ -2166,11 +2172,19 @@ label.sc-chip {
 }
 
 @media (max-width: 900px) {
+  .sc-root {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sc-root.is-hud-focus {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   .sc-tabs {
     flex-wrap: wrap;
     overflow: visible;
     gap: 8px 12px;
-    padding: 8px 12px 0;
+    padding: max(8px, env(safe-area-inset-top, 0px)) 12px 0;
   }
 
   .sc-tabs__group {
@@ -2203,6 +2217,7 @@ label.sc-chip {
     max-height: none;
     overflow: visible;
     gap: 8px 12px;
+    backdrop-filter: none;
   }
 
   .sc-toolbar__body {
@@ -2213,8 +2228,33 @@ label.sc-chip {
 
   .sc-toolbar__row--actions {
     flex: 0 0 auto;
-    position: sticky;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    position: fixed;
+    left: 0;
+    right: 0;
     bottom: 0;
+    z-index: 25;
+    width: 100%;
+    margin: 0;
+    padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(16, 17, 20, 0.96);
+    box-shadow: 0 -12px 18px -10px rgba(0, 0, 0, 0.65);
+  }
+
+  .sc-toolbar__actions .sc-btn {
+    flex: 0 0 auto;
+  }
+
+  .sc-toolbar__actions .sc-btn--primary {
+    order: -1;
+    margin-left: 0;
+    position: sticky;
+    left: 0;
+    z-index: 1;
   }
 
   .sc-toolbar__row--primary {
@@ -2249,7 +2289,9 @@ label.sc-chip {
   .sc-field select,
   .sc-look select,
   .sc-btn,
-  .sc-stat-slot__remove {
+  .sc-stat-slot__remove,
+  .sc-hud-select__trigger,
+  .sc-hud-select__option {
     height: 44px;
     min-height: 44px;
     font-size: 16px;
@@ -2274,7 +2316,7 @@ label.sc-chip {
   .sc-picker-scrim {
     place-items: stretch;
     padding: 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: var(--vvh, 100dvh);
   }
 
   .sc-picker {
@@ -2282,8 +2324,16 @@ label.sc-chip {
     max-width: none;
     height: 100dvh;
     max-height: 100dvh;
+    height: var(--vvh, 100dvh);
+    max-height: var(--vvh, 100dvh);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     border-radius: 0;
     border: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .sc-picker--compact {
@@ -2323,9 +2373,28 @@ label.sc-chip {
     align-items: center;
   }
 
-  .sc-picker--players:not(.is-filters-open):not(:has(.sc-picker__filters-slot.is-hint))
-    .sc-picker__filters-slot {
+  .sc-picker--players:not(.is-filters-open) .sc-picker__filters-slot {
     display: none;
+  }
+
+  .sc-picker__suggested {
+    flex: 0 0 auto;
+    min-height: 0;
+    max-height: min(34dvh, 280px);
+    overflow: auto;
+  }
+
+  .sc-picker__grid,
+  .sc-picker__grid--rest {
+    flex: 0 0 auto;
+    min-height: 160px;
+    overflow: visible;
+  }
+
+  .sc-picker__grid--suggested {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
   }
 
   .sc-picker--compact {
@@ -2351,7 +2420,7 @@ label.sc-chip {
   }
 
   .sc-picker__grid--suggested {
-    overflow: auto;
+    overflow: visible;
     min-height: 0;
     padding: 0;
   }
@@ -2388,7 +2457,11 @@ label.sc-chip {
   }
 
   .sc-picker__footer {
-    padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: #17181d;
+    padding: 10px 12px 12px;
   }
 
   .sc-picker__footer .sc-btn {

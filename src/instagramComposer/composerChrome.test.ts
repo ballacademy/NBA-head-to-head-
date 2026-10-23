@@ -105,6 +105,7 @@ const composerSaves = readFileSync(
   join(root, "instagramComposer/ComposerSaves.tsx"),
   "utf8",
 );
+const indexHtml = readFileSync(join(root, "../index.html"), "utf8");
 
 describe("composer chrome", () => {
   it("lets the player list shrink and scroll inside the picker sheet", () => {
@@ -129,6 +130,15 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(
       /\.sc-picker__suggested[\s\S]*?overflow:\s*hidden/,
     );
+    expect(sheet).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.sc-picker \{[\s\S]*?overflow:\s*auto/,
+    );
+    expect(sheet).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.sc-picker__suggested \{[\s\S]*?max-height:\s*min\(34dvh/,
+    );
+    expect(sheet).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.sc-picker__grid--rest \{[\s\S]*?min-height:\s*160px/,
+    );
     expect(sheet).toContain(".sc-team__badge");
     expect(sheet).toContain(".sc-toolbar__scroll");
     expect(sheet).toContain("position: sticky");
@@ -144,9 +154,15 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[^}]*position:\s*sticky/,
     );
+    expect(sheet).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.sc-toolbar__row--actions \{[\s\S]*?position:\s*fixed/,
+    );
     expect(sheet).not.toMatch(/height:\s*min\(52vh/);
     expect(sheet).toMatch(/html:has\(\.sc-root\)[\s\S]{0,180}?overflow-y:\s*auto/);
     expect(sheet).toContain("touch-action: none");
+    expect(sheet).toMatch(/\.sc-root \{[^}]*touch-action:\s*pan-y pinch-zoom/);
+    expect(sheet).toContain("var(--vvh, 100dvh)");
+    expect(indexHtml).toContain("viewport-fit=cover");
     expect(sheet).toMatch(/\.sc-range \{[^}]*overflow:\s*clip/);
     expect(sheet).toContain(".sc-toolbar__body");
     expect(sheet).not.toContain(".sc-stage__board .pod-photo__tools");
@@ -1079,6 +1095,8 @@ describe("composer chrome", () => {
     expect(hudSelect).toContain("sc-hud-select__trigger");
     expect(hudSelect).toContain("sc-hud-select__value");
     expect(hudSelect).toContain("sc-hud-select__menu");
+    expect(hudSelect).toContain("visualViewport");
+    expect(hudSelect).toContain("maxHeight");
     expect(sheet).toContain(".sc-hud-select__menu");
     const totwHud = readFileSync(
       join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),

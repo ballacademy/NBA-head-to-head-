@@ -41,7 +41,7 @@ import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
 import { hydrateJsonStorage } from "../lib/browserStorage";
-import { chainHudWheel } from "./chainHudWheel";
+import { chainHudWheel, syncComposerVisualViewport } from "./chainHudWheel";
 import "./composerSlotSwap.css";
 import "../standingsComposer/standingsComposer.css";
 import "../tierListComposer/tierListComposer.css";
@@ -95,7 +95,12 @@ export function ComposerHub() {
     if (!(root instanceof HTMLElement)) {
       return;
     }
-    return chainHudWheel(root);
+    const stopWheel = chainHudWheel(root);
+    const stopViewport = syncComposerVisualViewport();
+    return () => {
+      stopWheel();
+      stopViewport();
+    };
   }, [persistReady, mode]);
 
   const select = useCallback((next: ComposerMode) => {
@@ -167,7 +172,7 @@ export function ComposerHub() {
         const target = event.target;
         if (
           target instanceof Element &&
-          target.closest(".sc-tabs, .sc-toolbar, .sc-toast")
+          target.closest(".sc-tabs, .sc-toolbar, .sc-toolbar__row--actions, .sc-toast")
         ) {
           return;
         }

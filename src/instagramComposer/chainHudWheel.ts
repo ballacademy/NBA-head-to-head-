@@ -4,13 +4,14 @@ const HUD_TRAP = [
   ".sc-toolbar__body",
   ".sc-toolbar__scroll",
   ".sc-toolbar__pinned",
+  ".sc-toolbar__row--actions",
   ".sc-grade",
   ".sc-field",
   ".sc-range",
   ".sc-stage",
 ].join(", ");
 
-const KEEP_NATIVE = ".sc-picker, dialog, .sc-modal";
+const KEEP_NATIVE = ".sc-picker, dialog, .sc-modal, .sc-hud-select__menu";
 
 const canScrollY = (node: HTMLElement) =>
   node.scrollHeight > node.clientHeight + 1;
@@ -57,6 +58,27 @@ const nearestWorkingScroller = (
     node = node.parentElement;
   }
   return null;
+};
+
+/** Keep composer chrome sized to the visible viewport, including iOS keyboard. */
+export const syncComposerVisualViewport = () => {
+  const root = document.documentElement;
+  const apply = () => {
+    const viewport = window.visualViewport;
+    const height = Math.round(viewport?.height ?? window.innerHeight);
+    const offsetTop = Math.round(viewport?.offsetTop ?? 0);
+    root.style.setProperty("--vvh", `${height}px`);
+    root.style.setProperty("--vv-top", `${offsetTop}px`);
+  };
+  apply();
+  window.visualViewport?.addEventListener("resize", apply);
+  window.visualViewport?.addEventListener("scroll", apply);
+  window.addEventListener("orientationchange", apply);
+  return () => {
+    window.visualViewport?.removeEventListener("resize", apply);
+    window.visualViewport?.removeEventListener("scroll", apply);
+    window.removeEventListener("orientationchange", apply);
+  };
 };
 
 /** Nested overflow:auto / hidden HUD panels eat wheel even when they cannot scroll. */

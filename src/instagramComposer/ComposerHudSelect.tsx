@@ -30,6 +30,7 @@ export function ComposerHudSelect<T extends string>({
     top: number;
     left: number;
     minWidth: number;
+    maxHeight: number;
   } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -59,9 +60,13 @@ export function ComposerHudSelect<T extends string>({
       Math.min(rect.left, maxLeft),
     );
     let top = rect.bottom + MENU_GAP;
+    const optionHeight = window.matchMedia("(max-width: 900px)").matches
+      ? 44
+      : 36;
     const estimatedHeight = Math.min(
       320,
-      12 + options.length * 36,
+      12 + options.length * optionHeight,
+      viewportHeight - MENU_MARGIN * 2,
     );
     if (top + estimatedHeight > viewportTop + viewportHeight - MENU_MARGIN) {
       top = Math.max(
@@ -69,7 +74,12 @@ export function ComposerHudSelect<T extends string>({
         rect.top - estimatedHeight - MENU_GAP,
       );
     }
-    setMenuStyle({ top, left, minWidth });
+    setMenuStyle({
+      top,
+      left,
+      minWidth,
+      maxHeight: estimatedHeight,
+    });
   };
 
   useLayoutEffect(() => {
@@ -84,9 +94,13 @@ export function ComposerHudSelect<T extends string>({
     const reposition = () => updateMenuPosition();
     window.addEventListener("resize", reposition);
     window.addEventListener("scroll", reposition, true);
+    window.visualViewport?.addEventListener("resize", reposition);
+    window.visualViewport?.addEventListener("scroll", reposition);
     return () => {
       window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", reposition, true);
+      window.visualViewport?.removeEventListener("resize", reposition);
+      window.visualViewport?.removeEventListener("scroll", reposition);
     };
   }, [listId, open, options.length]);
 
@@ -142,6 +156,7 @@ export function ComposerHudSelect<T extends string>({
               top: menuStyle.top,
               left: menuStyle.left,
               minWidth: menuStyle.minWidth,
+              maxHeight: menuStyle.maxHeight,
             }}
           >
             {options.map((option) => (

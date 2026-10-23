@@ -338,7 +338,14 @@ export function PlayerPicker({
                 lockedTeam ? "Search this roster…" : "Name or team (LAL, Curry…)"
               }
               enterKeyHint="search"
+              autoComplete="off"
               onChange={(event) => setQuery(event.target.value)}
+              onFocus={(event) =>
+                event.currentTarget.scrollIntoView({
+                  block: "nearest",
+                  inline: "nearest",
+                })
+              }
               onKeyDown={onSearchKeyDown}
             />
           </label>

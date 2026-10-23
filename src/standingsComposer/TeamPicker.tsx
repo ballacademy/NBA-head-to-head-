@@ -109,7 +109,14 @@ export function TeamPicker({
               value={query}
               placeholder="Name or abbrev (LAL, Celtics…)"
               enterKeyHint="search"
+              autoComplete="off"
               aria-label="Search teams"
+              onFocus={(event) =>
+                event.currentTarget.scrollIntoView({
+                  block: "nearest",
+                  inline: "nearest",
+                })
+              }
               onChange={(event) => {
                 setQuery(event.target.value);
                 setActiveIndex(0);
