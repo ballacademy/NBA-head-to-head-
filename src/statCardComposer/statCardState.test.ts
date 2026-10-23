@@ -816,5 +816,37 @@ describe("stat card composer", () => {
         (line) => `${line.value} ${line.label}`,
       ),
     ).toEqual(["2 PTS", "1-10 FG", "5 TOV", "24 MIN"]);
+    const gillespieBox = box({
+      pts: "0",
+      reb: "2",
+      ast: "3",
+      stl: "4",
+      fg: "0-8",
+      three: "0-5",
+      tov: "4",
+      min: "21",
+    });
+    const leftover = {
+      ...defaultStatCardDraft(),
+      stats: [
+        { key: "stl" as const, label: "STL", value: "4" },
+        { key: "min" as const, label: "MIN", value: "21" },
+      ],
+    };
+    expect(
+      fillStatCardFromGame(leftover, gameFrom(gillespieBox)).stats.map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["4 STL", "21 MIN"]);
+    expect(
+      notableRoughNightLines(gillespieBox).map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["0 PTS", "0-8 FG", "4 TOV", "21 MIN"]);
+    expect(
+      fillStatCardFromRoughNight(leftover, gameFrom(gillespieBox)).stats.map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["0 PTS", "0-8 FG", "4 TOV", "21 MIN"]);
   });
 });

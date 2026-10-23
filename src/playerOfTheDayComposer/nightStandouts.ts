@@ -42,7 +42,7 @@ export interface NightStandout {
 }
 
 interface EspnCompetitor {
-  score?: string | { displayValue?: string };
+  score?: string | { displayValue?: string; value?: number };
   winner?: boolean;
   homeAway?: string;
   team?: { abbreviation?: string; displayName?: string; id?: string };

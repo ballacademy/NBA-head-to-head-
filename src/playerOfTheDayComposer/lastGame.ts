@@ -227,10 +227,11 @@ export const sameNbaClub = (left: unknown, right: unknown) => {
     if (value == null || String(value).trim() === "") {
       return "";
     }
+    const token = String(value);
     return (
-      resolveTeamId(String(value), null, value) ||
-      resolveTeamId(null, null, value) ||
-      String(value).trim().toUpperCase()
+      resolveTeamId(token, null, token) ||
+      resolveTeamId(null, null, token) ||
+      token.trim().toUpperCase()
     );
   };
   const a = key(left);

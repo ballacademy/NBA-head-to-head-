@@ -234,19 +234,20 @@ export function StatCardComposerApp() {
     next: StatCardDraft,
     recs?: "standouts" | "rough-night",
   ) => {
-    if (!next.playerId) {
+    const playerId = next.playerId;
+    if (!playerId) {
       return;
     }
     const seq = fillSeq.current;
     try {
-      const recent = await fetchRecentGames(next.playerId, statsSample);
+      const recent = await fetchRecentGames(playerId, statsSample);
       const inRange = gamesInInclusiveRange(recent, range.from, range.to);
       const game =
         inRange.length > 1
           ? aggregateLastGames(inRange)
           : inRange[0] ??
             (await fetchLastGame(
-              next.playerId,
+              playerId,
               statsSample,
               next.gameDate || range.to,
             ));
@@ -254,15 +255,15 @@ export function StatCardComposerApp() {
         return;
       }
       lastGameRef.current = game;
-      const usual = usualLineFor(next.playerId);
+      const usual = usualLineFor(playerId);
       setDraft((current) => {
-        if (seq !== fillSeq.current || current.playerId !== next.playerId) {
+        if (seq !== fillSeq.current || current.playerId !== playerId) {
           return current;
         }
         const useDud =
           recs === "rough-night" ||
           (recs !== "standouts" &&
-            isRoughNight(game.stats, usual, next.playerId));
+            isRoughNight(game.stats, usual, playerId));
         const filled = useDud
           ? fillStatCardFromRoughNight(current, game)
           : fillStatCardFromStandout(current, game);
@@ -532,11 +533,18 @@ export function StatCardComposerApp() {
             <button
               type="button"
               className="sc-chip sc-stat-slots__add"
-              disabled={draft.stats.length >= STC_STAT_MAX}
+              disabled={draft.stats.length >= STC_STAT_MAX || !nextLine}
               aria-label={nextLine ? `Add ${nextLine.label} slot` : "8 stats"}
-              onClick={() =>
-                commitHudStats(addStatCardLine(draftRef.current.stats))
-              }
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const current = draftRef.current;
+                const stats = addStatCardLine(current.stats);
+                if (stats.length === current.stats.length) {
+                  return;
+                }
+                commitHudStats(stats);
+              }}
             >
               {nextLine ? `Add ${nextLine.label}` : "8 stats"}
             </button>
