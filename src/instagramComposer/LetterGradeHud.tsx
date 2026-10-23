@@ -4,6 +4,7 @@ import {
   clipLetterGradeReason,
   type LetterGrade,
 } from "../lib/letterGrade";
+import { ComposerHudSelect } from "./ComposerHudSelect";
 import "./letterGrade.css";
 
 interface LetterGradeHudProps {
@@ -38,20 +39,16 @@ export function LetterGradeHud({
         </button>
         {on ? (
           <>
-            <div className="lg-hud__letters" role="group" aria-label="Letter grade pick">
-              {LETTER_GRADES.map((letter) => (
-                <button
-                  key={letter}
-                  type="button"
-                  className={letter === grade ? "sc-chip is-on" : "sc-chip"}
-                  aria-pressed={letter === grade}
-                  aria-label={`Letter grade ${letter}`}
-                  onClick={() => onGrade(letter)}
-                >
-                  {letter}
-                </button>
-              ))}
-            </div>
+            <ComposerHudSelect
+              label="Mark"
+              ariaLabel="Letter grade pick"
+              value={grade}
+              options={LETTER_GRADES.map((letter) => ({
+                value: letter,
+                label: letter,
+              }))}
+              onChange={onGrade}
+            />
             <input
               value={reason}
               maxLength={LETTER_GRADE_REASON_MAX}

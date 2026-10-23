@@ -2,6 +2,7 @@ import {
   useComposerNameStyle,
   type ComposerNameStyle,
 } from "./composerNameStyle";
+import { ComposerHudSelect } from "./ComposerHudSelect";
 
 const OPTIONS: Array<{ value: ComposerNameStyle; label: string }> = [
   { value: "last", label: "Last" },
@@ -12,19 +13,12 @@ const OPTIONS: Array<{ value: ComposerNameStyle; label: string }> = [
 export function ComposerNameStyleToggle() {
   const [style, setStyle] = useComposerNameStyle();
   return (
-    <div className="sc-look" role="group" aria-label="Name style">
-      <span className="sc-look__label">Names</span>
-      {OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          className={style === option.value ? "sc-chip is-on" : "sc-chip"}
-          aria-pressed={style === option.value}
-          onClick={() => setStyle(option.value)}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+    <ComposerHudSelect
+      label="Names"
+      ariaLabel="Name style"
+      value={style}
+      options={OPTIONS}
+      onChange={setStyle}
+    />
   );
 }

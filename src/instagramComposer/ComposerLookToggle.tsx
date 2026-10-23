@@ -1,4 +1,5 @@
 import type { ComposerLook } from "./composerLook";
+import { ComposerHudSelect } from "./ComposerHudSelect";
 
 interface ComposerLookToggleProps {
   look: ComposerLook;
@@ -13,19 +14,12 @@ const OPTIONS: Array<{ value: ComposerLook; label: string }> = [
 
 export function ComposerLookToggle({ look, onChange }: ComposerLookToggleProps) {
   return (
-    <div className="sc-look" role="group" aria-label="Frame color">
-      <span className="sc-look__label">Frames</span>
-      {OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          className={look === option.value ? "sc-chip is-on" : "sc-chip"}
-          aria-pressed={look === option.value}
-          onClick={() => onChange(option.value)}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+    <ComposerHudSelect
+      label="Frames"
+      ariaLabel="Frame color"
+      value={look}
+      options={OPTIONS}
+      onChange={onChange}
+    />
   );
 }

@@ -14,7 +14,11 @@ export const isComposerTypingTarget = (target: EventTarget | null) => {
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
     return true;
   }
-  return Boolean(el.closest("input, textarea, select, [contenteditable='true']"));
+  return Boolean(
+    el.closest(
+      "input, textarea, select, [contenteditable='true'], .sc-hud-select, .sc-hud-select__menu",
+    ),
+  );
 };
 
 export const composerHotkeyAction = (event: KeyboardEvent) => {

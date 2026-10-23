@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { ComposerHudSelect } from "../instagramComposer/ComposerHudSelect";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -417,35 +418,32 @@ export function PyramidComposerApp() {
             Fill ranking
           </button>
         </div>
-        <div className="sc-look" role="group" aria-label="Pyramid rows">
-          <span className="sc-look__label">Rows</span>
-          {Array.from(
+        <ComposerHudSelect
+          label="Rows"
+          ariaLabel="Pyramid rows"
+          value={String(rows)}
+          options={Array.from(
             { length: PYR_MAX_ROWS - PYR_MIN_ROWS + 1 },
-            (_, index) => PYR_MIN_ROWS + index,
-          ).map((count) => (
-            <button
-              key={`pyr-rows-${count}`}
-              type="button"
-              className={rows === count ? "sc-chip is-on" : "sc-chip"}
-              aria-pressed={rows === count}
-              onClick={() => {
-                if (count === rows) {
-                  return;
-                }
-                push({ slots, rows });
-                setRows(count);
-                setSlots((current) => resizePyramidSlots(current, count));
-                setRowLabels((current) => parsePyramidRowLabels(current, count));
-                setActiveIndex(null);
-                setStatus(
-                  `${count} rows · ${pyramidSlotCount(count)} photo squares.`,
-                );
-              }}
-            >
-              {count}
-            </button>
-          ))}
-        </div>
+            (_, index) => {
+              const count = PYR_MIN_ROWS + index;
+              return { value: String(count), label: String(count) };
+            },
+          )}
+          onChange={(next) => {
+            const count = Number(next);
+            if (count === rows) {
+              return;
+            }
+            push({ slots, rows });
+            setRows(count);
+            setSlots((current) => resizePyramidSlots(current, count));
+            setRowLabels((current) => parsePyramidRowLabels(current, count));
+            setActiveIndex(null);
+            setStatus(
+              `${count} rows · ${pyramidSlotCount(count)} photo squares.`,
+            );
+          }}
+        />
         {Array.from({ length: rows }, (_, index) => (
           <label key={`pyr-label-${index}`} className="sc-field">
             Row {index + 1}

@@ -17,7 +17,7 @@ import {
   useComposerLook,
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -78,6 +78,7 @@ export function ShotChartComposerApp() {
   const { range, setRange } = useComposerDateRange();
   const { push, pop, canUndo } = useComposerUndo<ShotChartDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
+  const fillSeq = useRef(0);
 
   useEffect(() => {
     document.title = "Shot chart graphic";
@@ -101,6 +102,7 @@ export function ShotChartComposerApp() {
       setStatus("Pick a player first.");
       return;
     }
+    const seq = ++fillSeq.current;
     setFilling(true);
     setStatus("Loading shots…");
     try {
@@ -114,6 +116,9 @@ export function ShotChartComposerApp() {
           fetchShotChartForGame(game.eventId, next.playerId),
         ),
       );
+      if (seq !== fillSeq.current) {
+        return;
+      }
       const shots = batches.flat();
       const makes = shots.filter((shot) => shot.made).length;
       const label =
@@ -134,9 +139,20 @@ export function ShotChartComposerApp() {
           : "No shot locations for that window.",
       );
     } finally {
-      setFilling(false);
+      if (seq === fillSeq.current) {
+        setFilling(false);
+      }
     }
   };
+
+  useEffect(() => {
+    if (!hydrated || !draft.playerId || draft.shots.length > 0) {
+      return;
+    }
+    void fillShots(draft);
+    // Carry an empty shot chart onto the current player once, not on every edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
   const pickPlayer = (playerId: string) => {
     const player = getPlayer(playerId);
@@ -252,11 +268,13 @@ export function ShotChartComposerApp() {
                 fillLabel="Fill shots"
                 onChange={(next) => {
                   setRange(next);
-                  setDraft((current) => ({
-                    ...current,
+                  const updated = {
+                    ...draft,
                     from: next.from,
                     to: next.to,
-                  }));
+                  };
+                  setDraft(updated);
+                  void fillShots(updated);
                 }}
                 onFill={() => void fillShots()}
               />
@@ -408,12 +426,27 @@ export function ShotChartComposerApp() {
                 void (async () => {
                   setExporting(true);
                   try {
+                    const feed = exportFilenameFromTitle(
+                      draft.title,
+                      "shot-chart",
+                    );
                     await downloadExportPack(
                       () =>
                         renderShotChartCanvas({ ...draft, look, purpleFlair }, 2),
-                      exportFilenameFromTitle(draft.title, "shot-chart"),
+                      feed,
+                      [
+                        {
+                          filename: storyFilename(feed),
+                          render: () =>
+                            renderShotChartCanvas(
+                              { ...draft, look, purpleFlair, story: true },
+                              2,
+                            ),
+                        },
+                      ],
+                      { letterbox: false },
                     );
-                    setStatus("Pack download started (4:5 + 9:16).");
+                    setStatus("Pack download started (4:5 + 9:16 + 1:1).");
                   } finally {
                     setExporting(false);
                   }

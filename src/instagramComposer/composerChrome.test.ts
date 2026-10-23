@@ -423,6 +423,12 @@ describe("composer chrome", () => {
     expect(playInApp).toContain("applyLivePlayInScores");
     expect(rankedExport).not.toContain("toStoryCanvas");
     expect(potdApp).toContain("Export pack");
+    expect(
+      readFileSync(
+        join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),
+        "utf8",
+      ),
+    ).toContain("Export pack");
     expect(potdApp).toContain("renderPotdLeaderboardCanvas");
     expect(potdApp).toContain('aria-label="Fill players from this night’s best lines"');
     expect(potdApp).toContain('aria-label={`${count} players`}');
@@ -754,7 +760,8 @@ describe("composer chrome", () => {
     expect(rankedApp).toContain("parsePositionLabels(undefined");
     expect(coverApp).toContain("ComposerDateRange");
     expect(statCardApp).toContain("ComposerDateRange");
-    expect(rankedApp).toContain("-man lineup");
+    expect(rankedApp).toContain("ComposerHudSelect");
+    expect(rankedApp).toContain("Lineup size");
     expect(rankedApp).toContain("RANKED_LINEUP_STRIP_MAX");
     expect(plotApp).toContain("togglePlotId");
     expect(plotApp).toContain("highlightedIds");
@@ -1049,6 +1056,52 @@ describe("composer chrome", () => {
     expect(photo).toContain("ArrowLeft");
     expect(ba).toContain("Top left");
     expect(ba).toContain("Bottom right");
+    expect(ba).toContain("ComposerHudSelect");
+    const lookToggle = readFileSync(
+      join(root, "instagramComposer/ComposerLookToggle.tsx"),
+      "utf8",
+    );
+    const namesToggle = readFileSync(
+      join(root, "instagramComposer/ComposerNameStyleToggle.tsx"),
+      "utf8",
+    );
+    const hudSelect = readFileSync(
+      join(root, "instagramComposer/ComposerHudSelect.tsx"),
+      "utf8",
+    );
+    expect(lookToggle).toContain("ComposerHudSelect");
+    expect(lookToggle).toContain("Frames");
+    expect(lookToggle).toContain("White");
+    expect(lookToggle).toContain("Black");
+    expect(lookToggle).toContain("None");
+    expect(lookToggle).not.toContain("aria-pressed");
+    expect(namesToggle).toContain("ComposerHudSelect");
+    expect(hudSelect).toContain("sc-hud-select__trigger");
+    expect(hudSelect).toContain("sc-hud-select__value");
+    expect(hudSelect).toContain("sc-hud-select__menu");
+    expect(sheet).toContain(".sc-hud-select__menu");
+    const totwHud = readFileSync(
+      join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),
+      "utf8",
+    );
+    const totwPlusHud = readFileSync(
+      join(root, "teamOfTheWeekPlusComposer/TeamOfTheWeekPlusComposerApp.tsx"),
+      "utf8",
+    );
+    const shotHud = readFileSync(
+      join(root, "shotChartComposer/ShotChartComposerApp.tsx"),
+      "utf8",
+    );
+    expect(totwHud).toContain("Export pack");
+    expect(totwPlusHud).toContain("Export pack");
+    expect(shotHud).toContain("story: true");
+    expect(shotHud).toContain("{ letterbox: false }");
+    const hotkeys = readFileSync(
+      join(root, "instagramComposer/composerHotkeys.ts"),
+      "utf8",
+    );
+    expect(hotkeys).toContain(".sc-hud-select");
+    expect(hotkeys).toContain(".sc-hud-select__menu");
     expect(totwApp).toContain("nextEmptySlotIndex");
     expect(totwApp).toContain("confirmBlankPost");
     expect(totwApp).toContain("showComposerToast");

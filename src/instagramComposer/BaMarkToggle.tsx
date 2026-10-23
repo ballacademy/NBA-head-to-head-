@@ -3,50 +3,43 @@ import {
   useComposerBaCorner,
   type ComposerBaCorner,
 } from "./composerBaCorner";
+import { ComposerHudSelect } from "./ComposerHudSelect";
 
 interface BaMarkToggleProps {
   on: boolean;
   onChange: (on: boolean) => void;
 }
 
-const CORNERS: Array<{ id: ComposerBaCorner; label: string }> = [
-  { id: "top-left", label: "Top left" },
-  { id: "top-right", label: "Top right" },
-  { id: "bottom-right", label: "Bottom right" },
+type BaMarkChoice = "off" | ComposerBaCorner;
+
+const OPTIONS: Array<{ value: BaMarkChoice; label: string }> = [
+  { value: "off", label: "Off" },
+  { value: "top-left", label: "Top left" },
+  { value: "top-right", label: "Top right" },
+  { value: "bottom-right", label: "Bottom right" },
 ];
 
 export function BaMarkToggle({ on, onChange }: BaMarkToggleProps) {
   const [corner, setCorner] = useComposerBaCorner();
+  const value: BaMarkChoice = on ? corner : "off";
   return (
-    <div className="sc-look" role="group" aria-label="BA mark">
-      <span className="sc-look__label">BA mark</span>
-      <button
-        type="button"
-        className={on ? "sc-chip is-on" : "sc-chip"}
-        aria-pressed={on}
-        aria-label="BA mark"
-        onClick={() => {
-          const next = !on;
-          writeLastShowBa(next);
-          onChange(next);
-        }}
-      >
-        {on ? "On" : "Off"}
-      </button>
-      {on
-        ? CORNERS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={corner === item.id ? "sc-chip is-on" : "sc-chip"}
-              aria-pressed={corner === item.id}
-              aria-label={`BA ${item.label}`}
-              onClick={() => setCorner(item.id)}
-            >
-              {item.label}
-            </button>
-          ))
-        : null}
-    </div>
+    <ComposerHudSelect
+      label="BA mark"
+      ariaLabel="BA mark"
+      value={value}
+      options={OPTIONS}
+      onChange={(next) => {
+        if (next === "off") {
+          writeLastShowBa(false);
+          onChange(false);
+          return;
+        }
+        setCorner(next);
+        if (!on) {
+          writeLastShowBa(true);
+          onChange(true);
+        }
+      }}
+    />
   );
 }

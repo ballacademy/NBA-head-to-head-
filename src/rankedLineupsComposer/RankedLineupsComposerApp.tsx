@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { ComposerHudSelect } from "../instagramComposer/ComposerHudSelect";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { StripStatHud } from "../instagramComposer/StripStatHud";
@@ -698,42 +699,37 @@ export function RankedLineupsComposerApp({
         </label>
         </>
         )}
-        <div className="sc-look" role="group" aria-label="Lineup size">
-          <span className="sc-look__label">Players</span>
-          {Array.from(
+        <ComposerHudSelect
+          label="Players"
+          ariaLabel="Lineup size"
+          value={String(strips.length)}
+          options={Array.from(
             { length: RANKED_LINEUP_STRIP_MAX - RANKED_LINEUP_STRIP_MIN + 1 },
-            (_, offset) => RANKED_LINEUP_STRIP_MIN + offset,
-          ).map((count) => (
-            <button
-              key={count}
-              type="button"
-              className={strips.length === count ? "sc-chip is-on" : "sc-chip"}
-              aria-pressed={strips.length === count}
-              aria-label={`${count}-man lineup`}
-              onClick={() => {
-                const n = parseStripCount(count);
-                if (n === strips.length) {
-                  return;
-                }
-                push(snapshotBoard());
-                const next = resizeRankedStrips(strips, n);
-                setStrips(next);
-                setPositionLabels(parsePositionLabels(positionLabels, n));
-                setSlides((current) =>
-                  current.map((slide, index) => ({
-                    rank: index === activeSlide ? rank : slide.rank,
-                    strips:
-                      index === activeSlide
-                        ? next
-                        : resizeRankedStrips(slide.strips, n),
-                  })),
-                );
-              }}
-            >
-              {count}
-            </button>
-          ))}
-        </div>
+            (_, offset) => {
+              const count = RANKED_LINEUP_STRIP_MIN + offset;
+              return { value: String(count), label: String(count) };
+            },
+          )}
+          onChange={(next) => {
+            const n = parseStripCount(Number(next));
+            if (n === strips.length) {
+              return;
+            }
+            push(snapshotBoard());
+            const resized = resizeRankedStrips(strips, n);
+            setStrips(resized);
+            setPositionLabels(parsePositionLabels(positionLabels, n));
+            setSlides((current) =>
+              current.map((slide, index) => ({
+                rank: index === activeSlide ? rank : slide.rank,
+                strips:
+                  index === activeSlide
+                    ? resized
+                    : resizeRankedStrips(slide.strips, n),
+              })),
+            );
+          }}
+        />
           </>
         }
         data={

@@ -64,7 +64,10 @@ import {
   GRAPHIC_HEIGHT,
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import { exportTeamOfTheWeekPlusPng } from "./exportTeamOfTheWeekPlusPng";
+import { renderTeamOfTheWeekPlusCanvas } from "./renderTeamOfTheWeekPlusCanvas";
+import { renderTotwStatsCanvas } from "../teamOfTheWeekComposer/renderTotwStatsCanvas";
 import { TeamOfTheWeekPlusGraphic } from "./TeamOfTheWeekPlusGraphic";
 import {
   applyPlayerPick,
@@ -662,6 +665,86 @@ export function TeamOfTheWeekPlusComposerApp() {
             aria-label="Export 1:1"
           >
             Export 1:1
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                setStatus("Rendering pack…");
+                setActiveIndex(null);
+                try {
+                  if (statsSheet) {
+                    const sheet = buildPlusStatsSheet({
+                      brand,
+                      week,
+                      starterCaption,
+                      standoutCaption,
+                      slots,
+                      weekRows,
+                    });
+                    if (!totwStatsHasRows(sheet)) {
+                      setStatus("Fill the lineup to export week stats.");
+                      return;
+                    }
+                    const feed = totwStatsPngFilename(sheet);
+                    await downloadExportPack(
+                      () =>
+                        renderTotwStatsCanvas(
+                          sheet,
+                          { look, purpleFlair, showBa },
+                          2,
+                        ),
+                      feed,
+                    );
+                  } else {
+                    const input = {
+                      brand,
+                      week,
+                      starterCaption,
+                      standoutCaption,
+                      slots,
+                      look,
+                      purpleFlair,
+                      photoGrade,
+                      showBa,
+                      showNames,
+                      stripStats,
+                    };
+                    const feed = exportFilenameFromTitle(
+                      starterCaption,
+                      "team-of-the-week-plus",
+                      week,
+                    );
+                    await downloadExportPack(
+                      () => renderTeamOfTheWeekPlusCanvas(input, 2),
+                      feed,
+                      [
+                        {
+                          filename: storyFilename(feed),
+                          render: () =>
+                            renderTeamOfTheWeekPlusCanvas(
+                              { ...input, story: true },
+                              2,
+                            ),
+                        },
+                      ],
+                      { letterbox: false },
+                    );
+                  }
+                  setStatus("Pack download started (4:5 + 9:16 + 1:1).");
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export pack.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+            disabled={exporting}
+          >
+            Export pack
           </button>
           <button
             type="button"

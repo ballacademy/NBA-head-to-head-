@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { writeLastShowBa } from "../instagramComposer/composerBoardDefaults";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
+import { ComposerHudSelect } from "../instagramComposer/ComposerHudSelect";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
@@ -391,41 +392,18 @@ export function CompareComposerApp() {
         }
         data={
           <>
-        <div className="sc-look" role="group" aria-label="Stats source">
-          <span className="sc-look__label">Stats</span>
-          <button
-            type="button"
-            className={mode === "season" ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={mode === "season"}
-            onClick={() => setStatsMode("season")}
-          >
-            Season avg
-          </button>
-          <button
-            type="button"
-            className={mode === "game" ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={mode === "game"}
-            onClick={() => setStatsMode("game")}
-          >
-            Last game
-          </button>
-          <button
-            type="button"
-            className={mode === "last-5" ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={mode === "last-5"}
-            onClick={() => setStatsMode("last-5")}
-          >
-            Last 5
-          </button>
-          <button
-            type="button"
-            className={mode === "this-week" ? "sc-chip is-on" : "sc-chip"}
-            aria-pressed={mode === "this-week"}
-            onClick={() => setStatsMode("this-week")}
-          >
-            This week
-          </button>
-        </div>
+        <ComposerHudSelect
+          label="Stats"
+          ariaLabel="Stats source"
+          value={mode}
+          options={[
+            { value: "season", label: "Season avg" },
+            { value: "game", label: "Last game" },
+            { value: "last-5", label: "Last 5" },
+            { value: "this-week", label: "This week" },
+          ]}
+          onChange={setStatsMode}
+        />
         <ComposerStatsSampleToggle
           sample={statsSample}
           onChange={(nextSample) => {
