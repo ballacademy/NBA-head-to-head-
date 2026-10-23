@@ -353,7 +353,9 @@ describe("composer chrome", () => {
     expect(coverState).toContain("coverDraftOccupied");
     expect(coverApp).toContain("coverDraftOccupied(loaded)");
     expect(coverApp).toContain("autoFill.current = false");
-    expect(coverApp).toMatch(/if \(!hydrated \|\| !autoFill\.current\)/);
+    expect(coverApp).toContain("setRangeStandouts(rows)");
+    expect(coverApp).toContain("if (!autoFill.current)");
+    expect(coverApp).not.toMatch(/if \(!hydrated \|\| !autoFill\.current\)/);
     expect(composerSaves).toContain("stripComposerPhotos");
     expect(composerSaves).toContain("Saved as template (no photos).");
     expect(composerLibrary).toContain("writeNamedGraphics");
@@ -1157,7 +1159,11 @@ describe("composer chrome", () => {
     expect(sheet).not.toContain(
       ".sc-picker:has(.sc-picker__suggested--dud) .sc-picker__suggested:not(.sc-picker__suggested--dud)",
     );
-    expect(coverApp).not.toContain("completedNightRows");
+    expect(coverApp).toContain("completedNightRows");
+    expect(coverApp).toContain("fetchStandoutsInRange");
+    expect(coverApp).toContain("pickerOpen");
+    expect(coverApp).not.toContain("if (!hydrated || !autoFill.current)");
+    expect(coverApp).not.toContain("suggestedLoading={false}");
     expect(coverApp).not.toContain("fetchDudsInRange");
     expect(coverApp).not.toContain("extraSuggested");
     expect(potdState).toContain("isCompletedNightRow");
