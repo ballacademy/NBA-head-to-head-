@@ -49,6 +49,10 @@ import {
   completedNightRows,
   fetchDudsInRange,
   fetchStandoutsInRange,
+  isRoughNight,
+  isStandoutOverRoughNight,
+  nightFlagsFor,
+  usualLineFor,
 } from "../playerOfTheDayComposer/nightStandouts";
 import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
 import {
@@ -222,6 +226,41 @@ export function StatCardComposerApp() {
     }
   };
 
+  const fillPickedLastGame = async (next: StatCardDraft) => {
+    if (!next.playerId) {
+      return;
+    }
+    try {
+      const recent = await fetchRecentGames(next.playerId, statsSample);
+      const inRange = gamesInInclusiveRange(recent, range.from, range.to);
+      const game =
+        inRange.length > 1
+          ? aggregateLastGames(inRange)
+          : inRange[0] ??
+            (await fetchLastGame(
+              next.playerId,
+              statsSample,
+              next.gameDate || range.to,
+            ));
+      if (!game) {
+        return;
+      }
+      lastGameRef.current = game;
+      const usual = usualLineFor(next.playerId);
+      setDraft((current) => {
+        if (current.playerId !== next.playerId) {
+          return current;
+        }
+        const filled = isRoughNight(game.stats, usual, next.playerId)
+          ? fillStatCardFromRoughNight(current, game)
+          : fillStatCardFromStandout(current, game);
+        return applyStatCardHighs(filled, recent, recent);
+      });
+    } catch {
+      /* still editable */
+    }
+  };
+
   const applyHudStats = (current: StatCardDraft, stats: StatCardLine[]) => {
     const next = { ...current, stats };
     if (parseStatCardSource(current.source) === "season") {
@@ -372,7 +411,11 @@ export function StatCardComposerApp() {
       (row) => row.athleteId === playerId,
     );
     if (parseStatCardSource(next.source) === "last-game") {
-      if (dud && !standout) {
+      const preferDud =
+        Boolean(dud) &&
+        (!standout ||
+          !isStandoutOverRoughNight(nightFlagsFor(standout.game.stats)));
+      if (preferDud && dud) {
         lastGameRef.current = dud.game;
         next = fillStatCardFromRoughNight(next, dud.game);
       } else if (standout) {
@@ -388,7 +431,13 @@ export function StatCardComposerApp() {
         ? `Kept the photo for ${player.name}.`
         : `Filled ${player.name} — upload an action photo.`,
     );
-    if (!standout && !dud) {
+    if (
+      parseStatCardSource(next.source) === "last-game" &&
+      !standout &&
+      !dud
+    ) {
+      void fillPickedLastGame(next);
+    } else if (!standout && !dud) {
       void fillStats(next);
     }
   };

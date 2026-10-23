@@ -1107,6 +1107,8 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain("extraSuggestedHeading");
     expect(statCardApp).toContain('"Rough night"');
     expect(statCardApp).toContain("fillStatCardFromRoughNight");
+    expect(statCardApp).toContain("fillPickedLastGame");
+    expect(statCardApp).toContain("preferDud");
     expect(statCardApp).toContain("fillStatCardFromGame(current, game)");
     expect(statCardApp).toContain("applyHudStats");
     expect(statCardApp).toContain("commitHudStats");

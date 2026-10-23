@@ -595,27 +595,19 @@ export const fillStatCardFromStandout = (
   };
 };
 
-/** Brick / TO night — FG makes-attempts, volume 3s, turnovers, PTS. Not the standout set. */
+/** Brick / TO night — FG makes-attempts and TOV, not the standout REB/AST set. */
 export const notableRoughNightLines = (
   stats: LastGameStats,
   _playerOrGroup?: NotableStatPosition,
 ): StatCardLine[] => {
   const min = statCount(stats.min);
-  const tov = statCount(stats.tov);
   const threeMakes = statCount(stats.three);
   const threeAtt = statAttempts(stats.three);
-  const fgMakes = statCount(stats.fg);
-  const fgAtt = statAttempts(stats.fg);
-  const picks: NotablePick[] = [{ key: "pts" }];
-  if (fgAtt > 0 || fgMakes > 0) {
-    picks.push({ key: "fg" });
-  }
+  const picks: NotablePick[] = [{ key: "pts" }, { key: "fg" }];
   if (threeMakes >= THREE_MIN_MAKES || threeAtt >= FG_MIN_ATTEMPTS) {
     picks.push({ key: "three", label: "3PM", value: stats.three });
   }
-  if (tov > 0) {
-    picks.push({ key: "tov" });
-  }
+  picks.push({ key: "tov" });
   const showMin = min > 0 && (min < 30 || min >= 36);
   const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
   const picked = picks

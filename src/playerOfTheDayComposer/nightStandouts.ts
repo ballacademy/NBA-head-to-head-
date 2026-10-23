@@ -859,8 +859,9 @@ export const DUD_POOR_TS = 0.45;
 export const DUD_POOR_EFG = 0.42;
 export const DUD_TOV_HIGH = 6;
 export const DUD_TOV_VOLUME = 5;
-export const DUD_STAR_USUAL_PTS = 15;
-export const DUD_LIMIT = 8;
+export const DUD_STAR_USUAL_PTS = 12;
+/** Picker scrolls — don't drop a 2-point stinker behind seven louder bricks. */
+export const DUD_LIMIT = 16;
 
 export const isCampUsualLine = (athleteId: string) => {
   const player = getPlayer(athleteId);
@@ -888,9 +889,7 @@ export const roughNightLine = (stats: LastGameStats) => {
     bits.push(`${stats.fg} FG`);
   }
   const tov = Number.parseFloat(stats.tov);
-  if (Number.isFinite(tov) && tov > 0) {
-    bits.push(`${stats.tov} TO`);
-  }
+  bits.push(`${Number.isFinite(tov) ? stats.tov : "0"} TO`);
   bits.push(`${stats.pts} PTS`);
   return bits.join(" · ");
 };
@@ -950,14 +949,17 @@ export const isRoughNight = (
     usual.pts >= DUD_STAR_USUAL_PTS &&
     extra.pts <= Math.max(8, usual.pts * 0.4) &&
     min >= 20;
-  /** 6+ TO (or 5 TO on real FGA) is the story — even a rookie / short night. */
-  if (tovNight) {
+  /** 2 PTS in 24 MIN — a rotation guy going quiet, not a camp DNP. */
+  const quietStinker =
+    extra.pts <= 5 && min >= 20 && shooting.fga >= 5;
+  /** 6+ TO (or 5 TO on real FGA) or a real-volume brick is the story — even a rookie. */
+  if (tovNight || (brick && shooting.fga >= 10)) {
     return true;
   }
   if (isCampUsualLine(athleteId) || min < DUD_MIN_MINUTES) {
     return false;
   }
-  return brick || collapse;
+  return brick || collapse || quietStinker;
 };
 
 export const asNightDud = (row: NightStandout): NightStandout | null => {

@@ -819,5 +819,42 @@ describe("night standouts", () => {
     const scored = rankNightDuds([brick, collapse]);
     expect(scored[0]?.athleteId).toBe("3945274");
     expect(scored.map((row) => row.athleteId)).toContain("1966");
+    const giddey = getPlayer("4871145");
+    expect(giddey?.name).toMatch(/Josh Giddey/);
+    const giddeyNight = gameRow(
+      "4871145",
+      "Josh Giddey",
+      {
+        pts: "2",
+        reb: "7",
+        ast: "6",
+        min: "24",
+        fg: "1-10",
+        three: "0-4",
+        ft: "0-2",
+        tov: "5",
+        stl: "0",
+        blk: "0",
+      },
+      7,
+    );
+    expect(isHighTovNight(giddeyNight.game.stats)).toBe(true);
+    expect(
+      isRoughNight(
+        giddeyNight.game.stats,
+        usualLineFor("4871145"),
+        "4871145",
+      ),
+    ).toBe(true);
+    expect(
+      rankNightStandouts([giddeyNight]).map((row) => row.athleteId),
+    ).not.toContain("4871145");
+    const giddeyRow = rankNightDuds([giddeyNight, camp]).find(
+      (row) => row.athleteId === "4871145",
+    );
+    expect(giddeyRow?.line).toContain("1-10 FG");
+    expect(giddeyRow?.line).toContain("5 TO");
+    expect(giddeyRow?.line).toContain("2 PTS");
+    expect(giddeyRow?.badge).toMatch(/Bricks|Turnovers|Stinker/);
   });
 });

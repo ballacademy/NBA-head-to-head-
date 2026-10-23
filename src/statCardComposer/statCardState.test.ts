@@ -792,5 +792,29 @@ describe("stat card composer", () => {
       "1-8 3PM",
       "9 TOV",
     ]);
+    const giddeyBox = box({
+      pts: "2",
+      reb: "7",
+      ast: "6",
+      fg: "1-10",
+      three: "0-4",
+      tov: "5",
+      min: "24",
+    });
+    expect(
+      notableStatCardLines(giddeyBox).map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["2 PTS", "7 REB", "6 AST", "24 MIN"]);
+    expect(
+      notableRoughNightLines(giddeyBox).map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["2 PTS", "1-10 FG", "5 TOV", "24 MIN"]);
+    expect(
+      fillStatCardFromRoughNight(defaultStatCardDraft(), gameFrom(giddeyBox)).stats.map(
+        (line) => `${line.value} ${line.label}`,
+      ),
+    ).toEqual(["2 PTS", "1-10 FG", "5 TOV", "24 MIN"]);
   });
 });
