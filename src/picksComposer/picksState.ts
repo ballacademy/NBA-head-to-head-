@@ -1395,6 +1395,59 @@ const mergePicksRow = (prev: PicksGame, incoming: PicksGame): PicksGame => {
   };
 };
 
+const matchIncomingPicksRow = (
+  prev: PicksGame,
+  byEvent: Map<string, PicksGame>,
+  byMatchup: Map<string, PicksGame>,
+) =>
+  (prev.eventId ? byEvent.get(prev.eventId) : undefined) ??
+  (prev.awayId && prev.homeId
+    ? byMatchup.get(`${prev.awayId}|${prev.homeId}`)
+    : undefined);
+
+/** Same rows; latest ESPN line on unedited/unlocked games. Never invents a line. */
+export const refreshPicksLines = (
+  current: PicksGame[],
+  incoming: PicksGame[],
+): PicksGame[] => {
+  if (!incoming.length) {
+    return current;
+  }
+  const byEvent = new Map<string, PicksGame>();
+  const byMatchup = new Map<string, PicksGame>();
+  incoming.forEach((row) => {
+    if (row.eventId) {
+      byEvent.set(row.eventId, row);
+    }
+    if (row.awayId && row.homeId) {
+      byMatchup.set(`${row.awayId}|${row.homeId}`, row);
+    }
+  });
+  return current.map((prev) => {
+    const match = matchIncomingPicksRow(prev, byEvent, byMatchup);
+    if (!match) {
+      return prev;
+    }
+    const keepLine = prev.lineEdited === true || prev.locked === true;
+    return {
+      ...prev,
+      eventId: match.eventId || prev.eventId,
+      line: keepLine ? prev.line : match.line,
+      awayJuice: keepLine ? prev.awayJuice : match.awayJuice,
+      homeJuice: keepLine ? prev.homeJuice : match.homeJuice,
+      total: keepLine ? prev.total : match.total,
+      awayMl: keepLine ? prev.awayMl : match.awayMl,
+      homeMl: keepLine ? prev.homeMl : match.homeMl,
+      tip: match.tip || prev.tip,
+      tv: match.tv || prev.tv,
+      startMs: match.startMs ?? prev.startMs,
+      awayScore: match.awayScore ?? prev.awayScore ?? null,
+      homeScore: match.homeScore ?? prev.homeScore ?? null,
+      final: match.final === true || prev.final === true,
+    };
+  });
+};
+
 export const mergePicksFill = (
   current: PicksGame[],
   incoming: PicksGame[],

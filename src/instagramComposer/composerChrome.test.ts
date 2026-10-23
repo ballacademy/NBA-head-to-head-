@@ -862,6 +862,10 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("picksDefaultTitle");
     expect(picksApp).toContain("isAutoPicksTitle");
     expect(picksApp).toContain("mergePicksFill");
+    expect(picksApp).toContain("refreshPicksLines");
+    expect(picksApp).toContain('aria-label="Refresh lines"');
+    expect(picksApp).toContain("Refresh lines");
+    expect(picksApp).toContain("void refreshLines(draft.date, true)");
     expect(picksApp).toContain("setPicksTeam");
     expect(picksApp).toContain("showTotal");
     expect(picksApp).toContain("Plate opacity");

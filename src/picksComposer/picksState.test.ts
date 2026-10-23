@@ -24,6 +24,7 @@ import {
   isAutoPicksTitle,
   isPicksRowEdited,
   mergePicksFill,
+  refreshPicksLines,
   parseEspnAwayLine,
   parsePicksLineInput,
   parseEspnNationalTv,
@@ -267,6 +268,89 @@ describe("picks composer", () => {
     expect(merged[3]?.awayId).toBe("MIA");
     expect(merged.some((game) => game.id === "stale")).toBe(false);
     expect(isPicksRowEdited(current[2]!)).toBe(true);
+  });
+
+  it("refreshes live lines without adding, dropping, or wiping picks", () => {
+    const current: PicksGame[] = [
+      row({
+        id: "open",
+        eventId: "401",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 1.5,
+        pick: "away",
+      }),
+      row({
+        id: "typed",
+        eventId: "402",
+        awayId: "NYK",
+        homeId: "BOS",
+        line: 9,
+        pick: "home",
+        lineEdited: true,
+      }),
+      row({
+        id: "lock",
+        eventId: "403",
+        awayId: "MIA",
+        homeId: "PHI",
+        line: 3,
+        pick: "home",
+        locked: true,
+      }),
+      row({
+        id: "custom",
+        eventId: "",
+        awayId: "CHI",
+        homeId: "MIL",
+        line: 4,
+        custom: true,
+        pick: "away",
+      }),
+      row({
+        id: "kept-off-slate",
+        eventId: "404",
+        awayId: "DEN",
+        homeId: "LAL",
+        line: 2,
+        pick: "away",
+      }),
+    ];
+    const incoming = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL", details: "ORL -2.5", spread: -2.5 },
+        { id: "402", away: "NY", home: "BOS", details: "BOS -7", spread: -7 },
+        { id: "403", away: "MIA", home: "PHI", details: "PHI -1", spread: -1 },
+        { id: "405", away: "CLE", home: "NYK", details: "NYK -5.5", spread: -5.5 },
+      ]),
+      "2026-10-21",
+    );
+    const blankBoard = parsePicksScoreboard(
+      scoreboard([{ id: "401", away: "ATL", home: "ORL" }]),
+      "2026-10-21",
+    );
+    const next = refreshPicksLines(current, incoming);
+    expect(next.map((game) => game.id)).toEqual([
+      "open",
+      "typed",
+      "lock",
+      "custom",
+      "kept-off-slate",
+    ]);
+    expect(next.some((game) => game.eventId === "405")).toBe(false);
+    expect(next[0]?.line).toBe(2.5);
+    expect(next[0]?.pick).toBe("away");
+    expect(next[1]?.line).toBe(9);
+    expect(next[1]?.lineEdited).toBe(true);
+    expect(next[1]?.pick).toBe("home");
+    expect(next[2]?.line).toBe(3);
+    expect(next[2]?.locked).toBe(true);
+    expect(next[2]?.pick).toBe("home");
+    expect(next[3]?.line).toBe(4);
+    expect(next[3]?.custom).toBe(true);
+    expect(next[4]?.line).toBe(2);
+    expect(refreshPicksLines(current, [])).toEqual(current);
+    expect(refreshPicksLines([current[0]!], blankBoard)[0]?.line).toBeNull();
   });
 
   it("re-fills one row from the slate and drops that row’s edit flags", () => {

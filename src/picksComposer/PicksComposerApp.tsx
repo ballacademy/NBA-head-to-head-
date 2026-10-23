@@ -55,6 +55,7 @@ import {
   isAutoPicksTitle,
   isPicksDraft,
   mergePicksFill,
+  refreshPicksLines,
   normalizePicksLedger,
   PICKS_LEDGER_KEY,
   picksDefaultTitle,
@@ -206,17 +207,45 @@ export function PicksComposerApp() {
     }
   };
 
+  const refreshLines = async (iso = draft.date, fromHydrate = false) => {
+    const date = isoDateOnly(iso) || draft.date;
+    setFilling(true);
+    setStatus("Refreshing lines…");
+    try {
+      const incoming = await fetchPicksSlate(date);
+      if (incoming.length) {
+        slateRef.current = incoming;
+      }
+      if (!incoming.length) {
+        setStatus("Couldn't refresh lines.");
+        return;
+      }
+      if (!fromHydrate) {
+        push(draft);
+      }
+      setDraft((current) => ({
+        ...current,
+        games: refreshPicksLines(current.games, incoming),
+      }));
+      setLedger((current) => applyScoresToPicksLedger(current, date, incoming));
+      setStatus("Updated lines.");
+    } finally {
+      setFilling(false);
+    }
+  };
+
   useEffect(() => {
     if (!hydrated || autoFillRef.current) {
       return;
     }
     autoFillRef.current = true;
     if (draft.games.length) {
+      void refreshLines(draft.date, true);
       return;
     }
     const date = night.date || draft.date;
     void fillSlate(date);
-    // First empty visit loads Tonight. Stored drafts keep their rows.
+    // First empty visit loads Tonight. Stored slates refresh lines, not Fill.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
@@ -311,6 +340,15 @@ export function PicksComposerApp() {
               disabled={filling}
             >
               {filling ? "Loading…" : "Fill"}
+            </button>
+            <button
+              type="button"
+              className="sc-chip"
+              aria-label="Refresh lines"
+              onClick={() => void refreshLines(draft.date)}
+              disabled={filling}
+            >
+              Refresh lines
             </button>
             <button
               type="button"
