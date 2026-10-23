@@ -211,12 +211,42 @@ export const renderStatCardCanvas = async (
   const type = story
     ? statCardStoryType(stats.length)
     : statCardType(stats.length);
+  const paintHighPip = (
+    kind: NonNullable<StatCardDraft["stats"][number]["high"]>,
+    cx: number,
+    cy: number,
+  ) => {
+    const label = kind === "career" ? "CAREER" : "SZN";
+    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    const textW = context.measureText(label).width;
+    const padX = 8 * s;
+    const h = 18 * s;
+    const w = Math.max(textW + padX * 2, 44 * s);
+    const x = cx - w / 2;
+    const y = cy - h / 2;
+    context.save();
+    context.beginPath();
+    if (typeof context.roundRect === "function") {
+      context.roundRect(x, y, w, h, 8 * s);
+    } else {
+      context.rect(x, y, w, h);
+    }
+    context.fillStyle = "#111";
+    context.fill();
+    context.fillStyle = "#facc15";
+    context.fillText(label, cx, cy);
+    context.restore();
+  };
+
   const paintStat = (
     line: StatCardDraft["stats"][number],
     cx: number,
     valueY: number,
     labelY: number,
     maxW: number,
+    pipY: number,
   ) => {
     context.font = `900 ${type.value * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
@@ -224,15 +254,7 @@ export const renderStatCardCanvas = async (
     context.fillStyle = STC_INK;
     context.fillText(line.value.trim() || "—", cx, valueY, maxW);
     if (line.high) {
-      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
-      context.fillStyle = "#facc15";
-      context.textAlign = "center";
-      context.fillText(
-        line.high === "career" ? "CAREER" : "SZN",
-        cx,
-        valueY - type.value * s * 0.42,
-      );
-      context.fillStyle = STC_INK;
+      paintHighPip(line.high, cx, pipY);
     }
     context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
     context.fillStyle = STC_MUTED;
@@ -260,6 +282,7 @@ export const renderStatCardCanvas = async (
         statsY + col.valueY * s,
         statsY + col.labelY * s,
         col.w * s - 24 * s,
+        statsY + 47 * s,
       );
     });
     if (showMatchup) {
@@ -298,6 +321,7 @@ export const renderStatCardCanvas = async (
         row.valueY * s,
         row.labelY * s,
         statsW - 24 * s,
+        row.y * s + 19 * s,
       );
     });
     if (showMatchup) {

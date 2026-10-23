@@ -57,6 +57,7 @@ import {
   everyTeamCurrentSeason,
   everyTeamSeasons,
   loadEveryTeamRosters,
+  previousSeason,
 } from "../everyTeamComposer/historicalRosters";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -138,6 +139,9 @@ export function StatCardComposerApp() {
   } | null>(null);
   const [storyCrop, setStoryCrop] = useState(false);
   const lastGameRef = useRef<LastGame | null>(null);
+  const seasonGamesRef = useRef<LastGame[]>([]);
+  const priorGamesRef = useRef<LastGame[]>([]);
+  const rangeAggregateRef = useRef(false);
   const fillSeq = useRef(0);
   const draftRef = useRef(draft);
   draftRef.current = draft;
@@ -174,6 +178,64 @@ export function StatCardComposerApp() {
 
   const closePicker = useCallback(() => setPickerOpen(false), []);
 
+  const markHighs = (next: StatCardDraft) =>
+    applyStatCardHighs(
+      next,
+      seasonGamesRef.current,
+      priorGamesRef.current,
+      { rangeAggregate: rangeAggregateRef.current },
+    );
+
+  const loadHighGames = async (
+    playerId: string,
+    sample: typeof statsSample,
+  ) => {
+    const season = everyTeamCurrentSeason();
+    const [recent, prior] = await Promise.all([
+      fetchRecentGames(playerId, sample, season),
+      fetchRecentGames(playerId, "regular", previousSeason(season)),
+    ]);
+    seasonGamesRef.current = recent;
+    priorGamesRef.current = prior;
+    return recent;
+  };
+
+  const setHighPip = (showHighPip: boolean) => {
+    const next = markHighs({ ...draftRef.current, showHighPip });
+    setDraft(next);
+    if (!showHighPip) {
+      setStatus("High pip off.");
+      return;
+    }
+    if (parseStatCardSource(next.source) === "season") {
+      setStatus("High pip marks a last-game season or career high.");
+      return;
+    }
+    if (!next.playerId) {
+      setStatus("Pick a player — high pip marks a last-game season or career high.");
+      return;
+    }
+    const marked = next.stats.some((line) => line.high);
+    if (marked) {
+      setStatus("High pip on — SZN or CAREER on the matching stat.");
+      return;
+    }
+    if (!seasonGamesRef.current.length) {
+      void (async () => {
+        await loadHighGames(next.playerId!, statsSample);
+        const refreshed = markHighs(draftRef.current);
+        setDraft(refreshed);
+        setStatus(
+          refreshed.stats.some((line) => line.high)
+            ? "High pip on — SZN or CAREER on the matching stat."
+            : "High pip on — none of these slots is a season or career high.",
+        );
+      })();
+      return;
+    }
+    setStatus("High pip on — none of these slots is a season or career high.");
+  };
+
   const fillStats = async (
     next: StatCardDraft,
     sample = statsSample,
@@ -188,13 +250,14 @@ export function StatCardComposerApp() {
         await loadEveryTeamRosters();
         setDraft((current) =>
           seq === fillSeq.current && current.playerId === next.playerId
-            ? fillStatCardFromSeason(current, next.season, sample)
+            ? markHighs(fillStatCardFromSeason(current, next.season, sample))
             : current,
         );
         return;
       }
-      const recent = await fetchRecentGames(next.playerId, sample);
+      const recent = await loadHighGames(next.playerId, sample);
       const inRange = gamesInInclusiveRange(recent, range.from, range.to);
+      rangeAggregateRef.current = inRange.length > 1;
       const game =
         inRange.length > 1
           ? aggregateLastGames(inRange)
@@ -219,11 +282,7 @@ export function StatCardComposerApp() {
         if (!game) {
           return current;
         }
-        return applyStatCardHighs(
-          fillStatCardFromGame(current, game),
-          recent,
-          recent,
-        );
+        return markHighs(fillStatCardFromGame(current, game));
       });
     } catch {
       /* still editable */
@@ -240,8 +299,9 @@ export function StatCardComposerApp() {
     }
     const seq = fillSeq.current;
     try {
-      const recent = await fetchRecentGames(playerId, statsSample);
+      const recent = await loadHighGames(playerId, statsSample);
       const inRange = gamesInInclusiveRange(recent, range.from, range.to);
+      rangeAggregateRef.current = inRange.length > 1;
       const game =
         inRange.length > 1
           ? aggregateLastGames(inRange)
@@ -267,7 +327,7 @@ export function StatCardComposerApp() {
         const filled = useDud
           ? fillStatCardFromRoughNight(current, game)
           : fillStatCardFromStandout(current, game);
-        return applyStatCardHighs(filled, recent, recent);
+        return markHighs(filled);
       });
     } catch {
       /* still editable */
@@ -277,10 +337,10 @@ export function StatCardComposerApp() {
   const applyHudStats = (current: StatCardDraft, stats: StatCardLine[]) => {
     const next = { ...current, stats };
     if (parseStatCardSource(current.source) === "season") {
-      return fillStatCardFromSeason(next, next.season, statsSample);
+      return markHighs(fillStatCardFromSeason(next, next.season, statsSample));
     }
     const game = lastGameRef.current;
-    return game ? fillStatCardFromGame(next, game) : next;
+    return markHighs(game ? fillStatCardFromGame(next, game) : next);
   };
 
   const commitHudStats = (stats: StatCardLine[]) => {
@@ -624,6 +684,19 @@ export function StatCardComposerApp() {
             Season avg
           </button>
         </div>
+        <div className="sc-look" role="group" aria-label="High pip">
+          <span className="sc-look__label">High pip</span>
+          <button
+            type="button"
+            className={draft.showHighPip ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={Boolean(draft.showHighPip)}
+            aria-label="Season and career high pip"
+            title="Marks a last-game season or career high on that stat. Off by default."
+            onClick={() => setHighPip(!draft.showHighPip)}
+          >
+            {draft.showHighPip ? "On" : "Off"}
+          </button>
+        </div>
         <ComposerStatsSampleToggle
           sample={statsSample}
           onChange={(nextSample) => {
@@ -718,16 +791,6 @@ export function StatCardComposerApp() {
                           : current.matchup;
                       return { ...current, showMatchup, matchup };
                     });
-                  },
-                },
-                {
-                  key: "high-pip",
-                  label: "High pip",
-                  on: Boolean(draft.showHighPip),
-                  onChange: (showHighPip) => {
-                    const next = { ...draft, showHighPip };
-                    setDraft(next);
-                    void fillStats(next);
                   },
                 },
                 {
@@ -914,12 +977,14 @@ export function StatCardComposerApp() {
                 setDraft((current) => applyPlayerName(current, value))
               }
               onStatValue={(index, value) =>
-                setDraft((current) => ({
-                  ...current,
-                  stats: current.stats.map((row, rowIndex) =>
-                    rowIndex === index ? { ...row, value } : row,
-                  ),
-                }))
+                setDraft((current) =>
+                  markHighs({
+                    ...current,
+                    stats: current.stats.map((row, rowIndex) =>
+                      rowIndex === index ? { ...row, value } : row,
+                    ),
+                  }),
+                )
               }
               onStatLabel={(index, value) =>
                 setDraft((current) => ({

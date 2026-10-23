@@ -37,6 +37,8 @@ import {
   fillStatCardFromStandout,
   fillStatCardFromRoughNight,
   notableRoughNightLines,
+  applyStatCardHighs,
+  statHighKind,
   statCardFromCoverSlot,
   formatStatCardMatchup,
   keepMinLast,
@@ -848,5 +850,71 @@ describe("stat card composer", () => {
         (line) => `${line.value} ${line.label}`,
       ),
     ).toEqual(["0 PTS", "0-8 FG", "4 TOV", "21 MIN"]);
+  });
+
+  it("marks season and career highs on last-game counting stats, off by default", () => {
+    const tonight = gameFrom({ pts: "42", reb: "8", ast: "12", fg: "16-24" });
+    const earlier = gameFrom(
+      { pts: "30", reb: "14", ast: "7", fg: "10-18" },
+      { eventId: "2", gameDate: "2026-10-10" },
+    );
+    const lastYear = gameFrom(
+      { pts: "38", reb: "11", ast: "15", fg: "14-22" },
+      { eventId: "3", gameDate: "2026-04-10" },
+    );
+    expect(statHighKind("pts", "42", [tonight, earlier], [lastYear])).toBe(
+      "career",
+    );
+    expect(statHighKind("ast", "12", [tonight, earlier], [lastYear])).toBe(
+      "season",
+    );
+    expect(statHighKind("reb", "8", [tonight, earlier], [lastYear])).toBeNull();
+    expect(statHighKind("fg", "16-24", [tonight, earlier], [lastYear])).toBe(
+      "career",
+    );
+    expect(statHighKind("pts", "18", [tonight], [])).toBeNull();
+    expect(statHighKind("pts", "42", [tonight, earlier], [])).toBe("season");
+    const off = applyStatCardHighs(
+      {
+        ...defaultStatCardDraft(),
+        showHighPip: false,
+        stats: [{ key: "pts", label: "PTS", value: "42" }],
+      },
+      [tonight, earlier],
+      [lastYear],
+    );
+    expect(off.stats[0]?.high ?? null).toBeNull();
+    const on = applyStatCardHighs(
+      {
+        ...defaultStatCardDraft(),
+        showHighPip: true,
+        stats: [{ key: "pts", label: "PTS", value: "42" }],
+      },
+      [tonight, earlier],
+      [lastYear],
+    );
+    expect(on.stats[0]?.high).toBe("career");
+    const seasonAvg = applyStatCardHighs(
+      {
+        ...defaultStatCardDraft(),
+        source: "season",
+        showHighPip: true,
+        stats: [{ key: "pts", label: "PTS", value: "42" }],
+      },
+      [tonight, earlier],
+      [lastYear],
+    );
+    expect(seasonAvg.stats[0]?.high ?? null).toBeNull();
+    const week = applyStatCardHighs(
+      {
+        ...defaultStatCardDraft(),
+        showHighPip: true,
+        stats: [{ key: "pts", label: "PTS", value: "72" }],
+      },
+      [tonight, earlier],
+      [lastYear],
+      { rangeAggregate: true },
+    );
+    expect(week.stats[0]?.high ?? null).toBeNull();
   });
 });

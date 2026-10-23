@@ -641,31 +641,33 @@ const HIGH_FLOOR: Partial<Record<StatCardKey, number>> = {
   ast: 8,
   stl: 3,
   blk: 3,
+  fg: 8,
+  three: 5,
 };
 
 const maxStat = (games: LastGame[], key: StatCardKey) =>
   games.reduce((best, game) => {
-    const raw = Number.parseFloat(String(game.stats[key as keyof LastGameStats] ?? ""));
-    return Number.isFinite(raw) && raw > best ? raw : best;
+    const raw = statCount(String(game.stats[key as keyof LastGameStats] ?? ""));
+    return raw > best ? raw : best;
   }, 0);
 
 export const statHighKind = (
   key: StatCardKey,
   value: string,
   seasonGames: LastGame[],
-  careerGames: LastGame[] = seasonGames,
+  priorGames: LastGame[] = [],
 ): StatHighKind | null => {
   const floor = HIGH_FLOOR[key];
   if (floor == null) {
     return null;
   }
-  const n = Number.parseFloat(value);
-  if (!Number.isFinite(n) || n < floor) {
+  const n = statCount(value);
+  if (!n || n < floor) {
     return null;
   }
   const seasonMax = maxStat(seasonGames, key);
-  const careerMax = maxStat(careerGames, key);
-  if (careerGames.length > seasonGames.length && n >= careerMax && careerMax > 0) {
+  const priorMax = maxStat(priorGames, key);
+  if (priorGames.length > 0 && n >= priorMax && priorMax > 0 && n >= seasonMax) {
     return "career";
   }
   if (n >= seasonMax && seasonMax > 0) {
@@ -677,9 +679,14 @@ export const statHighKind = (
 export const applyStatCardHighs = (
   draft: StatCardDraft,
   seasonGames: LastGame[],
-  careerGames: LastGame[] = seasonGames,
+  priorGames: LastGame[] = [],
+  options?: { rangeAggregate?: boolean },
 ): StatCardDraft => {
-  if (!draft.showHighPip) {
+  const skip =
+    !draft.showHighPip ||
+    parseStatCardSource(draft.source) === "season" ||
+    options?.rangeAggregate === true;
+  if (skip) {
     return {
       ...draft,
       stats: draft.stats.map((line) => ({ ...line, high: null })),
@@ -689,7 +696,7 @@ export const applyStatCardHighs = (
     ...draft,
     stats: draft.stats.map((line) => ({
       ...line,
-      high: statHighKind(line.key, line.value, seasonGames, careerGames),
+      high: statHighKind(line.key, line.value, seasonGames, priorGames),
     })),
   };
 };

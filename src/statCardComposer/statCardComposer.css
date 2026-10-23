@@ -199,10 +199,12 @@
 
 .stc-high {
   position: absolute;
-  top: calc(4 * var(--u));
-  right: calc(10 * var(--u));
+  top: calc(10 * var(--u));
+  left: 50%;
+  right: auto;
   z-index: 2;
-  padding: calc(2 * var(--u)) calc(7 * var(--u));
+  transform: translateX(-50%);
+  padding: calc(3 * var(--u)) calc(8 * var(--u));
   border-radius: calc(8 * var(--u));
   background: #111;
   color: #facc15;
@@ -212,6 +214,7 @@
   letter-spacing: 0.12em;
   line-height: 1;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 .stc-label {
@@ -461,4 +464,8 @@
   left: 50%;
   top: calc(14 * var(--u));
   transform: translateX(-50%);
+}
+
+.stc-board.is-story .stc-high {
+  top: calc(38 * var(--u));
 }

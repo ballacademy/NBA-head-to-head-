@@ -961,6 +961,8 @@ describe("composer chrome", () => {
     expect(compareApp).toContain("this-week");
     expect(mockTradeApp).toContain("showSalaries");
     expect(statCardApp).toContain("showHighPip");
+    expect(statCardApp).toContain('aria-label="Season and career high pip"');
+    expect(statCardApp).not.toContain('key: "high-pip"');
   });
 
   it("lets Andrew drag-swap player slots on the preview", () => {

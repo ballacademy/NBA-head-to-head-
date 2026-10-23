@@ -710,12 +710,12 @@ const cacheKey = (
 export const fetchRecentGames = async (
   athleteId: string,
   sample: ComposerStatsSample = "preseason",
+  season = everyTeamCurrentSeason(),
 ): Promise<LastGame[]> => {
   const id = athleteId.trim();
   if (!id) {
     return [];
   }
-  const season = everyTeamCurrentSeason();
   const seasonYear = espnGamelogSeasonYear(season);
   const key = cacheKey(id, sample, seasonYear);
   if (cache.has(key)) {
