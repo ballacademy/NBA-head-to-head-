@@ -77,7 +77,10 @@ interface PlayerPickerProps {
   extraSuggestedHeading?: string;
   extraSuggestedLoading?: boolean;
   extraSuggestedEmpty?: string;
-  onPick: (playerId: string) => void;
+  onPick: (
+    playerId: string,
+    recs?: "standouts" | "rough-night",
+  ) => void;
   onClear?: () => void;
   onClose: () => void;
 }
@@ -212,9 +215,12 @@ export function PlayerPicker({
     [showRecsSection, recRows],
   );
 
-  const handlePick = (playerId: string) => {
+  const handlePick = (
+    playerId: string,
+    recs?: "standouts" | "rough-night",
+  ) => {
     rememberComposerPlayer(playerId);
-    onPick(playerId);
+    onPick(playerId, recs);
   };
 
   const players = useMemo(() => {
@@ -275,7 +281,15 @@ export function PlayerPicker({
       const id = visibleIds[Math.max(0, activeIndex)];
       if (id) {
         event.preventDefault();
-        handlePick(id);
+        const fromRecs = showSuggested && activeIndex < recRows.length;
+        handlePick(
+          id,
+          fromRecs
+            ? showDudRecs
+              ? "rough-night"
+              : "standouts"
+            : undefined,
+        );
       }
     }
   };
@@ -567,7 +581,9 @@ export function PlayerPicker({
                     deserving={!showDudRecs}
                     dud={showDudRecs}
                     highlighted={activeIndex === index}
-                    onPick={handlePick}
+                    onPick={(id) =>
+                      handlePick(id, showDudRecs ? "rough-night" : "standouts")
+                    }
                   />
                 ))}
               </div>
@@ -655,7 +671,7 @@ function PlayerButton({
       : player.role === "coach"
         ? `${player.team} · HC`
         : `${player.team} · ${player.position}`;
-  const meta = isCurrent ? "This slot" : (metaOverride || identity);
+  const meta = metaOverride || (isCurrent ? "This slot" : identity);
 
   return (
     <button

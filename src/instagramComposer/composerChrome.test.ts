@@ -1108,7 +1108,11 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain('"Rough night"');
     expect(statCardApp).toContain("fillStatCardFromRoughNight");
     expect(statCardApp).toContain("fillPickedLastGame");
-    expect(statCardApp).toContain("preferDud");
+    expect(statCardApp).toContain("fromRoughNight");
+    expect(statCardApp).toContain('recs === "rough-night"');
+    expect(statCardApp).toContain("samePlayer");
+    expect(statCardApp).toContain("fillSeq");
+    expect(statCardApp).not.toContain("draft.playerId]);");
     expect(statCardApp).toContain("fillStatCardFromGame(current, game)");
     expect(statCardApp).toContain("applyHudStats");
     expect(statCardApp).toContain("commitHudStats");
@@ -1142,6 +1146,12 @@ describe("composer chrome", () => {
     expect(picker).toContain("Standouts");
     expect(picker).toContain("Rough night");
     expect(picker).toContain('useState<"standouts" | "rough-night">');
+    expect(picker).toContain("metaOverride || (isCurrent ? \"This slot\" : identity)");
+    expect(picker).toContain('recs?: "standouts" | "rough-night"');
+    expect(picker).toContain(
+      'handlePick(id, showDudRecs ? "rough-night" : "standouts")',
+    );
+    expect(picker).not.toContain("isCurrent ? \"This slot\" : (metaOverride || identity)");
     expect(picker).not.toContain("showExtraSuggestedSection");
     expect(sheet).toContain(".sc-picker__recs");
     expect(sheet).not.toContain(

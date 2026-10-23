@@ -50,8 +50,6 @@ import {
   fetchDudsInRange,
   fetchStandoutsInRange,
   isRoughNight,
-  isStandoutOverRoughNight,
-  nightFlagsFor,
   usualLineFor,
 } from "../playerOfTheDayComposer/nightStandouts";
 import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
@@ -136,9 +134,11 @@ export function StatCardComposerApp() {
   const [keepPrompt, setKeepPrompt] = useState<{
     playerId: string;
     playerName: string;
+    recs?: "standouts" | "rough-night";
   } | null>(null);
   const [storyCrop, setStoryCrop] = useState(false);
   const lastGameRef = useRef<LastGame | null>(null);
+  const fillSeq = useRef(0);
   const draftRef = useRef(draft);
   draftRef.current = draft;
   const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
@@ -181,12 +181,13 @@ export function StatCardComposerApp() {
     if (!next.playerId) {
       return;
     }
+    const seq = fillSeq.current;
     const source = parseStatCardSource(next.source);
     try {
       if (source === "season") {
         await loadEveryTeamRosters();
         setDraft((current) =>
-          current.playerId === next.playerId
+          seq === fillSeq.current && current.playerId === next.playerId
             ? fillStatCardFromSeason(current, next.season, sample)
             : current,
         );
@@ -205,11 +206,14 @@ export function StatCardComposerApp() {
                 ? next.gameDate || range.to
                 : null,
             ));
+      if (seq !== fillSeq.current) {
+        return;
+      }
       if (game) {
         lastGameRef.current = game;
       }
       setDraft((current) => {
-        if (current.playerId !== next.playerId) {
+        if (seq !== fillSeq.current || current.playerId !== next.playerId) {
           return current;
         }
         if (!game) {
@@ -226,10 +230,14 @@ export function StatCardComposerApp() {
     }
   };
 
-  const fillPickedLastGame = async (next: StatCardDraft) => {
+  const fillPickedLastGame = async (
+    next: StatCardDraft,
+    recs?: "standouts" | "rough-night",
+  ) => {
     if (!next.playerId) {
       return;
     }
+    const seq = fillSeq.current;
     try {
       const recent = await fetchRecentGames(next.playerId, statsSample);
       const inRange = gamesInInclusiveRange(recent, range.from, range.to);
@@ -242,16 +250,20 @@ export function StatCardComposerApp() {
               statsSample,
               next.gameDate || range.to,
             ));
-      if (!game) {
+      if (!game || seq !== fillSeq.current) {
         return;
       }
       lastGameRef.current = game;
       const usual = usualLineFor(next.playerId);
       setDraft((current) => {
-        if (current.playerId !== next.playerId) {
+        if (seq !== fillSeq.current || current.playerId !== next.playerId) {
           return current;
         }
-        const filled = isRoughNight(game.stats, usual, next.playerId)
+        const useDud =
+          recs === "rough-night" ||
+          (recs !== "standouts" &&
+            isRoughNight(game.stats, usual, next.playerId));
+        const filled = useDud
           ? fillStatCardFromRoughNight(current, game)
           : fillStatCardFromStandout(current, game);
         return applyStatCardHighs(filled, recent, recent);
@@ -318,7 +330,9 @@ export function StatCardComposerApp() {
       return;
     }
     void fillStats(current);
-  }, [hydrated, range.from, range.to, source, draft.playerId]);
+    // Player picks fill in commitPick / fillPickedLastGame. Re-running
+    // fillStats on playerId would restore default PTS/REB/AST keys.
+  }, [hydrated, range.from, range.to, source]);
 
   useEffect(() => {
     if (!pickerOpen || source !== "last-game") {
@@ -397,11 +411,16 @@ export function StatCardComposerApp() {
     }
   };
 
-  const commitPick = (playerId: string, keepCustomPhoto: boolean) => {
+  const commitPick = (
+    playerId: string,
+    keepCustomPhoto: boolean,
+    recs?: "standouts" | "rough-night",
+  ) => {
     const player = getPlayer(playerId);
     if (!player) {
       return;
     }
+    fillSeq.current += 1;
     push(draft);
     let next = fillStatCardFromPlayer(player, draft, keepCustomPhoto);
     const standout = completedNightRows(rangeStandouts).find(
@@ -410,17 +429,26 @@ export function StatCardComposerApp() {
     const dud = completedNightRows(rangeDuds).find(
       (row) => row.athleteId === playerId,
     );
+    let filledFromRecs = false;
     if (parseStatCardSource(next.source) === "last-game") {
-      const preferDud =
-        Boolean(dud) &&
-        (!standout ||
-          !isStandoutOverRoughNight(nightFlagsFor(standout.game.stats)));
-      if (preferDud && dud) {
+      const fromRoughNight = recs === "rough-night";
+      const fromStandouts = recs === "standouts";
+      if (fromRoughNight && dud) {
         lastGameRef.current = dud.game;
         next = fillStatCardFromRoughNight(next, dud.game);
-      } else if (standout) {
+        filledFromRecs = true;
+      } else if (fromStandouts && standout) {
         lastGameRef.current = standout.game;
         next = fillStatCardFromStandout(next, standout.game);
+        filledFromRecs = true;
+      } else if (dud && !fromStandouts) {
+        lastGameRef.current = dud.game;
+        next = fillStatCardFromRoughNight(next, dud.game);
+        filledFromRecs = true;
+      } else if (standout && !fromRoughNight) {
+        lastGameRef.current = standout.game;
+        next = fillStatCardFromStandout(next, standout.game);
+        filledFromRecs = true;
       }
     }
     setDraft(next);
@@ -431,28 +459,34 @@ export function StatCardComposerApp() {
         ? `Kept the photo for ${player.name}.`
         : `Filled ${player.name} — upload an action photo.`,
     );
-    if (
-      parseStatCardSource(next.source) === "last-game" &&
-      !standout &&
-      !dud
-    ) {
-      void fillPickedLastGame(next);
-    } else if (!standout && !dud) {
-      void fillStats(next);
+    if (parseStatCardSource(next.source) === "last-game") {
+      if (!filledFromRecs) {
+        void fillPickedLastGame(next, recs);
+      }
+      return;
     }
+    void fillStats(next);
   };
 
-  const handlePick = (playerId: string) => {
+  const handlePick = (
+    playerId: string,
+    recs?: "standouts" | "rough-night",
+  ) => {
     const player = getPlayer(playerId);
     if (!player) {
       return;
     }
-    if (hasCustomPhoto(draft)) {
-      setKeepPrompt({ playerId: player.id, playerName: player.name });
+    const samePlayer = player.id === draft.playerId;
+    if (hasCustomPhoto(draft) && !samePlayer) {
+      setKeepPrompt({
+        playerId: player.id,
+        playerName: player.name,
+        recs,
+      });
       setPickerOpen(false);
       return;
     }
-    commitPick(player.id, false);
+    commitPick(player.id, samePlayer && hasCustomPhoto(draft), recs);
   };
 
   useEffect(() => {
@@ -942,14 +976,7 @@ export function StatCardComposerApp() {
           suggestedLoading={source === "last-game" && standoutsLoading}
           extraSuggested={
             source === "last-game"
-              ? nightStandoutPickerRows(
-                  completedNightRows(rangeDuds).filter(
-                    (row) =>
-                      !completedNightRows(rangeStandouts).some(
-                        (standout) => standout.athleteId === row.athleteId,
-                      ),
-                  ),
-                )
+              ? nightStandoutPickerRows(completedNightRows(rangeDuds))
               : []
           }
           extraSuggestedHeading={
@@ -969,8 +996,12 @@ export function StatCardComposerApp() {
       {keepPrompt ? (
         <KeepCustomPhotoDialog
           playerName={keepPrompt.playerName}
-          onKeep={() => commitPick(keepPrompt.playerId, true)}
-          onReplace={() => commitPick(keepPrompt.playerId, false)}
+          onKeep={() =>
+            commitPick(keepPrompt.playerId, true, keepPrompt.recs)
+          }
+          onReplace={() =>
+            commitPick(keepPrompt.playerId, false, keepPrompt.recs)
+          }
           onClose={() => setKeepPrompt(null)}
         />
       ) : null}
