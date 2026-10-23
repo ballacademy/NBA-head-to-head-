@@ -8,6 +8,8 @@ import {
 
 export const COMPOSER_DATE_RANGE_KEY = "ddgm:composer-date-range";
 export const COMPOSER_DATE_RANGE_EVENT = "ddgm:composer-date-range";
+export const STAT_COVER_DATE_RANGE_KEY = "ddgm:stat-cover-date-range";
+export const STAT_COVER_DATE_RANGE_EVENT = "ddgm:stat-cover-date-range";
 export const DATE_RANGE_MAX_NIGHTS = 21;
 
 export type DateRangePreset = "this-week" | "last-week" | "last-5" | "tonight" | "last-night" | "custom";
@@ -199,8 +201,8 @@ export const rangeForPreset = (
 export const parseComposerDateRange = (
   stored: unknown,
   now = new Date(),
+  fallback = thisWeekRange(now),
 ): ComposerDateRange => {
-  const fallback = thisWeekRange(now);
   if (!stored || typeof stored !== "object") {
     return fallback;
   }
@@ -213,35 +215,63 @@ export const parseComposerDateRange = (
   return normalizeDateRange(from, to, now);
 };
 
-export const readComposerDateRange = (now = new Date()) =>
-  parseComposerDateRange(readJson<unknown>(COMPOSER_DATE_RANGE_KEY), now);
+export const readComposerDateRange = (
+  now = new Date(),
+  storageKey = COMPOSER_DATE_RANGE_KEY,
+  fallback = thisWeekRange(now),
+) => parseComposerDateRange(readJson<unknown>(storageKey), now, fallback);
 
 export const writeComposerDateRange = (
   range: ComposerDateRange,
   now = new Date(),
+  storageKey = COMPOSER_DATE_RANGE_KEY,
+  eventName = COMPOSER_DATE_RANGE_EVENT,
 ) => {
   const next = normalizeDateRange(range.from, range.to, now);
-  writeJson(COMPOSER_DATE_RANGE_KEY, next);
+  writeJson(storageKey, next);
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(COMPOSER_DATE_RANGE_EVENT));
+    window.dispatchEvent(new Event(eventName));
   }
   return next;
 };
 
-export function useComposerDateRange() {
-  const [range, setRangeState] = useState<ComposerDateRange>(readComposerDateRange);
+export function useComposerDateRange(
+  options: {
+    storageKey?: string;
+    eventName?: string;
+    fallback?: (now?: Date) => ComposerDateRange;
+  } = {},
+) {
+  const storageKey = options.storageKey ?? COMPOSER_DATE_RANGE_KEY;
+  const eventName = options.eventName ?? COMPOSER_DATE_RANGE_EVENT;
+  const fallbackFn = options.fallback ?? thisWeekRange;
+  const [range, setRangeState] = useState<ComposerDateRange>(() =>
+    readComposerDateRange(new Date(), storageKey, fallbackFn()),
+  );
   const rangeRef = useRef(range);
   rangeRef.current = range;
 
-  const setRange = useCallback((next: ComposerDateRange) => {
-    const written = writeComposerDateRange(next);
-    setRangeState(written);
-    return written;
-  }, []);
+  const setRange = useCallback(
+    (next: ComposerDateRange) => {
+      const written = writeComposerDateRange(
+        next,
+        new Date(),
+        storageKey,
+        eventName,
+      );
+      setRangeState(written);
+      return written;
+    },
+    [eventName, storageKey],
+  );
 
   useEffect(() => {
     const sync = () => {
-      const next = readComposerDateRange();
+      const next = readComposerDateRange(
+        new Date(),
+        storageKey,
+        fallbackFn(),
+      );
       if (
         next.from !== rangeRef.current.from ||
         next.to !== rangeRef.current.to
@@ -250,17 +280,25 @@ export function useComposerDateRange() {
       }
     };
     const onStorage = (event: StorageEvent) => {
-      if (event.key === COMPOSER_DATE_RANGE_KEY || event.key === null) {
+      if (event.key === storageKey || event.key === null) {
         sync();
       }
     };
     window.addEventListener("storage", onStorage);
-    window.addEventListener(COMPOSER_DATE_RANGE_EVENT, sync);
+    window.addEventListener(eventName, sync);
     return () => {
       window.removeEventListener("storage", onStorage);
-      window.removeEventListener(COMPOSER_DATE_RANGE_EVENT, sync);
+      window.removeEventListener(eventName, sync);
     };
-  }, []);
+  }, [eventName, fallbackFn, storageKey]);
 
   return { range, setRange };
+}
+
+export function useStatCoverDateRange() {
+  return useComposerDateRange({
+    storageKey: STAT_COVER_DATE_RANGE_KEY,
+    eventName: STAT_COVER_DATE_RANGE_EVENT,
+    fallback: tonightRange,
+  });
 }

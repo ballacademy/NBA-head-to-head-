@@ -4,9 +4,10 @@ import {
   GRAPHIC_ASPECT,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 
-export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
+export { GRAPHIC_ASPECT, GRAPHIC_HEIGHT, GRAPHIC_WIDTH, STORY_DESIGN_HEIGHT };
 
 /** Default three even full-bleed columns — one row, no hero stack. */
 export const SCC_SLOT_COUNT = 3;
@@ -60,7 +61,11 @@ export const SCC_GOLD = "#facc15";
 export const SCC_GOLD_DEEP = "#d4af37";
 export const SCC_GOLD_HAIR = 2;
 
-export const coverCellRect = (index: number, count = SCC_SLOT_COUNT) => {
+export const coverCellRect = (
+  index: number,
+  count = SCC_SLOT_COUNT,
+  boardH = GRAPHIC_HEIGHT,
+) => {
   const n = parseCoverSlotCount(count);
   const colW = GRAPHIC_WIDTH / n;
   const col = Math.max(0, Math.min(index, n - 1));
@@ -68,7 +73,7 @@ export const coverCellRect = (index: number, count = SCC_SLOT_COUNT) => {
     x: col * colW,
     y: 0,
     w: colW,
-    h: GRAPHIC_HEIGHT,
+    h: boardH,
   };
 };
 

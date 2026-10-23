@@ -52,9 +52,9 @@ export const TIER_TITLE_TRACK = 0.04;
 export const cellsContentWidth = () =>
   GRAPHIC_WIDTH - TIER_LABEL_W - TIER_CELLS_INSET - TIER_PAD_RIGHT;
 
-export const rowMetrics = (rowCount: number) => {
+export const rowMetrics = (rowCount: number, boardH = GRAPHIC_HEIGHT) => {
   const count = Math.max(1, rowCount);
-  const bodyH = GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER;
+  const bodyH = boardH - TIER_HEADER_H - TIER_FOOTER;
   const rowH = bodyH / count;
   return { bodyH, rowH };
 };
@@ -121,6 +121,7 @@ export const EMPTY_TIER_LANES = 0.32;
 export const tierBoardLayout = (
   itemCounts: number[],
   labelLineCounts: number[] = [],
+  boardH = GRAPHIC_HEIGHT,
 ): TierBoardLayout => {
   const anyFilled = itemCounts.some((count) => count > 0);
   const lanes = itemCounts.map((count, index) => {
@@ -130,7 +131,7 @@ export const tierBoardLayout = (
     return Math.max(tierLaneCount(count), Math.max(1, labelLineCounts[index] ?? 1));
   });
   const totalLanes = Math.max(1, lanes.reduce((sum, count) => sum + count, 0));
-  const bodyH = GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER;
+  const bodyH = boardH - TIER_HEADER_H - TIER_FOOTER;
   const contentW = cellsContentWidth();
   /** Stretch lanes so the last tier meets the footer, 3–10 rows alike. */
   const laneH = bodyH / totalLanes;

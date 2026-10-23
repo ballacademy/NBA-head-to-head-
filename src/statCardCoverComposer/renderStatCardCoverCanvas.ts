@@ -22,7 +22,11 @@ import {
   photoZoom,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
-import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import {
   SCC_BA_INSET,
@@ -274,11 +278,12 @@ const drawSwipeCue = (
   scale: number,
   width: number,
   goldOn = true,
+  boardH = GRAPHIC_HEIGHT,
 ) => {
   const s = scale;
   const size = SCC_SWIPE_SIZE * s;
   const cx = width - SCC_SWIPE_INSET * s - size / 2;
-  const cy = GRAPHIC_HEIGHT * 0.56 * s;
+  const cy = boardH * 0.56 * s;
   const ink = goldOn ? SCC_GOLD : "#fff";
   const ring = goldOn ? SCC_GOLD_DEEP : "rgba(255, 255, 255, 0.88)";
   const label = SCC_SWIPE_LABEL * s;
@@ -317,14 +322,16 @@ export type StatCardCoverRenderInput = StatCardCoverDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
+  story?: boolean;
 };
 
 export const renderStatCardCoverCanvas = async (
   input: StatCardCoverRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -355,7 +362,7 @@ export const renderStatCardCoverCanvas = async (
   const slotCount = input.slots.length || SCC_SLOT_COUNT;
   for (let index = 0; index < slotCount; index += 1) {
     const slot = input.slots[index]!;
-    const cell = coverCellRect(index, slotCount);
+    const cell = coverCellRect(index, slotCount, boardH);
     await drawCellPhoto(
       context,
       slot,
@@ -472,7 +479,7 @@ export const renderStatCardCoverCanvas = async (
     setLetterSpacing(context, 0);
   }
 
-  drawSwipeCue(context, s, width, goldOn);
+  drawSwipeCue(context, s, width, goldOn, boardH);
 
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 

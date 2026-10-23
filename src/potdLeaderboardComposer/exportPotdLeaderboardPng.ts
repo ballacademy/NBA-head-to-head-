@@ -1,7 +1,4 @@
-import {
-  downloadPngMaybeSquare,
-  toStoryCanvas,
-} from "../instagramComposer/exportDownload";
+import { downloadPngMaybeSquare } from "../instagramComposer/exportDownload";
 import {
   renderPotdLeaderboardCanvas,
   type PotdLeaderboardRenderInput,
@@ -16,7 +13,6 @@ export const exportPotdLeaderboardPng = async (
   story = false,
   square = false,
 ) => {
-  const canvas = await renderPotdLeaderboardCanvas(input, 2);
-  const board = story ? await toStoryCanvas(canvas) : canvas;
-  await downloadPngMaybeSquare(board, filename, square);
+  const canvas = await renderPotdLeaderboardCanvas({ ...input, story }, 2);
+  await downloadPngMaybeSquare(canvas, filename, square);
 };

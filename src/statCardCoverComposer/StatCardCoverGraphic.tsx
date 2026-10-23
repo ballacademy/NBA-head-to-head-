@@ -19,7 +19,11 @@ import {
 } from "../instagramComposer/composerWatermark";
 import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
@@ -52,6 +56,7 @@ interface StatCardCoverGraphicProps {
   purpleFlair?: boolean;
   photoGrade?: boolean;
   exporting?: boolean;
+  story?: boolean;
   onTitleChange: (value: string) => void;
   onDateLineChange: (value: string) => void;
   onPick: (index: number) => void;
@@ -75,6 +80,7 @@ export const StatCardCoverGraphic = forwardRef<
     purpleFlair = false,
     photoGrade = false,
     exporting = false,
+    story = false,
     onTitleChange,
     onDateLineChange,
     onPick,
@@ -159,7 +165,11 @@ export const StatCardCoverGraphic = forwardRef<
     >
       {Array.from({ length: slotCount }, (_, index) => {
         const slot = draft.slots[index]!;
-        const cell = coverCellRect(index, slotCount);
+        const cell = coverCellRect(
+          index,
+          slotCount,
+          story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
+        );
         const empty = !slot.photoSrc;
         const named = Boolean(slot.playerId || coverSlotName(slot));
         const team = getTeam(slot.teamId);

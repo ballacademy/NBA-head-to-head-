@@ -392,6 +392,14 @@ export function CompareComposerApp() {
         }
         data={
           <>
+        <button
+          type="button"
+          className="sc-chip"
+          aria-label="Swap sides"
+          onClick={() => setDraft((current) => swapCompareSides(current))}
+        >
+          Swap sides
+        </button>
         <ComposerHudSelect
           label="Stats"
           ariaLabel="Stats source"
@@ -470,14 +478,6 @@ export function CompareComposerApp() {
             ))}
           </select>
         </label>
-        <button
-          type="button"
-          className="sc-chip"
-          aria-label="Swap sides"
-          onClick={() => setDraft((current) => swapCompareSides(current))}
-        >
-          Swap sides
-        </button>
         {draft.stats.map((stat, index) => (
           <div key={`cmp-key-${stat.key}-${index}`} className="sc-field">
             <span>Stat {index + 1}</span>
@@ -591,12 +591,12 @@ export function CompareComposerApp() {
           }
         />
         <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <span className="sc-toolbar__eyebrow">Story crop</span>
           <button
             type="button"
             className={storyCrop ? "sc-chip is-on" : "sc-chip"}
             aria-pressed={storyCrop}
-            aria-label="9:16 crop check"
+            aria-label="Story crop check"
             onClick={() => setStoryCrop((on) => !on)}
           >
             {storyCrop ? "On" : "Off"}

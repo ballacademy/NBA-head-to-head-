@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { ComposerHudExtras } from "../instagramComposer/ComposerHudExtras";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
@@ -7,7 +8,6 @@ import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSam
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { StatCardFlipToggle } from "./StatCardFlipToggle";
-import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
@@ -16,7 +16,7 @@ import {
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
-import { useComposerDateRange } from "../instagramComposer/composerDateRange";
+import { useStatCoverDateRange } from "../instagramComposer/composerDateRange";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import {
@@ -143,7 +143,7 @@ export function StatCardComposerApp() {
   draftRef.current = draft;
   const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
   const night = useComposerNight();
-  const { range, setRange } = useComposerDateRange();
+  const { range, setRange } = useStatCoverDateRange();
   const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
   const [rangeDuds, setRangeDuds] = useState<NightStandout[]>([]);
   const [standoutsLoading, setStandoutsLoading] = useState(false);
@@ -458,7 +458,7 @@ export function StatCardComposerApp() {
     setStatus(
       keepCustomPhoto
         ? `Kept the photo for ${player.name}.`
-        : `Filled ${player.name} — upload an action photo.`,
+        : `Filled ${player.name}. Headshot is in — paste or upload an action photo if you want.`,
     );
     if (parseStatCardSource(next.source) === "last-game") {
       if (!filledFromRecs) {
@@ -668,13 +668,20 @@ export function StatCardComposerApp() {
               setDraft((current) => setStatCardPhoto(current, dataUrl));
               setStatus("Photo cropped inside the frame — pinch or drag.");
             }}
+            onUploadMany={(urls) => {
+              const first = urls[0];
+              if (!first) {
+                return;
+              }
+              setDraft((current) => setStatCardPhoto(current, first));
+              setStatus("Photo cropped inside the frame — pinch or drag.");
+            }}
           />
           </>
         }
         board={
           <>
             <ComposerLookToggle look={look} onChange={setLook} />
-            <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
             <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
             <StatCardFlipToggle
               statsLeft={Boolean(draft.statsLeft)}
@@ -683,46 +690,6 @@ export function StatCardComposerApp() {
                 setDraft((current) => ({ ...current, statsLeft }));
               }}
             />
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Matchup</span>
-              <button
-                type="button"
-                className={draft.showMatchup ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={Boolean(draft.showMatchup)}
-                aria-label="Show game matchup"
-                onClick={() => {
-                  setDraft((current) => {
-                    const showMatchup = !current.showMatchup;
-                    const matchup =
-                      showMatchup && !clipStatMatchup(current.matchup ?? "")
-                        ? formatStatCardMatchup(lastGameRef.current)
-                        : current.matchup;
-                    return { ...current, showMatchup, matchup };
-                  });
-                }}
-              >
-                {draft.showMatchup ? "On" : "Off"}
-              </button>
-            </label>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">High pip</span>
-              <button
-                type="button"
-                className={draft.showHighPip ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={Boolean(draft.showHighPip)}
-                aria-label="Season or career high pip"
-                onClick={() => {
-                  const next = {
-                    ...draft,
-                    showHighPip: !draft.showHighPip,
-                  };
-                  setDraft(next);
-                  void fillStats(next);
-                }}
-              >
-                {draft.showHighPip ? "On" : "Off"}
-              </button>
-            </label>
             <BaMarkToggle
               on={draft.showBa !== false}
               onChange={(showBa) =>
@@ -735,18 +702,48 @@ export function StatCardComposerApp() {
                 setDraft((current) => ({ ...current, watermark }))
               }
             />
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">9:16 crop</span>
-              <button
-                type="button"
-                className={storyCrop ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={storyCrop}
-                aria-label="9:16 crop check"
-                onClick={() => setStoryCrop((on) => !on)}
-              >
-                {storyCrop ? "On" : "Off"}
-              </button>
-            </label>
+            <ComposerHudExtras
+              label="Board extras"
+              ariaLabel="Stat board extras"
+              items={[
+                {
+                  key: "matchup",
+                  label: "Matchup",
+                  on: Boolean(draft.showMatchup),
+                  onChange: (showMatchup) => {
+                    setDraft((current) => {
+                      const matchup =
+                        showMatchup && !clipStatMatchup(current.matchup ?? "")
+                          ? formatStatCardMatchup(lastGameRef.current)
+                          : current.matchup;
+                      return { ...current, showMatchup, matchup };
+                    });
+                  },
+                },
+                {
+                  key: "high-pip",
+                  label: "High pip",
+                  on: Boolean(draft.showHighPip),
+                  onChange: (showHighPip) => {
+                    const next = { ...draft, showHighPip };
+                    setDraft(next);
+                    void fillStats(next);
+                  },
+                },
+                {
+                  key: "purple",
+                  label: "Purple",
+                  on: purpleFlair,
+                  onChange: setPurpleFlair,
+                },
+                {
+                  key: "story-crop",
+                  label: "Story crop",
+                  on: storyCrop,
+                  onChange: setStoryCrop,
+                },
+              ]}
+            />
           </>
         }
         persist={

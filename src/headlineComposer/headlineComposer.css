@@ -374,9 +374,9 @@
 
 .hl-board .pod-photo__tools {
   left: calc(16 * var(--u));
-  right: calc(16 * var(--u));
+  right: auto;
   bottom: auto;
-  top: calc(108 * var(--u));
+  top: calc(8 * var(--u));
 }
 
 .hl-board .pod-photo__pick {

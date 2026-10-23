@@ -510,12 +510,6 @@ export function TeamOfTheWeekComposerApp() {
             onFill={() => void fillRange(true)}
             fillLabel="Fill range"
           />
-          <TotwStatsExportHud
-            sheet={stats}
-            statsSheet={statsSheet}
-            onStatsSheet={setStatsSheet}
-            onStatus={setStatus}
-          />
           <ComposerPhotoHud
             onPick={() => {
               const index = activeIndex ?? photoTarget;
@@ -543,12 +537,12 @@ export function TeamOfTheWeekComposerApp() {
         board={
           <>
         <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <span className="sc-toolbar__eyebrow">Story crop</span>
           <button
             type="button"
             className={storyCrop ? "sc-chip is-on" : "sc-chip"}
             aria-pressed={storyCrop}
-            aria-label="9:16 crop check"
+            aria-label="Story crop check"
             onClick={() => setStoryCrop((on) => !on)}
           >
             {storyCrop ? "On" : "Off"}
@@ -573,6 +567,13 @@ export function TeamOfTheWeekComposerApp() {
           </>
         }
         persist={
+        <>
+        <TotwStatsExportHud
+          sheet={stats}
+          statsSheet={statsSheet}
+          onStatsSheet={setStatsSheet}
+          onStatus={setStatus}
+        />
         <ComposerSaves
           storageKey={SAVES_KEY}
           board={{
@@ -599,6 +600,7 @@ export function TeamOfTheWeekComposerApp() {
             setStatus("Loaded named graphic.");
           }}
         />
+        </>
         }
         actions={
           <>

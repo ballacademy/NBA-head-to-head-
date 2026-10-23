@@ -31,6 +31,9 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import {
   POTD_BRAND_SIZE,
   POTD_DATE_SIZE,
   POTD_FOOTER,
@@ -185,6 +188,7 @@ export interface PlayerOfTheDayRenderInput {
   photoGrade?: boolean;
   showBa?: boolean;
   wlColor?: boolean;
+  story?: boolean;
 }
 
 export const renderPlayerOfTheDayCanvas = async (
@@ -192,7 +196,8 @@ export const renderPlayerOfTheDayCanvas = async (
   scale = 2,
 ) => {
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height =
+    (input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT) * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;

@@ -76,10 +76,10 @@ export const notchFromMeasuredWidth = (
   return { left, right };
 };
 
-export const bannerBoardRect = (scale = 1) => {
+export const bannerBoardRect = (scale = 1, boardH = GRAPHIC_HEIGHT) => {
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
-  const headerH = Math.round(height * HEADER_RATIO);
+  const height = boardH * scale;
+  const headerH = Math.round(GRAPHIC_HEIGHT * scale * HEADER_RATIO);
   const x = Math.round(width * 0.045);
   const w = width - 2 * x;
   const y = (BRAND_SLOT + BANNER_MARGIN_TOP) * scale;

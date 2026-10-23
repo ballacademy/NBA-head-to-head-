@@ -474,6 +474,26 @@ export function HeadlineComposerApp() {
               setStatus("Photo cropped inside the frame — pinch, scroll, or +/− to scale, drag to pan.");
             }}
           />
+        <label className="sc-field">
+          Team
+          <select
+            value={draft.teamId ?? ""}
+            aria-label="Team"
+            onChange={(event) => {
+              const teamId = event.target.value || null;
+              const next = setHeadlineTeamId(draft, teamId);
+              setDraft(next);
+              void fillAutoBody(next);
+            }}
+          >
+            <option value="">None</option>
+            {NBA_TEAMS.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+        </label>
           </>
         }
         filters={
@@ -494,26 +514,6 @@ export function HeadlineComposerApp() {
             <option value="city">City</option>
             <option value="nick">Nickname</option>
             <option value="short">Short name</option>
-          </select>
-        </label>
-        <label className="sc-field">
-          Team
-          <select
-            value={draft.teamId ?? ""}
-            aria-label="Team"
-            onChange={(event) => {
-              const teamId = event.target.value || null;
-              const next = setHeadlineTeamId(draft, teamId);
-              setDraft(next);
-              void fillAutoBody(next);
-            }}
-          >
-            <option value="">None</option>
-            {NBA_TEAMS.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
           </select>
         </label>
         <label className="sc-field">
@@ -716,12 +716,12 @@ export function HeadlineComposerApp() {
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
         <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <span className="sc-toolbar__eyebrow">Story crop</span>
           <button
             type="button"
             className={storyCrop ? "sc-chip is-on" : "sc-chip"}
             aria-pressed={storyCrop}
-            aria-label="9:16 crop check"
+            aria-label="Story crop check"
             onClick={() => setStoryCrop((on) => !on)}
           >
             {storyCrop ? "On" : "Off"}

@@ -19,6 +19,7 @@ import {
 } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import { STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { getTeam } from "../standingsComposer/teams";
 import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
@@ -131,14 +132,16 @@ export interface PotdLeaderboardRenderInput {
   showBa?: boolean;
   showPips?: boolean;
   potdKeys?: string[];
+  story?: boolean;
 }
 
 export const renderPotdLeaderboardCanvas = async (
   input: PotdLeaderboardRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -231,7 +234,7 @@ export const renderPotdLeaderboardCanvas = async (
   }
 
   const ranked = rankLeaderboard(input.entries);
-  const blanks = leaderboardBlankCount(ranked);
+  const blanks = leaderboardBlankCount(ranked, boardH);
   const inset = PLB_LIST_INSET * s;
   const innerX = listX + inset;
   const innerW = listW - inset * 2;

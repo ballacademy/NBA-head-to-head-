@@ -22,7 +22,11 @@ import {
   applyPhotoGrade,
   canvasGradeFilter,
 } from "../instagramComposer/photoGrade";
-import { GRAPHIC_HEIGHT, GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import {
   QT_BA_INSET,
   QT_BA_SIZE,
@@ -98,14 +102,16 @@ export type QuoteRenderInput = QuoteDraft & {
   look?: ComposerLook;
   purpleFlair?: boolean;
   photoGrade?: boolean;
+  story?: boolean;
 };
 
 export const renderQuoteCanvas = async (
   input: QuoteRenderInput,
   scale = 2,
 ) => {
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -264,7 +270,7 @@ export const renderQuoteCanvas = async (
       context,
       {
         x: GRAPHIC_WIDTH - 28 - 118,
-        y: GRAPHIC_HEIGHT - 108 - 88,
+        y: boardH - 108 - 88,
         w: 118,
         h: 88,
       },

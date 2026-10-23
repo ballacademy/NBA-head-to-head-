@@ -21,7 +21,7 @@ import {
   paintBoardField,
 } from "../standingsComposer/headerTexture";
 import { drawCoveredLogo } from "../standingsComposer/logoDraw";
-import { GRAPHIC_BG } from "../standingsComposer/rankingState";
+import { GRAPHIC_BG, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
 import { drawCoverHeadshot } from "../tierListComposer/PlayerHeadshot";
@@ -155,6 +155,7 @@ export interface EveryTeamRenderInput {
   duo?: boolean;
   partners?: EveryTeamSlots;
   gridGroup?: EveryTeamGridGroup;
+  story?: boolean;
 }
 
 export const renderEveryTeamCanvas = async (
@@ -169,8 +170,9 @@ export const renderEveryTeamCanvas = async (
     ]).catch(() => undefined);
   }
 
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -254,7 +256,7 @@ export const renderEveryTeamCanvas = async (
     });
   });
 
-  const grid = everyTeamGrid(scale);
+  const grid = everyTeamGrid(scale, boardH);
   const ranked = input.ranked === true;
   const gridGroup = ranked ? "none" : (input.gridGroup ?? "none");
   const teams = displayedTeams(ranked, input.rankedOrder, gridGroup);

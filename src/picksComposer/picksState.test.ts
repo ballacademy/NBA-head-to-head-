@@ -27,6 +27,7 @@ import {
   refreshPicksLines,
   parseEspnAwayLine,
   parsePicksLineInput,
+  picksCaptionLines,
   parseEspnNationalTv,
   parseEspnTip,
   parsePicksScoreboard,
@@ -584,11 +585,11 @@ describe("picks composer", () => {
     expect(cyclePicksGrade("P", "W")).toBeNull();
   });
 
-  it("hides 0-0 records, filters export to locks, and prints ATS with L10, pushes, and units", () => {
+  it("keeps 0-0-0 on the graphic, filters export to locks, and prints ATS with L10, pushes, and units", () => {
     expect(picksRecordLine("0-0", "0-0")).toBe("");
     expect(picksRecordLine("12-8", "7-3")).toBe("12-8 · L10 7-3");
     expect(picksRecordLine("12-8-1")).toBe("12-8-1");
-    expect(formatPicksGraphicRecord(emptyPicksLedger())).toBe("");
+    expect(formatPicksGraphicRecord(emptyPicksLedger())).toBe("0-0-0");
     const slate = [
       row({ id: "a", awayId: "ATL", homeId: "ORL", pick: "away" }),
       row({ id: "b", awayId: "BOS", homeId: "NYK" }),
@@ -599,6 +600,8 @@ describe("picks composer", () => {
       "a",
       "c",
     ]);
+    expect(picksCaptionLines(slate).join(" ")).toContain("ATL");
+    expect(picksCaptionLines(slate).join(" ")).not.toContain("BOS");
     const entry = (
       date: string,
       result: "W" | "L" | "P",
@@ -694,7 +697,7 @@ describe("picks composer", () => {
         pick: "away",
       }),
     ]);
-    expect(formatPicksGraphicRecord(open)).toBe("");
+    expect(formatPicksGraphicRecord(open)).toBe("0-0-0");
     const fromSave = setPicksRecordField(open, "wins", 12);
     expect(formatPicksGraphicRecord(fromSave)).toBe("12-0");
     const gradedNight = applyScoresToPicksLedger(fromSave, "2026-10-20", [

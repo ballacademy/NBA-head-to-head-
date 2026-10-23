@@ -13,7 +13,9 @@ import {
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
-import { useComposerDateRange } from "../instagramComposer/composerDateRange";
+import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { useStatCoverDateRange } from "../instagramComposer/composerDateRange";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import { nightStandoutPickerRows } from "../instagramComposer/composerNight";
@@ -24,6 +26,10 @@ import {
 import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
 import { bytesFromBlob, downloadZip } from "../instagramComposer/downloadZip";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { renderStatCardCanvas } from "../statCardComposer/renderStatCardCanvas";
 import { nextStatsLeft, statsLeftAt } from "../statCardComposer/statCardLayout";
 import {
@@ -112,7 +118,7 @@ export function StatCardCoverComposerApp() {
   const filledKey = useRef("");
   const autoFill = useRef(true);
   const { push, pop, canUndo } = useComposerUndo<StatCardCoverDraft>();
-  const { range, setRange } = useComposerDateRange();
+  const { range, setRange } = useStatCoverDateRange();
   const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
   const [standoutsLoading, setStandoutsLoading] = useState(false);
   const pickerOpen = activeIndex != null;
@@ -244,7 +250,7 @@ export function StatCardCoverComposerApp() {
         node,
         filename ??
           exportFilenameFromTitle(draft.title || "stat-card-cover", "stat-card-cover"),
-        { ...draft, look, purpleFlair, photoGrade },
+        { ...draft, look, purpleFlair, photoGrade, story },
         story,
         square,
       );
@@ -282,7 +288,7 @@ export function StatCardCoverComposerApp() {
     setStatus(
       keepCustomPhoto
         ? `Kept the photo for ${player.name}.`
-        : `Filled ${player.name} — upload or paste an action photo.`,
+        : `Filled ${player.name}. Headshot is in — paste or upload an action photo if you want.`,
     );
   };
 
@@ -406,6 +412,32 @@ export function StatCardCoverComposerApp() {
               onFill={fillFromNight}
               fillLabel="Fill cover"
             />
+            <ComposerPhotoHud
+              onPick={() => {
+                const index = activeIndex ?? photoTarget;
+                setPhotoTarget(index);
+                setActiveIndex(index);
+              }}
+              onUpload={(dataUrl) => {
+                const index = activeIndex ?? photoTarget;
+                setDraft((current) => ({
+                  ...current,
+                  slots: setCoverSlotPhotoAt(current.slots, index, dataUrl),
+                }));
+                setStatus("Photo cropped inside the frame — pinch or drag.");
+              }}
+              onUploadMany={(urls) => {
+                const start = activeIndex ?? photoTarget;
+                setDraft((current) => {
+                  let slots = current.slots;
+                  urls.forEach((url, offset) => {
+                    slots = setCoverSlotPhotoAt(slots, start + offset, url);
+                  });
+                  return { ...current, slots };
+                });
+                setStatus("Dropped photos into cover slots.");
+              }}
+            />
             <div className="sc-look" role="group" aria-label="Portraits">
               <span className="sc-look__label">Portraits</span>
               {[2, 3, 4].map((count) => (
@@ -506,12 +538,12 @@ export function StatCardCoverComposerApp() {
               }
             />
             <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">9:16 crop</span>
+              <span className="sc-toolbar__eyebrow">Story crop</span>
               <button
                 type="button"
                 className={storyCrop ? "sc-chip is-on" : "sc-chip"}
                 aria-pressed={storyCrop}
-                aria-label="9:16 crop check"
+                aria-label="Story crop check"
                 onClick={() => setStoryCrop((on) => !on)}
               >
                 {storyCrop ? "On" : "Off"}
@@ -623,7 +655,56 @@ export function StatCardCoverComposerApp() {
               onClick={() => {
                 void (async () => {
                   setExporting(true);
-                  setStatus("Rendering cover pack…");
+                  try {
+                    const filename = exportFilenameFromTitle(
+                      stem,
+                      "stat-card-cover",
+                    );
+                    await downloadExportPack(
+                      () =>
+                        renderStatCardCoverCanvas(
+                          { ...draft, look, purpleFlair, photoGrade },
+                          2,
+                        ),
+                      filename,
+                      [
+                        {
+                          filename: storyFilename(filename),
+                          render: () =>
+                            renderStatCardCoverCanvas(
+                              {
+                                ...draft,
+                                look,
+                                purpleFlair,
+                                photoGrade,
+                                story: true,
+                              },
+                              2,
+                            ),
+                        },
+                      ],
+                      { letterbox: false },
+                    );
+                    setStatus("Pack download started (4:5 + 9:16 + 1:1).");
+                  } catch (error) {
+                    console.error(error);
+                    setStatus("Could not export pack.");
+                  } finally {
+                    setExporting(false);
+                  }
+                })();
+              }}
+              disabled={exporting}
+            >
+              Export pack
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                void (async () => {
+                  setExporting(true);
+                  setStatus("Rendering cover + cards…");
                   try {
                     const rows =
                       rangeStandouts.length
@@ -642,8 +723,16 @@ export function StatCardCoverComposerApp() {
                       bytes: await bytesFromBlob(await canvasToPngBlob(coverCanvas)),
                     });
                     let index = 0;
+                    let skippedHeadshots = 0;
                     const startLeft = peekStatCardStatsLeft(draft.gameDate);
                     for (const slot of draft.slots) {
+                      if (!slot.playerId) {
+                        continue;
+                      }
+                      if (!hasCustomPhoto(slot)) {
+                        skippedHeadshots += 1;
+                        continue;
+                      }
                       const card = statCardFromCoverSlot(
                         slot,
                         standoutsById.get(slot.playerId ?? "")?.game ?? null,
@@ -686,7 +775,7 @@ export function StatCardCoverComposerApp() {
                     await downloadZip(
                       exportFilenameFromTitle(stem, "stat-card-cover").replace(
                         /\.png$/i,
-                        "-pack.zip",
+                        "-cards.zip",
                       ),
                       files,
                     );
@@ -694,14 +783,20 @@ export function StatCardCoverComposerApp() {
                       nextStatsLeft(startLeft, index),
                       draft.gameDate,
                     );
+                    const skipped =
+                      skippedHeadshots > 0
+                        ? ` Skipped ${skippedHeadshots} headshot-only slot${
+                            skippedHeadshots === 1 ? "" : "s"
+                          }.`
+                        : "";
                     setStatus(
-                      `Pack download started (cover + ${index} stat card${
+                      `Cover + cards download started (${index} action photo${
                         index === 1 ? "" : "s"
-                      }).`,
+                      }).${skipped}`,
                     );
                   } catch (error) {
                     console.error(error);
-                    setStatus("Could not export pack.");
+                    setStatus("Could not export cover + cards.");
                   } finally {
                     setExporting(false);
                   }
@@ -709,7 +804,7 @@ export function StatCardCoverComposerApp() {
               }}
               disabled={exporting}
             >
-              Export pack
+              Cover + cards
             </button>
             <button
               type="button"
@@ -726,7 +821,7 @@ export function StatCardCoverComposerApp() {
       <main className="sc-stage">
         <div className="sc-stage__frame">
           <div className="sc-board-wrap">
-            <ComposerBoard>
+            <ComposerBoard height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}>
               <StatCardCoverGraphic
                 ref={boardRef}
                 draft={draft}
@@ -734,6 +829,7 @@ export function StatCardCoverComposerApp() {
                 purpleFlair={purpleFlair}
                 photoGrade={photoGrade}
                 exporting={exporting}
+                story={storyCrop}
                 onTitleChange={(title) =>
                   setDraft((current) => ({ ...current, title }))
                 }
@@ -781,9 +877,9 @@ export function StatCardCoverComposerApp() {
           <p className="sc-hint">
             Stars and standouts cover — 2, 3, or 4 full-bleed faces in one row,
             no individual stats. Drag a portrait on the preview to reorder slots.
-            Fill from a date range. Export pack zips the
-            cover plus a Stat card for each standout. Downloads a 4:5 Instagram
-            PNG — nothing is posted.
+            Fill from a date range. Export pack is the cover at 4:5 + 9:16 + 1:1.
+            Cover + cards zips action-photo slots only. Downloads Instagram
+            PNGs — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

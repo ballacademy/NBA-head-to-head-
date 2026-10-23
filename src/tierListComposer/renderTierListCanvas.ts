@@ -17,7 +17,7 @@ import {
   drawCenteredLogo,
   getOpaqueBounds,
 } from "../standingsComposer/logoDraw";
-import { GRAPHIC_BG } from "../standingsComposer/rankingState";
+import { GRAPHIC_BG, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import { loadCorsImage } from "../lib/playerHeadshots";
@@ -141,6 +141,7 @@ export interface TierListRenderInput {
   purpleFlair?: boolean;
   showBa?: boolean;
   showNames?: boolean;
+  story?: boolean;
 }
 
 export const renderTierListCanvas = async (
@@ -155,8 +156,9 @@ export const renderTierListCanvas = async (
     ]).catch(() => undefined);
   }
 
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -206,7 +208,7 @@ export const renderTierListCanvas = async (
       0,
       TIER_HEADER_H * scale,
       TIER_LABEL_W * scale,
-      (GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER) * scale,
+      (boardH - TIER_HEADER_H - TIER_FOOTER) * scale,
       scale,
     );
   } else {
@@ -243,6 +245,7 @@ export const renderTierListCanvas = async (
   const layout = tierBoardLayout(
     input.rows.map((row) => row.teams.length),
     labelLayouts.map((item) => item.lines.length),
+    boardH,
   );
   const subject = input.subject ?? "teams";
   const cellArt = await Promise.all(
@@ -408,7 +411,7 @@ export const renderTierListCanvas = async (
   context.fillStyle = "rgba(255, 255, 255, 0.2)";
   context.fillRect(
     0,
-    (GRAPHIC_HEIGHT - TIER_FOOTER) * scale,
+    (boardH - TIER_FOOTER) * scale,
     width,
     Math.max(1, 1.5 * scale),
   );

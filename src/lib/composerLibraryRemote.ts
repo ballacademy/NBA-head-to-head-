@@ -19,9 +19,6 @@ export const resetComposerLibraryPullGate = () => {
 export const pullAndMergeComposerLibrary = async (
   playerId = getOrCreatePlayerIdentity().playerId,
 ) => {
-  if (!(await isPlayerAccountLinked(playerId))) {
-    return null;
-  }
   const remote = await fetchRemoteComposerLibrary(playerId);
   if (!remote?.library) {
     return null;
@@ -40,11 +37,13 @@ export const pushComposerLibraryIfLinked = async (
 ): Promise<boolean> => {
   const playerId =
     options.playerId ?? getOrCreatePlayerIdentity().playerId;
-  if (!(await isPlayerAccountLinked(playerId))) {
+  if (!playerId.trim()) {
     return false;
   }
   if (!options.force && !composerLibraryPullSucceeded) {
-    return false;
+    if (!(await isPlayerAccountLinked(playerId))) {
+      return false;
+    }
   }
   const pushed = await pushRemoteComposerLibrary({
     playerId,

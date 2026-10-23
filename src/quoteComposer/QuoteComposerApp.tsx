@@ -19,7 +19,11 @@ import {
   useComposerLook,
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -128,7 +132,7 @@ export function QuoteComposerApp() {
       await exportQuotePng(
         node,
         filename ?? exportFilenameFromTitle(draft.quote, "quote"),
-        { ...draft, look, purpleFlair, photoGrade },
+        { ...draft, look, purpleFlair, photoGrade, story },
         story,
         square,
       );
@@ -354,12 +358,12 @@ export function QuoteComposerApp() {
           onChange={(showBa) => setDraft((current) => ({ ...current, showBa }))}
         />
         <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">9:16 crop</span>
+          <span className="sc-toolbar__eyebrow">Story crop</span>
           <button
             type="button"
             className={storyCrop ? "sc-chip is-on" : "sc-chip"}
             aria-pressed={storyCrop}
-            aria-label="9:16 crop check"
+            aria-label="Story crop check"
             onClick={() => setStoryCrop((on) => !on)}
           >
             {storyCrop ? "On" : "Off"}
@@ -457,15 +461,33 @@ export function QuoteComposerApp() {
               void (async () => {
                 setExporting(true);
                 try {
+                  const filename = exportFilenameFromTitle(draft.quote, "quote");
                   await downloadExportPack(
                     () =>
                       renderQuoteCanvas(
                         { ...draft, look, purpleFlair, photoGrade },
                         2,
                       ),
-                    exportFilenameFromTitle(draft.quote, "quote"),
+                    filename,
+                    [
+                      {
+                        filename: storyFilename(filename),
+                        render: () =>
+                          renderQuoteCanvas(
+                            {
+                              ...draft,
+                              look,
+                              purpleFlair,
+                              photoGrade,
+                              story: true,
+                            },
+                            2,
+                          ),
+                      },
+                    ],
+                    { letterbox: false },
                   );
-                  setStatus("Pack download started (4:5 + 9:16).");
+                  setStatus("Pack download started (4:5 + 9:16 + 1:1).");
                 } finally {
                   setExporting(false);
                 }
@@ -488,7 +510,7 @@ export function QuoteComposerApp() {
       />
       <main className="sc-stage">
         <div className="sc-stage__frame">
-          <ComposerBoard>
+          <ComposerBoard height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}>
             <QuoteGraphic
               ref={boardRef}
               draft={draft}

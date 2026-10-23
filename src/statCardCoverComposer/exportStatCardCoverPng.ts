@@ -1,7 +1,4 @@
-import {
-  downloadPngMaybeSquare,
-  toStoryCanvas,
-} from "../instagramComposer/exportDownload";
+import { downloadPngMaybeSquare } from "../instagramComposer/exportDownload";
 import {
   renderStatCardCoverCanvas,
   type StatCardCoverRenderInput,
@@ -14,7 +11,9 @@ export const exportStatCardCoverPng = async (
   story = false,
   square = false,
 ) => {
-  const canvas = await renderStatCardCoverCanvas(input, 2);
-  const board = story ? await toStoryCanvas(canvas, { safe: true }) : canvas;
-  await downloadPngMaybeSquare(board, filename, square);
+  const canvas = await renderStatCardCoverCanvas(
+    { ...input, story },
+    2,
+  );
+  await downloadPngMaybeSquare(canvas, filename, square);
 };

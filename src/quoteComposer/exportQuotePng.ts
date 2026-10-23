@@ -1,7 +1,4 @@
-import {
-  downloadPngMaybeSquare,
-  toStoryCanvas,
-} from "../instagramComposer/exportDownload";
+import { downloadPngMaybeSquare } from "../instagramComposer/exportDownload";
 import { renderQuoteCanvas, type QuoteRenderInput } from "./renderQuoteCanvas";
 
 export const exportQuotePng = async (
@@ -11,7 +8,6 @@ export const exportQuotePng = async (
   story = false,
   square = false,
 ) => {
-  const canvas = await renderQuoteCanvas(input, 2);
-  const board = story ? await toStoryCanvas(canvas, { safe: true }) : canvas;
-  await downloadPngMaybeSquare(board, filename, square);
+  const canvas = await renderQuoteCanvas({ ...input, story }, 2);
+  await downloadPngMaybeSquare(canvas, filename, square);
 };

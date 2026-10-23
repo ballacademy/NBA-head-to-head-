@@ -43,8 +43,8 @@ export const PLB_WRAP_ROW_H = 102;
 export const PLB_LIST_PAD_TOP = 18;
 export const PLB_LIST_PAD_BOTTOM = 14;
 
-export const leaderboardListInnerH = () =>
-  GRAPHIC_HEIGHT -
+export const leaderboardListInnerH = (boardH = GRAPHIC_HEIGHT) =>
+  boardH -
   PLB_PAD_TOP -
   PLB_TITLE_H -
   PLB_GAP -
@@ -63,6 +63,7 @@ export const LEADERBOARD_EMPTY_BLANKS = 2;
 /** Blank hairline rows after real names. Cap at 1–2; empty board gets two. */
 export const leaderboardBlankCount = (
   rows: Array<{ displayLines: string[] }>,
+  boardH = GRAPHIC_HEIGHT,
 ) => {
   const used = rows.reduce(
     (sum, row) => sum + leaderboardRowH(row.displayLines.length > 1),
@@ -70,7 +71,7 @@ export const leaderboardBlankCount = (
   );
   const leftover = Math.max(
     0,
-    Math.floor((leaderboardListInnerH() - used) / PLB_ROW_H),
+    Math.floor((leaderboardListInnerH(boardH) - used) / PLB_ROW_H),
   );
   if (rows.length === 0) {
     return Math.min(LEADERBOARD_MAX_BLANKS, Math.max(LEADERBOARD_EMPTY_BLANKS, leftover));

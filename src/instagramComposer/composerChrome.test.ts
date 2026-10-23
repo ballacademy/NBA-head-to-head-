@@ -439,6 +439,7 @@ describe("composer chrome", () => {
     expect(playInApp).toContain("applyLivePlayInScores");
     expect(rankedExport).not.toContain("toStoryCanvas");
     expect(potdApp).toContain("Export pack");
+    expect(potdApp).toContain("story: true");
     expect(
       readFileSync(
         join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),
@@ -479,7 +480,7 @@ describe("composer chrome", () => {
       join(root, "rankedLineupsComposer/RankedLineupsComposerApp.tsx"),
       "utf8",
     );
-    expect(rankedApp).toContain('aria-label="9:16 crop check"');
+    expect(rankedApp).toContain('aria-label="Story crop check"');
     expect(rankedApp).toContain("story={storyCrop}");
     expect(rankedApp).toContain("EVERY_TEAM_STAT_METRICS");
     expect(rankedApp).toContain("fillLineupByStatLeaders");
@@ -712,6 +713,8 @@ describe("composer chrome", () => {
     expect(tabs).toContain("Simple");
     expect(tabs).toContain("Full");
     expect(tabs).toContain("Last {exports.length} PNGs");
+    expect(tabs).toContain("Re-download");
+    expect(tabs).toContain("downloadExportHistoryItem");
     expect(tabs).toContain('mode: "injury"');
     expect(tabs).toContain('mode: "schedule"');
     expect(tabs).toContain('mode: "shot-chart"');
@@ -720,6 +723,12 @@ describe("composer chrome", () => {
     expect(hub).toContain("is-hud-simple");
     expect(hub).toContain("InjuryComposerApp");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__filters");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__board");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__persist");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-stat-slots");
+    expect(sheet).toContain(
+      ".sc-root.is-hud-simple .sc-tabs__group:not(.sc-tabs__group--recents)",
+    );
     expect(totwApp).toContain("ComposerDateRange");
     expect(totwApp).toContain("fillStartersFromStandouts");
     expect(totwApp).toContain("fetchRangeProduction");
@@ -923,8 +932,10 @@ describe("composer chrome", () => {
     expect(picksCanvas).toContain("picksRecordKicker");
     expect(picksCanvas).not.toContain("weekY + weekH + 12");
     expect(picksCanvas).not.toContain("picksRecordLine");
-    expect(picksApp).toContain("Show juice");
-    expect(picksApp).toContain("Show confidence ticks");
+    expect(picksApp).toContain("ComposerHudExtras");
+    expect(picksApp).toContain("picksCaptionLines");
+    expect(picksApp).toContain('label: "Juice"');
+    expect(picksApp).toContain('label: "Confidence"');
     expect(picksApp).toContain("Toggle ATS or straight up");
     const coverNameFade = readFileSync(
       join(root, "instagramComposer/PlayerNameFade.tsx"),
@@ -1236,6 +1247,12 @@ describe("composer chrome", () => {
     );
     expect(coverApp).toContain("completedNightRows");
     expect(coverApp).toContain("fetchStandoutsInRange");
+    expect(coverApp).toContain("useStatCoverDateRange");
+    expect(coverApp).toContain("Cover + cards");
+    expect(coverApp).toContain("story: true");
+    expect(coverApp).toContain("hasCustomPhoto(slot)");
+    expect(statCardApp).toContain("useStatCoverDateRange");
+    expect(statCardApp).toContain("ComposerHudExtras");
     expect(coverApp).toContain("pickerOpen");
     expect(coverApp).not.toContain("if (!hydrated || !autoFill.current)");
     expect(coverApp).not.toContain("suggestedLoading={false}");

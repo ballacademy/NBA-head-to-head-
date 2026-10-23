@@ -6,8 +6,8 @@
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   position: relative;
-  aspect-ratio: 4 / 5;
   width: 100%;
+  height: 100%;
   display: grid;
   grid-template-rows: 15.2fr 84.8fr;
   color: #fff;

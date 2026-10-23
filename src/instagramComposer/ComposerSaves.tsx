@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { peekCachedAccountNeedsRelogin } from "../lib/accountGate";
 import {
   pullAndMergeComposerLibrary,
   pushComposerLibraryIfLinked,
 } from "../lib/composerLibraryRemote";
+import { getOrCreatePlayerIdentity } from "../lib/playerIdentity";
 import { stripComposerPhotos } from "./composerPhotos";
 import {
   COMPOSER_LIBRARY_EVENT,
@@ -81,9 +83,14 @@ export function ComposerSaves<T>({
           setSelected(saved.id);
           setName(saved.name);
           void pushComposerLibraryIfLinked({ force: true }).then((synced) => {
+            if (synced) {
+              setStatus("Saved to your account — restores on phone.");
+              return;
+            }
+            const playerId = getOrCreatePlayerIdentity().playerId;
             setStatus(
-              synced
-                ? "Saved to your account — restores on phone."
+              peekCachedAccountNeedsRelogin(playerId)
+                ? "Sign in to restore named graphics on your phone."
                 : "Saved on this device — Export all to move to phone.",
             );
           });

@@ -311,8 +311,16 @@
 }
 
 .sc-root.is-hud-simple .sc-toolbar__filters,
-.sc-root.is-hud-simple .sc-grade {
+.sc-root.is-hud-simple .sc-toolbar__board,
+.sc-root.is-hud-simple .sc-toolbar__persist,
+.sc-root.is-hud-simple .sc-stat-slots,
+.sc-root.is-hud-simple .sc-grade,
+.sc-root.is-hud-simple .sc-tabs__group:not(.sc-tabs__group--recents) {
   display: none;
+}
+
+.sc-root.is-hud-simple .sc-hud-simple-keep {
+  display: flex;
 }
 
 .sc-toolbar__brand {
@@ -651,8 +659,8 @@ main.sc-stage {
   --frame-color: #fff;
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
-  aspect-ratio: 4 / 5;
   width: 100%;
+  height: 100%;
   display: grid;
   grid-template-rows: 15.2fr 84.8fr;
   background-color: #0b0b0b;
@@ -1349,6 +1357,15 @@ main.sc-stage {
 .sc-hud-select__option:focus-visible {
   background: #f4f4f5;
   color: #111113;
+}
+
+.sc-hud-select__extra-state {
+  float: right;
+  margin-left: 12px;
+  opacity: 0.62;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .sc-subject {

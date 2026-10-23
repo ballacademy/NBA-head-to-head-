@@ -355,9 +355,9 @@
 
 .stc-board .pod-photo__tools {
   left: calc(12 * var(--u));
-  right: calc(12 * var(--u));
+  right: auto;
   bottom: auto;
-  top: calc(112 * var(--u));
+  top: calc(8 * var(--u));
 }
 
 .stc-board .pod-photo__pick {

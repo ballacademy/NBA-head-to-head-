@@ -146,7 +146,34 @@ export function ComposerTabs({
             }}
           />
         </label>
-        {recents.length ? (
+        {exports.length ? (
+          <div
+            className="sc-tabs__group sc-tabs__group--recents"
+            role="group"
+            aria-label="Recents"
+          >
+            <span className="sc-tabs__label">Recents</span>
+            <div className="sc-tabs__pills">
+              {exports.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={item.mode === mode ? "is-on" : ""}
+                  title={`Download ${item.filename}`}
+                  aria-label={`Re-download ${item.filename}`}
+                  onClick={() => {
+                    downloadExportHistoryItem(item);
+                    if (item.mode) {
+                      onSelect(item.mode);
+                    }
+                  }}
+                >
+                  {item.filename.replace(/\.png$/i, "").slice(0, 28)}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : recents.length ? (
           <div
             className="sc-tabs__group sc-tabs__group--recents"
             role="group"

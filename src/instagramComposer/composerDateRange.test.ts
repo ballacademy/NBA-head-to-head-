@@ -11,6 +11,7 @@ import {
   parseComposerDateRange,
   rangeWeekLine,
   thisWeekRange,
+  tonightRange,
 } from "./composerDateRange";
 
 describe("composer date range", () => {
@@ -76,6 +77,9 @@ describe("composer date range", () => {
   it("falls back to this week when storage is empty", () => {
     const now = new Date("2026-10-17T18:00:00-04:00");
     expect(parseComposerDateRange(null, now)).toEqual(thisWeekRange(now));
+    expect(parseComposerDateRange(null, now, tonightRange(now))).toEqual(
+      tonightRange(now),
+    );
     expect(
       parseComposerDateRange({ from: "2026-10-10", to: "2026-10-12" }, now),
     ).toEqual({ from: "2026-10-10", to: "2026-10-12" });

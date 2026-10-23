@@ -487,9 +487,25 @@ export const picksParlayLabel = (game: PicksGame) => {
   return formatPicksSideTicket(game, game.pick);
 };
 
+/** Caption rows match the PNG: locks/picks only, not the whole slate. */
+export const picksCaptionLines = (games: PicksGame[]) =>
+  visiblePicksGames(games, true).map((game) => {
+    const away = formatPicksSideTicket(game, "away") || game.awayId || "TBD";
+    const home = formatPicksSideTicket(game, "home") || game.homeId || "TBD";
+    const pick =
+      game.pick === "away"
+        ? game.awayId
+        : game.pick === "home"
+          ? game.homeId
+          : "";
+    return `${away} | ${home}${pick ? ` · ${pick}` : ""}${
+      game.locked ? " LOCK" : ""
+    }`;
+  });
+
 export const formatPicksAtsRecord = (tally: PicksAtsTally) => {
   if (!tally.wins && !tally.losses && !tally.pushes) {
-    return "";
+    return "0-0-0";
   }
   if (!tally.pushes) {
     return `${tally.wins}-${tally.losses}`;
@@ -534,7 +550,7 @@ export const picksDisplayTally = (
   };
 };
 
-/** Compact `12-8` / `12-8-1` for the graphic. Empty when still 0-0. */
+/** Compact `12-8` / `12-8-1` for the graphic. `0-0-0` while the slate is ungraded. */
 export const formatPicksGraphicRecord = (
   ledger: PicksLedger,
   mode: PicksResultMode = "ats",

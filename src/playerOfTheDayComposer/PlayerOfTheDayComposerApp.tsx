@@ -40,7 +40,12 @@ import {
 import { GamePicker } from "./GamePicker";
 import { POTD_TITLE_PRESETS, exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
-import { downloadExportPack } from "../instagramComposer/exportPack";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import {
   addNamedLeaderboardEntries,
   readLeaderboardDraft,
@@ -122,6 +127,7 @@ export function PlayerOfTheDayComposerApp() {
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(false);
   const [wlColor, setWlColor] = useState(false);
+  const [storyCrop, setStoryCrop] = useState(false);
   const [gameChoices, setGameChoices] = useState<LastGame[] | null>(null);
   const [keepPrompt, setKeepPrompt] = useState<{
     index: number;
@@ -186,7 +192,18 @@ export function PlayerOfTheDayComposerApp() {
       await exportPlayerOfTheDayPng(
         node,
         filename ?? exportFilenameFromTitle(title, "player-of-the-day", date),
-        { brand, title, date, cards, look, purpleFlair, photoGrade, showBa, wlColor },
+        {
+          brand,
+          title,
+          date,
+          cards,
+          look,
+          purpleFlair,
+          photoGrade,
+          showBa,
+          wlColor,
+          story,
+        },
         story,
         square,
       );
@@ -521,6 +538,18 @@ export function PlayerOfTheDayComposerApp() {
           </button>
         </label>
         <BaMarkToggle on={showBa} onChange={setShowBa} />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Story crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="Story crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
           </>
         }
         persist={
@@ -633,6 +662,25 @@ export function PlayerOfTheDayComposerApp() {
                     matchup,
                     [
                       {
+                        filename: storyFilename(matchup),
+                        render: () =>
+                          renderPlayerOfTheDayCanvas(
+                            {
+                              brand,
+                              title,
+                              date,
+                              cards,
+                              look,
+                              purpleFlair,
+                              photoGrade,
+                              showBa,
+                              wlColor,
+                              story: true,
+                            },
+                            2,
+                          ),
+                      },
+                      {
                         filename: exportFilenameFromTitle(
                           board.title,
                           "potd-leaderboard",
@@ -647,7 +695,7 @@ export function PlayerOfTheDayComposerApp() {
                     ],
                     { letterbox: false },
                   );
-                  setStatus("Pack download started (matchup + leaderboard).");
+                  setStatus("Pack download started (4:5 + 9:16 + 1:1).");
                 } catch (error) {
                   console.error(error);
                   setStatus("Could not export POTD pack.");
@@ -674,7 +722,7 @@ export function PlayerOfTheDayComposerApp() {
 
       <main className="sc-stage">
         <div className="sc-stage__frame">
-          <ComposerBoard>
+          <ComposerBoard height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}>
           <PlayerOfTheDayGraphic
             ref={boardRef}
             brand={brand}
@@ -713,6 +761,7 @@ export function PlayerOfTheDayComposerApp() {
               setStatus("Photo cropped inside the frame — pinch, scroll, or +/− to scale, drag to pan.");
             }}
           />
+          <StoryCropGuide on={storyCrop} />
           </ComposerBoard>
           <p className="sc-hint">
             Pick a player, then choose a recent box score — the date matches

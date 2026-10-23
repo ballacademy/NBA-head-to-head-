@@ -612,12 +612,12 @@ export function MockTradeComposerApp() {
               </button>
             </label>
             <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">9:16 crop</span>
+              <span className="sc-toolbar__eyebrow">Story crop</span>
               <button
                 type="button"
                 className={storyCrop ? "sc-chip is-on" : "sc-chip"}
                 aria-pressed={storyCrop}
-                aria-label="9:16 crop check"
+                aria-label="Story crop check"
                 onClick={() => setStoryCrop((on) => !on)}
               >
                 {storyCrop ? "On" : "Off"}

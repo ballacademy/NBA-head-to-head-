@@ -44,14 +44,17 @@ export interface EveryTeamGridMetrics {
   rows: number;
 }
 
-export const everyTeamGrid = (scale = 1): EveryTeamGridMetrics => {
-  const { headerH } = bannerBoardRect(scale);
+export const everyTeamGrid = (
+  scale = 1,
+  boardH = GRAPHIC_HEIGHT,
+): EveryTeamGridMetrics => {
+  const { headerH } = bannerBoardRect(scale, boardH);
   const gap = ET_CELL_GAP * scale;
   const padX = ET_GRID_PAD_X * scale;
   const padTop = ET_GRID_PAD_TOP * scale;
   const padBottom = ET_GRID_PAD_BOTTOM * scale;
   const bodyTop = headerH + padTop;
-  const bodyH = GRAPHIC_HEIGHT * scale - bodyTop - padBottom;
+  const bodyH = boardH * scale - bodyTop - padBottom;
   const bodyW = GRAPHIC_WIDTH * scale - padX * 2;
   const cell = Math.floor(
     Math.min(

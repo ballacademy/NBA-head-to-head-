@@ -31,6 +31,7 @@ import {
   EMPTY_SLOT_COLOR,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
   PLAYOFF_CUT_AFTER,
   formatStandingLast10,
   formatStandingRecord,
@@ -222,6 +223,7 @@ export interface StandingsRenderInput {
   showPlayoffCut?: boolean;
   records?: Record<string, StandingRecord>;
   lastWeekSlots?: RankingSlots | null;
+  story?: boolean;
 }
 
 export const renderStandingsCanvas = async (
@@ -236,8 +238,9 @@ export const renderStandingsCanvas = async (
     ]).catch(() => undefined);
   }
 
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
   const width = GRAPHIC_WIDTH * scale;
-  const height = GRAPHIC_HEIGHT * scale;
+  const height = boardH * scale;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -246,7 +249,7 @@ export const renderStandingsCanvas = async (
     throw new Error("Could not open export canvas");
   }
 
-  const board = bannerBoardRect(scale);
+  const board = bannerBoardRect(scale, boardH);
   const { headerH, x: bannerX, y: bannerY, w: bannerW, h: bannerH } = board;
   const gridY = headerH;
   const gridH = height - headerH;

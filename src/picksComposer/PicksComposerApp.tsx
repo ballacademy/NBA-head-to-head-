@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { ComposerHudExtras } from "../instagramComposer/ComposerHudExtras";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
@@ -50,7 +51,7 @@ import {
   emptyPicksLedger,
   fetchPicksSlate,
   formatPicksGraphicRecord,
-  formatPicksSideTicket,
+  picksCaptionLines,
   isAutoPicksDateLine,
   isAutoPicksTitle,
   isPicksDraft,
@@ -60,7 +61,6 @@ import {
   PICKS_LEDGER_KEY,
   picksDefaultTitle,
   picksDisplayTally,
-  sortPicksGames,
   normalizePicksDraft,
   picksDateLine,
   refillPicksRow,
@@ -378,7 +378,7 @@ export function PicksComposerApp() {
             />
             <label className="sc-field sc-field--range">
               <span className="sc-toolbar__eyebrow">
-                Plates{" "}
+                Plate opacity{" "}
                 <span className="sc-range__value">
                   {clampPicksPlateOpacity(
                     draft.plateOpacity ?? DEFAULT_PICKS_PLATE_OPACITY,
@@ -412,91 +412,47 @@ export function PicksComposerApp() {
                 />
               </span>
             </label>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">O/U</span>
-              <button
-                type="button"
-                className={draft.showTotal ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showTotal === true}
-                aria-label="Show totals"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showTotal: !current.showTotal,
-                  }))
-                }
-              >
-                {draft.showTotal ? "On" : "Off"}
-              </button>
-            </label>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Moneyline</span>
-              <button
-                type="button"
-                className={draft.showMoneyline ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showMoneyline === true}
-                aria-label="Show moneylines"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showMoneyline: !current.showMoneyline,
-                  }))
-                }
-              >
-                {draft.showMoneyline ? "On" : "Off"}
-              </button>
-            </label>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Units</span>
-              <button
-                type="button"
-                className={draft.showUnits ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showUnits === true}
-                aria-label="Show units"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showUnits: !current.showUnits,
-                  }))
-                }
-              >
-                {draft.showUnits ? "On" : "Off"}
-              </button>
-            </label>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Juice</span>
-              <button
-                type="button"
-                className={draft.showJuice ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showJuice === true}
-                aria-label="Show juice"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showJuice: !current.showJuice,
-                  }))
-                }
-              >
-                {draft.showJuice ? "On" : "Off"}
-              </button>
-            </label>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Confidence</span>
-              <button
-                type="button"
-                className={draft.showConfidence ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showConfidence === true}
-                aria-label="Show confidence ticks"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showConfidence: !current.showConfidence,
-                  }))
-                }
-              >
-                {draft.showConfidence ? "On" : "Off"}
-              </button>
-            </label>
+            <ComposerHudExtras
+              label="Lines"
+              ariaLabel="Pick extras"
+              items={[
+                {
+                  key: "ou",
+                  label: "O/U",
+                  on: draft.showTotal === true,
+                  onChange: (showTotal) =>
+                    setDraft((current) => ({ ...current, showTotal })),
+                },
+                {
+                  key: "ml",
+                  label: "Moneyline",
+                  on: draft.showMoneyline === true,
+                  onChange: (showMoneyline) =>
+                    setDraft((current) => ({ ...current, showMoneyline })),
+                },
+                {
+                  key: "units",
+                  label: "Units",
+                  on: draft.showUnits === true,
+                  onChange: (showUnits) =>
+                    setDraft((current) => ({ ...current, showUnits })),
+                },
+                {
+                  key: "juice",
+                  label: "Juice",
+                  on: draft.showJuice === true,
+                  onChange: (showJuice) =>
+                    setDraft((current) => ({ ...current, showJuice })),
+                },
+                {
+                  key: "confidence",
+                  label: "Confidence",
+                  on: draft.showConfidence === true,
+                  onChange: (showConfidence) =>
+                    setDraft((current) => ({ ...current, showConfidence })),
+                },
+              ]}
+            />
             <label className="sc-field">
               <span className="sc-toolbar__eyebrow">Result</span>
               <button
@@ -548,12 +504,12 @@ export function PicksComposerApp() {
               </div>
             </div>
             <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">9:16 crop</span>
+              <span className="sc-toolbar__eyebrow">Story crop</span>
               <button
                 type="button"
                 className={storyCrop ? "sc-chip is-on" : "sc-chip"}
                 aria-pressed={storyCrop}
-                aria-label="9:16 crop check"
+                aria-label="Story crop check"
                 onClick={() => setStoryCrop((on) => !on)}
               >
                 {storyCrop ? "On" : "Off"}
@@ -607,19 +563,7 @@ export function PicksComposerApp() {
                 void copyGraphicCaption(
                   graphicCaption(
                     draft.title,
-                    sortPicksGames(draft.games).map((game) => {
-                      const away = formatPicksSideTicket(game, "away") || game.awayId || "TBD";
-                      const home = formatPicksSideTicket(game, "home") || game.homeId || "TBD";
-                      const pick =
-                        game.pick === "away"
-                          ? game.awayId
-                          : game.pick === "home"
-                            ? game.homeId
-                            : "";
-                      return `${away} | ${home}${pick ? ` · ${pick}` : ""}${
-                        game.locked ? " LOCK" : ""
-                      }`;
-                    }),
+                    picksCaptionLines(draft.games),
                     [draft.dateLine],
                   ),
                 )
