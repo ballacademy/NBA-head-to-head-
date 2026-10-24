@@ -59,8 +59,9 @@
 .scc-cell .pod-photo__tools {
   left: calc(8 * var(--u));
   right: auto;
-  top: calc(8 * var(--u));
-  bottom: auto;
+  top: auto;
+  bottom: calc(var(--name-h) * var(--u) + 10 * var(--u));
+  z-index: 4;
   gap: calc(4 * var(--u));
 }
 

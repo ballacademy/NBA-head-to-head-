@@ -286,8 +286,8 @@
   z-index: 4;
   left: calc(8 * var(--u));
   right: auto;
-  top: calc(8 * var(--u));
-  bottom: auto;
+  top: auto;
+  bottom: calc(8 * var(--u));
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;

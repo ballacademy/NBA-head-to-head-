@@ -178,7 +178,7 @@
   left: calc(16 * var(--u));
   right: auto;
   bottom: auto;
-  top: calc(8 * var(--u));
+  top: calc(28 * var(--u));
 }
 
 .qt-board .pod-photo__pick {

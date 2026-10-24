@@ -654,6 +654,17 @@ describe("composer chrome", () => {
     );
   });
 
+  it("keeps Cover photo tools on the portrait above the name fade", () => {
+    expect(coverCss).toContain(
+      "bottom: calc(var(--name-h) * var(--u) + 10 * var(--u))",
+    );
+    expect(coverCss).not.toMatch(
+      /\.scc-cell \.pod-photo__tools \{[^}]*top:\s*calc\(8 \* var\(--u\)\)/,
+    );
+    expect(statCardCss).toContain("top: calc(112 * var(--u))");
+    expect(headlineCss).toContain("top: calc(108 * var(--u))");
+  });
+
   it("keeps compose-preview pick and zoom tools visible without HUD Edit", () => {
     const photoFrame = readFileSync(
       join(root, "playerOfTheDayComposer/PhotoFrame.tsx"),
