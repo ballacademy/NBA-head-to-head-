@@ -58,6 +58,7 @@ import {
   STC_STAT_COUNT,
   STC_STAT_MAX,
   visibleStatCardLines,
+  type StatCardLine,
 } from "./statCardState";
 
 hydrateEveryTeamRosters(
