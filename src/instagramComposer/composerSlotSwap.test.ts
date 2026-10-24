@@ -3,6 +3,7 @@ import {
   COMPOSER_SLOT_ATTR,
   COMPOSER_SLOT_SWAP_THRESHOLD,
   composerSlotClass,
+  insertItems,
   swapItems,
 } from "./composerSlotSwap";
 import { swapStrips, createEmptyStrips } from "../teamOfTheWeekComposer/teamOfTheWeekState";
@@ -29,6 +30,8 @@ describe("composer slot swap", () => {
     expect(COMPOSER_SLOT_SWAP_THRESHOLD).toBe(8);
     expect(composerSlotClass(1, 1, 2)).toContain("is-slot-dragging");
     expect(composerSlotClass(2, 1, 2)).toContain("is-slot-drop");
+    expect(insertItems(["a", "b", "c", "d"], 0, 2)).toEqual(["b", "c", "a", "d"]);
+    expect(insertItems(["a", "b", "c", "d"], 3, 1)).toEqual(["a", "d", "b", "c"]);
   });
 
   it("moves TOTW photos, names, and logos together", () => {

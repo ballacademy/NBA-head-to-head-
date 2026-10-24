@@ -1075,6 +1075,22 @@ describe("composer chrome", () => {
     expect(compareGraphic).toContain("data-composer-slot");
     expect(mockTradeGraphic).toContain("mockTradePlayerSlot");
     expect(mockTradeGraphic).toContain("data-composer-slot");
+    const standingsGraphic = readFileSync(
+      join(root, "standingsComposer/StandingsGraphic.tsx"),
+      "utf8",
+    );
+    const standingsApp = readFileSync(
+      join(root, "standingsComposer/StandingsComposerApp.tsx"),
+      "utf8",
+    );
+    const rankingState = readFileSync(
+      join(root, "standingsComposer/rankingState.ts"),
+      "utf8",
+    );
+    expect(standingsGraphic).toContain("data-composer-slot");
+    expect(standingsGraphic).toContain("useComposerSlotSwap");
+    expect(standingsApp).toContain("insertRankingSlots");
+    expect(rankingState).toContain("insertRankingSlots");
   });
 
   it("ships HUD extras 17–32 on the shared chrome", () => {

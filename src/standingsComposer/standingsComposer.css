@@ -1091,6 +1091,15 @@ main.sc-stage {
   cursor: pointer;
 }
 
+.ig-slot[data-composer-slot] {
+  cursor: grab;
+  touch-action: none;
+}
+
+.ig-slot.is-slot-dragging {
+  cursor: grabbing;
+}
+
 .ig-slot--filled {
   background: linear-gradient(135deg, var(--cell-from) 0%, var(--cell-to) 100%);
 }

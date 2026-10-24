@@ -34,6 +34,7 @@ import {
   assignTeam,
   clearSlot,
   createEmptySlots,
+  insertRankingSlots,
   DEFAULT_BRAND,
   DEFAULT_SUBTITLE,
   DEFAULT_TITLE,
@@ -575,12 +576,22 @@ export function StandingsComposerApp() {
             onTitleChange={setTitle}
             onSubtitleChange={setSubtitle}
             onSelectSlot={setActiveIndex}
+            onSwap={
+              exporting
+                ? undefined
+                : (from, to) => {
+                    push(slots);
+                    setSlots((current) => insertRankingSlots(current, from, to));
+                    setActiveIndex(null);
+                    setStatus("Moved the team to that rank. Numbers stay put; the rest shift.");
+                  }
+            }
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Click a numbered slot to pick a team. Header text is editable on the
-            graphic or in the bar above. Downloads a 4:5 Instagram PNG — nothing
-            is posted.
+            Click a numbered slot to pick a team, or drag a square to insert it
+            at a new rank. Header text is editable on the graphic or in the bar
+            above. Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

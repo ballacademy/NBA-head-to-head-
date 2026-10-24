@@ -1,4 +1,8 @@
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerFlairClass,
@@ -51,6 +55,7 @@ interface StandingsGraphicProps {
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
   onSelectSlot: (index: number) => void;
+  onSwap?: (from: number, to: number) => void;
 }
 
 const bannerPath = (notchLeft: number, notchRight: number) => {
@@ -107,9 +112,14 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
       onTitleChange,
       onSubtitleChange,
       onSelectSlot,
+      onSwap,
     },
     ref,
   ) {
+    const slotSwap = useComposerSlotSwap({
+      enabled: !exporting && Boolean(onSwap),
+      onSwap,
+    });
     const localRef = useRef<HTMLElement | null>(null);
     const bannerRef = useRef<HTMLDivElement | null>(null);
     const measureRef = useRef<HTMLSpanElement | null>(null);
@@ -282,6 +292,7 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
               <button
                 key={rank}
                 type="button"
+                data-composer-slot={index}
                 className={[
                   "ig-slot",
                   team ? "ig-slot--filled" : "",
@@ -291,6 +302,11 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                   index < PLAYOFF_CUT_AFTER + 3
                     ? "is-playoff-cut"
                     : "",
+                  composerSlotClass(
+                    index,
+                    slotSwap.draggingFrom,
+                    slotSwap.dropIndex,
+                  ),
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -302,7 +318,13 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
                       }
                     : { background: EMPTY_SLOT_COLOR }
                 }
-                onClick={() => onSelectSlot(index)}
+                onPointerDown={(event) => slotSwap.startDrag(index, event)}
+                onClick={() => {
+                  if (slotSwap.skipClick()) {
+                    return;
+                  }
+                  onSelectSlot(index);
+                }}
                 aria-label={
                   team
                     ? `Rank ${rank}, ${team.name}. Change team`

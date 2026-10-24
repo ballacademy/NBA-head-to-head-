@@ -56,11 +56,14 @@ export const isComposerSlotSwapIgnored = (target: EventTarget | null) => {
   if (!(target instanceof Element)) {
     return false;
   }
-  return Boolean(
-    target.closest(
-      "input, textarea, button, label, .pod-photo__tool, .pod-photo__file, .pod-photo__paste, .pod-photo__pick, .pod-photo__zoom, .pod-photo__zoom-in, .pod-photo__rotate, .rl-pos__hide, .et-cell__clear, .et-cell__hit, .cmp-stat, .cmp-stats",
-    ),
+  const ignored = target.closest(
+    "input, textarea, button, label, .pod-photo__tool, .pod-photo__file, .pod-photo__paste, .pod-photo__pick, .pod-photo__zoom, .pod-photo__zoom-in, .pod-photo__rotate, .rl-pos__hide, .et-cell__clear, .et-cell__hit, .cmp-stat, .cmp-stats",
   );
+  if (!ignored) {
+    return false;
+  }
+  const slot = target.closest(`[${COMPOSER_SLOT_ATTR}]`);
+  return ignored !== slot;
 };
 
 export const composerSlotClass = (
@@ -89,6 +92,7 @@ export function useComposerSlotSwap(options: {
   const onSwapRef = useRef(onSwap);
   onSwapRef.current = onSwap;
   const listenersRef = useRef<(() => void) | null>(null);
+  const skipClickRef = useRef(false);
   const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
 
@@ -146,6 +150,10 @@ export function useComposerSlotSwap(options: {
       if (!drag?.moved) {
         return;
       }
+      skipClickRef.current = true;
+      window.setTimeout(() => {
+        skipClickRef.current = false;
+      }, 0);
       const to = composerSlotFromPoint(endEvent.clientX, endEvent.clientY);
       const swap = onSwapRef.current;
       if (swap && to != null && to !== drag.from) {
@@ -163,5 +171,13 @@ export function useComposerSlotSwap(options: {
     };
   };
 
-  return { draggingFrom, dropIndex, startDrag };
+  const skipClick = () => {
+    if (!skipClickRef.current) {
+      return false;
+    }
+    skipClickRef.current = false;
+    return true;
+  };
+
+  return { draggingFrom, dropIndex, startDrag, skipClick };
 }

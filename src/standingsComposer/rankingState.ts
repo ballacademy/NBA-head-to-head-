@@ -1,3 +1,4 @@
+import { insertItems } from "../instagramComposer/composerSlotSwap";
 import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
 
 export const SLOT_COUNT = 15;
@@ -118,6 +119,13 @@ export const assignTeam = (
   next[index] = teamId;
   return next;
 };
+
+/** Insert a team at a rank; everyone between that slot and the origin shifts. */
+export const insertRankingSlots = (
+  slots: RankingSlots,
+  from: number,
+  to: number,
+): RankingSlots => insertItems(slots, from, to);
 
 export const clearSlot = (slots: RankingSlots, index: number): RankingSlots => {
   if (index < 0 || index >= SLOT_COUNT) {

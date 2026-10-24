@@ -4,6 +4,7 @@ import {
   assignTeam,
   clearSlot,
   createEmptySlots,
+  insertRankingSlots,
   DEFAULT_TITLE,
   exportFilename,
   EXPORT_HEIGHT,
@@ -43,6 +44,20 @@ describe("ranking slots", () => {
     slots = clearSlot(slots, 0);
     expect(slots[0]).toBeNull();
     expect(slots[1]).toBe("BOS");
+  });
+
+  it("inserts a dragged team and shifts the ranks between", () => {
+    let slots = assignTeam(createEmptySlots(), 0, "BOS");
+    slots = assignTeam(slots, 1, "NYK");
+    slots = assignTeam(slots, 2, "MIA");
+    const down = insertRankingSlots(slots, 0, 2);
+    expect(down.slice(0, 3)).toEqual(["NYK", "MIA", "BOS"]);
+    expect(lastWeekDelta(down, slots, 2)).toBe(-2);
+    expect(lastWeekMark(lastWeekDelta(down, slots, 2))?.text).toBe("▼2");
+    expect(lastWeekDelta(down, slots, 0)).toBe(1);
+    const up = insertRankingSlots(slots, 2, 0);
+    expect(up.slice(0, 3)).toEqual(["MIA", "BOS", "NYK"]);
+    expect(insertRankingSlots(slots, 1, 1)).toEqual(slots);
   });
 
   it("hides last-week arrows when missing, unchanged, or new", () => {
