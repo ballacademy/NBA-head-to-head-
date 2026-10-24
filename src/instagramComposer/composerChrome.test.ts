@@ -1254,6 +1254,7 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain("applyHudStats");
     expect(statCardApp).toContain("commitHudStats");
     expect(statCardState).toContain("ensurePtsFirst");
+    expect(statCardState).toContain("keepTovThenMin");
     expect(statCardState).toContain("withAutoFillStatOrder");
     expect(statCardApp).not.toContain("filters=");
     expect(statCardApp).toContain("nightStandoutPickerRows(completedNightRows(rangeStandouts))");

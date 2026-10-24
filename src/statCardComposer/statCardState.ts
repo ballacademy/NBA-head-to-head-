@@ -151,8 +151,16 @@ export const ensureFgBeforeThree = (stats: StatCardLine[]): StatCardLine[] => {
   return next;
 };
 
+/** Auto-fill ends …, TOV, MIN. Manual reorder after fill still wins. */
+export const keepTovThenMin = (stats: StatCardLine[]): StatCardLine[] => {
+  const rest = stats.filter((line) => line.key !== "tov" && line.key !== "min");
+  const tov = stats.filter((line) => line.key === "tov");
+  const min = stats.filter((line) => line.key === "min");
+  return [...rest, ...tov, ...min];
+};
+
 const withAutoFillStatOrder = (stats: StatCardLine[]) =>
-  ensureFgBeforeThree(ensurePtsFirst(stats));
+  keepTovThenMin(ensureFgBeforeThree(ensurePtsFirst(stats)));
 
 export const visibleStatCardLines = (
   stats: StatCardLine[],
@@ -524,13 +532,10 @@ export const notableStatCardLines = (
   stats: LastGameStats,
   playerOrGroup?: NotableStatPosition,
 ): StatCardLine[] => {
-  const pts = statCount(stats.pts);
   const reb = statCount(stats.reb);
   const ast = statCount(stats.ast);
   const stl = statCount(stats.stl);
   const blk = statCount(stats.blk);
-  const min = statCount(stats.min);
-  const tov = statCount(stats.tov);
   const threeMakes = statCount(stats.three);
   const fgMakes = statCount(stats.fg);
   const fgAtt = statAttempts(stats.fg);
@@ -545,9 +550,6 @@ export const notableStatCardLines = (
   if (threeMakes >= THREE_MIN_MAKES) {
     picks.push({ key: "three", label: "3PM", value: stats.three });
   }
-  if (tov >= 6 || (tov >= 5 && pts >= 30)) {
-    picks.push({ key: "tov" });
-  }
   if (reb >= 4) {
     picks.push({ key: "reb" });
   }
@@ -560,14 +562,15 @@ export const notableStatCardLines = (
   if (blk >= 2) {
     picks.push({ key: "blk" });
   }
-  /** Short nights and heavy minutes read; a boring 30–35 can skip. Always last. */
-  const showMin = min > 0 && (min < 30 || min >= 36);
-  const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
-  const picked = picks.slice(0, room).map((item) => lineFromGame(item.key, stats, item));
-  if (showMin) {
-    picked.push(lineFromGame("min", stats));
-  }
-  const lines = picked.length ? picked : [lineFromGame("pts", stats)];
+  const room = Math.max(1, STC_STAT_MAX - 2);
+  const picked = picks
+    .slice(0, room)
+    .map((item) => lineFromGame(item.key, stats, item));
+  const lines = [
+    ...(picked.length ? picked : [lineFromGame("pts", stats)]),
+    lineFromGame("tov", stats),
+    lineFromGame("min", stats),
+  ];
   return withAutoFillStatOrder(lines);
 };
 
@@ -610,23 +613,21 @@ export const notableRoughNightLines = (
   stats: LastGameStats,
   _playerOrGroup?: NotableStatPosition,
 ): StatCardLine[] => {
-  const min = statCount(stats.min);
   const threeMakes = statCount(stats.three);
   const threeAtt = statAttempts(stats.three);
   const picks: NotablePick[] = [{ key: "pts" }, { key: "fg" }];
   if (threeMakes >= THREE_MIN_MAKES || threeAtt >= FG_MIN_ATTEMPTS) {
     picks.push({ key: "three", label: "3PM", value: stats.three });
   }
-  picks.push({ key: "tov" });
-  const showMin = min > 0 && (min < 30 || min >= 36);
-  const room = showMin ? STC_STAT_MAX - 1 : STC_STAT_MAX;
+  const room = Math.max(1, STC_STAT_MAX - 2);
   const picked = picks
     .slice(0, room)
     .map((item) => lineFromGame(item.key, stats, item));
-  if (showMin) {
-    picked.push(lineFromGame("min", stats));
-  }
-  const lines = picked.length ? picked : [lineFromGame("pts", stats)];
+  const lines = [
+    ...(picked.length ? picked : [lineFromGame("pts", stats)]),
+    lineFromGame("tov", stats),
+    lineFromGame("min", stats),
+  ];
   return withAutoFillStatOrder(lines);
 };
 

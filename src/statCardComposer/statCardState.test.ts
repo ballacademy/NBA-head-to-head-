@@ -43,6 +43,7 @@ import {
   statCardFromCoverSlot,
   formatStatCardMatchup,
   keepMinLast,
+  keepTovThenMin,
   lastGameValueForKey,
   moveStatCardLine,
   notableStatCardLines,
@@ -218,6 +219,14 @@ describe("stat card composer", () => {
         { key: "blk", label: "BLK", value: "4" },
       ]).map((line) => line.key),
     ).toEqual(["pts", "blk", "min"]);
+    expect(
+      keepTovThenMin([
+        { key: "pts", label: "PTS", value: "22" },
+        { key: "min", label: "MIN", value: "33" },
+        { key: "tov", label: "TOV", value: "3" },
+        { key: "reb", label: "REB", value: "8" },
+      ]).map((line) => line.key),
+    ).toEqual(["pts", "reb", "tov", "min"]);
     const swapped = setStatCardLineKey(draft.stats, 1, "blk", "last-game");
     expect(swapped.map((line) => line.label)).toEqual(["PTS", "BLK", "AST"]);
     const stacked: typeof draft.stats = [
@@ -427,6 +436,8 @@ describe("stat card composer", () => {
       "20 PTS",
       "15 REB",
       "9 AST",
+      "0 TOV",
+      "34 MIN",
     ]);
     const loaded = notableStatCardLines(
       box({
@@ -445,10 +456,10 @@ describe("stat card composer", () => {
       "PTS",
       "FG",
       "3PM",
-      "TOV",
       "REB",
       "AST",
       "STL",
+      "TOV",
       "MIN",
     ]);
     expect(loaded[0]?.key).toBe("pts");
@@ -464,6 +475,7 @@ describe("stat card composer", () => {
     );
     expect(quiet.map((line) => `${line.value} ${line.label}`)).toEqual([
       "22 PTS",
+      "0 TOV",
       "28 MIN",
     ]);
     const standout = fillStatCardFromStandout(defaultStatCardDraft(), gameFrom({
@@ -480,6 +492,7 @@ describe("stat card composer", () => {
       "AST",
       "STL",
       "BLK",
+      "TOV",
       "MIN",
     ]);
     const simmons = notableStatCardLines(
@@ -489,6 +502,8 @@ describe("stat card composer", () => {
       "4 PTS",
       "11 REB",
       "10 AST",
+      "0 TOV",
+      "32 MIN",
     ]);
     const noShot = fillStatCardFromStandout(
       defaultStatCardDraft(),
@@ -498,6 +513,7 @@ describe("stat card composer", () => {
       "0 PTS",
       "12 REB",
       "9 AST",
+      "0 TOV",
       "28 MIN",
     ]);
     expect(noShot.stats[0]?.key).toBe("pts");
@@ -518,6 +534,8 @@ describe("stat card composer", () => {
       "24 PTS",
       "9-14 FG",
       "4-5 3PM",
+      "0 TOV",
+      "32 MIN",
     ]);
     const burst = notableStatCardLines(
       box({ pts: "18", reb: "2", ast: "1", min: "12", fg: "7-9" }),
@@ -525,12 +543,19 @@ describe("stat card composer", () => {
     expect(burst.map((line) => `${line.value} ${line.label}`)).toEqual([
       "18 PTS",
       "7-9 FG",
+      "0 TOV",
       "12 MIN",
     ]);
     const starterMinutes = notableStatCardLines(
       box({ pts: "16", reb: "5", ast: "4", min: "33" }),
     );
-    expect(starterMinutes.map((line) => line.label)).toEqual(["PTS", "REB", "AST"]);
+    expect(starterMinutes.map((line) => line.label)).toEqual([
+      "PTS",
+      "REB",
+      "AST",
+      "TOV",
+      "MIN",
+    ]);
     const efg = notableStatCardLines(
       box({
         pts: "22",
@@ -560,13 +585,14 @@ describe("stat card composer", () => {
       "4 REB",
       "2 STL",
       "4 BLK",
+      "0 TOV",
       "23 MIN",
     ]);
     expect(wemby[0]?.key).toBe("pts");
     const brick = notableStatCardLines(
       box({ pts: "18", fg: "1-1", three: "1-1", min: "26" }),
     );
-    expect(brick.map((line) => line.label)).toEqual(["PTS", "MIN"]);
+    expect(brick.map((line) => line.label)).toEqual(["PTS", "TOV", "MIN"]);
     const volume = notableStatCardLines(
       box({ pts: "28", fg: "12-22", three: "6-11", min: "34" }),
     );
@@ -595,7 +621,7 @@ describe("stat card composer", () => {
       notableStatCardLines(wigNight, wiggins).map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["19 PTS", "8-15 FG", "6 REB", "22 MIN"]);
+    ).toEqual(["19 PTS", "8-15 FG", "6 REB", "0 TOV", "22 MIN"]);
     const fromStandout = fillStatCardFromStandout(
       { ...defaultStatCardDraft(), playerId: wiggins.id },
       gameFrom(wigNight),
@@ -638,6 +664,37 @@ describe("stat card composer", () => {
       "4-12 3PM",
     );
     expect(volumeThrees.map((line) => line.label)).not.toContain("FG");
+    expect(volumeThrees.map((line) => line.label).slice(-2)).toEqual([
+      "TOV",
+      "MIN",
+    ]);
+  });
+
+  it("always auto-fills TOV immediately before MIN, even on a 33-minute night", () => {
+    const mid = notableStatCardLines(
+      box({ pts: "22", reb: "8", ast: "6", tov: "3", min: "33" }),
+    );
+    expect(mid.map((line) => `${line.value} ${line.label}`)).toEqual([
+      "22 PTS",
+      "8 REB",
+      "6 AST",
+      "3 TOV",
+      "33 MIN",
+    ]);
+    const rough = notableRoughNightLines(
+      box({ pts: "8", fg: "2-12", tov: "6", min: "31" }),
+    );
+    expect(rough.map((line) => line.label).slice(-2)).toEqual(["TOV", "MIN"]);
+    const stacked: StatCardLine[] = [
+      { key: "pts", label: "PTS", value: "22" },
+      { key: "tov", label: "TOV", value: "3" },
+      { key: "min", label: "MIN", value: "33" },
+    ];
+    expect(moveStatCardLine(stacked, 2, 1).map((line) => line.key)).toEqual([
+      "pts",
+      "min",
+      "tov",
+    ]);
   });
 
   it("formats that night's W/L and score in the stats column, off by default", () => {
@@ -747,7 +804,7 @@ describe("stat card composer", () => {
       notableRoughNightLines(dudBox).map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["8 PTS", "2-12 FG", "1-8 3PM", "6 TOV"]);
+    ).toEqual(["8 PTS", "2-12 FG", "1-8 3PM", "6 TOV", "32 MIN"]);
     expect(notableRoughNightLines(dudBox)[0]?.key).toBe("pts");
     expect(
       notableStatCardLines(dudBox).map((line) => line.label),
@@ -761,6 +818,7 @@ describe("stat card composer", () => {
       "2-12 FG",
       "1-8 3PM",
       "6 TOV",
+      "32 MIN",
     ]);
     expect(filled.stats[0]?.key).toBe("pts");
     const fgIndex = filled.stats.findIndex((line) => line.key === "fg");
@@ -794,6 +852,7 @@ describe("stat card composer", () => {
       "7-21 FG",
       "1-8 3PM",
       "9 TOV",
+      "32 MIN",
     ]);
     const giddeyBox = box({
       pts: "2",
@@ -808,7 +867,7 @@ describe("stat card composer", () => {
       notableStatCardLines(giddeyBox).map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["2 PTS", "7 REB", "6 AST", "24 MIN"]);
+    ).toEqual(["2 PTS", "7 REB", "6 AST", "5 TOV", "24 MIN"]);
     expect(
       notableRoughNightLines(giddeyBox).map(
         (line) => `${line.value} ${line.label}`,
