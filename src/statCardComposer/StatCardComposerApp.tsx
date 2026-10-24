@@ -16,7 +16,11 @@ import {
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
-import { useStatCoverDateRange } from "../instagramComposer/composerDateRange";
+import {
+  lastNightRange,
+  matchDateRangePreset,
+  useStatCoverDateRange,
+} from "../instagramComposer/composerDateRange";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import {
@@ -708,6 +712,7 @@ export function StatCardComposerApp() {
         <ComposerDateRange
           from={range.from}
           to={range.to}
+          simpleSet="night"
           onChange={(next) => {
             const written = setRange(next);
             setGameDate(written.to);
@@ -755,7 +760,15 @@ export function StatCardComposerApp() {
         board={
           <>
             <ComposerLookToggle look={look} onChange={setLook} />
-            <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
+            {photoGrade ? (
+              <PhotoGradeToggle
+                on={photoGrade}
+                onChange={setPhotoGrade}
+                intensity={gradeIntensity}
+                onIntensityChange={setGradeIntensity}
+                slidersOnly
+              />
+            ) : null}
             <StatCardFlipToggle
               statsLeft={Boolean(draft.statsLeft)}
               onChange={(statsLeft) => {
@@ -779,6 +792,12 @@ export function StatCardComposerApp() {
               label="Board extras"
               ariaLabel="Stat board extras"
               items={[
+                {
+                  key: "photo-look",
+                  label: "Photo look",
+                  on: photoGrade,
+                  onChange: setPhotoGrade,
+                },
                 {
                   key: "matchup",
                   label: "Matchup",
@@ -876,7 +895,7 @@ export function StatCardComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() =>
               void handleExport(
                 exportFilenameFromTitle(stem, "stat-card", "", true),
@@ -889,7 +908,7 @@ export function StatCardComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost sc-btn--aside"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
             onClick={() => void handleExport(undefined, false, true)}
             disabled={exporting}
             aria-label="Export 1:1"
@@ -1054,6 +1073,15 @@ export function StatCardComposerApp() {
           }
           extraSuggestedLoading={source === "last-game" && dudsLoading}
           extraSuggestedEmpty="No rough nights for this slate yet."
+          onJumpLastNight={
+            source === "last-game" &&
+            matchDateRangePreset(range.from, range.to) === "tonight"
+              ? () => {
+                  const written = setRange(lastNightRange());
+                  setGameDate(written.to);
+                }
+              : undefined
+          }
           onPick={handlePick}
           onClear={() => {
             push(draft);

@@ -15,6 +15,7 @@ interface PhotoGradeToggleProps {
   onIntensityChange?: (value: number) => void;
   mix?: PhotoGradeMix;
   onMixChange?: (mix: PhotoGradeMix) => void;
+  slidersOnly?: boolean;
 }
 
 const MIX_LABEL: Record<keyof PhotoGradeMix, string> = {
@@ -33,6 +34,7 @@ export function PhotoGradeToggle({
   onIntensityChange,
   mix,
   onMixChange,
+  slidersOnly = false,
 }: PhotoGradeToggleProps) {
   const value = clampPhotoGradeIntensity(intensity ?? (on ? 100 : 0));
   const [localMix, setLocalMix] = useState<PhotoGradeMix>(
@@ -59,35 +61,72 @@ export function PhotoGradeToggle({
 
   return (
     <div className="sc-grade" role="group" aria-label="Photo look">
-      <label className="sc-field sc-field--range">
-        <span className="sc-toolbar__eyebrow">
-          Photo look <span className="sc-range__value">{value}</span>
-        </span>
-        <span className="sc-range">
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={value}
-            aria-label="Photo look intensity"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={value}
-            onPointerDown={(event) => {
-              event.currentTarget.setPointerCapture(event.pointerId);
-            }}
-            onChange={(event) => {
-              const next = clampPhotoGradeIntensity(Number(event.target.value));
+      {slidersOnly ? null : (
+        <div className="sc-look" role="group" aria-label="Photo look on or off">
+          <span className="sc-look__label">Photo look</span>
+          <button
+            type="button"
+            className={value <= 0 ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={value <= 0}
+            aria-label="Photo look off"
+            onClick={() => {
               if (onIntensityChange) {
-                onIntensityChange(next);
+                onIntensityChange(0);
                 return;
               }
-              onChange(next > 0);
+              onChange(false);
             }}
-          />
-        </span>
-      </label>
+          >
+            Off
+          </button>
+          <button
+            type="button"
+            className={value > 0 ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={value > 0}
+            aria-label="Photo look on"
+            onClick={() => {
+              if (onIntensityChange) {
+                onIntensityChange(value > 0 ? value : 100);
+                return;
+              }
+              onChange(true);
+            }}
+          >
+            On
+          </button>
+        </div>
+      )}
+      {value > 0 ? (
+        <label className="sc-field sc-field--range">
+          <span className="sc-toolbar__eyebrow">
+            Photo look <span className="sc-range__value">{value}</span>
+          </span>
+          <span className="sc-range">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={value}
+              aria-label="Photo look intensity"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={value}
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onChange={(event) => {
+                const next = clampPhotoGradeIntensity(Number(event.target.value));
+                if (onIntensityChange) {
+                  onIntensityChange(next);
+                  return;
+                }
+                onChange(next > 0);
+              }}
+            />
+          </span>
+        </label>
+      ) : null}
       {value > 0 ? (
         <div className="sc-grade__mix">
           {PHOTO_GRADE_MIX_KEYS.map((key) => (

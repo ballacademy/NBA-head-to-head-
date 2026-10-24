@@ -6,6 +6,7 @@ import {
 interface ComposerStatsSampleToggleProps {
   sample: ComposerStatsSample;
   onChange: (sample: ComposerStatsSample) => void;
+  className?: string;
 }
 
 const OPTIONS: ComposerStatsSample[] = ["preseason", "regular"];
@@ -13,9 +14,14 @@ const OPTIONS: ComposerStatsSample[] = ["preseason", "regular"];
 export function ComposerStatsSampleToggle({
   sample,
   onChange,
+  className,
 }: ComposerStatsSampleToggleProps) {
   return (
-    <div className="sc-look" role="group" aria-label="Stats sample">
+    <div
+      className={["sc-look", className].filter(Boolean).join(" ")}
+      role="group"
+      aria-label="Stats sample"
+    >
       <span className="sc-look__label">Sample</span>
       {OPTIONS.map((option) => (
         <button

@@ -729,6 +729,32 @@ describe("composer chrome", () => {
     expect(sheet).toContain(
       ".sc-root.is-hud-simple .sc-tabs__group:not(.sc-tabs__group--recents)",
     );
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-hud-full-only");
+    expect(totwApp).toContain('simpleSet="week"');
+    expect(coverApp).toContain('simpleSet="night"');
+    expect(coverApp).toContain("onJumpLastNight");
+    expect(coverApp).toContain('label: "Photo look"');
+    expect(coverApp).toContain('label: "Story crop"');
+    expect(statCardApp).toContain('simpleSet="night"');
+    expect(statCardApp).toContain('label: "Photo look"');
+    expect(headlineApp).toContain('className="sc-hud-full-only"');
+    expect(headlineApp).toContain("onJumpLastNight");
+    const potdApp = readFileSync(
+      join(root, "playerOfTheDayComposer/PlayerOfTheDayComposerApp.tsx"),
+      "utf8",
+    );
+    expect(potdApp).toContain('className="sc-look sc-hud-full-only"');
+    expect(potdApp).toContain("onJumpLastNight");
+    expect(potdApp).toContain("Export PNG");
+    expect(potdApp).toContain("sc-hud-full-only");
+    const picker = readFileSync(
+      join(root, "tierListComposer/PlayerPicker.tsx"),
+      "utf8",
+    );
+    expect(picker).toContain("onJumpLastNight");
+    expect(picker.indexOf("sc-picker__suggested")).toBeLessThan(
+      picker.indexOf("sc-picker__filters-slot"),
+    );
     expect(totwApp).toContain("ComposerDateRange");
     expect(totwApp).toContain("fillStartersFromStandouts");
     expect(totwApp).toContain("fetchRangeProduction");
@@ -775,10 +801,6 @@ describe("composer chrome", () => {
     expect(totwGraphic).not.toContain("totwStatsFromStandout");
     expect(totwGraphic).not.toContain("Copy stats");
     expect(sheet).toContain(".sc-team.is-deserving");
-    const picker = readFileSync(
-      join(root, "tierListComposer/PlayerPicker.tsx"),
-      "utf8",
-    );
     expect(picker).toContain("deserving");
     expect(picker).toContain("is-deserving");
     expect(totwPlusApp).toContain("PG, SG, SF, PF, C");
@@ -871,7 +893,8 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("picksDefaultTitle");
     expect(picksApp).toContain("isAutoPicksTitle");
     expect(picksApp).toContain("mergePicksFill");
-    expect(picksApp).toContain("refreshPicksLines");
+    expect(picksApp).toContain("restorePicksLines");
+    expect(picksApp).toContain("fetchMissingPicksLines");
     expect(picksApp).toContain('aria-label="Refresh lines"');
     expect(picksApp).toContain("Refresh lines");
     expect(picksApp).toContain("void refreshLines(draft.date, true)");

@@ -1,9 +1,11 @@
 import {
+  dateRangeChipsForHud,
   matchDateRangePreset,
   rangeForPreset,
   type ComposerDateRange,
-  type DateRangePreset,
+  type DateRangeChipSet,
 } from "./composerDateRange";
+import { useComposerHudMode } from "./composerHudMode";
 
 interface ComposerDateRangeProps {
   from: string;
@@ -12,18 +14,8 @@ interface ComposerDateRangeProps {
   onFill?: () => void;
   fillLabel?: string;
   filling?: boolean;
+  simpleSet?: DateRangeChipSet;
 }
-
-const PRESETS: Array<{
-  id: Exclude<DateRangePreset, "custom">;
-  label: string;
-}> = [
-  { id: "tonight", label: "Tonight" },
-  { id: "last-night", label: "Last night" },
-  { id: "this-week", label: "This week" },
-  { id: "last-week", label: "Last week" },
-  { id: "last-5", label: "Last 5 days" },
-];
 
 export function ComposerDateRange({
   from,
@@ -32,12 +24,19 @@ export function ComposerDateRange({
   onFill,
   fillLabel = "Fill range",
   filling = false,
+  simpleSet,
 }: ComposerDateRangeProps) {
+  const [hudMode] = useComposerHudMode();
+  const simple = hudMode === "simple";
   const preset = matchDateRangePreset(from, to);
+  const chips = dateRangeChipsForHud(
+    simpleSet ?? "night",
+    simple && Boolean(simpleSet),
+  );
   return (
     <div className="sc-look" role="group" aria-label="Date range">
       <span className="sc-look__label">Range</span>
-      {PRESETS.map((item) => (
+      {chips.map((item) => (
         <button
           key={item.id}
           type="button"
@@ -49,24 +48,28 @@ export function ComposerDateRange({
           {item.label}
         </button>
       ))}
-      <label className="sc-field">
-        From
-        <input
-          type="date"
-          value={from}
-          aria-label="Range start"
-          onChange={(event) => onChange({ from: event.target.value, to })}
-        />
-      </label>
-      <label className="sc-field">
-        To
-        <input
-          type="date"
-          value={to}
-          aria-label="Range end"
-          onChange={(event) => onChange({ from, to: event.target.value })}
-        />
-      </label>
+      {simple ? null : (
+        <>
+          <label className="sc-field">
+            From
+            <input
+              type="date"
+              value={from}
+              aria-label="Range start"
+              onChange={(event) => onChange({ from: event.target.value, to })}
+            />
+          </label>
+          <label className="sc-field">
+            To
+            <input
+              type="date"
+              value={to}
+              aria-label="Range end"
+              onChange={(event) => onChange({ from, to: event.target.value })}
+            />
+          </label>
+        </>
+      )}
       {onFill ? (
         <button
           type="button"

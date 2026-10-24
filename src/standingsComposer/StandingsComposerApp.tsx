@@ -485,7 +485,7 @@ export function StandingsComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() => void exportStory()}
             disabled={exporting}
           >
@@ -493,7 +493,7 @@ export function StandingsComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost sc-btn--aside"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
             aria-label="Export 1:1"
             disabled={exporting}
             onClick={() => {

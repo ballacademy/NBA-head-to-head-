@@ -716,7 +716,7 @@ export function MockTradeComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-hud-full-only"
               onClick={() =>
                 void handleExport(
                   exportFilenameFromTitle(draft.title, "mock-trade", "", true),
@@ -729,7 +729,7 @@ export function MockTradeComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost sc-btn--aside"
+              className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
               aria-label="Export 1:1"
               onClick={() => void handleExport(undefined, false, true)}
               disabled={exporting}

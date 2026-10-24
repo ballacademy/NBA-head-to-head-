@@ -623,7 +623,7 @@ export function TierListComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() => void handleExportStory()}
             disabled={exporting}
           >
@@ -631,7 +631,7 @@ export function TierListComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost sc-btn--aside"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
             onClick={() => void handleExportSquare()}
             disabled={exporting}
             aria-label="Export 1:1"

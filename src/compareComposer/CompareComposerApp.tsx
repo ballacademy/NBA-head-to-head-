@@ -671,7 +671,7 @@ export function CompareComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() =>
               void handleExport(
                 exportFilenameFromTitle(draft.title, "compare", "", true),
@@ -684,7 +684,7 @@ export function CompareComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost sc-btn--aside"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
             onClick={() => void handleExport(undefined, false, true)}
             disabled={exporting}
             aria-label="Export 1:1"
@@ -829,6 +829,11 @@ export function CompareComposerApp() {
           suggested={nightStandoutPickerRows(night.standouts)}
           suggestedHeading={night.heading}
           suggestedLoading={night.loading}
+          onJumpLastNight={
+            night.date === night.todayIso
+              ? () => night.setDate(night.yesterdayIso)
+              : undefined
+          }
           onPick={handlePick}
           onClear={() => {
             push(draft);

@@ -610,7 +610,7 @@ export function PicksComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-hud-full-only"
               onClick={() => void handleExport(true)}
               disabled={exporting}
             >
@@ -618,7 +618,7 @@ export function PicksComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost sc-btn--aside"
+              className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
               onClick={() => void handleExport(false, true)}
               disabled={exporting}
               aria-label="Export 1:1"

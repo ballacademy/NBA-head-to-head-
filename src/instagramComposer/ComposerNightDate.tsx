@@ -1,3 +1,5 @@
+import { useComposerHudMode } from "./composerHudMode";
+
 interface ComposerNightDateProps {
   date: string;
   todayIso: string;
@@ -11,6 +13,7 @@ export function ComposerNightDate({
   yesterdayIso,
   onChange,
 }: ComposerNightDateProps) {
+  const [hudMode] = useComposerHudMode();
   return (
     <div className="sc-look" role="group" aria-label="Game night">
       <span className="sc-look__label">Game</span>
@@ -32,15 +35,17 @@ export function ComposerNightDate({
       >
         Last night
       </button>
-      <label className="sc-field">
-        Date
-        <input
-          type="date"
-          value={date}
-          aria-label="Specific game date"
-          onChange={(event) => onChange(event.target.value)}
-        />
-      </label>
+      {hudMode === "simple" ? null : (
+        <label className="sc-field">
+          Date
+          <input
+            type="date"
+            value={date}
+            aria-label="Specific game date"
+            onChange={(event) => onChange(event.target.value)}
+          />
+        </label>
+      )}
     </div>
   );
 }

@@ -461,7 +461,7 @@ export function PlayInComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() =>
               void handleExport(
                 exportFilenameFromTitle(draft.title, "play-in", "", true),
@@ -474,7 +474,7 @@ export function PlayInComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost sc-btn--aside"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
             onClick={() => void handleExport(undefined, false, true)}
             disabled={exporting}
             aria-label="Export 1:1"

@@ -428,6 +428,7 @@ export function PlayerOfTheDayComposerApp() {
         data={
           <>
           <ComposerStatsSampleToggle
+            className="sc-hud-full-only"
             sample={statsSample}
             onChange={setStatsSample}
           />
@@ -474,7 +475,7 @@ export function PlayerOfTheDayComposerApp() {
               </button>
             ))}
           </div>
-          <div className="sc-look" role="group" aria-label="Slots">
+          <div className="sc-look sc-hud-full-only" role="group" aria-label="Slots">
             <span className="sc-look__label">Slots</span>
             {cards.map((_, index) => (
               <button
@@ -609,7 +610,7 @@ export function PlayerOfTheDayComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() =>
               void handleExport(
                 exportFilenameFromTitle(title, "player-of-the-day", date, true),
@@ -622,7 +623,7 @@ export function PlayerOfTheDayComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost sc-btn--aside"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
             onClick={() => void handleExport(undefined, false, true)}
             disabled={exporting}
             aria-label="Export 1:1"
@@ -786,6 +787,11 @@ export function PlayerOfTheDayComposerApp() {
           )}
           suggestedLoading={nightBestLoading}
           suggestedEmpty="No box scores for this night yet."
+          onJumpLastNight={
+            night.date === night.todayIso
+              ? () => night.setDate(night.yesterdayIso)
+              : undefined
+          }
           onPick={(playerId) => {
             void handlePick(playerId);
           }}

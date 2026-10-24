@@ -434,6 +434,7 @@ export function HeadlineComposerApp() {
         data={
           <>
           <ComposerStatsSampleToggle
+            className="sc-hud-full-only"
             sample={statsSample}
             onChange={setStatsSample}
           />
@@ -800,7 +801,7 @@ export function HeadlineComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() =>
               void handleExport(
                 exportFilenameFromTitle(draft.headline, "headline", "", true),
@@ -813,7 +814,7 @@ export function HeadlineComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost sc-btn--aside"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
             onClick={() => void handleExport(undefined, false, true)}
             disabled={exporting}
             aria-label="Export 1:1"
@@ -983,6 +984,11 @@ export function HeadlineComposerApp() {
           suggested={nightStandoutPickerRows(night.standouts)}
           suggestedHeading={night.heading}
           suggestedLoading={night.loading}
+          onJumpLastNight={
+            night.date === night.todayIso
+              ? () => night.setDate(night.yesterdayIso)
+              : undefined
+          }
           onPick={handlePick}
           onClear={() => {
             push(draft);

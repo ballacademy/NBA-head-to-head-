@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  dateRangeChipsForHud,
   datesInInclusiveRange,
   isAutoWeekLine,
   last5DaysRange,
@@ -72,6 +73,25 @@ describe("composer date range", () => {
     expect(
       isAutoWeekLine("MONSTER WEEK", "2026-10-13", "2026-10-19"),
     ).toBe(false);
+  });
+
+  it("puts This week first for TOTW and trims Simple chips", () => {
+    expect(dateRangeChipsForHud("week", false).map((chip) => chip.id)).toEqual([
+      "this-week",
+      "last-week",
+      "last-5",
+      "tonight",
+      "last-night",
+    ]);
+    expect(dateRangeChipsForHud("week", true).map((chip) => chip.id)).toEqual([
+      "this-week",
+      "last-week",
+    ]);
+    expect(dateRangeChipsForHud("night", true).map((chip) => chip.id)).toEqual([
+      "tonight",
+      "last-night",
+    ]);
+    expect(dateRangeChipsForHud("night", false)[0]?.id).toBe("tonight");
   });
 
   it("falls back to this week when storage is empty", () => {

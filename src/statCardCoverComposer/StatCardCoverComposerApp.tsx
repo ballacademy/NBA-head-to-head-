@@ -5,7 +5,6 @@ import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
-import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import {
   STAT_CARD_COVER_LOOK_KEY,
@@ -13,9 +12,14 @@ import {
   usePurpleFlair,
 } from "../instagramComposer/composerLook";
 import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
+import { ComposerHudExtras } from "../instagramComposer/ComposerHudExtras";
 import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
 import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
-import { useStatCoverDateRange } from "../instagramComposer/composerDateRange";
+import {
+  lastNightRange,
+  matchDateRangePreset,
+  useStatCoverDateRange,
+} from "../instagramComposer/composerDateRange";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import { nightStandoutPickerRows } from "../instagramComposer/composerNight";
@@ -406,6 +410,7 @@ export function StatCardCoverComposerApp() {
             <ComposerDateRange
               from={range.from}
               to={range.to}
+              simpleSet="night"
               onChange={(next) => {
                 setRange(next);
               }}
@@ -506,49 +511,58 @@ export function StatCardCoverComposerApp() {
         board={
           <>
             <ComposerLookToggle look={look} onChange={setLook} />
-            <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
-            <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
             <BaMarkToggle
               on={draft.showBa !== false}
               onChange={(showBa) =>
                 setDraft((current) => ({ ...current, showBa }))
               }
             />
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Gold</span>
-              <button
-                type="button"
-                className={draft.showGold !== false ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showGold !== false}
-                aria-label="Gold accents"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showGold: current.showGold === false,
-                  }))
-                }
-              >
-                {draft.showGold !== false ? "On" : "Off"}
-              </button>
-            </label>
             <WatermarkToggle
               value={draft.watermark}
               onChange={(watermark) =>
                 setDraft((current) => ({ ...current, watermark }))
               }
             />
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Story crop</span>
-              <button
-                type="button"
-                className={storyCrop ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={storyCrop}
-                aria-label="Story crop check"
-                onClick={() => setStoryCrop((on) => !on)}
-              >
-                {storyCrop ? "On" : "Off"}
-              </button>
-            </label>
+            <ComposerHudExtras
+              label="Board extras"
+              ariaLabel="Cover board extras"
+              items={[
+                {
+                  key: "photo-look",
+                  label: "Photo look",
+                  on: photoGrade,
+                  onChange: setPhotoGrade,
+                },
+                {
+                  key: "purple",
+                  label: "Purple",
+                  on: purpleFlair,
+                  onChange: setPurpleFlair,
+                },
+                {
+                  key: "gold",
+                  label: "Gold",
+                  on: draft.showGold !== false,
+                  onChange: (showGold) =>
+                    setDraft((current) => ({ ...current, showGold })),
+                },
+                {
+                  key: "story-crop",
+                  label: "Story crop",
+                  on: storyCrop,
+                  onChange: setStoryCrop,
+                },
+              ]}
+            />
+            {photoGrade ? (
+              <PhotoGradeToggle
+                on={photoGrade}
+                onChange={setPhotoGrade}
+                intensity={gradeIntensity}
+                onIntensityChange={setGradeIntensity}
+                slidersOnly
+              />
+            ) : null}
           </>
         }
         persist={
@@ -629,7 +643,7 @@ export function StatCardCoverComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-hud-full-only"
               onClick={() =>
                 void handleExport(
                   exportFilenameFromTitle(stem, "stat-card-cover", "", true),
@@ -642,7 +656,7 @@ export function StatCardCoverComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost sc-btn--aside"
+              className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
               onClick={() => void handleExport(undefined, false, true)}
               disabled={exporting}
               aria-label="Export 1:1"
@@ -897,6 +911,11 @@ export function StatCardCoverComposerApp() {
           suggestedHeading="Range standouts"
           suggestedLoading={standoutsLoading}
           suggestedEmpty="No standouts for this night yet."
+          onJumpLastNight={
+            matchDateRangePreset(range.from, range.to) === "tonight"
+              ? () => setRange(lastNightRange())
+              : undefined
+          }
           onPick={handlePick}
           onClear={() => {
             push(draft);

@@ -13,6 +13,47 @@ export const STAT_COVER_DATE_RANGE_EVENT = "ddgm:stat-cover-date-range";
 export const DATE_RANGE_MAX_NIGHTS = 21;
 
 export type DateRangePreset = "this-week" | "last-week" | "last-5" | "tonight" | "last-night" | "custom";
+export type DateRangeChipSet = "night" | "week";
+
+export const DATE_RANGE_CHIPS: Record<
+  DateRangeChipSet,
+  Array<{ id: Exclude<DateRangePreset, "custom">; label: string }>
+> = {
+  night: [
+    { id: "tonight", label: "Tonight" },
+    { id: "last-night", label: "Last night" },
+    { id: "this-week", label: "This week" },
+    { id: "last-week", label: "Last week" },
+    { id: "last-5", label: "Last 5 days" },
+  ],
+  week: [
+    { id: "this-week", label: "This week" },
+    { id: "last-week", label: "Last week" },
+    { id: "last-5", label: "Last 5 days" },
+    { id: "tonight", label: "Tonight" },
+    { id: "last-night", label: "Last night" },
+  ],
+};
+
+export const SIMPLE_DATE_RANGE_CHIP_IDS: Record<
+  DateRangeChipSet,
+  Array<Exclude<DateRangePreset, "custom">>
+> = {
+  night: ["tonight", "last-night"],
+  week: ["this-week", "last-week"],
+};
+
+export const dateRangeChipsForHud = (
+  set: DateRangeChipSet,
+  simple: boolean,
+) => {
+  const chips = DATE_RANGE_CHIPS[set];
+  if (!simple) {
+    return chips;
+  }
+  const allowed = new Set<string>(SIMPLE_DATE_RANGE_CHIP_IDS[set]);
+  return chips.filter((chip) => allowed.has(chip.id));
+};
 
 export interface ComposerDateRange {
   from: string;

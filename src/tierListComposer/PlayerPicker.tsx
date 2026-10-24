@@ -77,6 +77,7 @@ interface PlayerPickerProps {
   extraSuggestedHeading?: string;
   extraSuggestedLoading?: boolean;
   extraSuggestedEmpty?: string;
+  onJumpLastNight?: () => void;
   onPick: (
     playerId: string,
     recs?: "standouts" | "rough-night",
@@ -109,6 +110,7 @@ export function PlayerPicker({
   extraSuggestedHeading,
   extraSuggestedLoading = false,
   extraSuggestedEmpty,
+  onJumpLastNight,
   onPick,
   onClear,
   onClose,
@@ -404,6 +406,86 @@ export function PlayerPicker({
           </div>
           {toolbarExtra}
         </div>
+        {showRecsSection ? (
+          <div
+            className={
+              showDudRecs
+                ? "sc-picker__suggested sc-picker__suggested--dud"
+                : "sc-picker__suggested"
+            }
+          >
+            <div className="sc-picker__suggested-head">
+              {hasRecToggle ? (
+                <div className="sc-look sc-picker__recs" role="group" aria-label="Recs">
+                  <button
+                    type="button"
+                    className={
+                      recsStrip === "standouts" ? "sc-chip is-on" : "sc-chip"
+                    }
+                    aria-pressed={recsStrip === "standouts"}
+                    onClick={() => setRecsStrip("standouts")}
+                  >
+                    Standouts
+                  </button>
+                  <button
+                    type="button"
+                    className={
+                      recsStrip === "rough-night" ? "sc-chip is-on" : "sc-chip"
+                    }
+                    aria-pressed={recsStrip === "rough-night"}
+                    onClick={() => setRecsStrip("rough-night")}
+                  >
+                    Rough night
+                  </button>
+                </div>
+              ) : (
+                <p className="sc-picker__suggested-label">{recHeading}</p>
+              )}
+            </div>
+            {recLoading && recRows.length === 0 ? (
+              <p className="sc-picker__suggested-status">Loading box scores…</p>
+            ) : recRows.length === 0 ? (
+              <div className="sc-picker__suggested-empty">
+                <p className="sc-picker__suggested-status">{recEmpty}</p>
+                {onJumpLastNight && !showDudRecs ? (
+                  <button
+                    type="button"
+                    className="sc-chip"
+                    aria-label="Last night"
+                    onClick={onJumpLastNight}
+                  >
+                    Last night
+                  </button>
+                ) : null}
+              </div>
+            ) : (
+              <div
+                className="sc-picker__grid sc-picker__grid--suggested"
+                aria-label={recHeading}
+              >
+                {recRows.map((row, index) => (
+                  <PlayerButton
+                    key={`${showDudRecs ? "dud" : "sug"}-${row.id}`}
+                    player={row.player}
+                    currentId={currentId}
+                    usedLabel={usedLabels[row.id]}
+                    showPpg={false}
+                    showDepth={false}
+                    badge={row.badge}
+                    metaOverride={row.meta}
+                    live={row.live}
+                    deserving={!showDudRecs}
+                    dud={showDudRecs}
+                    highlighted={activeIndex === index}
+                    onPick={(id) =>
+                      handlePick(id, showDudRecs ? "rough-night" : "standouts")
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
         <div
           className={
             hideBoardFilters
@@ -529,74 +611,6 @@ export function PlayerPicker({
           </div>
         )}
         </div>
-        {showRecsSection ? (
-          <div
-            className={
-              showDudRecs
-                ? "sc-picker__suggested sc-picker__suggested--dud"
-                : "sc-picker__suggested"
-            }
-          >
-            <div className="sc-picker__suggested-head">
-              {hasRecToggle ? (
-                <div className="sc-look sc-picker__recs" role="group" aria-label="Recs">
-                  <button
-                    type="button"
-                    className={
-                      recsStrip === "standouts" ? "sc-chip is-on" : "sc-chip"
-                    }
-                    aria-pressed={recsStrip === "standouts"}
-                    onClick={() => setRecsStrip("standouts")}
-                  >
-                    Standouts
-                  </button>
-                  <button
-                    type="button"
-                    className={
-                      recsStrip === "rough-night" ? "sc-chip is-on" : "sc-chip"
-                    }
-                    aria-pressed={recsStrip === "rough-night"}
-                    onClick={() => setRecsStrip("rough-night")}
-                  >
-                    Rough night
-                  </button>
-                </div>
-              ) : (
-                <p className="sc-picker__suggested-label">{recHeading}</p>
-              )}
-            </div>
-            {recLoading && recRows.length === 0 ? (
-              <p className="sc-picker__suggested-status">Loading box scores…</p>
-            ) : recRows.length === 0 ? (
-              <p className="sc-picker__suggested-status">{recEmpty}</p>
-            ) : (
-              <div
-                className="sc-picker__grid sc-picker__grid--suggested"
-                aria-label={recHeading}
-              >
-                {recRows.map((row, index) => (
-                  <PlayerButton
-                    key={`${showDudRecs ? "dud" : "sug"}-${row.id}`}
-                    player={row.player}
-                    currentId={currentId}
-                    usedLabel={usedLabels[row.id]}
-                    showPpg={false}
-                    showDepth={false}
-                    badge={row.badge}
-                    metaOverride={row.meta}
-                    live={row.live}
-                    deserving={!showDudRecs}
-                    dud={showDudRecs}
-                    highlighted={activeIndex === index}
-                    onPick={(id) =>
-                      handlePick(id, showDudRecs ? "rough-night" : "standouts")
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : null}
         <div
           className={
             showSuggested
