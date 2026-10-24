@@ -34,6 +34,7 @@ import {
   STC_MATCHUP_MAX,
   STC_NAME_MAX,
   STC_VALUE_MAX,
+  statHighLabel,
   visibleStatCardLines,
   type StatCardDraft,
 } from "./statCardState";
@@ -315,7 +316,7 @@ export const StatCardGraphic = forwardRef<HTMLElement, StatCardGraphicProps>(
                     line.high === "career" ? "Career high" : "Season high"
                   }
                 >
-                  {line.high === "career" ? "CAREER" : "SZN"}
+                  {statHighLabel(line.high)}
                 </span>
               ) : null}
               <input

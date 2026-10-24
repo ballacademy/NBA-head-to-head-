@@ -221,7 +221,7 @@ export function StatCardComposerApp() {
     }
     const marked = next.stats.some((line) => line.high);
     if (marked) {
-      setStatus("High pip on — SZN or CAREER on the matching stat.");
+      setStatus("High pip on — SZN HIGH or CAREER HIGH on the matching stat.");
       return;
     }
     if (!seasonGamesRef.current.length) {
@@ -231,7 +231,7 @@ export function StatCardComposerApp() {
         setDraft(refreshed);
         setStatus(
           refreshed.stats.some((line) => line.high)
-            ? "High pip on — SZN or CAREER on the matching stat."
+            ? "High pip on — SZN HIGH or CAREER HIGH on the matching stat."
             : "High pip on — none of these slots is a season or career high.",
         );
       })();

@@ -69,6 +69,16 @@ export type StatCardSource = "last-game" | "season";
 
 export type StatHighKind = "season" | "career";
 
+export const statHighLabel = (kind: StatHighKind | null | undefined) => {
+  if (kind === "career") {
+    return "CAREER HIGH";
+  }
+  if (kind === "season") {
+    return "SZN HIGH";
+  }
+  return "";
+};
+
 export interface StatCardLine {
   key: StatCardKey;
   label: string;

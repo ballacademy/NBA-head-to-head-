@@ -997,6 +997,19 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain("showHighPip");
     expect(statCardApp).toContain('aria-label="Season and career high pip"');
     expect(statCardApp).not.toContain('key: "high-pip"');
+    const statGraphic = readFileSync(
+      join(root, "statCardComposer/StatCardGraphic.tsx"),
+      "utf8",
+    );
+    expect(statGraphic).toContain("statHighLabel");
+    expect(statCardCanvas).toContain("statHighLabel");
+    expect(statCardCanvas).toMatch(/const size = 24 \* s/);
+    expect(statCardCss).toMatch(
+      /\.stc-high \{[\s\S]*?position:\s*relative[\s\S]*?font-size:\s*calc\(24 \* var\(--u\)\)/,
+    );
+    expect(coverCss).toContain(
+      "bottom: calc(var(--name-h) * var(--u) + 10 * var(--u))",
+    );
   });
 
   it("lets Andrew drag-swap player slots on the preview", () => {

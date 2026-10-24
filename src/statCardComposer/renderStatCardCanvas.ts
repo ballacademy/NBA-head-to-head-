@@ -55,7 +55,12 @@ import {
   statCardType,
 } from "./statCardLayout";
 import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
-import { playerName, visibleStatCardLines, type StatCardDraft } from "./statCardState";
+import {
+  playerName,
+  statHighLabel,
+  visibleStatCardLines,
+  type StatCardDraft,
+} from "./statCardState";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 
@@ -216,20 +221,22 @@ export const renderStatCardCanvas = async (
     cx: number,
     cy: number,
   ) => {
-    const label = kind === "career" ? "CAREER" : "SZN";
-    context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+    const label = statHighLabel(kind);
+    const size = 24 * s;
+    context.font = `900 ${size}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
+    setLetterSpacing(context, 0.08 * size);
     const textW = context.measureText(label).width;
-    const padX = 8 * s;
-    const h = 18 * s;
-    const w = Math.max(textW + padX * 2, 44 * s);
+    const padX = 16 * s;
+    const h = 42 * s;
+    const w = Math.max(textW + padX * 2, 108 * s);
     const x = cx - w / 2;
     const y = cy - h / 2;
     context.save();
     context.beginPath();
     if (typeof context.roundRect === "function") {
-      context.roundRect(x, y, w, h, 8 * s);
+      context.roundRect(x, y, w, h, h / 2);
     } else {
       context.rect(x, y, w, h);
     }
@@ -238,6 +245,7 @@ export const renderStatCardCanvas = async (
     context.fillStyle = "#facc15";
     context.fillText(label, cx, cy);
     context.restore();
+    setLetterSpacing(context, 0);
   };
 
   const paintStat = (
@@ -246,7 +254,6 @@ export const renderStatCardCanvas = async (
     valueY: number,
     labelY: number,
     maxW: number,
-    pipY: number,
   ) => {
     context.font = `900 ${type.value * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
@@ -254,7 +261,11 @@ export const renderStatCardCanvas = async (
     context.fillStyle = STC_INK;
     context.fillText(line.value.trim() || "—", cx, valueY, maxW);
     if (line.high) {
-      paintHighPip(line.high, cx, pipY);
+      paintHighPip(
+        line.high,
+        cx,
+        valueY - type.value * s * 0.5 - 28 * s,
+      );
     }
     context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
     context.fillStyle = STC_MUTED;
@@ -282,7 +293,6 @@ export const renderStatCardCanvas = async (
         statsY + col.valueY * s,
         statsY + col.labelY * s,
         col.w * s - 24 * s,
-        statsY + 47 * s,
       );
     });
     if (showMatchup) {
@@ -321,7 +331,6 @@ export const renderStatCardCanvas = async (
         row.valueY * s,
         row.labelY * s,
         statsW - 24 * s,
-        row.y * s + 19 * s,
       );
     });
     if (showMatchup) {

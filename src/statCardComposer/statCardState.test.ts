@@ -39,6 +39,7 @@ import {
   notableRoughNightLines,
   applyStatCardHighs,
   statHighKind,
+  statHighLabel,
   statCardFromCoverSlot,
   formatStatCardMatchup,
   keepMinLast,
@@ -874,6 +875,8 @@ describe("stat card composer", () => {
     );
     expect(statHighKind("pts", "18", [tonight], [])).toBeNull();
     expect(statHighKind("pts", "42", [tonight, earlier], [])).toBe("season");
+    expect(statHighLabel("season")).toBe("SZN HIGH");
+    expect(statHighLabel("career")).toBe("CAREER HIGH");
     const off = applyStatCardHighs(
       {
         ...defaultStatCardDraft(),
