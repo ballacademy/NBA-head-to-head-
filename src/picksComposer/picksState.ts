@@ -18,6 +18,10 @@ export { DEFAULT_BRAND };
 export const PICKS_SCOREBOARD_URL = (iso: string) =>
   `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
 
+/** Scoreboard drops `odds` after finals; DraftKings close still lives on this event odds doc. */
+export const PICKS_EVENT_ODDS_URL = (eventId: string) =>
+  `https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/${encodeURIComponent(eventId)}/competitions/${encodeURIComponent(eventId)}/odds/100`;
+
 export const PICKS_FOOTER_H = 28;
 export const PICKS_PARLAY_H = 32;
 export const PICKS_LIST_BOTTOM = 16;
@@ -1369,6 +1373,84 @@ export const fetchPicksSlate = async (iso: string): Promise<PicksGame[]> => {
     return [];
   }
 };
+
+/** Closing away line from the event odds doc. Null when ESPN has none — never invented. */
+export const parseEspnEventOddsAwayLine = (
+  payload: unknown,
+  awayId: string,
+  homeId: string,
+): number | null => parseEspnAwayLine({ odds: [payload] }, awayId, homeId);
+
+export const fetchPicksEventAwayLine = async (
+  eventId: string,
+  awayId: string,
+  homeId: string,
+): Promise<number | null> => {
+  const id = textOf(eventId);
+  if (!id || id.startsWith("custom:")) {
+    return null;
+  }
+  try {
+    const response = await fetch(PICKS_EVENT_ODDS_URL(id), {
+      mode: "cors",
+      credentials: "omit",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return parseEspnEventOddsAwayLine(await response.json(), awayId, homeId);
+  } catch {
+    return null;
+  }
+};
+
+/** Fill rows that lost their spread after the scoreboard dropped odds. Skip if ESPN has none. */
+export const fetchMissingPicksLines = async (
+  games: PicksGame[],
+): Promise<PicksGame[]> => {
+  const missing = games.filter(
+    (game) =>
+      (game.line == null || !Number.isFinite(game.line)) &&
+      Boolean(game.eventId) &&
+      !game.eventId.startsWith("custom:") &&
+      game.custom !== true,
+  );
+  if (!missing.length) {
+    return games;
+  }
+  const recovered = await Promise.all(
+    missing.map(async (game) => {
+      const line = await fetchPicksEventAwayLine(
+        game.eventId,
+        game.awayId,
+        game.homeId,
+      );
+      return [game.eventId, line] as const;
+    }),
+  );
+  const byEvent = new Map(
+    recovered.filter(([, line]) => line != null && Number.isFinite(line)),
+  );
+  if (!byEvent.size) {
+    return games;
+  }
+  return games.map((game) => {
+    if (game.line != null && Number.isFinite(game.line)) {
+      return game;
+    }
+    const line = game.eventId ? byEvent.get(game.eventId) : undefined;
+    return line == null ? game : { ...game, line };
+  });
+};
+
+/** Refresh live lines, then put ledger spreads back if ESPN’s board went blank. */
+export const restorePicksLines = (
+  current: PicksGame[],
+  incoming: PicksGame[],
+  ledger: PicksLedger,
+  date: string,
+): PicksGame[] =>
+  applyLedgerPicksToGames(refreshPicksLines(current, incoming), ledger, date);
 
 export const emptyPicksGame = (): PicksGame => ({
   id: newPicksRowId(),

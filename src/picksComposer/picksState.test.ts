@@ -27,6 +27,7 @@ import {
   refreshPicksLines,
   parseEspnAwayLine,
   parseEspnCompleted,
+  parseEspnEventOddsAwayLine,
   parsePicksLineInput,
   picksCaptionLines,
   parseEspnNationalTv,
@@ -44,6 +45,7 @@ import {
   picksNameLabel,
   picksRecordLine,
   picksShortName,
+  PICKS_EVENT_ODDS_URL,
   PICKS_SCOREBOARD_URL,
   PICKS_TITLE_SIZE,
   sortPicksGames,
@@ -58,6 +60,7 @@ import {
   setPicksTeam,
   applyLedgerPicksToGames,
   applyScoresToPicksLedger,
+  restorePicksLines,
   togglePicksPick,
   upsertPicksLedger,
   resolvePicksLine,
@@ -116,6 +119,8 @@ describe("picks composer", () => {
   it("loads the scoreboard from the CORS ESPN host", () => {
     expect(PICKS_SCOREBOARD_URL("2026-10-21")).toContain("site.web.api.espn.com");
     expect(PICKS_SCOREBOARD_URL("2026-10-21")).toContain("20261021");
+    expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("sports.core.api.espn.com");
+    expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("401909843");
   });
 
   it("reads a real ESPN spread as the away line and never invents a number", () => {
@@ -462,6 +467,47 @@ describe("picks composer", () => {
     ]);
     expect(wiped.slates["2026-10-23"]?.[0]?.line).toBe(8.5);
     expect(wiped.slates["2026-10-23"]?.[0]?.result).toBe("W");
+    const blankBoard = [
+      row({
+        id: "espn",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        awayScore: 131,
+        homeScore: 124,
+        final: true,
+      }),
+    ];
+    const wipedDraft = [
+      row({
+        id: "g",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        pick: "away",
+      }),
+    ];
+    const recovered = restorePicksLines(
+      wipedDraft,
+      blankBoard,
+      ledger,
+      "2026-10-23",
+    );
+    expect(recovered[0]?.line).toBe(8.5);
+    expect(recovered[0]?.pick).toBe("away");
+    expect(effectivePicksResult(recovered[0]!)).toBe("W");
+    expect(
+      parseEspnEventOddsAwayLine(
+        { details: "ATL -2.5", spread: 2.5 },
+        "ATL",
+        "CHA",
+      ),
+    ).toBe(-2.5);
+    expect(
+      parseEspnEventOddsAwayLine({ details: "CHA -4", spread: -4 }, "ATL", "CHA"),
+    ).toBe(4);
     const liveIncoming = [
       row({
         id: "live",

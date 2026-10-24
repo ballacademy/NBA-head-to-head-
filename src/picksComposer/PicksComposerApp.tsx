@@ -50,6 +50,7 @@ import {
   effectivePicksResult,
   emptyPicksGame,
   emptyPicksLedger,
+  fetchMissingPicksLines,
   fetchPicksSlate,
   formatPicksGraphicRecord,
   picksCaptionLines,
@@ -57,7 +58,7 @@ import {
   isAutoPicksTitle,
   isPicksDraft,
   mergePicksFill,
-  refreshPicksLines,
+  restorePicksLines,
   normalizePicksLedger,
   PICKS_LEDGER_KEY,
   picksDefaultTitle,
@@ -184,30 +185,29 @@ export function PicksComposerApp() {
       const incoming = await fetchPicksSlate(date);
       slateRef.current = incoming;
       push(draft);
-      setDraft((current) => {
-        const filled = forceRowId
-          ? current.games.map((game) =>
-              game.id === forceRowId ? refillPicksRow(game, incoming) : game,
-            )
-          : applyLedgerPicksToGames(
-              mergePicksFill(current.games, incoming),
-              ledgerRef.current,
-              date,
-            );
-        return {
-          ...current,
-          date,
-          dateLine: isAutoPicksDateLine(current.dateLine, current.date)
-            ? picksDateLine(date)
-            : current.dateLine,
-          title: isAutoPicksTitle(current.title)
-            ? picksDefaultTitle(date)
-            : current.title,
-          games: filled,
-        };
-      });
+      const filled = forceRowId
+        ? draftRef.current.games.map((game) =>
+            game.id === forceRowId ? refillPicksRow(game, incoming) : game,
+          )
+        : applyLedgerPicksToGames(
+            mergePicksFill(draftRef.current.games, incoming),
+            ledgerRef.current,
+            date,
+          );
+      const games = await fetchMissingPicksLines(filled);
+      setDraft((current) => ({
+        ...current,
+        date,
+        dateLine: isAutoPicksDateLine(current.dateLine, current.date)
+          ? picksDateLine(date)
+          : current.dateLine,
+        title: isAutoPicksTitle(current.title)
+          ? picksDefaultTitle(date)
+          : current.title,
+        games,
+      }));
       const nextLedger = applyScoresToPicksLedger(
-        ledgerRef.current,
+        upsertPicksLedger(ledgerRef.current, date, games),
         date,
         incoming,
       );
@@ -244,12 +244,19 @@ export function PicksComposerApp() {
       if (!fromHydrate) {
         push(draft);
       }
+      const restored = restorePicksLines(
+        draftRef.current.games,
+        incoming,
+        ledgerRef.current,
+        date,
+      );
+      const games = await fetchMissingPicksLines(restored);
       setDraft((current) => ({
         ...current,
-        games: refreshPicksLines(current.games, incoming),
+        games,
       }));
       const nextLedger = applyScoresToPicksLedger(
-        ledgerRef.current,
+        upsertPicksLedger(ledgerRef.current, date, games),
         date,
         incoming,
       );
