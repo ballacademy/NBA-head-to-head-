@@ -1,0 +1,462 @@
+import {
+  BANNER_SHAPE,
+  BANNER_VIEW,
+  BRAND_FONT,
+  BRAND_TRACKING_EM,
+  SUB_FONT,
+  TITLE_BAND,
+  bannerBoardRect,
+  brandBaselineY,
+  notchFromMeasuredWidth,
+  subBaselineY,
+  trackedTextWidth,
+} from "./bannerLayout";
+import {
+  FIELD_TEXTURE_SRC,
+  drawBannerInterior,
+  paintBoardField,
+} from "./headerTexture";
+import {
+  clipToInnerFrame,
+  frameColor,
+  paintCellFrame,
+  paintPurpleBaGlow,
+  paintPurpleCornerBloom,
+  paintPurpleInnerHairline,
+  paintPurplePathHalo,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
+import { drawCenteredLogo } from "./logoDraw";
+import {
+  EMPTY_SLOT_COLOR,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+  PLAYOFF_CUT_AFTER,
+  formatStandingLast10,
+  formatStandingRecord,
+  lastWeekDelta,
+  lastWeekMark,
+  SLOT_COUNT,
+  STANDINGS_BOARD_BG,
+  STANDINGS_TITLE_SIZE,
+  STANDINGS_TITLE_TRACK,
+  splitStandingsTitle,
+  standingsBrandLabel,
+  standingsSubtitleLabel,
+  type RankingSlots,
+  type StandingRecord,
+} from "./rankingState";
+import { getTeam } from "./teams";
+
+const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
+
+const loadImage = (src: string) =>
+  new Promise<HTMLImageElement | null>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image.naturalWidth > 0 ? image : null);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+
+const fillCellGradient = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  from: string,
+  to: string,
+) => {
+  const gradient = context.createLinearGradient(x, y, x + w, y + h);
+  gradient.addColorStop(0, from);
+  gradient.addColorStop(1, to);
+  context.fillStyle = gradient;
+  context.fillRect(x, y, w, h);
+};
+
+const withHeaderDropShadow = (
+  context: CanvasRenderingContext2D,
+  scale: number,
+  paint: () => void,
+) => {
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.78)";
+  context.shadowOffsetX = Math.round(1.2 * scale);
+  context.shadowOffsetY = Math.round(1.5 * scale);
+  context.shadowBlur = 0;
+  paint();
+  context.restore();
+};
+
+const setLetterSpacing = (
+  context: CanvasRenderingContext2D,
+  tracking: number,
+) => {
+  const spaced = context as CanvasRenderingContext2D & { letterSpacing: string };
+  if (typeof spaced.letterSpacing === "string") {
+    spaced.letterSpacing = `${tracking}px`;
+    return true;
+  }
+  return false;
+};
+
+const drawLongShadowText = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  font: string,
+  length: number,
+) => {
+  context.font = font;
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.fillStyle = "rgba(0, 0, 0, 0.45)";
+  for (let i = 2; i <= length; i += 2) {
+    context.fillText(text, x + i, y + i);
+  }
+  context.fillStyle = "#fff";
+  context.fillText(text, x, y);
+};
+
+const measureTrackedWidth = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  font: string,
+  tracking: number,
+) => {
+  context.font = font;
+  if (setLetterSpacing(context, tracking)) {
+    const width = context.measureText(text).width;
+    setLetterSpacing(context, 0);
+    return width;
+  }
+  const chars = [...text];
+  return trackedTextWidth(
+    chars.map((char) => context.measureText(char).width),
+    tracking,
+  );
+};
+
+const drawTrackedText = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  font: string,
+  tracking: number,
+  fill: string,
+  strokeWidth: number,
+) => {
+  context.font = font;
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  const py = Math.round(y);
+  if (setLetterSpacing(context, tracking)) {
+    context.textAlign = "center";
+    if (strokeWidth > 0) {
+      context.strokeStyle = "#000";
+      context.lineWidth = strokeWidth;
+      context.strokeText(text, Math.round(x), py);
+    }
+    context.fillStyle = fill;
+    context.fillText(text, Math.round(x), py);
+    setLetterSpacing(context, 0);
+    return;
+  }
+  const chars = [...text];
+  const widths = chars.map((char) => context.measureText(char).width);
+  const total = trackedTextWidth(widths, tracking);
+  let cursor = x - total / 2;
+  context.textAlign = "left";
+  for (let i = 0; i < chars.length; i += 1) {
+    const char = chars[i] ?? "";
+    if (strokeWidth > 0) {
+      context.strokeStyle = "#000";
+      context.lineWidth = strokeWidth;
+      context.strokeText(char, cursor, py);
+    }
+    context.fillStyle = fill;
+    context.fillText(char, cursor, py);
+    cursor += (widths[i] ?? 0) + tracking;
+  }
+};
+
+const drawBannerPath = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  notchLeft: number,
+  notchRight: number,
+) => {
+  const sx = w / BANNER_VIEW.width;
+  const sy = h / BANNER_VIEW.height;
+  const X = (vx: number) => x + vx * sx;
+  const Y = (vy: number) => y + vy * sy;
+  const right = BANNER_VIEW.width - BANNER_SHAPE.insetX;
+  context.beginPath();
+  context.moveTo(X(BANNER_SHAPE.insetX), Y(BANNER_SHAPE.top));
+  context.lineTo(X(right), Y(BANNER_SHAPE.top));
+  context.lineTo(X(right), Y(BANNER_SHAPE.waist));
+  context.lineTo(X(notchRight), Y(BANNER_SHAPE.waist));
+  context.lineTo(X(notchRight), Y(BANNER_SHAPE.bottom));
+  context.lineTo(X(notchLeft), Y(BANNER_SHAPE.bottom));
+  context.lineTo(X(notchLeft), Y(BANNER_SHAPE.waist));
+  context.lineTo(X(BANNER_SHAPE.insetX), Y(BANNER_SHAPE.waist));
+  context.closePath();
+};
+
+export interface StandingsRenderInput {
+  brand: string;
+  title: string;
+  subtitle: string;
+  slots: RankingSlots;
+  look?: ComposerLook;
+  purpleFlair?: boolean;
+  showBa?: boolean;
+  showArrows?: boolean;
+  showRecord?: boolean;
+  showLast10?: boolean;
+  showPlayoffCut?: boolean;
+  records?: Record<string, StandingRecord>;
+  lastWeekSlots?: RankingSlots | null;
+  story?: boolean;
+}
+
+export const renderStandingsCanvas = async (
+  input: StandingsRenderInput,
+  scale = 2,
+): Promise<HTMLCanvasElement> => {
+  if (typeof document !== "undefined" && document.fonts?.load) {
+    await Promise.all([
+      document.fonts.load(`900 ${BRAND_FONT * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${SUB_FONT * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${STANDINGS_TITLE_SIZE * scale}px ${POSTER_FONT}`),
+    ]).catch(() => undefined);
+  }
+
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+  const width = GRAPHIC_WIDTH * scale;
+  const height = boardH * scale;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Could not open export canvas");
+  }
+
+  const board = bannerBoardRect(scale, boardH);
+  const { headerH, x: bannerX, y: bannerY, w: bannerW, h: bannerH } = board;
+  const gridY = headerH;
+  const gridH = height - headerH;
+
+  const fieldTexture = await loadImage(FIELD_TEXTURE_SRC);
+  paintBoardField(context, fieldTexture, width, height, STANDINGS_BOARD_BG);
+  if (input.purpleFlair) {
+    paintPurpleCornerBloom(context, width, height, scale);
+  }
+
+  withHeaderDropShadow(context, scale, () => {
+    drawTrackedText(
+      context,
+      standingsBrandLabel(input.brand) || " ",
+      width / 2,
+      brandBaselineY(scale),
+      `900 ${BRAND_FONT * scale}px ${POSTER_FONT}`,
+      BRAND_TRACKING_EM * BRAND_FONT * scale,
+      "#fff",
+      0,
+    );
+  });
+
+  const subFont = `900 ${SUB_FONT * scale}px ${POSTER_FONT}`;
+  const subTracking = 2.4 * scale;
+  const subText = standingsSubtitleLabel(input.subtitle) || " ";
+  const subWidth = measureTrackedWidth(context, subText, subFont, subTracking);
+  const notch = notchFromMeasuredWidth(subWidth, bannerW);
+
+  const buildBannerPath = () =>
+    drawBannerPath(context, bannerX, bannerY, bannerW, bannerH, notch.left, notch.right);
+  drawBannerInterior(
+    context,
+    bannerX,
+    bannerY,
+    bannerW,
+    bannerH,
+    scale,
+    buildBannerPath,
+  );
+  const bannerLine = input.look === "none" ? 0 : 6 * scale;
+  if (input.purpleFlair) {
+    paintPurplePathHalo(context, scale, buildBannerPath, bannerLine);
+  }
+  if (bannerLine > 0) {
+    buildBannerPath();
+    context.strokeStyle = frameColor(input.look);
+    context.lineWidth = bannerLine;
+    context.lineJoin = "miter";
+    context.stroke();
+  }
+
+  const titleLines = splitStandingsTitle(input.title);
+  const titleSize = STANDINGS_TITLE_SIZE * scale;
+  const titleFont = `900 ${titleSize}px ${POSTER_FONT}`;
+  const titleTracking = STANDINGS_TITLE_TRACK * titleSize;
+  const titleLineH = titleSize * 1.12;
+  const bandTop = bannerY + TITLE_BAND.topFrac * bannerH;
+  const bandH = TITLE_BAND.heightFrac * bannerH;
+  const titleBlockH = titleLineH * titleLines.length;
+  const titleTop = bandTop + (bandH - titleBlockH) / 2 + titleLineH / 2;
+  const subY = subBaselineY(scale);
+
+  withHeaderDropShadow(context, scale, () => {
+    titleLines.forEach((line, index) => {
+      drawTrackedText(
+        context,
+        line,
+        width / 2,
+        titleTop + index * titleLineH,
+        titleFont,
+        titleTracking,
+        "#fff",
+        2 * scale,
+      );
+    });
+    drawTrackedText(
+      context,
+      subText,
+      width / 2,
+      subY,
+      subFont,
+      subTracking,
+      "#fff",
+      2 * scale,
+    );
+  });
+
+  const logos = await Promise.all(
+    input.slots.map((id) => {
+      const team = getTeam(id);
+      return team ? loadImage(team.logoSrc) : Promise.resolve(null);
+    }),
+  );
+
+  context.fillStyle = EMPTY_SLOT_COLOR;
+  context.fillRect(0, gridY, width, gridH);
+
+  for (let index = 0; index < SLOT_COUNT; index += 1) {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    const x = Math.round((col * width) / 3);
+    const x2 = Math.round(((col + 1) * width) / 3);
+    const y = Math.round(gridY + (row * gridH) / 5);
+    const y2 = Math.round(gridY + ((row + 1) * gridH) / 5);
+    const cellW = x2 - x;
+    const cellH = y2 - y;
+    const team = getTeam(input.slots[index] ?? null);
+    if (team) {
+      fillCellGradient(context, x, y, cellW, cellH, team.cellFrom, team.cellTo);
+    }
+
+    const logo = logos[index];
+    if (logo && team) {
+      context.save();
+      const inner = clipToInnerFrame(context, x, y, cellW, cellH, scale, input.look);
+      drawCenteredLogo(context, logo, inner.x, inner.y, inner.w, inner.h, {
+        cacheKey: team.logoSrc,
+      });
+      context.restore();
+    }
+    paintCellFrame(context, x, y, cellW, cellH, input.look, scale);
+    if (input.purpleFlair) {
+      paintPurpleInnerHairline(context, x, y, cellW, cellH, scale, input.look);
+    }
+
+    const rankX = x + cellW * 0.036;
+    const rankY = y + cellH * 0.024;
+    drawLongShadowText(
+      context,
+      String(index + 1),
+      rankX,
+      rankY,
+      `900 ${48 * scale}px ${POSTER_FONT}`,
+      8 * scale,
+    );
+    const delta =
+      input.showArrows === true
+        ? lastWeekDelta(input.slots, input.lastWeekSlots, index)
+        : null;
+    const mark = lastWeekMark(delta);
+    if (mark) {
+      context.font = `900 ${36 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "right";
+      context.textBaseline = "top";
+      context.fillStyle =
+        mark.kind === "up"
+          ? "#22c55e"
+          : mark.kind === "down"
+            ? "#ef4444"
+            : "#9ca3af";
+      context.fillText(mark.text, x + cellW * 0.96, y + cellH * 0.026);
+    }
+    const recordLabel =
+      input.showRecord === true
+        ? formatStandingRecord(team ? input.records?.[team.id] : null)
+        : null;
+    if (recordLabel) {
+      context.font = `900 ${16 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "left";
+      context.textBaseline = "top";
+      context.fillStyle = "#fff";
+      context.fillText(recordLabel, rankX, rankY + 48 * scale + 4 * scale);
+    }
+    const last10Label =
+      input.showLast10 === true
+        ? formatStandingLast10(team ? input.records?.[team.id] : null)
+        : null;
+    if (last10Label) {
+      context.font = `900 ${12 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "left";
+      context.textBaseline = "top";
+      context.fillStyle = "rgba(255,255,255,0.82)";
+      context.fillText(
+        last10Label,
+        rankX,
+        rankY + 48 * scale + (recordLabel ? 22 : 4) * scale,
+      );
+    }
+    if (input.showPlayoffCut === true && index === PLAYOFF_CUT_AFTER) {
+      context.fillStyle = "#facc15";
+      context.fillRect(0, y, width, 4 * scale);
+    }
+  }
+
+  if (input.showBa) {
+    const ba = await loadImage("/ba-logo-circled.png");
+    if (ba) {
+      const size = 72 * scale;
+      const inset = 42 * scale;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
+      context.drawImage(ba, width - inset - size, inset, size, size);
+    }
+  }
+
+  return canvas;
+};
+
+export const canvasToPngBlob = (canvas: HTMLCanvasElement) =>
+  new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error("Could not encode PNG"));
+      }
+    }, "image/png");
+  });

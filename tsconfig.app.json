@@ -17,5 +17,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "data/nba-stats/*.json"]
+  "include": ["src", "data/nba-stats/*.json", "data/nba-active-tier-players.json"]
 }

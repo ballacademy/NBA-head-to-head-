@@ -1,0 +1,897 @@
+import { describe, expect, it } from "vitest";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import {
+  clampPicksPlateOpacity,
+  cyclePicksGrade,
+  DEFAULT_PICKS_PLATE_OPACITY,
+  defaultPicksDraft,
+  emptyPicksGame,
+  emptyPicksLedger,
+  effectivePicksResult,
+  formatPicksAtsRecord,
+  formatPicksFooter,
+  formatPicksGraphicRecord,
+  formatPicksGameLine,
+  formatPicksLine,
+  formatPicksSideTicket,
+  formatPicksTotal,
+  formatPicksUnitsPl,
+  gradePicksAts,
+  gradePicksStraightUp,
+  isAutoPicksTitle,
+  isPicksRowEdited,
+  mergePicksFill,
+  refreshPicksLines,
+  parseEspnAwayLine,
+  parseEspnCompleted,
+  parseEspnEventOddsAwayLine,
+  parsePicksLineInput,
+  picksCaptionLines,
+  parseEspnNationalTv,
+  parseEspnTip,
+  parsePicksScoreboard,
+  PICKS_RECORD_GAP,
+  PICKS_RECORD_PAD,
+  PICKS_RECORD_PLATE_H,
+  picksDatePill,
+  picksDefaultTitle,
+  picksFillLayout,
+  picksRecordKicker,
+  picksTitlePlateH,
+  picksJuiceOrMove,
+  picksNameLabel,
+  picksRecordLine,
+  picksShortName,
+  PICKS_EVENT_ODDS_URL,
+  PICKS_SCOREBOARD_URL,
+  PICKS_TITLE_SIZE,
+  sortPicksGames,
+  summarizePicksLast10,
+  summarizePicksLedger,
+  summarizePicksUnitsPl,
+  refillPicksRow,
+  setPicksDisplayedLine,
+  setPicksLine,
+  setPicksLock,
+  setPicksRecordField,
+  setPicksTeam,
+  applyLedgerPicksToGames,
+  applyScoresToPicksLedger,
+  restorePicksLines,
+  togglePicksPick,
+  upsertPicksLedger,
+  resolvePicksLine,
+  visiblePicksGames,
+  type PicksGame,
+  type PicksLedger,
+  type PicksLedgerEntry,
+} from "./picksState";
+
+const scoreboard = (
+  events: Array<{
+    id: string;
+    away: string;
+    home: string;
+    details?: string;
+    spread?: number;
+    odds?: unknown;
+    date?: string;
+  }>,
+) => ({
+  events: events.map((event) => ({
+    id: event.id,
+    date: event.date,
+    competitions: [
+      {
+        date: event.date,
+        competitors: [
+          { homeAway: "away", team: { abbreviation: event.away } },
+          { homeAway: "home", team: { abbreviation: event.home } },
+        ],
+        odds:
+          event.odds ??
+          (event.details || event.spread != null
+            ? [
+                {
+                  details: event.details,
+                  spread: event.spread,
+                },
+              ]
+            : undefined),
+      },
+    ],
+  })),
+});
+
+const row = (partial: Partial<PicksGame> & { id: string }): PicksGame => ({
+  eventId: "",
+  awayId: "",
+  homeId: "",
+  line: null,
+  pick: null,
+  ...partial,
+});
+
+describe("picks composer", () => {
+  it("loads the scoreboard from the CORS ESPN host", () => {
+    expect(PICKS_SCOREBOARD_URL("2026-10-21")).toContain("site.web.api.espn.com");
+    expect(PICKS_SCOREBOARD_URL("2026-10-21")).toContain("20261021");
+    expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("sports.core.api.espn.com");
+    expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("401909843");
+  });
+
+  it("reads a real ESPN spread as the away line and never invents a number", () => {
+    const games = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL", details: "ORL -2.5", spread: -2.5 },
+        { id: "402", away: "NY", home: "BOS", details: "BOS -7", spread: -7 },
+        { id: "403", away: "DEN", home: "LAL" },
+      ]),
+      "2026-10-21",
+    );
+    expect(games).toHaveLength(3);
+    expect(games.map((game) => game.awayId)).toEqual(["ATL", "DEN", "NYK"]);
+    expect(games[0]?.homeId).toBe("ORL");
+    expect(games[0]?.line).toBe(2.5);
+    expect(formatPicksLine(games[0]?.line)).toBe("+2.5");
+    expect(games.find((game) => game.awayId === "NYK")?.line).toBe(7);
+    expect(formatPicksLine(games.find((game) => game.awayId === "NYK")?.line)).toBe(
+      "+7",
+    );
+    expect(games.find((game) => game.awayId === "DEN")?.line).toBeNull();
+    expect(formatPicksLine(games.find((game) => game.awayId === "DEN")?.line)).toBe(
+      "",
+    );
+  });
+
+  it("keeps PK / EVEN as a real pick'em and leaves missing odds blank", () => {
+    expect(parseEspnAwayLine({ odds: [{ details: "EVEN" }] }, "BOS", "NYK")).toBe(
+      0,
+    );
+    expect(formatPicksLine(0)).toBe("PK");
+    expect(parseEspnAwayLine({ odds: [] }, "BOS", "NYK")).toBeNull();
+    expect(parseEspnAwayLine({}, "BOS", "NYK")).toBeNull();
+    expect(
+      parseEspnAwayLine(
+        { odds: [{ details: "ORL -2.5", spread: -2.5 }] },
+        "ORL",
+        "ATL",
+      ),
+    ).toBe(-2.5);
+  });
+
+  it("shows the checked side’s line so a home pick is not the away number", () => {
+    const milWas = row({
+      id: "b",
+      eventId: "402",
+      awayId: "MIL",
+      homeId: "WAS",
+      line: 4.5,
+    });
+    expect(formatPicksGameLine(milWas)).toBe("+4.5");
+    const wasPick = togglePicksPick(milWas, "home");
+    expect(formatPicksGameLine(wasPick)).toBe("-4.5");
+    const milPick = togglePicksPick(milWas, "away");
+    expect(formatPicksGameLine(milPick)).toBe("+4.5");
+    const noLine = togglePicksPick(
+      row({ id: "c", awayId: "DEN", homeId: "LAL", line: null }),
+      "home",
+    );
+    expect(formatPicksGameLine(noLine)).toBe("");
+    expect(formatPicksGameLine({ ...milWas, line: 0, pick: "home" })).toBe("PK");
+    const typedHome = setPicksDisplayedLine(wasPick, -3);
+    expect(typedHome.line).toBe(3);
+    expect(formatPicksGameLine(typedHome)).toBe("-3");
+  });
+
+  it("parses typed lines including plus, minus, and PK", () => {
+    expect(parsePicksLineInput("PK")).toBe(0);
+    expect(parsePicksLineInput("pick")).toBe(0);
+    expect(parsePicksLineInput("+3")).toBe(3);
+    expect(parsePicksLineInput("3")).toBe(3);
+    expect(parsePicksLineInput("-2.5")).toBe(-2.5);
+    expect(parsePicksLineInput("−4")).toBe(-4);
+    expect(parsePicksLineInput("")).toBeNull();
+    expect(parsePicksLineInput("nope")).toBeUndefined();
+    expect(formatPicksLine(3)).toBe("+3");
+    expect(formatPicksLine(-2.5)).toBe("-2.5");
+  });
+
+  it("keeps a check when the line is edited and clears it if that side’s team leaves", () => {
+    const picked = togglePicksPick(
+      row({ id: "a", eventId: "1", awayId: "ATL", homeId: "ORL", line: 2.5 }),
+      "away",
+    );
+    expect(picked.pick).toBe("away");
+    const edited = setPicksLine(picked, 4);
+    expect(edited.pick).toBe("away");
+    expect(edited.line).toBe(4);
+    expect(edited.lineEdited).toBe(true);
+    const swappedAway = setPicksTeam(edited, "away", "BOS");
+    expect(swappedAway.awayId).toBe("BOS");
+    expect(swappedAway.pick).toBeNull();
+    const homePick = togglePicksPick(edited, "home");
+    const swappedAwayKeepHome = setPicksTeam(homePick, "away", "BOS");
+    expect(swappedAwayKeepHome.pick).toBe("home");
+    const swappedHome = setPicksTeam(homePick, "home", "MIA");
+    expect(swappedHome.pick).toBeNull();
+  });
+
+  it("merges Fill so edited rows stick and unedited ESPN leftovers drop", () => {
+    const current: PicksGame[] = [
+      row({
+        id: "keep-line",
+        eventId: "401",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 6,
+        pick: "home",
+        lineEdited: true,
+      }),
+      row({
+        id: "keep-teams",
+        eventId: "402",
+        awayId: "BOS",
+        homeId: "NYK",
+        line: 3,
+        pick: "away",
+        teamsEdited: true,
+      }),
+      row({
+        id: "custom",
+        eventId: "",
+        awayId: "CHI",
+        homeId: "MIL",
+        line: 1.5,
+        custom: true,
+        pick: "away",
+      }),
+      row({
+        id: "stale",
+        eventId: "404",
+        awayId: "DEN",
+        homeId: "LAL",
+        line: 2,
+      }),
+    ];
+    const incoming = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL", details: "ORL -2.5", spread: -2.5 },
+        { id: "402", away: "NY", home: "BOS", details: "BOS -7", spread: -7 },
+        { id: "403", away: "MIA", home: "PHI", details: "PHI -1", spread: -1 },
+      ]),
+      "2026-10-21",
+    );
+    const merged = mergePicksFill(current, incoming);
+    expect(merged.map((game) => game.eventId)).toEqual(["401", "402", "", "403"]);
+    expect(merged[0]?.id).toBe("keep-line");
+    expect(merged[0]?.line).toBe(6);
+    expect(merged[0]?.pick).toBe("home");
+    expect(merged[1]?.awayId).toBe("BOS");
+    expect(merged[1]?.homeId).toBe("NYK");
+    expect(merged[1]?.pick).toBe("away");
+    expect(merged[2]?.awayId).toBe("CHI");
+    expect(merged[3]?.awayId).toBe("MIA");
+    expect(merged.some((game) => game.id === "stale")).toBe(false);
+    expect(isPicksRowEdited(current[2]!)).toBe(true);
+  });
+
+  it("refreshes live lines without adding, dropping, or wiping picks", () => {
+    const current: PicksGame[] = [
+      row({
+        id: "open",
+        eventId: "401",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 1.5,
+        pick: "away",
+      }),
+      row({
+        id: "typed",
+        eventId: "402",
+        awayId: "NYK",
+        homeId: "BOS",
+        line: 9,
+        pick: "home",
+        lineEdited: true,
+      }),
+      row({
+        id: "lock",
+        eventId: "403",
+        awayId: "MIA",
+        homeId: "PHI",
+        line: 3,
+        pick: "home",
+        locked: true,
+      }),
+      row({
+        id: "custom",
+        eventId: "",
+        awayId: "CHI",
+        homeId: "MIL",
+        line: 4,
+        custom: true,
+        pick: "away",
+      }),
+      row({
+        id: "kept-off-slate",
+        eventId: "404",
+        awayId: "DEN",
+        homeId: "LAL",
+        line: 2,
+        pick: "away",
+      }),
+    ];
+    const incoming = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL", details: "ORL -2.5", spread: -2.5 },
+        { id: "402", away: "NY", home: "BOS", details: "BOS -7", spread: -7 },
+        { id: "403", away: "MIA", home: "PHI", details: "PHI -1", spread: -1 },
+        { id: "405", away: "CLE", home: "NYK", details: "NYK -5.5", spread: -5.5 },
+      ]),
+      "2026-10-21",
+    );
+    const blankBoard = parsePicksScoreboard(
+      scoreboard([{ id: "401", away: "ATL", home: "ORL" }]),
+      "2026-10-21",
+    );
+    const next = refreshPicksLines(current, incoming);
+    expect(next.map((game) => game.id)).toEqual([
+      "open",
+      "typed",
+      "lock",
+      "custom",
+      "kept-off-slate",
+    ]);
+    expect(next.some((game) => game.eventId === "405")).toBe(false);
+    expect(next[0]?.line).toBe(2.5);
+    expect(next[0]?.pick).toBe("away");
+    expect(next[1]?.line).toBe(9);
+    expect(next[1]?.lineEdited).toBe(true);
+    expect(next[1]?.pick).toBe("home");
+    expect(next[2]?.line).toBe(3);
+    expect(next[2]?.locked).toBe(true);
+    expect(next[2]?.pick).toBe("home");
+    expect(next[3]?.line).toBe(4);
+    expect(next[3]?.custom).toBe(true);
+    expect(next[4]?.line).toBe(2);
+    expect(refreshPicksLines(current, [])).toEqual(current);
+    expect(refreshPicksLines([current[0]!], blankBoard)[0]?.line).toBe(1.5);
+  });
+
+  it("keeps locked and picked lines when ESPN drops odds after finals", () => {
+    expect(resolvePicksLine(1.5, null)).toBe(1.5);
+    expect(resolvePicksLine(1.5, 2.5)).toBe(2.5);
+    expect(resolvePicksLine(1.5, 2.5, true)).toBe(1.5);
+    expect(resolvePicksLine(0, null)).toBe(0);
+    expect(resolvePicksLine(null, 3)).toBe(3);
+    const picked = row({
+      id: "open",
+      eventId: "401",
+      awayId: "ATL",
+      homeId: "ORL",
+      line: 2.5,
+      pick: "away",
+    });
+    const locked = row({
+      id: "lock",
+      eventId: "402",
+      awayId: "NYK",
+      homeId: "BOS",
+      line: 7,
+      pick: "home",
+      locked: true,
+    });
+    const typed = row({
+      id: "typed",
+      eventId: "403",
+      awayId: "MIA",
+      homeId: "PHI",
+      line: 1,
+      pick: "away",
+      lineEdited: true,
+    });
+    const blank = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL" },
+        { id: "402", away: "NY", home: "BOS" },
+        { id: "403", away: "MIA", home: "PHI" },
+      ]),
+      "2026-10-23",
+    );
+    const filled = mergePicksFill([picked, locked, typed], blank);
+    const byId = Object.fromEntries(filled.map((game) => [game.id, game]));
+    expect(byId.open?.pick).toBe("away");
+    expect(byId.open?.line).toBe(2.5);
+    expect(byId.lock?.locked).toBe(true);
+    expect(byId.lock?.line).toBe(7);
+    expect(byId.typed?.line).toBe(1);
+    const live = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL", details: "ORL -3.5", spread: -3.5 },
+      ]),
+      "2026-10-23",
+    );
+    expect(refreshPicksLines([picked], live)[0]?.line).toBe(3.5);
+    expect(refreshPicksLines([locked], live)[0]?.line).toBe(7);
+  });
+
+  it("overlays ledger picks onto a Last night fill and grades the locked line", () => {
+    const ledger = upsertPicksLedger(emptyPicksLedger(), "2026-10-23", [
+      row({
+        id: "g",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: 8.5,
+        pick: "away",
+      }),
+    ]);
+    const incoming = [
+      row({
+        id: "fresh",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        pick: null,
+        awayScore: 131,
+        homeScore: 124,
+        final: true,
+      }),
+    ];
+    const restored = applyLedgerPicksToGames(incoming, ledger, "2026-10-23");
+    expect(restored[0]?.pick).toBe("away");
+    expect(restored[0]?.line).toBe(8.5);
+    expect(restored[0]?.awayScore).toBe(131);
+    expect(effectivePicksResult(restored[0]!)).toBe("W");
+    const scored = applyScoresToPicksLedger(ledger, "2026-10-23", incoming);
+    expect(scored.slates["2026-10-23"]?.[0]?.line).toBe(8.5);
+    expect(scored.slates["2026-10-23"]?.[0]?.result).toBe("W");
+    expect(formatPicksGraphicRecord(scored)).toBe("1-0");
+    const wiped = upsertPicksLedger(ledger, "2026-10-23", [
+      row({
+        id: "g",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        pick: "away",
+        awayScore: 131,
+        homeScore: 124,
+        final: true,
+      }),
+    ]);
+    expect(wiped.slates["2026-10-23"]?.[0]?.line).toBe(8.5);
+    expect(wiped.slates["2026-10-23"]?.[0]?.result).toBe("W");
+    const blankBoard = [
+      row({
+        id: "espn",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        awayScore: 131,
+        homeScore: 124,
+        final: true,
+      }),
+    ];
+    const wipedDraft = [
+      row({
+        id: "g",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        pick: "away",
+      }),
+    ];
+    const recovered = restorePicksLines(
+      wipedDraft,
+      blankBoard,
+      ledger,
+      "2026-10-23",
+    );
+    expect(recovered[0]?.line).toBe(8.5);
+    expect(recovered[0]?.pick).toBe("away");
+    expect(effectivePicksResult(recovered[0]!)).toBe("W");
+    expect(
+      parseEspnEventOddsAwayLine(
+        { details: "ATL -2.5", spread: 2.5 },
+        "ATL",
+        "CHA",
+      ),
+    ).toBe(-2.5);
+    expect(
+      parseEspnEventOddsAwayLine({ details: "CHA -4", spread: -4 }, "ATL", "CHA"),
+    ).toBe(4);
+    const liveIncoming = [
+      row({
+        id: "live",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        awayScore: 80,
+        homeScore: 70,
+        final: false,
+      }),
+    ];
+    const skipped = applyScoresToPicksLedger(ledger, "2026-10-23", liveIncoming);
+    expect(skipped.slates["2026-10-23"]?.[0]?.result).toBeNull();
+    expect(parseEspnCompleted(
+      { status: { type: { completed: true, name: "STATUS_FINAL", state: "post" } } },
+      {},
+    )).toBe(true);
+    expect(parseEspnCompleted(
+      { status: { type: { completed: false, name: "STATUS_IN_PROGRESS", state: "in" } } },
+      {},
+    )).toBe(false);
+  });
+
+  it("re-fills one row from the slate and drops that row’s edit flags", () => {
+    const game = row({
+      id: "keep-line",
+      eventId: "401",
+      awayId: "ATL",
+      homeId: "ORL",
+      line: 9,
+      pick: "away",
+      lineEdited: true,
+    });
+    const incoming = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL", details: "ORL -2.5", spread: -2.5 },
+      ]),
+      "2026-10-21",
+    );
+    const next = refillPicksRow(game, incoming);
+    expect(next.id).toBe("keep-line");
+    expect(next.line).toBe(2.5);
+    expect(next.lineEdited).toBeUndefined();
+    expect(next.pick).toBe("away");
+  });
+
+  it("fills the 4:5 so 8–15 games are a finished poster, not a short card", () => {
+    expect(picksTitlePlateH(1)).toBeLessThan(90);
+    expect(picksTitlePlateH(1)).toBeGreaterThan(PICKS_TITLE_SIZE);
+    expect(picksTitlePlateH(2)).toBeGreaterThan(picksTitlePlateH(1));
+    const fill = picksFillLayout(11);
+    expect(fill.listTop + fill.listH + fill.listBottom).toBe(GRAPHIC_HEIGHT);
+    expect(fill.rowH * 11 + fill.gap * 10).toBeCloseTo(fill.listH);
+    expect(fill.logo).toBeGreaterThanOrEqual(48);
+    expect(fill.line).toBeGreaterThanOrEqual(16);
+    expect(fill.check).toBeGreaterThanOrEqual(16);
+    expect(fill.check).toBeLessThanOrEqual(28);
+    const one = picksFillLayout(1);
+    expect(one.logo).toBeGreaterThan(fill.logo);
+    expect(emptyPicksGame().custom).toBe(true);
+  });
+
+  it("prints both side tickets and orders by tip, then away/home", () => {
+    const game = row({
+      id: "g",
+      awayId: "ATL",
+      homeId: "ORL",
+      line: 2.5,
+      pick: "home",
+    });
+    expect(formatPicksSideTicket(game, "away")).toBe("ATL +2.5");
+    expect(formatPicksSideTicket(game, "home")).toBe("ORL -2.5");
+    expect(picksShortName("LAL")).toBe("LAKERS");
+    expect(picksNameLabel("LAL", "away")).toBe("LAKERS");
+    expect(picksNameLabel("LAL", "home")).toBe("@ LAKERS");
+    expect(picksNameLabel("MIN", "home")).toBe("@ T-WOLVES");
+    expect(
+      sortPicksGames([
+        row({ id: "custom", awayId: "DEN", homeId: "UTA", custom: true }),
+        row({ id: "late", awayId: "GSW", homeId: "LAL", startMs: 2000 }),
+        row({ id: "early", awayId: "ATL", homeId: "ORL", startMs: 1000 }),
+        row({ id: "tie-b", awayId: "NYK", homeId: "BOS", startMs: 1000 }),
+        row({ id: "tie-a", awayId: "CHI", homeId: "MIA", startMs: 1000 }),
+      ]).map((row) => row.id),
+    ).toEqual(["early", "tie-a", "tie-b", "late", "custom"]);
+    const parsed = parsePicksScoreboard(
+      scoreboard([
+        {
+          id: "late",
+          away: "GSW",
+          home: "LAL",
+          date: "2026-10-22T02:00:00Z",
+          details: "LAL -3",
+          spread: -3,
+        },
+        {
+          id: "early",
+          away: "ATL",
+          home: "ORL",
+          date: "2026-10-21T23:00:00Z",
+          details: "ORL -2.5",
+          spread: -2.5,
+        },
+        {
+          id: "same-b",
+          away: "NY",
+          home: "BOS",
+          date: "2026-10-21T23:00:00Z",
+          details: "BOS -7",
+          spread: -7,
+        },
+        {
+          id: "same-a",
+          away: "CHI",
+          home: "MIA",
+          date: "2026-10-21T23:00:00Z",
+          details: "MIA -1",
+          spread: -1,
+        },
+      ]),
+      "2026-10-21",
+    );
+    expect(parsed.map((row) => row.awayId)).toEqual(["ATL", "CHI", "NYK", "GSW"]);
+    expect(
+      parseEspnTip(
+        { date: "2026-10-21T23:30:00Z", status: { type: { shortDetail: "7:30 PM ET" } } },
+        {},
+      ),
+    ).toBe("7:30 ET");
+    expect(parseEspnNationalTv({ broadcasts: [{ names: ["ESPN"] }] })).toBe(
+      "ESPN",
+    );
+    expect(
+      parseEspnNationalTv({ broadcasts: [{ names: ["NBA League Pass"] }] }),
+    ).toBe("");
+    expect(picksDatePill(11)).toBe("11 GAMES");
+    expect(picksDatePill(1)).toBe("1 GAME");
+    expect(picksDatePill(0)).toBe("");
+    expect(picksDefaultTitle("2026-10-21")).toBe("10/21 NBA SPREAD PREDICTIONS");
+    expect(picksDefaultTitle("2026-01-05")).toBe("1/5 NBA SPREAD PREDICTIONS");
+    expect(isAutoPicksTitle("PICKS")).toBe(true);
+    expect(isAutoPicksTitle("10/21 NBA SPREAD PREDICTIONS")).toBe(true);
+    expect(isAutoPicksTitle("LOCKS")).toBe(false);
+    expect(defaultPicksDraft(new Date("2026-10-21T18:00:00-04:00")).title).toBe(
+      "10/21 NBA SPREAD PREDICTIONS",
+    );
+  });
+
+  it("keeps one LOCK and leaves O/U, moneyline, and units off", () => {
+    const empty = defaultPicksDraft();
+    expect(empty.showTotal).toBe(false);
+    expect(empty.showMoneyline).toBe(false);
+    expect(empty.showUnits).toBe(false);
+    expect(empty.showJuice).toBe(false);
+    expect(empty.showConfidence).toBe(false);
+    expect(empty.resultMode).toBe("ats");
+    expect(empty.plateOpacity).toBe(DEFAULT_PICKS_PLATE_OPACITY);
+    expect(empty.plateOpacity).toBeGreaterThanOrEqual(85);
+    expect(clampPicksPlateOpacity(-10)).toBe(0);
+    expect(clampPicksPlateOpacity(140)).toBe(100);
+    const games = setPicksLock(
+      [
+        row({ id: "a", awayId: "ATL", homeId: "ORL", pick: "away" }),
+        row({ id: "b", awayId: "GSW", homeId: "LAL", pick: "home", locked: true }),
+      ],
+      "a",
+    );
+    expect(games[0]?.locked).toBe(true);
+    expect(games[1]?.locked).toBe(false);
+    const cleared = togglePicksPick(games[0]!, "away");
+    expect(cleared.pick).toBeNull();
+    expect(cleared.locked).toBe(false);
+    expect(formatPicksTotal(232.5)).toBe("O/U 232.5");
+    expect(formatPicksTotal(null)).toBe("");
+    expect(
+      picksJuiceOrMove(
+        row({ id: "j", awayJuice: "-110", homeJuice: "-110" }),
+        "away",
+      ),
+    ).toBe("-110");
+    expect(
+      picksJuiceOrMove(
+        row({ id: "m", awayJuice: "-110", lineEdited: true }),
+        "away",
+      ),
+    ).toBe("↗");
+  });
+
+  it("packs 9:16 with the same list fill, not a short card on a tall board", () => {
+    const story = picksFillLayout(11, STORY_DESIGN_HEIGHT, 0, 2);
+    const feed = picksFillLayout(11, GRAPHIC_HEIGHT, 0, 2);
+    expect(story.listTop + story.listH + story.listBottom).toBe(
+      STORY_DESIGN_HEIGHT,
+    );
+    expect(story.rowH).toBeGreaterThan(feed.rowH);
+    expect(story.logo).toBeGreaterThanOrEqual(48);
+  });
+
+  it("keeps even row height for 7 or 11 games without a footer strip", () => {
+    const seven = picksFillLayout(7);
+    const eleven = picksFillLayout(11);
+    expect(seven.rowH * 7 + seven.gap * 6).toBeCloseTo(seven.listH);
+    expect(eleven.rowH * 11 + eleven.gap * 10).toBeCloseTo(eleven.listH);
+    expect(seven.rowH).toBeGreaterThan(eleven.rowH);
+    expect(seven.listBottom).toBe(eleven.listBottom);
+    expect(seven.listBottom).toBeLessThan(40);
+  });
+
+  it("reserves a bottom ATS lockup and leaves the GAMES notch alone", () => {
+    const plain = picksFillLayout(11);
+    const withRecord = picksFillLayout(11, GRAPHIC_HEIGHT, 0, 1, true);
+    const story = picksFillLayout(11, STORY_DESIGN_HEIGHT, 0, 1, true);
+    expect(plain.listBottom).toBeLessThan(40);
+    expect(withRecord.listBottom).toBe(
+      PICKS_RECORD_GAP + PICKS_RECORD_PLATE_H + PICKS_RECORD_PAD,
+    );
+    expect(withRecord.listBottom).toBeGreaterThan(plain.listBottom);
+    expect(withRecord.listTop).toBe(plain.listTop);
+    expect(withRecord.rowH * 11 + withRecord.gap * 10).toBeCloseTo(
+      withRecord.listH,
+    );
+    expect(withRecord.logo).toBeGreaterThanOrEqual(48);
+    expect(story.listBottom).toBe(withRecord.listBottom);
+    expect(picksRecordKicker("ats")).toBe("ATS");
+    expect(picksRecordKicker("su")).toBe("SU");
+    expect(PICKS_RECORD_PLATE_H).toBeGreaterThan(70);
+  });
+
+  it("grades ATS, straight up, pushes, and skips unfinished games", () => {
+    expect(gradePicksAts("away", 2.5, 110, 100, true)).toBe("W");
+    expect(gradePicksAts("away", 2.5, 100, 110, true)).toBe("L");
+    expect(gradePicksAts("away", 2.5, 110, 112.5, true)).toBe("P");
+    expect(gradePicksAts("home", -4.5, 100, 110, true)).toBe("W");
+    expect(gradePicksAts("home", 4.5, 110, 100, true)).toBe("L");
+    expect(gradePicksAts("away", 2.5, 110, 100, false)).toBeNull();
+    expect(gradePicksAts("away", 2.5, null, 100, true)).toBeNull();
+    expect(gradePicksAts(null, 2.5, 110, 100, true)).toBeNull();
+    expect(gradePicksStraightUp("away", 110, 100, true)).toBe("W");
+    expect(gradePicksStraightUp("home", 110, 100, true)).toBe("L");
+    expect(gradePicksStraightUp("away", 100, 100, true)).toBe("P");
+    expect(
+      effectivePicksResult({
+        pick: "away",
+        line: 2.5,
+        awayScore: 100,
+        homeScore: 110,
+        final: true,
+        gradeManual: "W",
+      }),
+    ).toBe("W");
+    expect(cyclePicksGrade("W", "W")).toBe("L");
+    expect(cyclePicksGrade("P", "W")).toBeNull();
+  });
+
+  it("keeps 0-0-0 on the graphic, filters export to locks, and prints ATS with L10, pushes, and units", () => {
+    expect(picksRecordLine("0-0", "0-0")).toBe("");
+    expect(picksRecordLine("12-8", "7-3")).toBe("12-8 · L10 7-3");
+    expect(picksRecordLine("12-8-1")).toBe("12-8-1");
+    expect(formatPicksGraphicRecord(emptyPicksLedger())).toBe("0-0-0");
+    const slate = [
+      row({ id: "a", awayId: "ATL", homeId: "ORL", pick: "away" }),
+      row({ id: "b", awayId: "BOS", homeId: "NYK" }),
+      row({ id: "c", awayId: "CHI", homeId: "MIA", pick: "home" }),
+    ];
+    expect(visiblePicksGames(slate, false)).toHaveLength(3);
+    expect(visiblePicksGames(slate, true).map((game) => game.id)).toEqual([
+      "a",
+      "c",
+    ]);
+    expect(picksCaptionLines(slate).join(" ")).toContain("ATL");
+    expect(picksCaptionLines(slate).join(" ")).not.toContain("BOS");
+    const entry = (
+      date: string,
+      result: "W" | "L" | "P",
+      startMs: number,
+      units = "1u",
+    ): PicksLedgerEntry => ({
+      eventId: `${date}-${startMs}`,
+      date,
+      awayId: "ATL",
+      homeId: "ORL",
+      line: 2.5,
+      pick: "away",
+      awayScore: 110,
+      homeScore: 100,
+      final: true,
+      result,
+      units,
+      gradeManual: result,
+      startMs,
+    });
+    const first11: PicksLedgerEntry[] = [];
+    const mix: Array<"W" | "L" | "P"> = [
+      "W",
+      "W",
+      "W",
+      "W",
+      "W",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "P",
+    ];
+    mix.forEach((result, index) => {
+      first11.push(entry("2026-10-18", result, index));
+    });
+    const last6 = [
+      entry("2026-10-19", "W", 1),
+      entry("2026-10-19", "W", 2),
+      entry("2026-10-19", "W", 3),
+      entry("2026-10-19", "W", 4),
+      entry("2026-10-19", "L", 5),
+      entry("2026-10-19", "L", 6),
+    ];
+    const lastNight = [
+      entry("2026-10-20", "W", 1),
+      entry("2026-10-20", "W", 2),
+      entry("2026-10-20", "W", 3),
+      entry("2026-10-20", "L", 4),
+    ];
+    const ledger: PicksLedger = {
+      slates: {
+        "2026-10-18": first11,
+        "2026-10-19": last6,
+        "2026-10-20": lastNight,
+      },
+    };
+    expect(formatPicksAtsRecord(summarizePicksLedger(ledger))).toBe("12-8-1");
+    expect(formatPicksGraphicRecord(ledger)).toBe("12-8-1");
+    expect(formatPicksAtsRecord(summarizePicksLast10(ledger))).toBe("7-3");
+    expect(formatPicksUnitsPl(summarizePicksUnitsPl(ledger))).toBe("+4u");
+    expect(formatPicksFooter(ledger, "2026-10-21")).toBe(
+      "ATS 12-8-1  ·  L10 7-3  ·  LAST NIGHT 3-1  ·  +4u",
+    );
+    const seeded = upsertPicksLedger(emptyPicksLedger(), "2026-10-21", [
+      row({
+        id: "live",
+        eventId: "401",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 2.5,
+        pick: "home",
+        units: "0.5u",
+      }),
+    ]);
+    expect(seeded.slates["2026-10-21"]?.[0]?.pick).toBe("home");
+    expect(seeded.slates["2026-10-21"]?.[0]?.units).toBe("0.5u");
+    const typed = setPicksRecordField(ledger, "wins", 20);
+    expect(formatPicksGraphicRecord(typed)).toBe("20-8-1");
+    expect(
+      upsertPicksLedger(typed, "2026-10-22", [
+        row({ id: "keep-adj", eventId: "900", pick: "away" }),
+      ]).adjust?.wins,
+    ).toBe(typed.adjust?.wins);
+    const open = upsertPicksLedger(emptyPicksLedger(), "2026-10-20", [
+      row({
+        id: "g",
+        eventId: "501",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 2.5,
+        pick: "away",
+      }),
+    ]);
+    expect(formatPicksGraphicRecord(open)).toBe("0-0-0");
+    const fromSave = setPicksRecordField(open, "wins", 12);
+    expect(formatPicksGraphicRecord(fromSave)).toBe("12-0");
+    const gradedNight = applyScoresToPicksLedger(fromSave, "2026-10-20", [
+      row({
+        id: "g",
+        eventId: "501",
+        awayId: "ATL",
+        homeId: "ORL",
+        line: 2.5,
+        pick: "away",
+        awayScore: 110,
+        homeScore: 100,
+        final: true,
+      }),
+    ]);
+    expect(gradedNight.slates["2026-10-20"]?.[0]?.result).toBe("W");
+    expect(formatPicksGraphicRecord(gradedNight)).toBe("13-0");
+  });
+});

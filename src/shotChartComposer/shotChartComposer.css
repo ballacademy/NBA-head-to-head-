@@ -1,0 +1,212 @@
+.shc-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
+
+.shc-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.shc-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.shc-board.is-none {
+  box-shadow: none;
+}
+
+.shc-board .composer-ba {
+  top: calc(22 * var(--u));
+  right: calc(22 * var(--u));
+  width: calc(56 * var(--u));
+  height: calc(56 * var(--u));
+  z-index: 6;
+}
+
+.shc-brand,
+.shc-title-input {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.shc-brand {
+  position: absolute;
+  top: calc(16 * var(--u));
+  left: calc(110 * var(--u));
+  right: calc(110 * var(--u));
+  z-index: 4;
+  height: calc(28 * var(--u));
+  letter-spacing: 0.18em;
+  font-size: calc(22 * var(--u));
+}
+
+.shc-title-block {
+  position: absolute;
+  top: calc(46 * var(--u));
+  left: calc(48 * var(--u));
+  right: calc(48 * var(--u));
+  z-index: 4;
+  height: calc(72 * var(--u));
+}
+
+.shc-title-line {
+  display: block;
+  font-size: calc(40 * var(--u));
+  letter-spacing: 0.06em;
+}
+
+.shc-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  color: transparent;
+  caret-color: #fff;
+}
+
+.shc-player {
+  position: absolute;
+  top: calc(118 * var(--u));
+  left: calc(40 * var(--u));
+  right: calc(40 * var(--u));
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+}
+
+.shc-player__given {
+  display: block;
+  font-family: var(--ig-poster);
+  font-size: calc(13 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.shc-player__family {
+  display: block;
+  font-family: var(--ig-poster);
+  font-size: calc(36 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+}
+
+.shc-player__line {
+  display: block;
+  margin-top: calc(4 * var(--u));
+  font-family: var(--ig-poster);
+  font-size: calc(14 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #facc15;
+}
+
+.shc-court-wrap {
+  position: absolute;
+  z-index: 2;
+}
+
+.shc-court {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.shc-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: calc(16 * var(--u));
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(250, 250, 250, 0.78);
+  pointer-events: none;
+}
+
+.shc-zones {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: calc(6 * var(--u)) calc(10 * var(--u));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.shc-zones li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: calc(8 * var(--u));
+  min-width: 0;
+  font-size: calc(12 * var(--u));
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.shc-zones strong {
+  color: #facc15;
+  font-size: calc(15 * var(--u));
+  letter-spacing: 0.04em;
+}
+
+.shc-legend {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: calc(28 * var(--u));
+  margin: 0;
+  font-family: var(--ig-poster);
+  font-size: calc(13 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.shc-legend .is-make {
+  color: #facc15;
+}
+
+.shc-legend .is-miss {
+  color: #fb7185;
+}

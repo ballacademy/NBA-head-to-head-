@@ -1,0 +1,60 @@
+/* Match the export punch: structure/sharpness, protected shadows. Photo only. */
+.is-grade .pod-photo__img {
+  filter: var(
+    --photo-grade-filter,
+    contrast(1.78) saturate(1.16) brightness(1.04)
+  );
+}
+
+.is-grade .pod-photo.is-vignette .pod-photo__vignette {
+  background: radial-gradient(
+    ellipse 78% 72% at 50% 40%,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, var(--photo-grade-vignette-mid, 0.1)) 55%,
+    rgba(0, 0, 0, var(--photo-grade-vignette-edge, 0.34)) 100%
+  );
+}
+
+.sc-grade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  max-width: 320px;
+  flex: 0 1 320px;
+  overflow: clip;
+}
+
+.sc-grade__mix {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 8px;
+  min-width: 0;
+}
+
+.sc-grade .sc-field--range {
+  max-width: none;
+  min-width: 0;
+}
+
+.sc-grade__mix .sc-toolbar__eyebrow {
+  white-space: nowrap;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 720px) {
+  .sc-grade__mix {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pod-photo__tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pod-photo__tool {
+    min-height: 44px;
+  }
+}
