@@ -1,7 +1,7 @@
 import { ESPN_ABBREV_TO_TEAM } from "../playerOfTheDayComposer/lastGame";
 import { NBA_TEAMS_BY_ID, type Conference } from "./teams";
 import type { RankingSlots, StandingRecord } from "./rankingState";
-import { SLOT_COUNT } from "./rankingState";
+import { SLOT_COUNT, createEmptySlots } from "./rankingState";
 
 export const ESPN_STANDINGS_URL =
   "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings";
@@ -34,11 +34,17 @@ export interface EspnStandingsPayload {
   children?: EspnStandingsGroup[];
 }
 
-const statNumber = (entry: EspnStandingEntry, names: string[]) => {
-  const tokens = names.map((name) => name.toLowerCase());
+const namedStatNumber = (
+  entry: EspnStandingEntry,
+  names: string[],
+  abbreviations: string[],
+) => {
+  const nameSet = new Set(names.map((name) => name.toLowerCase()));
+  const abbrSet = new Set(abbreviations.map((token) => token.toUpperCase()));
   for (const stat of entry.stats ?? []) {
-    const label = `${stat.name ?? ""} ${stat.abbreviation ?? ""}`.toLowerCase();
-    if (!tokens.some((token) => label.includes(token))) {
+    const name = `${stat.name ?? ""}`.trim().toLowerCase();
+    const abbreviation = `${stat.abbreviation ?? ""}`.trim().toUpperCase();
+    if (!nameSet.has(name) && !abbrSet.has(abbreviation)) {
       continue;
     }
     const value = Number(stat.value ?? stat.displayValue);
@@ -49,10 +55,26 @@ const statNumber = (entry: EspnStandingEntry, names: string[]) => {
   return null;
 };
 
+const overallRecord = (entry: EspnStandingEntry): { wins: number; losses: number } | null => {
+  for (const stat of entry.stats ?? []) {
+    const name = `${stat.name ?? ""}`.trim().toLowerCase();
+    const abbreviation = `${stat.abbreviation ?? ""}`.trim();
+    if (name !== "overall" && abbreviation !== "Total") {
+      continue;
+    }
+    const match = `${stat.displayValue ?? ""}`.trim().match(/^(\d{1,2})-(\d{1,2})$/);
+    if (!match) {
+      continue;
+    }
+    return { wins: Number(match[1]), losses: Number(match[2]) };
+  }
+  return null;
+};
+
 const last10FromEntry = (entry: EspnStandingEntry): string | null => {
   for (const stat of entry.stats ?? []) {
-    const label = `${stat.name ?? ""} ${stat.abbreviation ?? ""}`.toLowerCase();
-    if (!label.includes("last ten") && stat.abbreviation !== "L10") {
+    const name = `${stat.name ?? ""}`.toLowerCase();
+    if (!name.includes("last ten") && stat.abbreviation !== "L10") {
       continue;
     }
     const display = `${stat.displayValue ?? ""}`.trim();
@@ -64,12 +86,30 @@ const last10FromEntry = (entry: EspnStandingEntry): string | null => {
 };
 
 const recordFromEntry = (entry: EspnStandingEntry): StandingRecord | null => {
-  const wins = statNumber(entry, ["wins", " w"]);
-  const losses = statNumber(entry, ["losses", " l"]);
+  let wins = namedStatNumber(entry, ["wins"], ["W"]);
+  let losses = namedStatNumber(entry, ["losses"], ["L"]);
+  if (wins == null || losses == null) {
+    const overall = overallRecord(entry);
+    wins = wins ?? overall?.wins ?? null;
+    losses = losses ?? overall?.losses ?? null;
+  }
   if (wins == null || losses == null) {
     return null;
   }
   return { wins, losses, last10: last10FromEntry(entry) };
+};
+
+const playoffSeedFromEntry = (entry: EspnStandingEntry): number | null => {
+  const seed = namedStatNumber(
+    entry,
+    ["playoffseed", "playoff seed"],
+    ["SEED"],
+  );
+  if (seed == null) {
+    return null;
+  }
+  const rank = Math.round(seed);
+  return rank >= 1 && rank <= SLOT_COUNT ? rank : null;
 };
 
 const teamIdFromAbbrev = (abbreviation?: string) => {
@@ -105,6 +145,7 @@ const collectGroups = (groups: EspnStandingsGroup[] | undefined): EspnStandingsG
 
 export interface ConferenceStandingRow {
   id: string;
+  seed: number | null;
   record: StandingRecord | null;
 }
 
@@ -116,28 +157,41 @@ export const parseConferenceStandingRows = (
     return [];
   }
   const groups = collectGroups(payload.children);
-  const match =
-    groups.find((group) => conferenceOf(group) === conference) ??
-    groups.find((group) =>
-      (group.standings?.entries ?? []).some((entry) => {
-        const id = teamIdFromAbbrev(entry.team?.abbreviation);
-        return id && NBA_TEAMS_BY_ID[id]?.conference === conference;
-      }),
-    );
   const rows: ConferenceStandingRow[] = [];
   const seen = new Set<string>();
-  for (const entry of match?.standings?.entries ?? []) {
-    const id = teamIdFromAbbrev(entry.team?.abbreviation);
-    if (!id || seen.has(id) || NBA_TEAMS_BY_ID[id]?.conference !== conference) {
-      continue;
-    }
-    seen.add(id);
-    rows.push({ id, record: recordFromEntry(entry) });
-    if (rows.length >= SLOT_COUNT) {
-      break;
+  for (const group of groups) {
+    const groupConference = conferenceOf(group);
+    for (const entry of group.standings?.entries ?? []) {
+      const id = teamIdFromAbbrev(entry.team?.abbreviation);
+      if (!id || seen.has(id) || NBA_TEAMS_BY_ID[id]?.conference !== conference) {
+        continue;
+      }
+      if (groupConference && groupConference !== conference) {
+        continue;
+      }
+      seen.add(id);
+      rows.push({
+        id,
+        seed: playoffSeedFromEntry(entry),
+        record: recordFromEntry(entry),
+      });
     }
   }
-  return rows;
+  if (rows.some((row) => row.seed != null)) {
+    rows.sort((left, right) => {
+      if (left.seed != null && right.seed != null && left.seed !== right.seed) {
+        return left.seed - right.seed;
+      }
+      if (left.seed != null && right.seed == null) {
+        return -1;
+      }
+      if (left.seed == null && right.seed != null) {
+        return 1;
+      }
+      return 0;
+    });
+  }
+  return rows.slice(0, SLOT_COUNT);
 };
 
 export const parseConferenceStandings = (
@@ -165,6 +219,50 @@ export const slotsFromTeamIds = (ids: string[]): RankingSlots => {
   return slots;
 };
 
+/** Put each club on its playoff seed (1–15). Gaps stay empty until unseeded leftovers fill them. */
+export const slotsFromStandingRows = (
+  rows: ConferenceStandingRow[],
+): RankingSlots => {
+  const slots = createEmptySlots();
+  const placed = new Set<string>();
+  for (const row of rows) {
+    if (row.seed == null || row.seed < 1 || row.seed > SLOT_COUNT) {
+      continue;
+    }
+    const index = row.seed - 1;
+    if (slots[index]) {
+      continue;
+    }
+    slots[index] = row.id;
+    placed.add(row.id);
+  }
+  let cursor = 0;
+  for (const row of rows) {
+    if (placed.has(row.id)) {
+      continue;
+    }
+    while (cursor < SLOT_COUNT && slots[cursor]) {
+      cursor += 1;
+    }
+    if (cursor >= SLOT_COUNT) {
+      break;
+    }
+    slots[cursor] = row.id;
+    placed.add(row.id);
+    cursor += 1;
+  }
+  return slots;
+};
+
+const recordsFromPayload = (
+  payload: EspnStandingsPayload,
+): Record<string, StandingRecord> => ({
+  ...recordsFromStandingRows(parseConferenceStandingRows(payload, "East")),
+  ...recordsFromStandingRows(parseConferenceStandingRows(payload, "West")),
+});
+
+let recordsCache: Record<string, StandingRecord> | null = null;
+
 export const fetchConferenceStandingsBundle = async (
   conference: Conference,
 ): Promise<{ slots: RankingSlots; records: Record<string, StandingRecord> }> => {
@@ -177,9 +275,10 @@ export const fetchConferenceStandingsBundle = async (
   }
   const payload = (await response.json()) as EspnStandingsPayload;
   const rows = parseConferenceStandingRows(payload, conference);
+  recordsCache = recordsFromPayload(payload);
   return {
-    slots: slotsFromTeamIds(rows.map((row) => row.id)),
-    records: recordsFromStandingRows(rows),
+    slots: slotsFromStandingRows(rows),
+    records: recordsCache,
   };
 };
 
@@ -189,8 +288,6 @@ export const fetchConferenceStandings = async (
   const bundle = await fetchConferenceStandingsBundle(conference);
   return bundle.slots;
 };
-
-let recordsCache: Record<string, StandingRecord> | null = null;
 
 export const fetchAllStandingRecords = async (): Promise<
   Record<string, StandingRecord>
@@ -206,9 +303,6 @@ export const fetchAllStandingRecords = async (): Promise<
     return {};
   }
   const payload = (await response.json()) as EspnStandingsPayload;
-  recordsCache = {
-    ...recordsFromStandingRows(parseConferenceStandingRows(payload, "East")),
-    ...recordsFromStandingRows(parseConferenceStandingRows(payload, "West")),
-  };
+  recordsCache = recordsFromPayload(payload);
   return recordsCache;
 };

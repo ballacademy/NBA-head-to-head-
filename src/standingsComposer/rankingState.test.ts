@@ -20,6 +20,10 @@ import {
   standingsSubtitleLabel,
   lastWeekDelta,
   lastWeekMark,
+  LAST_WEEK_STORAGE_KEYS,
+  conferenceFromSubtitle,
+  standingRecordForTeam,
+  formatStandingLast10,
   usedTeamIds,
 } from "./rankingState";
 
@@ -73,6 +77,41 @@ describe("ranking slots", () => {
     expect(lastWeekMark(null)).toBeNull();
     const missingLast = assignTeam(createEmptySlots(), 0, "BOS");
     expect(lastWeekDelta(now, missingLast, 1)).toBeNull();
+  });
+
+  it("compares East to last-week East and West to last-week West", () => {
+    expect(conferenceFromSubtitle("EASTERN CONFERENCE")).toBe("East");
+    expect(conferenceFromSubtitle("Western Conference")).toBe("West");
+    expect(LAST_WEEK_STORAGE_KEYS.East).toContain("last-week:east");
+    expect(LAST_WEEK_STORAGE_KEYS.West).toContain("last-week:west");
+    expect(LAST_WEEK_STORAGE_KEYS.East).not.toBe(LAST_WEEK_STORAGE_KEYS.West);
+    const eastNow = assignTeam(assignTeam(createEmptySlots(), 0, "BOS"), 1, "NYK");
+    const lastEast = assignTeam(assignTeam(createEmptySlots(), 0, "NYK"), 1, "BOS");
+    const lastWest = assignTeam(assignTeam(createEmptySlots(), 0, "OKC"), 1, "DEN");
+    expect(lastWeekDelta(eastNow, lastEast, 0)).toBe(1);
+    expect(lastWeekDelta(eastNow, lastWest, 0)).toBeNull();
+  });
+
+  it("keeps W–L and last-10 on the team after a drag, not the rank", () => {
+    const records = {
+      ATL: { wins: 2, losses: 0, last10: "2-0" },
+      NYK: { wins: 0, losses: 2, last10: "0-2" },
+    };
+    let slots = assignTeam(createEmptySlots(), 0, "ATL");
+    slots = assignTeam(slots, 1, "NYK");
+    const moved = insertRankingSlots(slots, 0, 1);
+    expect(moved.slice(0, 2)).toEqual(["NYK", "ATL"]);
+    expect(formatStandingRecord(standingRecordForTeam(records, moved[0]))).toBe(
+      "0–2",
+    );
+    expect(formatStandingRecord(standingRecordForTeam(records, moved[1]))).toBe(
+      "2–0",
+    );
+    expect(formatStandingLast10(standingRecordForTeam(records, moved[1]))).toBe(
+      "2–0",
+    );
+    expect(lastWeekDelta(moved, slots, 1)).toBe(-1);
+    expect(lastWeekDelta(moved, slots, 0)).toBe(1);
   });
 });
 

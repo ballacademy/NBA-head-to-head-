@@ -28,11 +28,33 @@ export const slotIndexForTeam = (
   teamId: string,
 ): number => slots.indexOf(teamId);
 
+/** @deprecated Mixed 1–30 snapshot. Arrows use the East/West keys below. */
 export const LAST_WEEK_STORAGE_KEY = "ddgm:standings-composer:last-week";
+
+export type RankingConference = "East" | "West";
+
+export const LAST_WEEK_STORAGE_KEYS: Record<RankingConference, string> = {
+  East: "ddgm:standings-composer:last-week:east",
+  West: "ddgm:standings-composer:last-week:west",
+};
+
+export const conferenceFromSubtitle = (
+  subtitle: string | null | undefined,
+): RankingConference => {
+  const token = `${subtitle ?? ""}`.toLowerCase();
+  return token.includes("west") ? "West" : "East";
+};
+
+export interface StandingRecord {
+  wins: number;
+  losses: number;
+  last10?: string | null;
+}
 
 /**
  * Positive = moved up vs last week. Zero = same rank.
  * Null when there is no snapshot or the team was not in last week (missing ≠ unchanged).
+ * Compares by team id so a drag takes the arrow with the club, not the rank number.
  */
 export const lastWeekDelta = (
   slots: RankingSlots,
@@ -48,6 +70,17 @@ export const lastWeekDelta = (
     return null;
   }
   return prior - index;
+};
+
+/** W–L / last-10 for that club — never the rank slot or a last-week board. */
+export const standingRecordForTeam = (
+  records: Record<string, StandingRecord> | null | undefined,
+  teamId: string | null | undefined,
+): StandingRecord | null => {
+  if (!teamId || !records) {
+    return null;
+  }
+  return records[teamId] ?? null;
 };
 
 export const lastWeekMark = (delta: number | null) => {
@@ -74,12 +107,6 @@ export const lastWeekMark = (delta: number | null) => {
     label: `Down ${Math.abs(delta)} from last week`,
   };
 };
-
-export interface StandingRecord {
-  wins: number;
-  losses: number;
-  last10?: string | null;
-}
 
 export const PLAYOFF_CUT_AFTER = 6;
 

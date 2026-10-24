@@ -1089,8 +1089,14 @@ describe("composer chrome", () => {
     );
     expect(standingsGraphic).toContain("data-composer-slot");
     expect(standingsGraphic).toContain("useComposerSlotSwap");
+    expect(standingsGraphic).toContain("standingRecordForTeam");
     expect(standingsApp).toContain("insertRankingSlots");
+    expect(standingsApp).toContain("Save last week East");
+    expect(standingsApp).toContain("Save last week West");
+    expect(standingsApp).toContain("LAST_WEEK_STORAGE_KEYS");
     expect(rankingState).toContain("insertRankingSlots");
+    expect(rankingState).toContain("last-week:east");
+    expect(rankingState).toContain("last-week:west");
   });
 
   it("ships HUD extras 17–32 on the shared chrome", () => {

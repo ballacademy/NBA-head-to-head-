@@ -29,17 +29,22 @@ import {
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
-import { fetchConferenceStandingsBundle } from "./nbaStandings";
+import {
+  fetchAllStandingRecords,
+  fetchConferenceStandingsBundle,
+} from "./nbaStandings";
 import {
   assignTeam,
   clearSlot,
+  conferenceFromSubtitle,
   createEmptySlots,
   insertRankingSlots,
   DEFAULT_BRAND,
   DEFAULT_SUBTITLE,
   DEFAULT_TITLE,
   isRankingSlots,
-  LAST_WEEK_STORAGE_KEY,
+  LAST_WEEK_STORAGE_KEYS,
+  type RankingConference,
   type RankingSlots,
   type StandingRecord,
 } from "./rankingState";
@@ -86,10 +91,15 @@ const loadDraft = (): ComposerDraft => {
   };
 };
 
-const loadLastWeek = (): RankingSlots | null => {
-  const stored = readJson<unknown>(LAST_WEEK_STORAGE_KEY);
+const loadLastWeek = (conference: RankingConference): RankingSlots | null => {
+  const stored = readJson<unknown>(LAST_WEEK_STORAGE_KEYS[conference]);
   return isRankingSlots(stored) ? stored : null;
 };
+
+const loadLastWeekBoards = (): Record<RankingConference, RankingSlots | null> => ({
+  East: loadLastWeek("East"),
+  West: loadLastWeek("West"),
+});
 
 export function StandingsComposerApp() {
   const boardRef = useRef<HTMLElement | null>(null);
@@ -109,9 +119,13 @@ export function StandingsComposerApp() {
   const [showLast10, setShowLast10] = useState(false);
   const [showPlayoffCut, setShowPlayoffCut] = useState(false);
   const [records, setRecords] = useState<Record<string, StandingRecord>>({});
-  const [lastWeekSlots, setLastWeekSlots] = useState<RankingSlots | null>(null);
+  const [lastWeekByConference, setLastWeekByConference] = useState<
+    Record<RankingConference, RankingSlots | null>
+  >({ East: null, West: null });
   const [filling, setFilling] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<RankingSlots>();
+  const boardConference = conferenceFromSubtitle(subtitle);
+  const lastWeekSlots = lastWeekByConference[boardConference];
 
   useEffect(() => {
     document.title = "Standings graphic";
@@ -129,9 +143,25 @@ export function StandingsComposerApp() {
     setShowLast10(draft.showLast10 === true);
     setShowPlayoffCut(draft.showPlayoffCut === true);
     setRecords(draft.records ?? {});
-    setLastWeekSlots(loadLastWeek());
+    setLastWeekByConference(loadLastWeekBoards());
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated || (!showRecord && !showLast10)) {
+      return;
+    }
+    let cancelled = false;
+    void fetchAllStandingRecords().then((next) => {
+      if (cancelled || !Object.keys(next).length) {
+        return;
+      }
+      setRecords(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, showRecord, showLast10]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -224,11 +254,13 @@ export function StandingsComposerApp() {
       const next = await fetchConferenceStandingsBundle(conference);
       push(slots);
       setSlots(next.slots);
-      setRecords((current) => ({ ...current, ...next.records }));
+      setRecords(next.records);
       setSubtitle(
         conference === "East" ? "EASTERN CONFERENCE" : "WESTERN CONFERENCE",
       );
-      setStatus(`Filled ${conference} standings. Swap any team you want.`);
+      setStatus(
+        `Filled ${conference} in seed order (1–15). Drag to rerank; W–L stays with each team.`,
+      );
     } catch (error) {
       console.error(error);
       setStatus("Could not load NBA standings.");
@@ -344,6 +376,46 @@ export function StandingsComposerApp() {
           >
             Fill West
           </button>
+          <label className="sc-field">
+            <span className="sc-toolbar__eyebrow">Last week East</span>
+            <button
+              type="button"
+              className={
+                boardConference === "East" ? "sc-chip is-on" : "sc-chip"
+              }
+              aria-label="Save this board as last week East"
+              onClick={() => {
+                writeJson(LAST_WEEK_STORAGE_KEYS.East, slots);
+                setLastWeekByConference((current) => ({
+                  ...current,
+                  East: slots.slice(),
+                }));
+                setStatus("Saved this ranking as last week East.");
+              }}
+            >
+              Save last week East
+            </button>
+          </label>
+          <label className="sc-field">
+            <span className="sc-toolbar__eyebrow">Last week West</span>
+            <button
+              type="button"
+              className={
+                boardConference === "West" ? "sc-chip is-on" : "sc-chip"
+              }
+              aria-label="Save this board as last week West"
+              onClick={() => {
+                writeJson(LAST_WEEK_STORAGE_KEYS.West, slots);
+                setLastWeekByConference((current) => ({
+                  ...current,
+                  West: slots.slice(),
+                }));
+                setStatus("Saved this ranking as last week West.");
+              }}
+            >
+              Save last week West
+            </button>
+          </label>
           </>
         }
         board={
@@ -452,17 +524,6 @@ export function StandingsComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Blank post
-          </button>
-          <button
-            type="button"
-            className="sc-btn sc-btn--ghost"
-            onClick={() => {
-              writeJson(LAST_WEEK_STORAGE_KEY, slots);
-              setLastWeekSlots(slots.slice());
-              setStatus("Saved this ranking as last week.");
-            }}
-          >
-            Save as last week
           </button>
           <button
             type="button"
@@ -590,8 +651,10 @@ export function StandingsComposerApp() {
           </ComposerBoard>
           <p className="sc-hint">
             Click a numbered slot to pick a team, or drag a square to insert it
-            at a new rank. Header text is editable on the graphic or in the bar
-            above. Downloads a 4:5 Instagram PNG — nothing is posted.
+            at a new rank. Fill uses real conference seeds. Last-week arrows
+            compare this East board to last week East (West to last week West).
+            Header text is editable on the graphic or in the bar above.
+            Downloads a 4:5 Instagram PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

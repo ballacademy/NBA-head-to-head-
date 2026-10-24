@@ -29,6 +29,7 @@ import {
   lastWeekMark,
   SLOT_COUNT,
   splitStandingsTitle,
+  standingRecordForTeam,
   type RankingSlots,
   type StandingRecord,
 } from "./rankingState";
@@ -282,11 +283,12 @@ export const StandingsGraphic = forwardRef<HTMLElement, StandingsGraphicProps>(
               ? lastWeekDelta(slots, lastWeekSlots, index)
               : null;
             const mark = lastWeekMark(delta);
+            const teamRecord = standingRecordForTeam(records, team?.id);
             const recordLabel = showRecord
-              ? formatStandingRecord(team ? records?.[team.id] : null)
+              ? formatStandingRecord(teamRecord)
               : null;
             const last10Label = showLast10
-              ? formatStandingLast10(team ? records?.[team.id] : null)
+              ? formatStandingLast10(teamRecord)
               : null;
             return (
               <button

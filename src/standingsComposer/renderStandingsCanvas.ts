@@ -37,6 +37,7 @@ import {
   formatStandingRecord,
   lastWeekDelta,
   lastWeekMark,
+  standingRecordForTeam,
   SLOT_COUNT,
   STANDINGS_BOARD_BG,
   STANDINGS_TITLE_SIZE,
@@ -403,10 +404,9 @@ export const renderStandingsCanvas = async (
             : "#9ca3af";
       context.fillText(mark.text, x + cellW * 0.96, y + cellH * 0.026);
     }
+    const teamRecord = standingRecordForTeam(input.records, team?.id);
     const recordLabel =
-      input.showRecord === true
-        ? formatStandingRecord(team ? input.records?.[team.id] : null)
-        : null;
+      input.showRecord === true ? formatStandingRecord(teamRecord) : null;
     if (recordLabel) {
       context.font = `900 ${16 * scale}px ${POSTER_FONT}`;
       context.textAlign = "left";
@@ -415,9 +415,7 @@ export const renderStandingsCanvas = async (
       context.fillText(recordLabel, rankX, rankY + 48 * scale + 4 * scale);
     }
     const last10Label =
-      input.showLast10 === true
-        ? formatStandingLast10(team ? input.records?.[team.id] : null)
-        : null;
+      input.showLast10 === true ? formatStandingLast10(teamRecord) : null;
     if (last10Label) {
       context.font = `900 ${12 * scale}px ${POSTER_FONT}`;
       context.textAlign = "left";
