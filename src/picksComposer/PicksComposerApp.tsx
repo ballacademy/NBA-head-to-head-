@@ -38,6 +38,7 @@ import { PicksGraphic } from "./PicksGraphic";
 import { exportPicksPng } from "./exportPicksPng";
 import { renderPicksCanvas } from "./renderPicksCanvas";
 import {
+  applyLedgerPicksToGames,
   applyScoresToPicksGames,
   applyScoresToPicksLedger,
   clampPicksPlateOpacity,
@@ -109,6 +110,10 @@ export function PicksComposerApp() {
     null,
   );
   const night = useComposerNight();
+  const draftRef = useRef(draft);
+  const ledgerRef = useRef(ledger);
+  draftRef.current = draft;
+  ledgerRef.current = ledger;
 
   useEffect(() => {
     document.title = "Daily spread picks";
@@ -155,13 +160,20 @@ export function PicksComposerApp() {
     );
   };
 
+  const didHydrateGrade = useRef(false);
   useEffect(() => {
-    if (!hydrated) {
+    if (!hydrated || didHydrateGrade.current) {
       return;
     }
-    void gradeOpenSlates(ledger, draft.date);
-    // Grade leftover slates once after hydrate; later fills upsert scores.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    didHydrateGrade.current = true;
+    const next = upsertPicksLedger(
+      ledgerRef.current,
+      draftRef.current.date,
+      draftRef.current.games,
+    );
+    ledgerRef.current = next;
+    setLedger(next);
+    void gradeOpenSlates(next, draftRef.current.date);
   }, [hydrated]);
 
   const fillSlate = async (iso = draft.date, forceRowId?: string) => {
@@ -173,11 +185,15 @@ export function PicksComposerApp() {
       slateRef.current = incoming;
       push(draft);
       setDraft((current) => {
-        const games = forceRowId
+        const filled = forceRowId
           ? current.games.map((game) =>
               game.id === forceRowId ? refillPicksRow(game, incoming) : game,
             )
-          : mergePicksFill(current.games, incoming);
+          : applyLedgerPicksToGames(
+              mergePicksFill(current.games, incoming),
+              ledgerRef.current,
+              date,
+            );
         return {
           ...current,
           date,
@@ -187,11 +203,16 @@ export function PicksComposerApp() {
           title: isAutoPicksTitle(current.title)
             ? picksDefaultTitle(date)
             : current.title,
-          games,
+          games: filled,
         };
       });
-      const nextLedger = applyScoresToPicksLedger(ledger, date, incoming);
-      setLedger((current) => applyScoresToPicksLedger(current, date, incoming));
+      const nextLedger = applyScoresToPicksLedger(
+        ledgerRef.current,
+        date,
+        incoming,
+      );
+      ledgerRef.current = nextLedger;
+      setLedger(nextLedger);
       void gradeOpenSlates(nextLedger, date);
       if (forceRowId) {
         setStatus("Re-filled that row from the slate.");
@@ -227,7 +248,16 @@ export function PicksComposerApp() {
         ...current,
         games: refreshPicksLines(current.games, incoming),
       }));
-      setLedger((current) => applyScoresToPicksLedger(current, date, incoming));
+      const nextLedger = applyScoresToPicksLedger(
+        ledgerRef.current,
+        date,
+        incoming,
+      );
+      ledgerRef.current = nextLedger;
+      setLedger(nextLedger);
+      if (fromHydrate) {
+        void gradeOpenSlates(nextLedger, date);
+      }
       setStatus("Updated lines.");
     } finally {
       setFilling(false);

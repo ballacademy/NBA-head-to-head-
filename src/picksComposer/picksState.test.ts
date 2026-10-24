@@ -26,6 +26,7 @@ import {
   mergePicksFill,
   refreshPicksLines,
   parseEspnAwayLine,
+  parseEspnCompleted,
   parsePicksLineInput,
   picksCaptionLines,
   parseEspnNationalTv,
@@ -55,9 +56,11 @@ import {
   setPicksLock,
   setPicksRecordField,
   setPicksTeam,
+  applyLedgerPicksToGames,
   applyScoresToPicksLedger,
   togglePicksPick,
   upsertPicksLedger,
+  resolvePicksLine,
   visiblePicksGames,
   type PicksGame,
   type PicksLedger,
@@ -351,7 +354,136 @@ describe("picks composer", () => {
     expect(next[3]?.custom).toBe(true);
     expect(next[4]?.line).toBe(2);
     expect(refreshPicksLines(current, [])).toEqual(current);
-    expect(refreshPicksLines([current[0]!], blankBoard)[0]?.line).toBeNull();
+    expect(refreshPicksLines([current[0]!], blankBoard)[0]?.line).toBe(1.5);
+  });
+
+  it("keeps locked and picked lines when ESPN drops odds after finals", () => {
+    expect(resolvePicksLine(1.5, null)).toBe(1.5);
+    expect(resolvePicksLine(1.5, 2.5)).toBe(2.5);
+    expect(resolvePicksLine(1.5, 2.5, true)).toBe(1.5);
+    expect(resolvePicksLine(0, null)).toBe(0);
+    expect(resolvePicksLine(null, 3)).toBe(3);
+    const picked = row({
+      id: "open",
+      eventId: "401",
+      awayId: "ATL",
+      homeId: "ORL",
+      line: 2.5,
+      pick: "away",
+    });
+    const locked = row({
+      id: "lock",
+      eventId: "402",
+      awayId: "NYK",
+      homeId: "BOS",
+      line: 7,
+      pick: "home",
+      locked: true,
+    });
+    const typed = row({
+      id: "typed",
+      eventId: "403",
+      awayId: "MIA",
+      homeId: "PHI",
+      line: 1,
+      pick: "away",
+      lineEdited: true,
+    });
+    const blank = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL" },
+        { id: "402", away: "NY", home: "BOS" },
+        { id: "403", away: "MIA", home: "PHI" },
+      ]),
+      "2026-10-23",
+    );
+    const filled = mergePicksFill([picked, locked, typed], blank);
+    const byId = Object.fromEntries(filled.map((game) => [game.id, game]));
+    expect(byId.open?.pick).toBe("away");
+    expect(byId.open?.line).toBe(2.5);
+    expect(byId.lock?.locked).toBe(true);
+    expect(byId.lock?.line).toBe(7);
+    expect(byId.typed?.line).toBe(1);
+    const live = parsePicksScoreboard(
+      scoreboard([
+        { id: "401", away: "ATL", home: "ORL", details: "ORL -3.5", spread: -3.5 },
+      ]),
+      "2026-10-23",
+    );
+    expect(refreshPicksLines([picked], live)[0]?.line).toBe(3.5);
+    expect(refreshPicksLines([locked], live)[0]?.line).toBe(7);
+  });
+
+  it("overlays ledger picks onto a Last night fill and grades the locked line", () => {
+    const ledger = upsertPicksLedger(emptyPicksLedger(), "2026-10-23", [
+      row({
+        id: "g",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: 8.5,
+        pick: "away",
+      }),
+    ]);
+    const incoming = [
+      row({
+        id: "fresh",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        pick: null,
+        awayScore: 131,
+        homeScore: 124,
+        final: true,
+      }),
+    ];
+    const restored = applyLedgerPicksToGames(incoming, ledger, "2026-10-23");
+    expect(restored[0]?.pick).toBe("away");
+    expect(restored[0]?.line).toBe(8.5);
+    expect(restored[0]?.awayScore).toBe(131);
+    expect(effectivePicksResult(restored[0]!)).toBe("W");
+    const scored = applyScoresToPicksLedger(ledger, "2026-10-23", incoming);
+    expect(scored.slates["2026-10-23"]?.[0]?.line).toBe(8.5);
+    expect(scored.slates["2026-10-23"]?.[0]?.result).toBe("W");
+    expect(formatPicksGraphicRecord(scored)).toBe("1-0");
+    const wiped = upsertPicksLedger(ledger, "2026-10-23", [
+      row({
+        id: "g",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        pick: "away",
+        awayScore: 131,
+        homeScore: 124,
+        final: true,
+      }),
+    ]);
+    expect(wiped.slates["2026-10-23"]?.[0]?.line).toBe(8.5);
+    expect(wiped.slates["2026-10-23"]?.[0]?.result).toBe("W");
+    const liveIncoming = [
+      row({
+        id: "live",
+        eventId: "401585141",
+        awayId: "CLE",
+        homeId: "BKN",
+        line: null,
+        awayScore: 80,
+        homeScore: 70,
+        final: false,
+      }),
+    ];
+    const skipped = applyScoresToPicksLedger(ledger, "2026-10-23", liveIncoming);
+    expect(skipped.slates["2026-10-23"]?.[0]?.result).toBeNull();
+    expect(parseEspnCompleted(
+      { status: { type: { completed: true, name: "STATUS_FINAL", state: "post" } } },
+      {},
+    )).toBe(true);
+    expect(parseEspnCompleted(
+      { status: { type: { completed: false, name: "STATUS_IN_PROGRESS", state: "in" } } },
+      {},
+    )).toBe(false);
   });
 
   it("re-fills one row from the slate and drops that row’s edit flags", () => {

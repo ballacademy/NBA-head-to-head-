@@ -338,6 +338,30 @@ export const clampPicksPlateOpacity = (value: unknown) => {
 export const picksDatePill = (games: number) =>
   games ? `${games} GAME${games === 1 ? "" : "S"}` : "";
 
+/**
+ * Keep a stored away line when ESPN drops odds after tip-off.
+ * Live Refresh still takes a real incoming line unless the row is locked or typed.
+ * `0` is PK and counts as a real line — never treat it as missing.
+ */
+export const resolvePicksLine = (
+  stored: number | null | undefined,
+  incoming: number | null | undefined,
+  keepStored = false,
+): number | null => {
+  const haveStored = stored != null && Number.isFinite(stored);
+  const haveIncoming = incoming != null && Number.isFinite(incoming);
+  if (keepStored) {
+    return haveStored ? stored : haveIncoming ? incoming : null;
+  }
+  if (haveIncoming) {
+    return incoming;
+  }
+  return haveStored ? stored : null;
+};
+
+const keepPicksStoredLine = (game: Pick<PicksGame, "lineEdited" | "locked">) =>
+  game.lineEdited === true || game.locked === true;
+
 /** ATS vs the locked away line. Null when the game is not a gradeable final. */
 export const gradePicksAts = (
   pick: PicksSide | null | undefined,
@@ -727,6 +751,10 @@ export const upsertPicksLedger = (
     const final = fresh.final === true || older?.final === true;
     const merged = {
       ...fresh,
+      line:
+        game.lineEdited === true
+          ? fresh.line
+          : resolvePicksLine(older?.line, fresh.line),
       awayScore,
       homeScore,
       final,
@@ -775,6 +803,7 @@ export const applyScoresToPicksLedger = (
     const final = match.final === true || row.final === true;
     const next = {
       ...row,
+      line: resolvePicksLine(row.line, match.line, true),
       awayScore,
       homeScore,
       final,
@@ -791,6 +820,42 @@ export const applyScoresToPicksLedger = (
       [token]: nextRows,
     },
   };
+};
+
+/** Restore saved picks onto a date’s ESPN rows (Tonight → Last night Fill). */
+export const applyLedgerPicksToGames = (
+  games: PicksGame[],
+  ledger: PicksLedger,
+  date: string,
+): PicksGame[] => {
+  const token = isoDateOnly(date);
+  const rows = token ? ledger.slates[token] ?? [] : [];
+  if (!rows.length) {
+    return games;
+  }
+  const byEvent = new Map(rows.map((row) => [row.eventId, row]));
+  return games.map((game) => {
+    const entry = game.eventId ? byEvent.get(game.eventId) : undefined;
+    if (!entry) {
+      return game;
+    }
+    return {
+      ...game,
+      pick: game.pick ?? entry.pick,
+      line: keepPicksStoredLine(game)
+        ? resolvePicksLine(game.line, entry.line, true)
+        : resolvePicksLine(entry.line, game.line),
+      units: game.units || entry.units || "1u",
+      awayScore: game.awayScore ?? entry.awayScore ?? null,
+      homeScore: game.homeScore ?? entry.homeScore ?? null,
+      final: game.final === true || entry.final === true,
+      gradeManual: isPicksGrade(game.gradeManual)
+        ? game.gradeManual
+        : isPicksGrade(entry.gradeManual)
+          ? entry.gradeManual
+          : null,
+    };
+  });
 };
 
 export const applyScoresToPicksGames = (
@@ -1381,7 +1446,11 @@ export const setPicksTeam = (
 const mergePicksRow = (prev: PicksGame, incoming: PicksGame): PicksGame => {
   const awayId = prev.teamsEdited ? prev.awayId : incoming.awayId;
   const homeId = prev.teamsEdited ? prev.homeId : incoming.homeId;
-  const line = prev.lineEdited ? prev.line : incoming.line;
+  const line = resolvePicksLine(
+    prev.line,
+    incoming.line,
+    keepPicksStoredLine(prev),
+  );
   let pick = prev.pick;
   if (pick === "away" && awayId !== prev.awayId) {
     pick = null;
@@ -1444,16 +1513,18 @@ export const refreshPicksLines = (
     if (!match) {
       return prev;
     }
-    const keepLine = prev.lineEdited === true || prev.locked === true;
+    const keepLine = keepPicksStoredLine(prev);
+    const line = resolvePicksLine(prev.line, match.line, keepLine);
+    const heldLine = keepLine || match.line == null;
     return {
       ...prev,
       eventId: match.eventId || prev.eventId,
-      line: keepLine ? prev.line : match.line,
-      awayJuice: keepLine ? prev.awayJuice : match.awayJuice,
-      homeJuice: keepLine ? prev.homeJuice : match.homeJuice,
-      total: keepLine ? prev.total : match.total,
-      awayMl: keepLine ? prev.awayMl : match.awayMl,
-      homeMl: keepLine ? prev.homeMl : match.homeMl,
+      line,
+      awayJuice: heldLine ? prev.awayJuice : match.awayJuice,
+      homeJuice: heldLine ? prev.homeJuice : match.homeJuice,
+      total: heldLine ? prev.total : match.total,
+      awayMl: heldLine ? prev.awayMl : match.awayMl,
+      homeMl: heldLine ? prev.homeMl : match.homeMl,
       tip: match.tip || prev.tip,
       tv: match.tv || prev.tv,
       startMs: match.startMs ?? prev.startMs,
@@ -1516,6 +1587,7 @@ export const refillPicksRow = (
     ...match,
     id: game.id,
     pick,
+    line: resolvePicksLine(game.line, match.line, false),
     locked: game.locked === true && Boolean(pick),
     units: game.units || match.units,
   };
