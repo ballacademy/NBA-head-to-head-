@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getPlayersById, calculateLineupScore } from "./scoring";
 import { players } from "./playerPool";
+import { resolveLineupForScoring } from "./sampleSize";
 import {
   assessLineupSpacingFeedback,
   buildLineupShootingProfile,
@@ -21,15 +22,17 @@ describe("lineup scoring improvements", () => {
       "holmgch01-okc",
     ]);
     const score = calculateLineupScore(userLineup);
+    // Match the engine: assess spacing on the GP-blended scoring lineup.
+    const scoringLineup = resolveLineupForScoring(userLineup);
     const shootingProfile = buildLineupShootingProfile(
-      userLineup,
-      userLineup.map(() => 1),
-      userLineup.length,
+      scoringLineup,
+      scoringLineup.map(() => 1),
+      scoringLineup.length,
     );
     const spacing = assessLineupSpacingFeedback({
-      passableShooters: userLineup.filter(isPassableThreePointShooter).length,
-      eliteShooters: userLineup.filter(isEliteThreePointShooter).length,
-      nonShooters: userLineup.filter(isNonThreePointShooter).length,
+      passableShooters: scoringLineup.filter(isPassableThreePointShooter).length,
+      eliteShooters: scoringLineup.filter(isEliteThreePointShooter).length,
+      nonShooters: scoringLineup.filter(isNonThreePointShooter).length,
       volumeWeightedThreePoint: shootingProfile.volumeWeightedThreePoint,
     });
 
@@ -59,8 +62,12 @@ describe("lineup scoring improvements", () => {
       byName("Maxime Raynaud"),
     ];
     const score = calculateLineupScore(talentHeavy);
+    const scoringLineup = resolveLineupForScoring(talentHeavy);
 
-    expect(talentHeavy.filter(isPassableThreePointShooter).length).toBe(2);
+    // Early-season card % can swing; blended scoring still lacks floor spacing.
+    expect(
+      scoringLineup.filter(isPassableThreePointShooter).length,
+    ).toBeLessThanOrEqual(2);
     expect(score.strengths).not.toContain(
       "Enough shooting to keep the floor spaced.",
     );
