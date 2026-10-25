@@ -2,8 +2,8 @@
 export const SUPPORT_EMAIL = "ballacademyofficial@gmail.com";
 
 /** Player / salary data freshness shown in beta notes. */
-export const STATS_DATA_AS_OF_LABEL = "July 31, 2026";
-export const SALARIES_DATA_AS_OF_LABEL = "September 19, 2026";
+export const STATS_DATA_AS_OF_LABEL = "October 25, 2026";
+export const SALARIES_DATA_AS_OF_LABEL = "October 9, 2026";
 
 export const buildSupportMailto = (params?: {
   subject?: string;

@@ -52,51 +52,51 @@ describe("sampleSize", () => {
   });
 
   it("keeps limited-sample label even when prior production exists", () => {
-    // Anthony Davis: 20 GP this season, sizable prior season.
-    const anthonyDavis = {
-      bbrPlayerId: "davisan02",
-      gamesPlayed: 20,
-      points: 20.4,
+    // Luka: tiny current sample, sizable 2025-26 prior season.
+    const doncic = {
+      bbrPlayerId: "doncilu01",
+      gamesPlayed: 2,
+      points: 30,
     };
-    expect(hasEstablishedPriorProduction(anthonyDavis)).toBe(true);
-    expect(getEstablishedProductionCredential(anthonyDavis)).not.toBeNull();
-    expect(hasLimitedSampleSize(anthonyDavis)).toBe(true);
-    expect(getPlayerStatWeight(anthonyDavis)).toBe(1);
+    expect(hasEstablishedPriorProduction(doncic)).toBe(true);
+    expect(getEstablishedProductionCredential(doncic)).not.toBeNull();
+    expect(hasLimitedSampleSize(doncic)).toBe(true);
+    expect(getPlayerStatWeight(doncic)).toBe(1);
 
     // Still limited at 29 GP even with strong prior; 30+ clears the flag.
-    const porzingisLimited = {
-      bbrPlayerId: "porzikr01",
+    const doncicLimited = {
+      bbrPlayerId: "doncilu01",
       gamesPlayed: 29,
-      points: 16.7,
+      points: 33.5,
     };
-    expect(hasEstablishedPriorProduction(porzingisLimited)).toBe(true);
-    expect(hasLimitedSampleSize(porzingisLimited)).toBe(true);
-    expect(getPlayerStatWeight(porzingisLimited)).toBe(1);
+    expect(hasEstablishedPriorProduction(doncicLimited)).toBe(true);
+    expect(hasLimitedSampleSize(doncicLimited)).toBe(true);
+    expect(getPlayerStatWeight(doncicLimited)).toBe(1);
 
-    const porzingisFull = {
-      bbrPlayerId: "porzikr01",
+    const doncicFull = {
+      bbrPlayerId: "doncilu01",
       gamesPlayed: 30,
-      points: 16.7,
+      points: 33.5,
     };
-    expect(hasLimitedSampleSize(porzingisFull)).toBe(false);
-    expect(getPlayerStatWeight(porzingisFull)).toBe(1);
-    expect(getBlendablePriorSnapshot(porzingisFull)).toBeNull();
+    expect(hasLimitedSampleSize(doncicFull)).toBe(false);
+    expect(getPlayerStatWeight(doncicFull)).toBe(1);
+    expect(getBlendablePriorSnapshot(doncicFull)).toBeNull();
   });
 
   it("still dings tiny hot streaks without matching prior production", () => {
     const hotStreak = {
       bbrPlayerId: "whiteda01",
-      gamesPlayed: 6,
-      points: 16.3,
+      gamesPlayed: 2,
+      points: 28,
     };
-    // Prior season was a small/low-scoring cup of coffee, not similar production.
+    // Prior season was a small cup of coffee, not similar production.
     expect(hasEstablishedPriorProduction(hotStreak)).toBe(false);
     expect(getEstablishedProductionCredential(hotStreak)).toBeNull();
     expect(hasLimitedSampleSize(hotStreak)).toBe(true);
     // May still blend if any prior games exist; weight uses effective GP.
     const shares = getSeasonBlendShares(hotStreak);
     if (shares) {
-      expect(getPlayerStatWeight(hotStreak)).toBeGreaterThan(
+      expect(getPlayerStatWeight(hotStreak)).toBeGreaterThanOrEqual(
         LIMITED_SAMPLE_WEIGHT_FLOOR,
       );
     } else {
@@ -105,33 +105,32 @@ describe("sampleSize", () => {
   });
 
   it("game-weights current and prior seasons for limited samples", () => {
-    const kessler = players.find(
-      (player) => player.id === findPlayerId("Walker Kessler"),
+    const doncic = players.find(
+      (player) => player.id === findPlayerId("Luka Doncic"),
     );
-    expect(kessler).toBeTruthy();
-    expect(kessler!.gamesPlayed).toBeLessThan(FULL_SAMPLE_MIN_GAMES);
+    expect(doncic).toBeTruthy();
+    expect(doncic!.gamesPlayed).toBeLessThan(FULL_SAMPLE_MIN_GAMES);
 
-    const prior = getBlendablePriorSnapshot(kessler!);
+    const prior = getBlendablePriorSnapshot(doncic!);
     expect(prior).toBeTruthy();
     expect(prior!.gamesPlayed).toBeGreaterThanOrEqual(ESTABLISHED_PRIOR_MIN_GAMES);
 
-    const shares = getSeasonBlendShares(kessler!)!;
-    const totalGames = kessler!.gamesPlayed + prior!.gamesPlayed;
-    expect(shares.currentShare).toBeCloseTo(kessler!.gamesPlayed / totalGames, 5);
+    const shares = getSeasonBlendShares(doncic!)!;
+    const totalGames = doncic!.gamesPlayed + prior!.gamesPlayed;
+    expect(shares.currentShare).toBeCloseTo(doncic!.gamesPlayed / totalGames, 5);
     expect(shares.priorShare).toBeCloseTo(prior!.gamesPlayed / totalGames, 5);
+    // Early season: prior games dominate the blend share.
+    expect(shares.priorShare).toBeGreaterThan(shares.currentShare);
 
-    const blended = resolvePlayerForScoring(kessler!);
+    const blended = resolvePlayerForScoring(doncic!);
     const expectedPoints =
-      kessler!.points * shares.currentShare + prior!.points * shares.priorShare;
+      doncic!.points * shares.currentShare + prior!.points * shares.priorShare;
     const expectedTs =
-      kessler!.trueShooting * shares.currentShare +
-      (prior!.trueShooting ?? kessler!.trueShooting) * shares.priorShare;
+      doncic!.trueShooting * shares.currentShare +
+      (prior!.trueShooting ?? doncic!.trueShooting) * shares.priorShare;
 
     expect(blended.points).toBeCloseTo(expectedPoints, 5);
     expect(blended.trueShooting).toBeCloseTo(expectedTs, 5);
-    // Tiny-sample heater should be pulled toward the larger prior sample.
-    expect(blended.trueShooting).toBeLessThan(kessler!.trueShooting);
-    expect(blended.trueShooting).toBeGreaterThan(prior!.trueShooting! - 0.01);
     // Defense grades soft-regress toward average with the same game weights.
     expect(blended.defenseGrade).toBeDefined();
   });

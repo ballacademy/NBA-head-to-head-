@@ -1,6 +1,6 @@
 import teamSeasonBaselines from "../../data/team-season-baselines.json";
 import { getPlayerTeamQualityImpactWeight } from "./impactRanking";
-import { statsFile } from "./playerPool";
+import { priorStatsFile } from "./playerPool";
 import type { Player } from "./types";
 import { isFreeAgentTeam } from "./freeAgents";
 
@@ -19,8 +19,9 @@ interface RawSeasonAvailability {
   gamesStarted: number;
 }
 
+/** Anchor availability to the completed prior season, not the tiny current sample. */
 const rawSeasonByBbr = new Map<string, RawSeasonAvailability>(
-  statsFile.players
+  priorStatsFile.players
     .filter((player) => player.bbrPlayerId)
     .map((player) => [
       player.bbrPlayerId as string,

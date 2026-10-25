@@ -29,8 +29,14 @@ describe("current team overrides", () => {
     expect(CURRENT_TEAM_OVERRIDES.mathube01).toBe("NOP");
     expect(CURRENT_TEAM_OVERRIDES.hawkijo01).toBe("CHI");
     expect(CURRENT_TEAM_OVERRIDES.broomjo01).toBe("MIL");
-    expect(CURRENT_TEAM_OVERRIDES.bradlto01).toBe("NYK");
+    expect(CURRENT_TEAM_OVERRIDES.bradlto01).toBe("UTA");
     expect(CURRENT_TEAM_OVERRIDES.labissk01).toBe("WAS");
+    // Oct 25, 2026 roster moves.
+    expect(CURRENT_TEAM_OVERRIDES.knechda01).toBe("NYK");
+    expect(CURRENT_TEAM_OVERRIDES.timmedr01).toBe("PHO");
+    expect(CURRENT_TEAM_OVERRIDES.peavymi01).toBe("OKC");
+    expect(CURRENT_TEAM_OVERRIDES.pedulse01).toBe("SAC");
+    expect(CURRENT_TEAM_OVERRIDES.claytwa01).toBe("DAL");
   });
 
   it("applies synced teams to active player objects", () => {

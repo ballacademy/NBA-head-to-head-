@@ -12,8 +12,8 @@ import { isDraftEligiblePlayer, isStatsFreeAgent } from "./freeAgents";
 
 describe("playerPool roster metadata", () => {
   it("tracks the active roster as-of date", () => {
-    expect(ACTIVE_ROSTER_AS_OF).toBe("2026-09-19");
-    expect(ACTIVE_ROSTER_AS_OF_LABEL).toBe("September 19, 2026");
+    expect(ACTIVE_ROSTER_AS_OF).toBe("2026-10-25");
+    expect(ACTIVE_ROSTER_AS_OF_LABEL).toBe("October 25, 2026");
   });
 });
 
@@ -38,23 +38,28 @@ describe("playerPool free agents", () => {
     );
   });
 
-  it("keeps upcoming-season rookies out of draft modes and Stats", () => {
+  it("shows 2026-27 stats for players who have played this season", () => {
     expect(players.some((player) => player.gamesPlayed === 0)).toBe(false);
     expect(statsPlayers.some((player) => player.gamesPlayed === 0)).toBe(false);
-    expect(players.some((player) => player.name === "Cameron Boozer")).toBe(
-      false,
-    );
+
+    const boozer = players.find((player) => player.name === "Cameron Boozer");
+    expect(boozer).toBeTruthy();
+    expect(boozer!.gamesPlayed).toBeGreaterThan(0);
     expect(statsPlayers.some((player) => player.name === "Cameron Boozer")).toBe(
-      false,
+      true,
     );
     expect(
-      databasePlayers.some((player) => player.name === "Cameron Boozer"),
-    ).toBe(true);
-    expect(
-      databasePlayers.filter(isCurrentRookiePlayer).every(
-        (player) => player.gamesPlayed === 0,
-      ),
-    ).toBe(true);
+      databasePlayers.filter(
+        (player) => player.name === "Cameron Boozer",
+      ).length,
+    ).toBe(1);
+
+    // Preseason stubs without a current-season sample stay Tier List only.
+    const preseasonOnly = databasePlayers.filter(
+      (player) => isCurrentRookiePlayer(player) && player.gamesPlayed === 0,
+    );
+    expect(preseasonOnly.length).toBeGreaterThan(0);
+    expect(players.some((player) => player.gamesPlayed === 0)).toBe(false);
   });
 
   it("keeps one row per basketball-reference player id", () => {
