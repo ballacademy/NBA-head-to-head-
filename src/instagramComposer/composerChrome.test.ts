@@ -817,6 +817,27 @@ describe("composer chrome", () => {
     );
     expect(totwStatsCanvas).toContain("totwStatsSheetName");
     expect(totwStatsCanvas).not.toContain("composerNameLines");
+    const totwStatsLayout = readFileSync(
+      join(root, "teamOfTheWeekComposer/totwStatsLayout.ts"),
+      "utf8",
+    );
+    const totwStatsCss = readFileSync(
+      join(root, "teamOfTheWeekComposer/totwStatsComposer.css"),
+      "utf8",
+    );
+    expect(totwStatsLayout).toContain("TWS_HEAD_SIZE = 13");
+    expect(totwStatsLayout).toContain("TWS_VALUE_SIZE = 19");
+    expect(totwStatsCanvas).toContain("TWS_HEAD_SIZE");
+    expect(totwStatsCanvas).toContain("TWS_VALUE_SIZE");
+    expect(totwStatsCss).toMatch(
+      /\.tws-th \{[\s\S]*?font-size:\s*calc\(13 \* var\(--u\)\)/,
+    );
+    expect(totwStatsCss).toMatch(
+      /\.tws-td \{[\s\S]*?font-size:\s*calc\(19 \* var\(--u\)\)/,
+    );
+    expect(totwStatsCss).toMatch(
+      /\.tws-player__name \{[\s\S]*?font-size:\s*calc\(13 \* var\(--u\)\)/,
+    );
     const totwGraphic = readFileSync(
       join(root, "teamOfTheWeekComposer/TeamOfTheWeekGraphic.tsx"),
       "utf8",

@@ -146,9 +146,10 @@
 
 .tws-th {
   min-height: calc(32 * var(--u));
-  font-size: calc(11 * var(--u));
+  font-size: calc(13 * var(--u));
   color: #a1a1aa;
   text-transform: uppercase;
+  white-space: nowrap;
   border-bottom: 1px solid rgba(255, 255, 255, 0.22);
 }
 
@@ -157,11 +158,13 @@
   justify-content: flex-start;
   padding-left: calc(10 * var(--u));
   gap: calc(8 * var(--u));
+  white-space: normal;
 }
 
 .tws-td {
-  min-height: calc(68 * var(--u));
-  font-size: calc(16 * var(--u));
+  min-height: calc(72 * var(--u));
+  font-size: calc(19 * var(--u));
+  white-space: nowrap;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
