@@ -52,6 +52,9 @@ import {
   normalizeStatCardDraft,
   persistStatCardStatsLeft,
   peekStatCardStatsLeft,
+  readStatCardHighPip,
+  withStatCardHighPip,
+  writeStatCardHighPip,
   playerName,
   removeStatCardLine,
   setStatCardLineKey,
@@ -107,6 +110,7 @@ describe("stat card composer", () => {
     expect(draft.showMatchup).toBe(false);
     expect(draft.matchup).toBe("");
     expect(draft.statsLeft).toBe(false);
+    expect(draft.showHighPip).toBe(false);
     const story = statCardStoryRects();
     expect(STORY_DESIGN_HEIGHT).toBe(2133);
     expect(story.photo.w).toBe(GRAPHIC_WIDTH);
@@ -143,6 +147,18 @@ describe("stat card composer", () => {
     expect(cropped?.photoSrc).toBe("data:image/png;base64,crop");
     expect(cropped?.customPhoto).toBe(true);
     expect(cropped?.pan.x).toBe(0.4);
+  });
+
+  it("remembers High pip as a HUD setting, off on a blank post", () => {
+    expect(readStatCardHighPip()).toBe(false);
+    writeStatCardHighPip(true);
+    expect(readStatCardHighPip()).toBe(true);
+    expect(withStatCardHighPip(defaultStatCardDraft(), true).showHighPip).toBe(
+      true,
+    );
+    expect(defaultStatCardDraft().showHighPip).toBe(false);
+    writeStatCardHighPip(false);
+    expect(readStatCardHighPip()).toBe(false);
   });
 
   it("remembers Stat card Flip per night", () => {
@@ -265,6 +281,16 @@ describe("stat card composer", () => {
     const jokic = getPlayer("3112335")!;
     const next = fillStatCardFromPlayer(jokic, defaultStatCardDraft());
     expect(next.playerId).toBe(jokic.id);
+    expect(next.showHighPip).toBe(false);
+    const keptPip = fillStatCardFromPlayer(
+      jokic,
+      withStatCardHighPip(defaultStatCardDraft(), true),
+    );
+    expect(keptPip.showHighPip).toBe(true);
+    expect(
+      fillStatCardFromStandout(keptPip, gameFrom({ pts: "29", reb: "12", ast: "8" }))
+        .showHighPip,
+    ).toBe(true);
     expect(next.teamId).toBeTruthy();
     expect(next.photoSrc).toBe(jokic.headshotUrl);
     expect(playerName(next).length).toBeGreaterThan(3);

@@ -48,6 +48,7 @@ export { clampPan, parseStatsLeft, type PhotoPan };
 
 export const STAT_CARD_STORAGE_KEY = "ddgm:stat-card-composer";
 export const STAT_CARD_FLIP_NIGHT_KEY = "ddgm:stat-card-flip-by-night";
+export const STAT_CARD_HIGH_PIP_KEY = "ddgm:stat-card-high-pip";
 
 export const STC_VALUE_MAX = 8;
 export const STC_LABEL_MAX = 6;
@@ -277,6 +278,22 @@ export const normalizeStatCardDraft = (draft: StatCardDraft): StatCardDraft => (
   showHighPip: draft.showHighPip === true,
 });
 
+export const readStatCardHighPip = () =>
+  readJson<unknown>(STAT_CARD_HIGH_PIP_KEY) === true;
+
+export const writeStatCardHighPip = (on: boolean) => {
+  writeJson(STAT_CARD_HIGH_PIP_KEY, on === true);
+};
+
+/** HUD setting — not per player. Blank post stays off. */
+export const withStatCardHighPip = (
+  draft: StatCardDraft,
+  showHighPip: boolean,
+): StatCardDraft => ({
+  ...draft,
+  showHighPip: showHighPip === true,
+});
+
 let memoryFlipByNight: Record<string, boolean> = {};
 
 const readFlipByNight = (): Record<string, boolean> => {
@@ -399,6 +416,7 @@ export const fillStatCardFromPlayer = (
     photoSrc: keep ? previous.photoSrc : player.headshotUrl || null,
     customPhoto: keep,
     pan: keep ? { ...previous.pan } : { ...DEFAULT_HEADSHOT_PAN },
+    showHighPip: previous.showHighPip === true,
   };
 };
 

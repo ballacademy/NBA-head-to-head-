@@ -88,6 +88,9 @@ import {
   normalizeStatCardDraft,
   persistStatCardStatsLeft,
   peekStatCardStatsLeft,
+  readStatCardHighPip,
+  withStatCardHighPip,
+  writeStatCardHighPip,
   parseStatCardKey,
   parseStatCardSource,
   playerName,
@@ -116,11 +119,15 @@ const loadDraft = (): StatCardDraft => {
   const base = isStatCardDraft(stored)
     ? normalizeStatCardDraft(stored)
     : defaultStatCardDraft();
+  const remembered = base.showHighPip === true || readStatCardHighPip();
   if (base.playerId) {
-    return base;
+    return withStatCardHighPip(base, remembered);
   }
   const player = getPlayer(carriedPlayerId());
-  return player ? fillStatCardFromPlayer(player, base) : base;
+  if (player) {
+    return withStatCardHighPip(fillStatCardFromPlayer(player, base), remembered);
+  }
+  return withStatCardHighPip(base, false);
 };
 
 export function StatCardComposerApp() {
@@ -147,6 +154,7 @@ export function StatCardComposerApp() {
   const priorGamesRef = useRef<LastGame[]>([]);
   const rangeAggregateRef = useRef(false);
   const fillSeq = useRef(0);
+  const highPipRef = useRef(false);
   const draftRef = useRef(draft);
   draftRef.current = draft;
   const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
@@ -169,7 +177,9 @@ export function StatCardComposerApp() {
         console.error(error);
       })
       .finally(() => {
-        setDraft(loadDraft());
+        const loaded = loadDraft();
+        rememberHighPip(loaded.showHighPip === true);
+        setDraft(loaded);
         setHydrated(true);
       });
   }, []);
@@ -184,11 +194,26 @@ export function StatCardComposerApp() {
 
   const markHighs = (next: StatCardDraft) =>
     applyStatCardHighs(
-      next,
+      withStatCardHighPip(next, highPipRef.current),
       seasonGamesRef.current,
       priorGamesRef.current,
       { rangeAggregate: rangeAggregateRef.current },
     );
+
+  const rememberHighPip = (showHighPip: boolean) => {
+    highPipRef.current = showHighPip;
+    writeStatCardHighPip(showHighPip);
+  };
+
+  const reapplyHighs = async (playerId: string) => {
+    if (!playerId) {
+      return;
+    }
+    await loadHighGames(playerId, statsSample);
+    setDraft((current) =>
+      current.playerId === playerId ? markHighs(current) : current,
+    );
+  };
 
   const loadHighGames = async (
     playerId: string,
@@ -205,6 +230,7 @@ export function StatCardComposerApp() {
   };
 
   const setHighPip = (showHighPip: boolean) => {
+    rememberHighPip(showHighPip);
     const next = markHighs({ ...draftRef.current, showHighPip });
     setDraft(next);
     if (!showHighPip) {
@@ -487,7 +513,15 @@ export function StatCardComposerApp() {
     }
     fillSeq.current += 1;
     push(draft);
-    let next = fillStatCardFromPlayer(player, draft, keepCustomPhoto);
+    if (player.id !== draft.playerId) {
+      seasonGamesRef.current = [];
+      priorGamesRef.current = [];
+      lastGameRef.current = null;
+    }
+    let next = withStatCardHighPip(
+      fillStatCardFromPlayer(player, draft, keepCustomPhoto),
+      highPipRef.current,
+    );
     const standout = completedNightRows(rangeStandouts).find(
       (row) => row.athleteId === playerId,
     );
@@ -527,6 +561,8 @@ export function StatCardComposerApp() {
     if (parseStatCardSource(next.source) === "last-game") {
       if (!filledFromRecs) {
         void fillPickedLastGame(next, recs);
+      } else {
+        void reapplyHighs(player.id);
       }
       return;
     }
@@ -834,7 +870,8 @@ export function StatCardComposerApp() {
             board={draft}
             onLoad={(next) => {
               const loaded = normalizeStatCardDraft(next);
-              setDraft(loaded);
+              rememberHighPip(loaded.showHighPip === true);
+              setDraft(markHighs(loaded));
               setStatus("Loaded named graphic.");
               void fillStats(loaded);
             }}
@@ -848,6 +885,7 @@ export function StatCardComposerApp() {
             onClick={() => {
               const previous = pop();
               if (previous) {
+                rememberHighPip(previous.showHighPip === true);
                 setDraft(previous);
                 setStatus("Undid last change.");
               }
@@ -861,7 +899,12 @@ export function StatCardComposerApp() {
             className="sc-btn sc-btn--ghost"
             onClick={() => {
               push(draft);
-              setDraft(keepComposerPhotos(defaultStatCardDraft(), draft));
+              setDraft(
+                withStatCardHighPip(
+                  keepComposerPhotos(defaultStatCardDraft(), draft),
+                  highPipRef.current,
+                ),
+              );
               setStatus("Reset — photos kept.");
             }}
           >
@@ -875,6 +918,7 @@ export function StatCardComposerApp() {
                   return;
                 }
               push(draft);
+              rememberHighPip(false);
               setDraft(defaultStatCardDraft());
               setStatus("Blank post.");
             }}

@@ -1004,6 +1004,11 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain("showHighPip");
     expect(statCardApp).toContain('aria-label="Season and career high pip"');
     expect(statCardApp).not.toContain('key: "high-pip"');
+    expect(statCardApp).toContain("reapplyHighs");
+    expect(statCardApp).toContain("rememberHighPip");
+    expect(statCardApp).toContain("withStatCardHighPip");
+    expect(statCardApp).toContain("void reapplyHighs(player.id)");
+    expect(statCardApp).toContain("rememberHighPip(false)");
     const statGraphic = readFileSync(
       join(root, "statCardComposer/StatCardGraphic.tsx"),
       "utf8",
