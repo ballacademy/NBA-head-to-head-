@@ -1,8 +1,8 @@
 {
   "season": "2025-26",
   "source": "basketball-reference",
-  "generatedAt": "2026-10-09T00:57:13.361775+00:00",
-  "updatedAt": "2026-10-09T00:57:13.361775+00:00",
+  "generatedAt": "2026-10-25T04:40:35.949539+00:00",
+  "updatedAt": "2026-10-25T04:40:35.949539+00:00",
   "rosterSource": "espn",
   "playerCount": 603,
   "byPlayerId": {
@@ -17,7 +17,7 @@
       "name": "Asa Newell"
     },
     "hieldbu01": {
-      "jerseyNumber": 8,
+      "jerseyNumber": 7,
       "team": "CHI",
       "name": "Buddy Hield"
     },
@@ -77,7 +77,7 @@
       "name": "Keaton Wallace"
     },
     "gilbeke01": {
-      "jerseyNumber": 51,
+      "jerseyNumber": 0,
       "team": "ATL",
       "name": "Keshon Gilbert"
     },
@@ -103,7 +103,7 @@
     },
     "bradlto01": {
       "jerseyNumber": 13,
-      "team": "NYK",
+      "team": "UTA",
       "name": "Tony Bradley"
     },
     "risacza01": {
@@ -1492,8 +1492,8 @@
       "name": "Rui Hachimura"
     },
     "pedulse01": {
-      "jerseyNumber": 0,
-      "team": "HOU",
+      "jerseyNumber": 3,
+      "team": "SAC",
       "name": "Sean Pedulla"
     },
     "washity02": {
@@ -1532,13 +1532,13 @@
       "name": "Collin Sexton"
     },
     "knechda01": {
-      "jerseyNumber": 4,
-      "team": "LAL",
+      "jerseyNumber": 99,
+      "team": "NYK",
       "name": "Dalton Knecht"
     },
     "timmedr01": {
       "jerseyNumber": 17,
-      "team": "MIN",
+      "team": "PHO",
       "name": "Drew Timme"
     },
     "hardyja02": {
@@ -1702,8 +1702,8 @@
       "name": "Ty Jerome"
     },
     "claytwa01": {
-      "jerseyNumber": 4,
-      "team": "MEM",
+      "jerseyNumber": 1,
+      "team": "DAL",
       "name": "Walter Clayton"
     },
     "edeyza01": {
@@ -1727,7 +1727,7 @@
       "name": "Bobby Portis"
     },
     "mitchda01": {
-      "jerseyNumber": 45,
+      "jerseyNumber": 2,
       "team": "MIA",
       "name": "Davion Mitchell"
     },
@@ -1997,7 +1997,7 @@
       "name": "Jeremiah Fears"
     },
     "hawkijo01": {
-      "jerseyNumber": 19,
+      "jerseyNumber": 15,
       "team": "CHI",
       "name": "Jordan Hawkins"
     },
@@ -2018,7 +2018,7 @@
     },
     "peavymi01": {
       "jerseyNumber": 7,
-      "team": "MEM",
+      "team": "OKC",
       "name": "Micah Peavy"
     },
     "beysa01": {
@@ -2517,7 +2517,7 @@
       "name": "Jrue Holiday"
     },
     "thybuma01": {
-      "jerseyNumber": 26,
+      "jerseyNumber": 4,
       "team": "LAL",
       "name": "Matisse Thybulle"
     },
@@ -2962,7 +2962,7 @@
       "name": "Cam Whitmore"
     },
     "aytonde01": {
-      "jerseyNumber": 6,
+      "jerseyNumber": 8,
       "team": "WAS",
       "name": "Deandre Ayton"
     },
@@ -3033,7 +3033,7 @@
     {
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
-      "team": "NYK",
+      "team": "UTA",
       "jerseyNumber": 13,
       "position": "C"
     },
@@ -3055,7 +3055,7 @@
       "bbrPlayerId": "gilbeke01",
       "name": "Keshon Gilbert",
       "team": "ATL",
-      "jerseyNumber": 51,
+      "jerseyNumber": 0,
       "position": "SG"
     },
     {
@@ -3069,7 +3069,7 @@
       "bbrPlayerId": "hieldbu01",
       "name": "Buddy Hield",
       "team": "CHI",
-      "jerseyNumber": 8,
+      "jerseyNumber": 7,
       "position": "SG"
     },
     {
@@ -4469,7 +4469,7 @@
       "bbrPlayerId": "hieldbu01",
       "name": "Buddy Hield",
       "team": "CHI",
-      "jerseyNumber": 8,
+      "jerseyNumber": 7,
       "position": "SG"
     },
     {
@@ -4692,7 +4692,7 @@
     {
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
-      "team": "NYK",
+      "team": "UTA",
       "jerseyNumber": 13,
       "position": "C"
     },
@@ -5021,8 +5021,8 @@
     {
       "bbrPlayerId": "pedulse01",
       "name": "Sean Pedulla",
-      "team": "HOU",
-      "jerseyNumber": 0,
+      "team": "SAC",
+      "jerseyNumber": 3,
       "position": "PG"
     },
     {
@@ -5057,7 +5057,7 @@
       "bbrPlayerId": "aytonde01",
       "name": "Deandre Ayton",
       "team": "WAS",
-      "jerseyNumber": 6,
+      "jerseyNumber": 8,
       "position": "C"
     },
     {
@@ -5119,8 +5119,8 @@
     {
       "bbrPlayerId": "knechda01",
       "name": "Dalton Knecht",
-      "team": "LAL",
-      "jerseyNumber": 4,
+      "team": "NYK",
+      "jerseyNumber": 99,
       "position": "SF"
     },
     {
@@ -5175,7 +5175,7 @@
     {
       "bbrPlayerId": "timmedr01",
       "name": "Drew Timme",
-      "team": "MIN",
+      "team": "PHO",
       "jerseyNumber": 17,
       "position": "PF"
     },
@@ -5245,8 +5245,8 @@
     {
       "bbrPlayerId": "claytwa01",
       "name": "Walter Clayton",
-      "team": "MEM",
-      "jerseyNumber": 4,
+      "team": "DAL",
+      "jerseyNumber": 1,
       "position": "PG"
     },
     {
@@ -5505,7 +5505,7 @@
       "bbrPlayerId": "mitchda01",
       "name": "Davion Mitchell",
       "team": "MIA",
-      "jerseyNumber": 45,
+      "jerseyNumber": 2,
       "position": "PG"
     },
     {
@@ -5876,7 +5876,7 @@
       "bbrPlayerId": "hawkijo01",
       "name": "Jordan Hawkins",
       "team": "CHI",
-      "jerseyNumber": 19,
+      "jerseyNumber": 15,
       "position": "SG"
     },
     {
@@ -5938,7 +5938,7 @@
     {
       "bbrPlayerId": "peavymi01",
       "name": "Micah Peavy",
-      "team": "MEM",
+      "team": "OKC",
       "jerseyNumber": 7,
       "position": "SG"
     },
@@ -6793,7 +6793,7 @@
       "bbrPlayerId": "thybuma01",
       "name": "Matisse Thybulle",
       "team": "LAL",
-      "jerseyNumber": 26,
+      "jerseyNumber": 4,
       "position": "SG"
     },
     {
@@ -7289,8 +7289,8 @@
     {
       "bbrPlayerId": "claytwa01",
       "name": "Walter Clayton",
-      "team": "MEM",
-      "jerseyNumber": 4,
+      "team": "DAL",
+      "jerseyNumber": 1,
       "position": "PG"
     },
     {
@@ -7493,7 +7493,7 @@
       "bbrPlayerId": "gilbeke01",
       "name": "Keshon Gilbert",
       "team": "ATL",
-      "jerseyNumber": 51,
+      "jerseyNumber": 0,
       "position": "PG"
     },
     {

@@ -2,8 +2,8 @@
   "season": "2025-26",
   "seasonType": "Regular Season",
   "source": "basketball-reference",
-  "generatedAt": "2026-10-09T00:57:13.345611+00:00",
-  "rosterAsOf": "2026-10-09",
+  "generatedAt": "2026-10-25T04:40:35.929745+00:00",
+  "rosterAsOf": "2026-10-25",
   "playerCount": 603,
   "uniquePlayerCount": 603,
   "players": [
@@ -12495,10 +12495,10 @@
       "heightInches": 81
     },
     {
-      "id": "claytwa01-mem",
+      "id": "claytwa01-dal",
       "bbrPlayerId": "claytwa01",
       "name": "Walter Clayton",
-      "team": "MEM",
+      "team": "DAL",
       "position": "PG",
       "positions": [
         "PG",
@@ -18707,10 +18707,10 @@
       "heightInches": 79
     },
     {
-      "id": "peavymi01-mem",
+      "id": "peavymi01-okc",
       "bbrPlayerId": "peavymi01",
       "name": "Micah Peavy",
-      "team": "MEM",
+      "team": "OKC",
       "position": "SG",
       "positions": [
         "SG"
@@ -18955,10 +18955,10 @@
       "heightInches": 78
     },
     {
-      "id": "knechda01-lal",
+      "id": "knechda01-nyk",
       "bbrPlayerId": "knechda01",
       "name": "Dalton Knecht",
-      "team": "LAL",
+      "team": "NYK",
       "position": "SF",
       "positions": [
         "SF"
@@ -19287,10 +19287,10 @@
       "heightInches": 79
     },
     {
-      "id": "bradlto01-nyk",
+      "id": "bradlto01-uta",
       "bbrPlayerId": "bradlto01",
       "name": "Tony Bradley",
-      "team": "NYK",
+      "team": "UTA",
       "position": "C",
       "positions": [
         "C",
@@ -20158,10 +20158,10 @@
       "heightInches": 82
     },
     {
-      "id": "timmedr01-min",
+      "id": "timmedr01-pho",
       "bbrPlayerId": "timmedr01",
       "name": "Drew Timme",
-      "team": "MIN",
+      "team": "PHO",
       "position": "PF",
       "positions": [
         "PF"
@@ -23161,10 +23161,10 @@
       "heightInches": 79
     },
     {
-      "id": "pedulse01-hou",
+      "id": "pedulse01-sac",
       "bbrPlayerId": "pedulse01",
       "name": "Sean Pedulla",
-      "team": "HOU",
+      "team": "SAC",
       "position": "PG",
       "positions": [
         "PG"

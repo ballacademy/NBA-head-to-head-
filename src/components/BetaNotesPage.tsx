@@ -249,10 +249,12 @@ export function BetaNotesPage({
                 across devices.
               </li>
               <li>
-                <strong>Stats freshness</strong> — Roster/salaries are labeled
-                as of {SALARIES_DATA_AS_OF_LABEL}; player production stats are
-                still as of {STATS_DATA_AS_OF_LABEL}. New signings may look thin
-                or limited-sample until the next stats pass.
+                <strong>Stats freshness</strong> — Roster as of{" "}
+                {ACTIVE_ROSTER_AS_OF_LABEL}; salaries {SALARIES_DATA_AS_OF_LABEL};
+                player production stats {STATS_DATA_AS_OF_LABEL} (2026-27 line
+                when a player has games; scoring still blends prior-season
+                weight early). New signings may look thin or limited-sample
+                until the next stats pass.
               </li>
               <li>
                 <strong>1500+ Banners</strong> — At {`1500+`} Banners you skip
@@ -282,12 +284,14 @@ export function BetaNotesPage({
             </p>
             <ul>
               <li>
-                <strong>Stat blend</strong> — If they have prior-season (or peak)
-                production on file, the engine game-weights those numbers with
-                current ones before scoring. Example: 5 games now + 70 prior →
-                current stats count 5/75 and prior 70/75. Defense grades soft-
-                regress toward average (C) with those same game weights. Usage
-                and play styles stay on the current row.
+                <strong>Stat blend</strong> — Draft cards show this season’s
+                per-game line when a player has games. For scoring, if they have
+                prior-season (or peak) production on file, the engine
+                game-weights those numbers with current ones. Example: 5 games
+                now + 70 prior → current stats count 5/75 and prior 70/75.
+                Defense grades soft-regress toward average (C) with those same
+                game weights. Usage and play styles stay on the established
+                prior-season spine early in the year.
               </li>
               <li>
                 <strong>Lineup weight</strong> — Limited players also pull less

@@ -287,7 +287,7 @@ describe("tierList", () => {
     expect(intl.some((player) => player.name.includes("Towns"))).toBe(false);
   });
 
-  it("includes ESPN roster rookies/UDFAs in Tier List but not the draft pool", () => {
+  it("includes ESPN roster rookies/UDFAs in Tier List; current-season rookies also draft", () => {
     const tierPool = getTierListPlayers();
     expect(tierPool.length).toBe(
       databasePlayers.length + upcomingRookiePlayers.length,
@@ -298,12 +298,22 @@ describe("tierList", () => {
     expect(
       databasePlayers.some((player) => player.name === "Cameron Boozer"),
     ).toBe(true);
+    // Boozer has 2026-27 games — draftable + Stats, not Tier-List-only.
     expect(players.some((player) => player.name === "Cameron Boozer")).toBe(
-      false,
+      true,
     );
     expect(
       upcomingRookiePlayers.some((player) => player.name === "Cameron Boozer"),
     ).toBe(false);
+    // Preseason stubs without a current-season sample stay Tier List only.
+    expect(
+      databasePlayers.some(
+        (player) =>
+          isCurrentRookiePlayer(player) &&
+          player.gamesPlayed === 0 &&
+          !players.some((draftable) => draftable.id === player.id),
+      ),
+    ).toBe(true);
   });
 
   it("filters by experience and draft class", () => {

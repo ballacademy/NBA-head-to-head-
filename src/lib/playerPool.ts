@@ -14,7 +14,8 @@ import {
   toDefensiveStatInput,
 } from "./defenseRating";
 import { isFreeAgentTeam, isDraftEligiblePlayer, isStatsFreeAgent } from "./freeAgents";
-import seasonStats from "../../data/nba-stats/nba-player-stats-202526-regular-season.json";
+import priorSeasonStats from "../../data/nba-stats/nba-player-stats-202526-regular-season.json";
+import currentSeasonStats from "../../data/nba-stats/nba-player-stats-202627-regular-season.json";
 import espnRosterAdditions from "../../data/espn-roster-additions.json";
 
 export interface SeasonStatsFile {
@@ -81,10 +82,17 @@ const normalizeName = (name: string) =>
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase();
 
-export const statsFile = seasonStats as SeasonStatsFile;
+/** Prior full season — DEF ratings, usage/styles spine, team-availability anchors. */
+export const priorStatsFile = priorSeasonStats as SeasonStatsFile;
 
-export const ACTIVE_ROSTER_AS_OF = "2026-09-19";
-export const ACTIVE_ROSTER_AS_OF_LABEL = "September 19, 2026";
+/**
+ * Display / current-season file. Player-facing box stats prefer this season
+ * when a player has games; scoring game-weights it against prior production.
+ */
+export const statsFile = currentSeasonStats as SeasonStatsFile;
+
+export const ACTIVE_ROSTER_AS_OF = "2026-10-25";
+export const ACTIVE_ROSTER_AS_OF_LABEL = "October 25, 2026";
 
 export { formatPlayerPositions, normalizePosition } from "./positions";
 
@@ -125,7 +133,7 @@ export const estimateDefense = (raw: RawSeasonPlayer) =>
     9.8,
   );
 
-const defensiveRatingInputs = statsFile.players
+const defensiveRatingInputs = priorStatsFile.players
   .filter((player) => player.gamesPlayed > 0)
   .map((raw) => ({
     id: raw.bbrPlayerId ?? raw.id,
@@ -134,6 +142,71 @@ const defensiveRatingInputs = statsFile.players
   }));
 
 export const defensiveRatings = buildDefensiveRatings(defensiveRatingInputs);
+
+/** Prefer the fuller prior-season row when a player has multiple team splits. */
+const pickPreferredSeasonRow = (
+  current: RawSeasonPlayer | undefined,
+  candidate: RawSeasonPlayer,
+) => {
+  if (!current) {
+    return candidate;
+  }
+
+  if (candidate.gamesPlayed !== current.gamesPlayed) {
+    return candidate.gamesPlayed > current.gamesPlayed ? candidate : current;
+  }
+
+  return candidate.minutes > current.minutes ? candidate : current;
+};
+
+const indexSeasonPlayersByBbr = (rawPlayers: RawSeasonPlayer[]) => {
+  const byBbr = new Map<string, RawSeasonPlayer>();
+  for (const raw of rawPlayers) {
+    if (!raw.bbrPlayerId) {
+      continue;
+    }
+    byBbr.set(
+      raw.bbrPlayerId,
+      pickPreferredSeasonRow(byBbr.get(raw.bbrPlayerId), raw),
+    );
+  }
+  return byBbr;
+};
+
+const currentSeasonByBbr = indexSeasonPlayersByBbr(statsFile.players);
+const currentSeasonNames = new Set(
+  statsFile.players
+    .filter((player) => player.gamesPlayed > 0)
+    .map((player) => normalizeName(player.name)),
+);
+
+/**
+ * Overlay current-season box stats for display while keeping usage / defense /
+ * styles / statsTeam derived from the prior-season spine (stable early-season
+ * scoring + team-quality anchors).
+ */
+const applyCurrentSeasonDisplayStats = (
+  player: Player,
+  current: RawSeasonPlayer,
+): Player => ({
+  ...player,
+  points: current.points,
+  rebounds: current.rebounds,
+  assists: current.assists,
+  steals: current.steals,
+  blocks: current.blocks,
+  turnovers: current.turnovers ?? 0,
+  trueShooting: current.trueShooting ?? 0.54,
+  threePoint: current.threePointPct ?? 0,
+  threePointersAttempted: current.threePointersAttempted ?? 0,
+  fieldGoalsAttempted: current.fieldGoalsAttempted ?? 0,
+  freeThrowsAttempted: current.freeThrowsAttempted ?? 0,
+  freeThrowPct: current.freeThrowPct ?? 0,
+  personalFouls: current.personalFouls ?? 0,
+  minutes: current.minutes,
+  gamesPlayed: current.gamesPlayed,
+  age: current.age ?? player.age,
+});
 
 export const deriveStyles = (
   raw: RawSeasonPlayer,
@@ -235,26 +308,90 @@ export const toPlayer = (raw: RawSeasonPlayer): Player => {
   };
 };
 
+const sortPlayers = (list: Player[]) =>
+  [...list].sort(
+    (a, b) =>
+      b.points - a.points ||
+      a.name.localeCompare(b.name) ||
+      a.team.localeCompare(b.team),
+  );
+
 const mapStatsToPlayers = (rawPlayers: RawSeasonPlayer[]) =>
   rawPlayers
     .filter(
       (player) => player.gamesPlayed > 0 || player.isRosterAddition === true,
     )
-    .map(toPlayer)
-    .sort(
-      (a, b) =>
-        b.points - a.points ||
-        a.name.localeCompare(b.name) ||
-        a.team.localeCompare(b.team),
-    );
+    .map(toPlayer);
 
-const rosterAdditionPlayers = (
+const allRosterAdditionPlayers = (
   espnRosterAdditions as { players: RawSeasonPlayer[] }
 ).players;
 
-export const databasePlayers: Player[] = mapStatsToPlayers([
-  ...statsFile.players,
-  ...rosterAdditionPlayers,
+const rosterAdditionsByName = new Map(
+  allRosterAdditionPlayers.map((player) => [
+    normalizeName(player.name),
+    player,
+  ]),
+);
+
+const rosterAdditionPlayers = allRosterAdditionPlayers.filter(
+  // Drop preseason stubs once Basketball Reference has a current-season sample.
+  (player) => !currentSeasonNames.has(normalizeName(player.name)),
+);
+
+/** Carry salary / draftYear / espnId from ESPN stubs onto new BBR season rows. */
+const enrichCurrentOnlyRaw = (raw: RawSeasonPlayer): RawSeasonPlayer => {
+  const addition = rosterAdditionsByName.get(normalizeName(raw.name));
+  if (!addition) {
+    return raw;
+  }
+
+  return {
+    ...raw,
+    salary: raw.salary ?? addition.salary,
+    draftYear: raw.draftYear ?? addition.draftYear,
+    espnId: raw.espnId ?? addition.espnId,
+    jerseyNumber:
+      typeof raw.jerseyNumber === "number"
+        ? raw.jerseyNumber
+        : addition.jerseyNumber,
+  };
+};
+
+const priorSeasonPlayers = mapStatsToPlayers(priorStatsFile.players).map(
+  (player) => {
+    const current =
+      player.bbrPlayerId != null
+        ? currentSeasonByBbr.get(player.bbrPlayerId)
+        : undefined;
+    if (!current || current.gamesPlayed <= 0) {
+      return player;
+    }
+    return applyCurrentSeasonDisplayStats(player, current);
+  },
+);
+
+const priorBbrIds = new Set(
+  priorStatsFile.players
+    .map((player) => player.bbrPlayerId)
+    .filter((id): id is string => Boolean(id)),
+);
+
+const currentOnlyPlayers = mapStatsToPlayers(
+  [...currentSeasonByBbr.values()]
+    .filter(
+      (player) =>
+        player.gamesPlayed > 0 &&
+        player.bbrPlayerId != null &&
+        !priorBbrIds.has(player.bbrPlayerId),
+    )
+    .map(enrichCurrentOnlyRaw),
+);
+
+export const databasePlayers: Player[] = sortPlayers([
+  ...priorSeasonPlayers,
+  ...mapStatsToPlayers(rosterAdditionPlayers),
+  ...currentOnlyPlayers,
 ]);
 
 /**
