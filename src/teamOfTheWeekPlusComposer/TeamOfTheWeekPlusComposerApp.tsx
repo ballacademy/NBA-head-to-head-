@@ -829,8 +829,9 @@ export function TeamOfTheWeekPlusComposerApp() {
             not a 2G quota.
             Standouts (bottom row only) are rotation/role players who beat
             their usual line — not two-way/camp 10-point weeks. Packed PG → C
-            the same way; a big cannot sit in slot 1. Drag a
-            player on the preview to swap slots across either row. Empty photo until you
+            the same way; a big cannot sit in slot 1.             Drag a
+            player on the preview to swap slots across either row, or Change player
+            to put anyone in a strip — a center can sit in PG. Empty photo until you
             paste. Stats sheet (Copy stats / CSV / Export PNG) dumps the filled
             TOTW five and Standouts five as separate tables — GP, PTS, REB,
             AST, STL, BLK, 3PM, FG%, 3P%, TS%, eFG% — without crowding the
@@ -843,14 +844,18 @@ export function TeamOfTheWeekPlusComposerApp() {
 
       {activeIndex != null ? (
         <PlayerPicker
-          heading={`Pick ${slotLabel(activeIndex).toLowerCase()}`}
-          hint="Gold cards are the most deserving remaining players for this slot — same ranking as Fill, by position. Search still lists everyone."
+          heading="Pick a player"
+          hint="Anyone can go in this slot. Gold cards are the next-best remaining from Fill — not locked to PG–C. Search still lists everyone."
           currentId={currentId}
           usedLabels={pickerUsed}
-          suggested={totwPickerSuggestions(weekRows, activeIndex, pickerUsedIds)}
-          suggestedHeading={totwPickerHeading(activeIndex)}
+          suggested={totwPickerSuggestions(weekRows, activeIndex, pickerUsedIds, {
+            positionless: true,
+          })}
+          suggestedHeading={totwPickerHeading(activeIndex, {
+            positionless: true,
+          })}
           suggestedLoading={weekLoading}
-          suggestedEmpty={totwPickerEmpty(activeIndex)}
+          suggestedEmpty={totwPickerEmpty(activeIndex, { positionless: true })}
           onPick={handlePick}
           onClear={() => {
             push(slots);

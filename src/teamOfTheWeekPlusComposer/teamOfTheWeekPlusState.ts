@@ -608,12 +608,19 @@ export const totwPickerSlotLabel = (slotIndex: number) =>
 const isStandoutPickerSlot = (slotIndex: number) =>
   slotIndex >= PLUS_STARTER_COUNT;
 
-/** Remaining players ranked the same way as Fill, positional on PG–C slots. */
+export type TotwPickerOptions = { positionless?: boolean };
+
+const isPositionlessPicker = (options?: TotwPickerOptions) =>
+  options?.positionless === true;
+
+/** Remaining players ranked the same way as Fill. Plus pickers are positionless. */
 export const totwPickerSuggestions = (
   rows: NightStandout[],
   slotIndex: number,
   usedIds: ReadonlySet<string>,
+  options?: TotwPickerOptions,
 ) => {
+  const positionless = isPositionlessPicker(options);
   const slot = totwPickerSlotLabel(slotIndex);
   const standoutSlot = isStandoutPickerSlot(slotIndex);
   const starterIds = new Set(
@@ -629,15 +636,23 @@ export const totwPickerSuggestions = (
     return isStandoutCandidate(row, starterIds);
   });
   const compare = standoutSlot ? rankStandoutBest : rankTotwBest;
-  const take = (loose: boolean) =>
-    eligible
-      .filter((row) =>
-        plusLineupSlotMatches(getPlayer(row.athleteId), slot, loose),
-      )
-      .sort(compare);
+  const ranked = positionless
+    ? [...eligible].sort(compare)
+    : [
+        ...eligible
+          .filter((row) =>
+            plusLineupSlotMatches(getPlayer(row.athleteId), slot, false),
+          )
+          .sort(compare),
+        ...eligible
+          .filter((row) =>
+            plusLineupSlotMatches(getPlayer(row.athleteId), slot, true),
+          )
+          .sort(compare),
+      ];
   const picked: NightStandout[] = [];
   const seen = new Set<string>();
-  for (const row of [...take(false), ...take(true)]) {
+  for (const row of ranked) {
     if (seen.has(row.athleteId)) {
       continue;
     }
@@ -647,14 +662,31 @@ export const totwPickerSuggestions = (
       break;
     }
   }
-  return picked.map((row, index) => ({
-    id: row.athleteId,
-    badge: index === 0 ? `Best ${slot}` : slot,
-    meta: totwPickerMeta(row),
-  }));
+  return picked.map((row, index) => {
+    const listed = getPlayer(row.athleteId)?.position ?? slot;
+    return {
+      id: row.athleteId,
+      badge: positionless
+        ? index === 0
+          ? "Best remaining"
+          : listed
+        : index === 0
+          ? `Best ${slot}`
+          : slot,
+      meta: totwPickerMeta(row),
+    };
+  });
 };
 
-export const totwPickerHeading = (slotIndex: number) => {
+export const totwPickerHeading = (
+  slotIndex: number,
+  options?: TotwPickerOptions,
+) => {
+  if (isPositionlessPicker(options)) {
+    return isStandoutPickerSlot(slotIndex)
+      ? "Best remaining standouts"
+      : "Best remaining";
+  }
   const label = totwPickerSlotLabel(slotIndex);
   if (isStandoutPickerSlot(slotIndex)) {
     return `Best remaining standout ${label}`;
@@ -662,7 +694,15 @@ export const totwPickerHeading = (slotIndex: number) => {
   return `Best remaining for ${label}`;
 };
 
-export const totwPickerEmpty = (slotIndex: number) => {
+export const totwPickerEmpty = (
+  slotIndex: number,
+  options?: TotwPickerOptions,
+) => {
+  if (isPositionlessPicker(options)) {
+    return isStandoutPickerSlot(slotIndex)
+      ? "No other standouts with 2+ games in this range."
+      : "No other players with 2+ games in this range.";
+  }
   const label = totwPickerSlotLabel(slotIndex);
   if (isStandoutPickerSlot(slotIndex)) {
     return `No other standout ${label}s with 2+ games in this range.`;

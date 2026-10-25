@@ -50,6 +50,7 @@ import {
   totwAvailabilityIndex,
   totwCountingScore,
   totwEfficiencyIndex,
+  totwPickerEmpty,
   totwPickerHeading,
   totwPickerSuggestions,
   totwProductionScore,
@@ -323,6 +324,20 @@ describe("team of the week plus", () => {
     expect(starterIds).toContain(tatum);
     expect(starterIds).not.toContain(bouyea);
     expect(starterGroups).toEqual(["G", "G", "F", "F", "C"]);
+    const openPg = totwPickerSuggestions(rows, 0, new Set(), {
+      positionless: true,
+    });
+    expect(openPg.some((row) => row.id === jokic)).toBe(true);
+    expect(
+      openPg.some((row) => getPlayer(row.id)?.position !== "PG"),
+    ).toBe(true);
+    expect(openPg[0]?.badge).toBe("Best remaining");
+    expect(totwPickerHeading(0, { positionless: true })).toBe("Best remaining");
+    expect(totwPickerHeading(5, { positionless: true })).toBe(
+      "Best remaining standouts",
+    );
+    expect(totwPickerEmpty(0, { positionless: true })).toMatch(/players/);
+    expect(totwPickerEmpty(5, { positionless: true })).toMatch(/standouts/);
     const brownWhite = selectPlusStarters([
       game(brown, 90, { pts: "28", reb: "6", ast: "4" }),
       game(white, 70, { pts: "22", reb: "4", ast: "5" }),

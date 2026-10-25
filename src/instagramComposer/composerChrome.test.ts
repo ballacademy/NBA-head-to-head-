@@ -317,6 +317,10 @@ describe("composer chrome", () => {
     expect(totwPlusApp).toContain("ComposerDateRange");
     expect(totwPlusApp).toContain("fetchRangeProduction");
     expect(totwPlusApp).toContain("totwPickerSuggestions");
+    expect(totwPlusApp).toContain("positionless: true");
+    expect(totwPlusApp).toContain("Anyone can go in this slot");
+    expect(totwPlusApp).toContain('heading="Pick a player"');
+    expect(totwPlusApp).not.toContain("Pick ${slotLabel");
     expect(totwPlusApp).toContain("role-player standouts");
     expect(totwPlusApp).toContain("rotation/role players who beat");
     expect(totwPlusApp).toContain("not two-way/camp 10-point weeks");
@@ -777,6 +781,7 @@ describe("composer chrome", () => {
     expect(totwApp).toContain("fillStartersFromStandouts");
     expect(totwApp).toContain("fetchRangeProduction");
     expect(totwApp).toContain("totwPickerSuggestions");
+    expect(totwApp).not.toContain("positionless: true");
     expect(totwApp).not.toContain("fetchStandoutsInRange");
     expect(totwApp).toContain("PG, SG, SF, PF, C");
     expect(totwApp).toContain("TotwStatsExportHud");
