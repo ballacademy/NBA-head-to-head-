@@ -31,6 +31,7 @@ import {
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
+import { isHighTovNight } from "../playerOfTheDayComposer/nightStandouts";
 import { getTeam } from "../standingsComposer/teams";
 import {
   hasCustomPhoto as stripHasCustomPhoto,
@@ -151,7 +152,10 @@ export const ensureFgBeforeThree = (stats: StatCardLine[]): StatCardLine[] => {
   return next;
 };
 
-/** Auto-fill ends …, TOV, MIN. Manual reorder after fill still wins. */
+/**
+ * When auto-fill includes TOV, it sits immediately before MIN.
+ * Manual reorder after fill still wins.
+ */
 export const keepTovThenMin = (stats: StatCardLine[]): StatCardLine[] => {
   const rest = stats.filter((line) => line.key !== "tov" && line.key !== "min");
   const tov = stats.filter((line) => line.key === "tov");
@@ -482,6 +486,26 @@ const lineFromGame = (
   };
 };
 
+const closeAutoFillLines = (
+  picked: StatCardLine[],
+  stats: LastGameStats,
+): StatCardLine[] => {
+  const highTov = isHighTovNight(stats);
+  const played = statCount(stats.min) > 0;
+  const trailing = (highTov ? 1 : 0) + (highTov || played ? 1 : 0);
+  const room = Math.max(1, STC_STAT_MAX - trailing);
+  const lines = [
+    ...(picked.length ? picked.slice(0, room) : [lineFromGame("pts", stats)]),
+  ];
+  if (highTov) {
+    lines.push(lineFromGame("tov", stats));
+  }
+  if (highTov || played) {
+    lines.push(lineFromGame("min", stats));
+  }
+  return withAutoFillStatOrder(lines);
+};
+
 type NotablePick = {
   key: StatCardKey;
   label?: string;
@@ -562,16 +586,10 @@ export const notableStatCardLines = (
   if (blk >= 2) {
     picks.push({ key: "blk" });
   }
-  const room = Math.max(1, STC_STAT_MAX - 2);
-  const picked = picks
-    .slice(0, room)
-    .map((item) => lineFromGame(item.key, stats, item));
-  const lines = [
-    ...(picked.length ? picked : [lineFromGame("pts", stats)]),
-    lineFromGame("tov", stats),
-    lineFromGame("min", stats),
-  ];
-  return withAutoFillStatOrder(lines);
+  return closeAutoFillLines(
+    picks.map((item) => lineFromGame(item.key, stats, item)),
+    stats,
+  );
 };
 
 export const fillStatCardFromGame = (
@@ -619,16 +637,10 @@ export const notableRoughNightLines = (
   if (threeMakes >= THREE_MIN_MAKES || threeAtt >= FG_MIN_ATTEMPTS) {
     picks.push({ key: "three", label: "3PM", value: stats.three });
   }
-  const room = Math.max(1, STC_STAT_MAX - 2);
-  const picked = picks
-    .slice(0, room)
-    .map((item) => lineFromGame(item.key, stats, item));
-  const lines = [
-    ...(picked.length ? picked : [lineFromGame("pts", stats)]),
-    lineFromGame("tov", stats),
-    lineFromGame("min", stats),
-  ];
-  return withAutoFillStatOrder(lines);
+  return closeAutoFillLines(
+    picks.map((item) => lineFromGame(item.key, stats, item)),
+    stats,
+  );
 };
 
 export const fillStatCardFromRoughNight = (
@@ -652,9 +664,11 @@ const HIGH_FLOOR: Partial<Record<StatCardKey, number>> = {
   ast: 8,
   stl: 3,
   blk: 3,
-  fg: 8,
-  three: 5,
+  min: 36,
+  tov: 5,
 };
+
+const SHOOTING_HIGH_KEYS = new Set<StatCardKey>(["fg", "three"]);
 
 const maxStat = (games: LastGame[], key: StatCardKey) =>
   games.reduce((best, game) => {
@@ -662,12 +676,23 @@ const maxStat = (games: LastGame[], key: StatCardKey) =>
     return raw > best ? raw : best;
   }, 0);
 
+export const isFirstNbaSeason = (
+  playerId?: string | null,
+  priorGames: LastGame[] = [],
+) =>
+  priorGames.length === 0 ||
+  (playerId ? getPlayer(playerId)?.experienceYears === 0 : false);
+
 export const statHighKind = (
   key: StatCardKey,
   value: string,
   seasonGames: LastGame[],
   priorGames: LastGame[] = [],
+  options?: { firstSeason?: boolean },
 ): StatHighKind | null => {
+  if (SHOOTING_HIGH_KEYS.has(key)) {
+    return null;
+  }
   const floor = HIGH_FLOOR[key];
   if (floor == null) {
     return null;
@@ -677,21 +702,25 @@ export const statHighKind = (
     return null;
   }
   const seasonMax = maxStat(seasonGames, key);
-  const priorMax = maxStat(priorGames, key);
-  if (priorGames.length > 0 && n >= priorMax && priorMax > 0 && n >= seasonMax) {
+  if (n < seasonMax || seasonMax <= 0) {
+    return null;
+  }
+  const firstSeason = options?.firstSeason === true || priorGames.length === 0;
+  if (firstSeason) {
     return "career";
   }
-  if (n >= seasonMax && seasonMax > 0) {
-    return "season";
+  const careerMax = Math.max(seasonMax, maxStat(priorGames, key));
+  if (n >= careerMax) {
+    return "career";
   }
-  return null;
+  return "season";
 };
 
 export const applyStatCardHighs = (
   draft: StatCardDraft,
   seasonGames: LastGame[],
   priorGames: LastGame[] = [],
-  options?: { rangeAggregate?: boolean },
+  options?: { rangeAggregate?: boolean; firstSeason?: boolean },
 ): StatCardDraft => {
   const skip =
     !draft.showHighPip ||
@@ -703,11 +732,16 @@ export const applyStatCardHighs = (
       stats: draft.stats.map((line) => ({ ...line, high: null })),
     };
   }
+  const firstSeason =
+    options?.firstSeason === true ||
+    isFirstNbaSeason(draft.playerId, priorGames);
   return {
     ...draft,
     stats: draft.stats.map((line) => ({
       ...line,
-      high: statHighKind(line.key, line.value, seasonGames, priorGames),
+      high: statHighKind(line.key, line.value, seasonGames, priorGames, {
+        firstSeason,
+      }),
     })),
   };
 };

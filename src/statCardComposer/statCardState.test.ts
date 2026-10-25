@@ -38,6 +38,7 @@ import {
   fillStatCardFromRoughNight,
   notableRoughNightLines,
   applyStatCardHighs,
+  isFirstNbaSeason,
   statHighKind,
   statHighLabel,
   statCardFromCoverSlot,
@@ -437,7 +438,6 @@ describe("stat card composer", () => {
       "20 PTS",
       "15 REB",
       "9 AST",
-      "0 TOV",
       "34 MIN",
     ]);
     const loaded = notableStatCardLines(
@@ -476,7 +476,6 @@ describe("stat card composer", () => {
     );
     expect(quiet.map((line) => `${line.value} ${line.label}`)).toEqual([
       "22 PTS",
-      "0 TOV",
       "28 MIN",
     ]);
     const standout = fillStatCardFromStandout(defaultStatCardDraft(), gameFrom({
@@ -493,7 +492,6 @@ describe("stat card composer", () => {
       "AST",
       "STL",
       "BLK",
-      "TOV",
       "MIN",
     ]);
     const simmons = notableStatCardLines(
@@ -503,7 +501,6 @@ describe("stat card composer", () => {
       "4 PTS",
       "11 REB",
       "10 AST",
-      "0 TOV",
       "32 MIN",
     ]);
     const noShot = fillStatCardFromStandout(
@@ -514,7 +511,6 @@ describe("stat card composer", () => {
       "0 PTS",
       "12 REB",
       "9 AST",
-      "0 TOV",
       "28 MIN",
     ]);
     expect(noShot.stats[0]?.key).toBe("pts");
@@ -535,7 +531,6 @@ describe("stat card composer", () => {
       "24 PTS",
       "9-14 FG",
       "4-5 3PM",
-      "0 TOV",
       "32 MIN",
     ]);
     const burst = notableStatCardLines(
@@ -544,7 +539,6 @@ describe("stat card composer", () => {
     expect(burst.map((line) => `${line.value} ${line.label}`)).toEqual([
       "18 PTS",
       "7-9 FG",
-      "0 TOV",
       "12 MIN",
     ]);
     const starterMinutes = notableStatCardLines(
@@ -554,7 +548,6 @@ describe("stat card composer", () => {
       "PTS",
       "REB",
       "AST",
-      "TOV",
       "MIN",
     ]);
     const efg = notableStatCardLines(
@@ -586,14 +579,13 @@ describe("stat card composer", () => {
       "4 REB",
       "2 STL",
       "4 BLK",
-      "0 TOV",
       "23 MIN",
     ]);
     expect(wemby[0]?.key).toBe("pts");
     const brick = notableStatCardLines(
       box({ pts: "18", fg: "1-1", three: "1-1", min: "26" }),
     );
-    expect(brick.map((line) => line.label)).toEqual(["PTS", "TOV", "MIN"]);
+    expect(brick.map((line) => line.label)).toEqual(["PTS", "MIN"]);
     const volume = notableStatCardLines(
       box({ pts: "28", fg: "12-22", three: "6-11", min: "34" }),
     );
@@ -622,7 +614,7 @@ describe("stat card composer", () => {
       notableStatCardLines(wigNight, wiggins).map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["19 PTS", "8-15 FG", "6 REB", "0 TOV", "22 MIN"]);
+    ).toEqual(["19 PTS", "8-15 FG", "6 REB", "22 MIN"]);
     const fromStandout = fillStatCardFromStandout(
       { ...defaultStatCardDraft(), playerId: wiggins.id },
       gameFrom(wigNight),
@@ -665,13 +657,11 @@ describe("stat card composer", () => {
       "4-12 3PM",
     );
     expect(volumeThrees.map((line) => line.label)).not.toContain("FG");
-    expect(volumeThrees.map((line) => line.label).slice(-2)).toEqual([
-      "TOV",
-      "MIN",
-    ]);
+    expect(volumeThrees.map((line) => line.label).at(-1)).toBe("MIN");
+    expect(volumeThrees.map((line) => line.label)).not.toContain("TOV");
   });
 
-  it("always auto-fills TOV immediately before MIN, even on a 33-minute night", () => {
+  it("auto-fills TOV only on a high-turnover night, immediately before MIN", () => {
     const mid = notableStatCardLines(
       box({ pts: "22", reb: "8", ast: "6", tov: "3", min: "33" }),
     );
@@ -679,7 +669,6 @@ describe("stat card composer", () => {
       "22 PTS",
       "8 REB",
       "6 AST",
-      "3 TOV",
       "33 MIN",
     ]);
     const rough = notableRoughNightLines(
@@ -905,12 +894,12 @@ describe("stat card composer", () => {
       notableRoughNightLines(gillespieBox).map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["0 PTS", "0-8 FG", "4 TOV", "21 MIN"]);
+    ).toEqual(["0 PTS", "0-8 FG", "21 MIN"]);
     expect(
       fillStatCardFromRoughNight(leftover, gameFrom(gillespieBox)).stats.map(
         (line) => `${line.value} ${line.label}`,
       ),
-    ).toEqual(["0 PTS", "0-8 FG", "4 TOV", "21 MIN"]);
+    ).toEqual(["0 PTS", "0-8 FG", "21 MIN"]);
   });
 
   it("marks season and career highs on last-game counting stats, off by default", () => {
@@ -930,11 +919,51 @@ describe("stat card composer", () => {
       "season",
     );
     expect(statHighKind("reb", "8", [tonight, earlier], [lastYear])).toBeNull();
-    expect(statHighKind("fg", "16-24", [tonight, earlier], [lastYear])).toBe(
-      "career",
-    );
+    expect(statHighKind("fg", "16-24", [tonight, earlier], [lastYear])).toBeNull();
+    expect(
+      statHighKind("three", "8-12", [tonight, earlier], [lastYear]),
+    ).toBeNull();
     expect(statHighKind("pts", "18", [tonight], [])).toBeNull();
-    expect(statHighKind("pts", "42", [tonight, earlier], [])).toBe("season");
+    expect(statHighKind("pts", "42", [tonight, earlier], [])).toBe("career");
+    expect(isFirstNbaSeason("5095151", [lastYear])).toBe(true);
+    expect(isFirstNbaSeason("1966", [lastYear])).toBe(false);
+    const wilsonTonight = gameFrom({ pts: "22", reb: "12", ast: "4" });
+    const wilsonEarlier = gameFrom(
+      { pts: "18", reb: "10", ast: "3" },
+      { eventId: "w2", gameDate: "2026-10-18" },
+    );
+    const wilsonJunkPrior = gameFrom(
+      { pts: "8", reb: "0", ast: "1" },
+      { eventId: "w0", gameDate: "2026-04-10" },
+    );
+    const wilsonGames = [wilsonTonight, wilsonEarlier];
+    const wilsonPrior = [wilsonJunkPrior];
+    expect(
+      statHighKind("pts", "22", wilsonGames, wilsonPrior, {
+        firstSeason: true,
+      }),
+    ).toBe("career");
+    expect(
+      statHighKind("reb", "12", wilsonGames, wilsonPrior, {
+        firstSeason: true,
+      }),
+    ).toBe("career");
+    expect(
+      applyStatCardHighs(
+        {
+          ...defaultStatCardDraft(),
+          playerId: "5095151",
+          showHighPip: true,
+          stats: [
+            { key: "pts", label: "PTS", value: "22" },
+            { key: "reb", label: "REB", value: "12" },
+            { key: "fg", label: "FG", value: "8-16" },
+          ],
+        },
+        wilsonGames,
+        wilsonPrior,
+      ).stats.map((line) => `${line.key}:${line.high ?? "none"}`),
+    ).toEqual(["pts:career", "reb:career", "fg:none"]);
     expect(statHighLabel("season")).toBe("SZN HIGH");
     expect(statHighLabel("career")).toBe("CAREER HIGH");
     const off = applyStatCardHighs(
@@ -957,6 +986,31 @@ describe("stat card composer", () => {
       [lastYear],
     );
     expect(on.stats[0]?.high).toBe("career");
+    const shooting = applyStatCardHighs(
+      {
+        ...defaultStatCardDraft(),
+        showHighPip: true,
+        stats: [
+          { key: "pts", label: "PTS", value: "42" },
+          { key: "fg", label: "FG", value: "16-24" },
+          { key: "three", label: "3PM", value: "8-12" },
+          { key: "tov", label: "TOV", value: "8" },
+          { key: "min", label: "MIN", value: "42" },
+        ],
+      },
+      [
+        gameFrom({ pts: "42", fg: "16-24", three: "8-12", tov: "8", min: "42" }),
+        gameFrom({ pts: "30", fg: "10-18", three: "4-9", tov: "3", min: "34" }),
+      ],
+      [gameFrom({ pts: "38", fg: "14-22", three: "6-11", tov: "5", min: "40" })],
+    );
+    expect(shooting.stats.map((line) => `${line.key}:${line.high ?? "none"}`)).toEqual([
+      "pts:career",
+      "fg:none",
+      "three:none",
+      "tov:career",
+      "min:career",
+    ]);
     const seasonAvg = applyStatCardHighs(
       {
         ...defaultStatCardDraft(),

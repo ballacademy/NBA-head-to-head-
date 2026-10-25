@@ -1388,6 +1388,11 @@ main.sc-stage {
 }
 
 .sc-picker__filters-toggle {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sc-picker--players:not(.is-filters-open) .sc-picker__filters-slot {
   display: none;
 }
 
@@ -1709,15 +1714,19 @@ label.sc-chip {
 }
 
 .sc-picker__suggested {
-  flex: 1 1 52%;
-  min-height: 180px;
-  max-height: min(56vh, 480px);
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: min(30dvh, 240px);
   display: flex;
   flex-direction: column;
   padding: 8px 16px 12px;
   border-bottom: 2px solid #facc15;
   background: linear-gradient(180deg, rgba(250, 204, 21, 0.12), transparent 72%);
   overflow: hidden;
+}
+
+.sc-picker--players.is-filters-open .sc-picker__suggested {
+  max-height: min(20dvh, 160px);
 }
 
 .sc-picker__suggested-head {
@@ -1781,6 +1790,8 @@ label.sc-chip {
   gap: 8px;
   padding: 4px 16px 16px;
   overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   flex: 1 1 0;
   min-height: 0;
   overscroll-behavior: contain;
@@ -2373,9 +2384,8 @@ label.sc-chip {
     padding-bottom: env(safe-area-inset-bottom, 0px);
     border-radius: 0;
     border: 0;
-    overflow: auto;
+    overflow: hidden;
     overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
   }
 
@@ -2411,33 +2421,32 @@ label.sc-chip {
     padding: 0 14px;
   }
 
-  .sc-picker__filters-toggle {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .sc-picker--players:not(.is-filters-open) .sc-picker__filters-slot {
-    display: none;
-  }
-
   .sc-picker__suggested {
     flex: 0 0 auto;
     min-height: 0;
-    max-height: min(34dvh, 280px);
-    overflow: auto;
+    max-height: min(28dvh, 220px);
+    overflow: hidden;
+  }
+
+  .sc-picker--players.is-filters-open .sc-picker__suggested {
+    max-height: min(18dvh, 140px);
   }
 
   .sc-picker__grid,
   .sc-picker__grid--rest {
-    flex: 0 0 auto;
-    min-height: 160px;
-    overflow: visible;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
   }
 
   .sc-picker__grid--suggested {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     min-height: 0;
-    overflow: visible;
+    overflow: auto;
+    touch-action: pan-y;
   }
 
   .sc-picker--compact {
@@ -2463,7 +2472,7 @@ label.sc-chip {
   }
 
   .sc-picker__grid--suggested {
-    overflow: visible;
+    overflow: auto;
     min-height: 0;
     padding: 0;
   }

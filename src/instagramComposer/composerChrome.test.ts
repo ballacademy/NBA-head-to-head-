@@ -118,7 +118,7 @@ describe("composer chrome", () => {
     expect(sheet).toContain("font-size: 16px");
     expect(sheet).toContain("min-height: 72px");
     expect(sheet).toContain("min-height: 44px");
-    expect(sheet).toContain("max-height: min(56vh, 480px)");
+    expect(sheet).toContain("max-height: min(30dvh, 240px)");
     expect(sheet).toContain(".sc-picker__suggested");
     expect(sheet).toContain(".sc-picker__grid--suggested");
     expect(sheet).toMatch(
@@ -131,13 +131,20 @@ describe("composer chrome", () => {
       /\.sc-picker__suggested[\s\S]*?overflow:\s*hidden/,
     );
     expect(sheet).toMatch(
-      /@media \(max-width: 900px\)[\s\S]*\.sc-picker \{[\s\S]*?overflow:\s*auto/,
+      /\.sc-picker__suggested[\s\S]*?flex:\s*0 0 auto/,
+    );
+    expect(sheet).not.toMatch(/flex:\s*1 1 52%/);
+    expect(sheet).toContain(
+      ".sc-picker--players:not(.is-filters-open) .sc-picker__filters-slot",
     );
     expect(sheet).toMatch(
-      /@media \(max-width: 900px\)[\s\S]*\.sc-picker__suggested \{[\s\S]*?max-height:\s*min\(34dvh/,
+      /@media \(max-width: 900px\)[\s\S]*\.sc-picker \{[\s\S]*?overflow:\s*hidden/,
     );
     expect(sheet).toMatch(
-      /@media \(max-width: 900px\)[\s\S]*\.sc-picker__grid--rest \{[\s\S]*?min-height:\s*160px/,
+      /@media \(max-width: 900px\)[\s\S]*\.sc-picker__grid--rest \{[\s\S]*?overflow:\s*auto/,
+    );
+    expect(sheet).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.sc-picker__grid--rest \{[\s\S]*?min-height:\s*0/,
     );
     expect(sheet).toContain(".sc-team__badge");
     expect(sheet).toContain(".sc-toolbar__scroll");
