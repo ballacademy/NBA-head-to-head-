@@ -12,6 +12,8 @@ import {
   emptyPicksLedger,
   effectivePicksResult,
   formatPicksAtsRecord,
+  formatPicksDailyGraphicRecord,
+  formatPicksDailyRecordLine,
   formatPicksFooter,
   formatPicksGraphicRecord,
   formatPicksGameLine,
@@ -28,14 +30,20 @@ import {
   parseEspnAwayLine,
   parseEspnCompleted,
   parseEspnEventOddsAwayLine,
+  parseEspnSummaryAwayLine,
   parsePicksLineInput,
   picksCaptionLines,
   parseEspnNationalTv,
   parseEspnTip,
   parsePicksScoreboard,
+  PICKS_DAILY_GAP,
+  PICKS_DAILY_H,
+  PICKS_EVENT_SUMMARY_URL,
   PICKS_RECORD_GAP,
   PICKS_RECORD_PAD,
   PICKS_RECORD_PLATE_H,
+  isCompletedPicksNight,
+  picksDailyRecordKicker,
   picksDatePill,
   picksDefaultTitle,
   picksFillLayout,
@@ -121,6 +129,8 @@ describe("picks composer", () => {
     expect(PICKS_SCOREBOARD_URL("2026-10-21")).toContain("20261021");
     expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("sports.core.api.espn.com");
     expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("401909843");
+    expect(PICKS_EVENT_SUMMARY_URL("401909861")).toContain("site.web.api.espn.com");
+    expect(PICKS_EVENT_SUMMARY_URL("401909861")).toContain("summary?event=401909861");
   });
 
   it("reads a real ESPN spread as the away line and never invents a number", () => {
@@ -508,6 +518,14 @@ describe("picks composer", () => {
     expect(
       parseEspnEventOddsAwayLine({ details: "CHA -4", spread: -4 }, "ATL", "CHA"),
     ).toBe(4);
+    expect(
+      parseEspnSummaryAwayLine(
+        { pickcenter: [{ details: "LAL -6.5", spread: 6.5 }] },
+        "LAL",
+        "UTA",
+      ),
+    ).toBe(-6.5);
+    expect(parseEspnSummaryAwayLine({ pickcenter: [] }, "LAL", "UTA")).toBeNull();
     const liveIncoming = [
       row({
         id: "live",
@@ -725,6 +743,15 @@ describe("picks composer", () => {
     expect(withRecord.listBottom).toBe(
       PICKS_RECORD_GAP + PICKS_RECORD_PLATE_H + PICKS_RECORD_PAD,
     );
+    const withDaily = picksFillLayout(11, GRAPHIC_HEIGHT, 0, 1, true, true);
+    expect(withDaily.listBottom).toBe(
+      PICKS_RECORD_GAP +
+        PICKS_DAILY_H +
+        PICKS_DAILY_GAP +
+        PICKS_RECORD_PLATE_H +
+        PICKS_RECORD_PAD,
+    );
+    expect(withDaily.listBottom).toBeGreaterThan(withRecord.listBottom);
     expect(withRecord.listBottom).toBeGreaterThan(plain.listBottom);
     expect(withRecord.listTop).toBe(plain.listTop);
     expect(withRecord.rowH * 11 + withRecord.gap * 10).toBeCloseTo(
@@ -893,5 +920,69 @@ describe("picks composer", () => {
     ]);
     expect(gradedNight.slates["2026-10-20"]?.[0]?.result).toBe("W");
     expect(formatPicksGraphicRecord(gradedNight)).toBe("13-0");
+  });
+
+  it("prints a daily W-L-P on a completed slate and hides 0-0 on an open night", () => {
+    const now = new Date("2026-10-26T16:00:00-04:00");
+    const open = [
+      row({
+        id: "live",
+        pick: "away",
+        line: 2.5,
+        final: false,
+      }),
+    ];
+    expect(isCompletedPicksNight(open)).toBe(false);
+    expect(formatPicksDailyGraphicRecord(open)).toBe("");
+    expect(formatPicksDailyRecordLine(open, "2026-10-26", "ats", now)).toBe("");
+    const done = [
+      row({
+        id: "a",
+        pick: "away",
+        line: 2.5,
+        awayScore: 110,
+        homeScore: 100,
+        final: true,
+      }),
+      row({
+        id: "b",
+        pick: "home",
+        line: 4.5,
+        awayScore: 110,
+        homeScore: 100,
+        final: true,
+      }),
+      row({
+        id: "c",
+        pick: "away",
+        line: 2.5,
+        awayScore: 110,
+        homeScore: 112.5,
+        final: true,
+      }),
+      row({
+        id: "skip",
+        pick: null,
+        line: 3,
+        awayScore: 99,
+        homeScore: 90,
+        final: true,
+      }),
+    ];
+    expect(isCompletedPicksNight(done)).toBe(true);
+    expect(formatPicksDailyGraphicRecord(done)).toBe("1-1-1");
+    expect(picksDailyRecordKicker("2026-10-25", now)).toBe("LAST NIGHT");
+    expect(formatPicksDailyRecordLine(done, "2026-10-25", "ats", now)).toBe(
+      "LAST NIGHT 1-1-1",
+    );
+    expect(formatPicksDailyRecordLine(done, "2026-10-24", "ats", now)).toBe(
+      "SAT, OCT 24 1-1-1",
+    );
+    const mixed = [
+      ...done,
+      row({ id: "still", pick: "away", line: 3, final: false }),
+    ];
+    expect(isCompletedPicksNight(mixed)).toBe(false);
+    expect(formatPicksDailyGraphicRecord(mixed)).toBe("");
   });
 });

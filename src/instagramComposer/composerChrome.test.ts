@@ -939,6 +939,13 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("mergePicksFill");
     expect(picksApp).toContain("restorePicksLines");
     expect(picksApp).toContain("fetchMissingPicksLines");
+    const picksStateSrc = readFileSync(
+      join(root, "picksComposer/picksState.ts"),
+      "utf8",
+    );
+    expect(picksStateSrc).toContain("PICKS_EVENT_SUMMARY_URL");
+    expect(picksStateSrc).toContain("pickcenter");
+    expect(picksStateSrc).toContain("formatPicksDailyRecordLine");
     expect(picksApp).toContain('aria-label="Refresh lines"');
     expect(picksApp).toContain("Refresh lines");
     expect(picksApp).toContain("void refreshLines(draft.date, true)");
@@ -958,6 +965,12 @@ describe("composer chrome", () => {
     expect(picksCss).toContain(".pk-ats");
     expect(picksCss).toContain(".pk-ats-lockup");
     expect(picksCss).toContain(".pk-ats-kicker");
+    expect(picksCss).toContain(".pk-ats-daily");
+    expect(picksCss).toContain(".pk-record-stack");
+    expect(picksGraphic).toContain("dailyRecord");
+    expect(picksApp).toContain("formatPicksDailyRecordLine");
+    expect(picksCanvas).toContain("dailyRecord");
+    expect(picksCanvas).toContain("PICKS_DAILY_SIZE");
     expect(picksCss).toContain("calc(54 * var(--u))");
     expect(picksCss).not.toContain(".pk-footer");
     expect(picksCss).not.toContain(".pk-parlay");

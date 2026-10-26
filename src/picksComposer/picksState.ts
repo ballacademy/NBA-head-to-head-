@@ -22,6 +22,10 @@ export const PICKS_SCOREBOARD_URL = (iso: string) =>
 export const PICKS_EVENT_ODDS_URL = (eventId: string) =>
   `https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/${encodeURIComponent(eventId)}/competitions/${encodeURIComponent(eventId)}/odds/100`;
 
+/** Same CORS host as the scoreboard — pickcenter keeps the close after finals. */
+export const PICKS_EVENT_SUMMARY_URL = (eventId: string) =>
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${encodeURIComponent(eventId)}`;
+
 export const PICKS_FOOTER_H = 28;
 export const PICKS_PARLAY_H = 32;
 export const PICKS_LIST_BOTTOM = 16;
@@ -43,6 +47,9 @@ export const PICKS_RECORD_PLATE_H = 92;
 export const PICKS_RECORD_GAP = 28;
 export const PICKS_RECORD_PAD = 20;
 export const PICKS_RECORD_PLATE_W = 528;
+export const PICKS_DAILY_H = 22;
+export const PICKS_DAILY_GAP = 8;
+export const PICKS_DAILY_SIZE = 16;
 
 /** Tight plate: frame + padding + type (+ italic stroke), not a vacant block. */
 export const picksTitlePlateH = (lineCount = 1) => {
@@ -670,6 +677,74 @@ export const summarizePicksNight = (
   );
 };
 
+const pickedPicksGames = (games: PicksGame[]) =>
+  games.filter((game) => game.pick === "away" || game.pick === "home");
+
+/** Every pick on the slate is a final (or a manual stamp) — not tonight’s open card. */
+export const isCompletedPicksNight = (games: PicksGame[]) => {
+  const picked = pickedPicksGames(games);
+  if (!picked.length) {
+    return false;
+  }
+  return picked.every(
+    (game) => game.final === true || isPicksGrade(game.gradeManual),
+  );
+};
+
+export const summarizePicksGames = (
+  games: PicksGame[],
+  mode: PicksResultMode = "ats",
+): PicksAtsTally =>
+  tallyResults(
+    games
+      .map((game) => effectivePicksResult(game, mode))
+      .filter((result): result is PicksAtsResult => Boolean(result)),
+  );
+
+/** Daily W-L-P for a finished slate. Empty on in-progress / 0-0 nights. */
+export const formatPicksDailyGraphicRecord = (
+  games: PicksGame[],
+  mode: PicksResultMode = "ats",
+) => {
+  if (!isCompletedPicksNight(games)) {
+    return "";
+  }
+  const tally = summarizePicksGames(games, mode);
+  if (!tally.wins && !tally.losses && !tally.pushes) {
+    return "";
+  }
+  return formatPicksAtsRecord(tally);
+};
+
+export const picksDailyRecordKicker = (iso: string, now = new Date()) => {
+  const date = isoDateOnly(iso);
+  if (!date) {
+    return "";
+  }
+  const today = nbaTodayIso(now);
+  if (date === today) {
+    return "TODAY";
+  }
+  if (date === shiftIsoDate(today, -1)) {
+    return "LAST NIGHT";
+  }
+  return picksDateLine(date);
+};
+
+export const formatPicksDailyRecordLine = (
+  games: PicksGame[],
+  iso: string,
+  mode: PicksResultMode = "ats",
+  now = new Date(),
+) => {
+  const record = formatPicksDailyGraphicRecord(games, mode);
+  if (!record) {
+    return "";
+  }
+  const kicker = picksDailyRecordKicker(iso, now);
+  return kicker ? `${kicker} ${record}` : record;
+};
+
 export const summarizePicksUnitsPl = (
   ledger: PicksLedger,
   mode: PicksResultMode = "ats",
@@ -694,11 +769,13 @@ export const formatPicksFooter = (
   if (last10n) {
     bits.push(`L10 ${formatPicksAtsRecord(last10)}`);
   }
-  const lastNight = formatPicksAtsRecord(
-    summarizePicksNight(ledger, shiftIsoDate(date, -1), mode),
+  const lastNightTally = summarizePicksNight(
+    ledger,
+    shiftIsoDate(date, -1),
+    mode,
   );
-  if (lastNight) {
-    bits.push(`LAST NIGHT ${lastNight}`);
+  if (lastNightTally.wins || lastNightTally.losses || lastNightTally.pushes) {
+    bits.push(`LAST NIGHT ${formatPicksAtsRecord(lastNightTally)}`);
   }
   const units = formatPicksUnitsPl(summarizePicksUnitsPl(ledger, mode));
   if (units) {
@@ -1381,6 +1458,24 @@ export const parseEspnEventOddsAwayLine = (
   homeId: string,
 ): number | null => parseEspnAwayLine({ odds: [payload] }, awayId, homeId);
 
+/** `pickcenter` on the site.web.api summary — CORS-safe close after the scoreboard drops odds. */
+export const parseEspnSummaryAwayLine = (
+  payload: unknown,
+  awayId: string,
+  homeId: string,
+): number | null => {
+  const root = rec(payload);
+  const pickcenter = Array.isArray(root?.pickcenter) ? root.pickcenter : [];
+  if (pickcenter.length) {
+    return parseEspnAwayLine({ odds: pickcenter }, awayId, homeId);
+  }
+  const header = rec(root?.header);
+  const competition = rec(
+    Array.isArray(header?.competitions) ? header.competitions[0] : null,
+  );
+  return parseEspnAwayLine(competition, awayId, homeId);
+};
+
 export const fetchPicksEventAwayLine = async (
   eventId: string,
   awayId: string,
@@ -1389,6 +1484,24 @@ export const fetchPicksEventAwayLine = async (
   const id = textOf(eventId);
   if (!id || id.startsWith("custom:")) {
     return null;
+  }
+  try {
+    const summary = await fetch(PICKS_EVENT_SUMMARY_URL(id), {
+      mode: "cors",
+      credentials: "omit",
+    });
+    if (summary.ok) {
+      const fromSummary = parseEspnSummaryAwayLine(
+        await summary.json(),
+        awayId,
+        homeId,
+      );
+      if (fromSummary != null) {
+        return fromSummary;
+      }
+    }
+  } catch {
+    /* Pages blocks core.api; summary is the CORS path. */
   }
   try {
     const response = await fetch(PICKS_EVENT_ODDS_URL(id), {
@@ -1788,10 +1901,13 @@ export const normalizePicksDraft = (
   };
 };
 
-export const picksBoardBottom = (showRecord = false) =>
-  showRecord
-    ? PICKS_RECORD_GAP + PICKS_RECORD_PLATE_H + PICKS_RECORD_PAD
-    : PICKS_LIST_BOTTOM;
+export const picksBoardBottom = (showRecord = false, showDaily = false) => {
+  if (!showRecord) {
+    return PICKS_LIST_BOTTOM;
+  }
+  const daily = showDaily ? PICKS_DAILY_H + PICKS_DAILY_GAP : 0;
+  return PICKS_RECORD_GAP + daily + PICKS_RECORD_PLATE_H + PICKS_RECORD_PAD;
+};
 
 export const picksFillLayout = (
   count: number,
@@ -1799,13 +1915,14 @@ export const picksFillLayout = (
   groupCount = 0,
   lineCount = 1,
   showRecord = false,
+  showDaily = false,
 ) => {
   const games = Math.max(0, count);
   const rows = Math.max(1, games);
   const groups = Math.max(0, groupCount);
   const labels = groups > 1 ? groups * PICKS_GROUP_H : 0;
   const listTop = picksListTop(lineCount);
-  const listBottom = picksBoardBottom(showRecord);
+  const listBottom = picksBoardBottom(showRecord, showDaily);
   const listH = boardH - listTop - listBottom;
   const usable = Math.max(48, listH - labels);
   const gap = games <= 1 ? 0 : Math.min(6, usable * 0.006);

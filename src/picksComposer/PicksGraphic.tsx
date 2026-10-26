@@ -28,6 +28,8 @@ import {
   formatPicksLine,
   formatPicksTotal,
   parsePicksLineInput,
+  PICKS_DAILY_GAP,
+  PICKS_DAILY_H,
   PICKS_RECORD_GAP,
   PICKS_RECORD_PAD,
   PICKS_RECORD_PLATE_H,
@@ -54,6 +56,8 @@ interface PicksGraphicProps {
   draft: PicksDraft;
   /** Season ATS/SU `12-8` / `12-8-1` for the bottom lockup. */
   atsRecord?: string;
+  /** Completed-night daily line, e.g. `LAST NIGHT 5-3`. Empty on in-progress slates. */
+  dailyRecord?: string;
   look?: ComposerLook;
   purpleFlair?: boolean;
   exporting?: boolean;
@@ -77,6 +81,7 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
     {
       draft,
       atsRecord = "",
+      dailyRecord = "",
       look = "white",
       purpleFlair = false,
       exporting = false,
@@ -103,12 +108,15 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
     const games = visiblePicksGames(allGames, exporting);
     const mode: PicksResultMode = draft.resultMode === "su" ? "su" : "ats";
     const showRecord = Boolean(atsRecord.trim());
+    const dailyLine = dailyRecord.trim();
+    const showDaily = Boolean(dailyLine);
     const fill = picksFillLayout(
       games.length,
       story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
       0,
       titleLines.length,
       showRecord,
+      showDaily,
     );
     const notch = picksDatePill(exporting ? games.length : allGames.length);
 
@@ -167,7 +175,11 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             ["--pk-plate-h" as string]: String(picksTitlePlateH(titleLines.length)),
             ["--pk-header-h" as string]: String(picksListTop(titleLines.length)),
             ["--pk-lockup-h" as string]: String(
-              showRecord ? PICKS_RECORD_GAP + PICKS_RECORD_PLATE_H : 0,
+              showRecord
+                ? PICKS_RECORD_GAP +
+                    (showDaily ? PICKS_DAILY_H + PICKS_DAILY_GAP : 0) +
+                    PICKS_RECORD_PLATE_H
+                : 0,
             ),
             ["--pk-record-h" as string]: String(PICKS_RECORD_PLATE_H),
             ["--pk-record-gap" as string]: String(PICKS_RECORD_GAP),
@@ -251,12 +263,19 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
           )}
         </div>
         {showRecord ? (
-          <div
-            className="pk-ats-lockup"
-            aria-label={`${picksRecordKicker(mode)} record`}
-          >
-            <p className="pk-ats-kicker">{picksRecordKicker(mode)}</p>
-            <p className="pk-ats">{atsRecord}</p>
+          <div className="pk-record-stack">
+            {showDaily ? (
+              <p className="pk-ats-daily" aria-label="Daily pick record">
+                {dailyLine}
+              </p>
+            ) : null}
+            <div
+              className="pk-ats-lockup"
+              aria-label={`${picksRecordKicker(mode)} record`}
+            >
+              <p className="pk-ats-kicker">{picksRecordKicker(mode)}</p>
+              <p className="pk-ats">{atsRecord}</p>
+            </div>
           </div>
         ) : null}
       </article>

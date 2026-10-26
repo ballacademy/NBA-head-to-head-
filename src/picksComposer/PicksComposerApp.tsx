@@ -52,6 +52,7 @@ import {
   emptyPicksLedger,
   fetchMissingPicksLines,
   fetchPicksSlate,
+  formatPicksDailyRecordLine,
   formatPicksGraphicRecord,
   picksCaptionLines,
   isAutoPicksDateLine,
@@ -288,6 +289,11 @@ export function PicksComposerApp() {
 
   const resultMode = draft.resultMode === "su" ? "su" : "ats";
   const atsRecord = formatPicksGraphicRecord(ledger, resultMode);
+  const dailyRecord = formatPicksDailyRecordLine(
+    draft.games,
+    draft.date,
+    resultMode,
+  );
   const hudRecord = picksDisplayTally(ledger, resultMode);
 
   const handleExport = async (story = false, square = false) => {
@@ -301,7 +307,7 @@ export function PicksComposerApp() {
       await exportPicksPng(
         node,
         exportFilenameFromTitle(draft.title, "picks", draft.date),
-        { ...draft, look, purpleFlair, atsRecord },
+        { ...draft, look, purpleFlair, atsRecord, dailyRecord },
         story,
         square,
       );
@@ -640,7 +646,7 @@ export function PicksComposerApp() {
                     await downloadExportPack(
                       () =>
                         renderPicksCanvas(
-                          { ...draft, look, purpleFlair, atsRecord },
+                          { ...draft, look, purpleFlair, atsRecord, dailyRecord },
                           2,
                         ),
                       filename,
@@ -649,7 +655,7 @@ export function PicksComposerApp() {
                           filename: storyFilename(filename),
                           render: () =>
                             renderPicksCanvas(
-                              { ...draft, look, purpleFlair, story: true, atsRecord },
+                              { ...draft, look, purpleFlair, story: true, atsRecord, dailyRecord },
                               2,
                             ),
                         },
@@ -686,6 +692,7 @@ export function PicksComposerApp() {
               ref={boardRef}
               draft={draft}
               atsRecord={atsRecord}
+              dailyRecord={dailyRecord}
               look={look}
               purpleFlair={purpleFlair}
               exporting={exporting}

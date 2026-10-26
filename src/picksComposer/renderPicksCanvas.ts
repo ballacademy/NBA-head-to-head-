@@ -31,6 +31,9 @@ import {
   PICKS_NOTCH_H,
   PICKS_PLATE_X,
   PICKS_PLATE_Y,
+  PICKS_DAILY_GAP,
+  PICKS_DAILY_H,
+  PICKS_DAILY_SIZE,
   PICKS_RECORD_PAD,
   PICKS_RECORD_PLATE_H,
   PICKS_RECORD_PLATE_W,
@@ -69,6 +72,7 @@ export type PicksRenderInput = PicksDraft & {
   purpleFlair?: boolean;
   story?: boolean;
   atsRecord?: string;
+  dailyRecord?: string;
 };
 
 const hexAlpha = (hex: string, alpha: number) => {
@@ -313,12 +317,14 @@ export const renderPicksCanvas = async (
   context.fillText(pill, width / 2, weekY + weekH / 2);
   setLetterSpacing(context, 0);
   const atsRecord = (input.atsRecord ?? "").trim();
+  const dailyRecord = (input.dailyRecord ?? "").trim();
   const fill = picksFillLayout(
     games.length,
     boardH,
     0,
     lines.length,
     Boolean(atsRecord),
+    Boolean(dailyRecord),
   );
   const needed = new Set<string>();
   games.forEach((game) => {
@@ -534,6 +540,19 @@ export const renderPicksCanvas = async (
       w: PICKS_RECORD_PLATE_W * s,
       h: PICKS_RECORD_PLATE_H * s,
     };
+    if (dailyRecord) {
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "rgba(255,255,255,0.82)";
+      context.font = `900 ${PICKS_DAILY_SIZE * s}px ${POSTER_FONT}`;
+      setLetterSpacing(context, 0.16 * PICKS_DAILY_SIZE * s);
+      context.fillText(
+        dailyRecord,
+        width / 2,
+        lockup.y - (PICKS_DAILY_GAP + PICKS_DAILY_H / 2) * s,
+      );
+      setLetterSpacing(context, 0);
+    }
     drawBannerInterior(
       context,
       lockup.x,
