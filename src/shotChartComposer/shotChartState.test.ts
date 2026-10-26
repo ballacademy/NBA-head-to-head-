@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HOOP_FROM_BASELINE_FT, shotToPx } from "./shotChartLayout";
+import { COURT_FLOOR, HOOP_FROM_BASELINE_FT, SHOT_HEADER_H, shotToPx } from "./shotChartLayout";
 import {
   courtPoint,
   parseShotChartPlays,
@@ -82,6 +82,11 @@ describe("shot chart", () => {
     expect(splits.every((zone) => /^\d+–\d+$/.test(`${zone.makes}–${zone.attempts}`))).toBe(
       true,
     );
+  });
+
+  it("keeps stacked metal in the header only and a flat court floor", () => {
+    expect(SHOT_HEADER_H).toBe(228);
+    expect(COURT_FLOOR.toLowerCase()).toBe("#121212");
   });
 
   it("does not invent dots when ESPN has no shooting coordinates", () => {

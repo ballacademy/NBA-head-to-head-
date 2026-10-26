@@ -29,6 +29,7 @@ import {
   defaultLeaderboardDraft,
   LEADERBOARD_MAX_ROWS,
   patchLeaderboardEntry,
+  renameLeaderboardEntry,
   readLeaderboardDraft,
   readPotdPairKeys,
   removeLeaderboardEntry,
@@ -278,7 +279,7 @@ export function PotdLeaderboardComposerApp() {
             exporting={exporting}
             onTitleChange={setTitle}
             onNameChange={(id, name) =>
-              setEntries((current) => patchLeaderboardEntry(current, id, { name }))
+              setEntries((current) => renameLeaderboardEntry(current, id, name))
             }
             onWinsChange={(id, wins) =>
               setEntries((current) => patchLeaderboardEntry(current, id, { wins }))

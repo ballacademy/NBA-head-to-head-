@@ -949,6 +949,7 @@ describe("stat card composer", () => {
     expect(
       statHighKind("three", "8-12", [tonight, earlier], [lastYear]),
     ).toBeNull();
+    expect(statHighKind("min", "42", [tonight, earlier], [lastYear])).toBeNull();
     expect(statHighKind("pts", "18", [tonight], [])).toBeNull();
     expect(statHighKind("pts", "42", [tonight, earlier], [])).toBe("career");
     expect(isFirstNbaSeason("5095151", [lastYear])).toBe(true);
@@ -1035,7 +1036,7 @@ describe("stat card composer", () => {
       "fg:none",
       "three:none",
       "tov:career",
-      "min:career",
+      "min:none",
     ]);
     const seasonAvg = applyStatCardHighs(
       {

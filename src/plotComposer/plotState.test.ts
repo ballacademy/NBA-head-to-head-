@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import catalog from "../../data/every-team-historical-rosters.json";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
-import { FIELD_TEXTURE_SRC } from "../standingsComposer/headerTexture";
+import {
+  CHARCOAL_FLOOR,
+  FIELD_TEXTURE_SRC,
+  PLOT_HAIRLINE_STEP,
+} from "../standingsComposer/headerTexture";
 import {
   EVERY_TEAM_STAT_METRICS,
   hydrateEveryTeamRosters,
@@ -50,6 +54,8 @@ describe("plot composer", () => {
     expect(EXPORT_WIDTH).toBe(2400);
     expect(EXPORT_HEIGHT).toBe(3000);
     expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");
+    expect(CHARCOAL_FLOOR.toLowerCase()).toBe("#1c1c1c");
+    expect(PLOT_HAIRLINE_STEP).toBe(40);
     const plot = plotRectFor();
     expect(plot.w).toBeGreaterThan(900);
     expect(plot.h).toBeGreaterThan(1100);

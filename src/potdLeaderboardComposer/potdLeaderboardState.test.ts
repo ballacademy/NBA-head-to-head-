@@ -22,6 +22,7 @@ import {
 import { applyPlayerPick, createEmptyCards } from "../playerOfTheDayComposer/playerOfTheDayState";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
+  addNamedLeaderboardEntries,
   createLeaderboardEntry,
   defaultLeaderboardDraft,
   fitLeaderboardName,
@@ -29,8 +30,10 @@ import {
   isPotdPairName,
   medalForRank,
   parseWinsInput,
+  patchLeaderboardEntry,
   rankLeaderboard,
   readLeaderboardDraft,
+  renameLeaderboardEntry,
   splitLeaderboardName,
   teamForLeaderboardName,
   winsForName,
@@ -204,5 +207,60 @@ describe("POTD leaderboard ranks", () => {
     expect(stored.entries[0]!.wins).toBe(12);
     expect(stored.showBa).toBe(true);
     expect(stored.showPips).toBe(false);
+  });
+
+  it("seeds a newly typed name at 1 win and keeps an existing total", () => {
+    const blank = createLeaderboardEntry("", 0);
+    const named = createLeaderboardEntry("Luka Doncic", 12);
+    const first = renameLeaderboardEntry([blank], blank.id, "Caleb Wilson");
+    expect(first[0]!.name).toBe("Caleb Wilson");
+    expect(first[0]!.wins).toBe(1);
+    const edited = renameLeaderboardEntry(
+      [named],
+      named.id,
+      "Luka Donci",
+    );
+    expect(edited[0]!.name).toBe("Luka Donci");
+    expect(edited[0]!.wins).toBe(12);
+    const patched = patchLeaderboardEntry([blank], blank.id, {
+      name: "Jalen Brunson",
+    });
+    expect(patched[0]!.wins).toBe(1);
+  });
+
+  it("does not add a second 1 when Add both already created the row", () => {
+    const memory: Record<string, string> = {};
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => memory[key] ?? null,
+        setItem: (key: string, value: string) => {
+          memory[key] = value;
+        },
+        removeItem: (key: string) => {
+          delete memory[key];
+        },
+      },
+    });
+    writeLeaderboardDraft(defaultLeaderboardDraft());
+    const added = addNamedLeaderboardEntries([
+      "Luka Doncic",
+      "Giannis Antetokounmpo",
+      "Luka Doncic",
+    ]);
+    expect(added.map((row) => `${row.name}:${row.wins}`)).toEqual([
+      "Luka Doncic:1",
+      "Giannis Antetokounmpo:1",
+    ]);
+    const blank = createLeaderboardEntry("", 0);
+    const withBlank = [...added, blank];
+    const skipped = renameLeaderboardEntry(
+      withBlank,
+      blank.id,
+      "Luka Doncic",
+    );
+    expect(skipped).toEqual(withBlank);
+    expect(skipped.filter((row) => row.name === "Luka Doncic")).toHaveLength(1);
+    expect(winsForName("Luka Doncic", skipped)).toBe(1);
   });
 });

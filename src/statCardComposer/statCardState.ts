@@ -682,11 +682,11 @@ const HIGH_FLOOR: Partial<Record<StatCardKey, number>> = {
   ast: 8,
   stl: 3,
   blk: 3,
-  min: 36,
   tov: 5,
 };
 
-const SHOOTING_HIGH_KEYS = new Set<StatCardKey>(["fg", "three"]);
+/** FG, 3PM, and MIN never get SZN/CAREER HIGH — counting stats only. */
+const NO_HIGH_PIP_KEYS = new Set<StatCardKey>(["fg", "three", "min"]);
 
 const maxStat = (games: LastGame[], key: StatCardKey) =>
   games.reduce((best, game) => {
@@ -708,7 +708,7 @@ export const statHighKind = (
   priorGames: LastGame[] = [],
   options?: { firstSeason?: boolean },
 ): StatHighKind | null => {
-  if (SHOOTING_HIGH_KEYS.has(key)) {
+  if (NO_HIGH_PIP_KEYS.has(key)) {
     return null;
   }
   const floor = HIGH_FLOOR[key];

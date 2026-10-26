@@ -1,7 +1,10 @@
+import { COURT_FLOOR } from "../standingsComposer/headerTexture";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
 } from "../standingsComposer/rankingState";
+
+export { COURT_FLOOR };
 
 /** NBA half-court in feet. Hoop is 5.25 ft from the baseline. */
 export const COURT_FT_W = 50;
@@ -30,7 +33,9 @@ export interface ShotChartBoardRects {
   legendY: number;
 }
 
-const TITLE_BOTTOM = 228;
+/** Metal header ends here; court and zones sit on charcoal below. */
+export const SHOT_HEADER_H = 228;
+const TITLE_BOTTOM = SHOT_HEADER_H;
 const ZONES_H = 88;
 const LEGEND_H = 28;
 const BOTTOM = 18;
@@ -107,6 +112,8 @@ export const paintHalfCourt = (
   const rightAngle = Math.atan2(cornerY - hoopY, rightCorner - hoopX);
 
   context.save();
+  context.fillStyle = COURT_FLOOR;
+  context.fillRect(court.x, court.y, court.w, court.h);
   context.strokeStyle = line;
   context.lineJoin = "round";
   context.lineCap = "round";

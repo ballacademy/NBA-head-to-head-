@@ -9,7 +9,7 @@ import {
 } from "../instagramComposer/composerNameStyle";
 import {
   FIELD_TEXTURE_SRC,
-  paintBoardField,
+  paintHeaderMetalField,
 } from "../standingsComposer/headerTexture";
 import {
   GRAPHIC_HEIGHT,
@@ -18,6 +18,7 @@ import {
 } from "../standingsComposer/rankingState";
 import {
   paintHalfCourt,
+  SHOT_HEADER_H,
   shotChartBoardRects,
   shotToPx,
 } from "./shotChartLayout";
@@ -61,7 +62,14 @@ export const renderShotChartCanvas = async (
     return canvas;
   }
   const s = scale;
-  paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
+  paintHeaderMetalField(
+    context,
+    await loadImage(FIELD_TEXTURE_SRC),
+    width,
+    height,
+    SHOT_HEADER_H * s,
+    s,
+  );
   paintCellFrame(context, 0, 0, width, height, input.look, s);
 
   context.textAlign = "center";

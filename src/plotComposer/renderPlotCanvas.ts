@@ -4,10 +4,7 @@ import {
   paintPurpleCornerBloom,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import {
-  FIELD_TEXTURE_SRC,
-  paintBoardField,
-} from "../standingsComposer/headerTexture";
+import { paintCharcoalHairlineFloor } from "../standingsComposer/headerTexture";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import {
   GRAPHIC_HEIGHT,
@@ -105,12 +102,23 @@ export const renderPlotCanvas = async (
   }
   await document.fonts?.ready.catch(() => undefined);
   const s = scale;
-  paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
+  const plot = plotRectFor(boardH);
+  paintCharcoalHairlineFloor(
+    context,
+    width,
+    height,
+    {
+      x: plot.x * s,
+      y: plot.y * s,
+      w: plot.w * s,
+      h: plot.h * s,
+    },
+    s,
+  );
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);
   }
 
-  const plot = plotRectFor(boardH);
   const xAxis = axisFromValues(
     input.points.map((point) => point.x),
     input.xMetric,

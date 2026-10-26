@@ -86,6 +86,15 @@ export const bannerStudMetrics = (scale = 1) => {
   return { step, size, inset: (step - size) / 2 };
 };
 
+/** Charcoal floor under Shot/Plot data — not the stacked metal slats. */
+export const CHARCOAL_FLOOR = BANNER_FILL_BASE;
+export const COURT_FLOOR = "#121212";
+export const PLOT_HAIRLINE = "rgba(255, 255, 255, 0.08)";
+export const PLOT_HAIRLINE_STEP = 40;
+
+/** Title-box studs as a CSS tile — same 10u grid as `drawBannerInterior`. */
+export const BANNER_STUD_CSS = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E")`;
+
 /** Near-black field with a faint square-stud grid, clipped to the title box. */
 export const drawBannerInterior = (
   context: CanvasRenderingContext2D,
@@ -109,6 +118,73 @@ export const drawBannerInterior = (
     for (let px = x0; px < x + w + step; px += step) {
       context.fillRect(px + inset, py + inset, size, size);
     }
+  }
+  context.restore();
+};
+
+/** Fill a rect with title-box charcoal + faint square studs. */
+export const paintStuddedCharcoal = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+) => {
+  drawBannerInterior(context, x, y, w, h, scale, () => {
+    context.beginPath();
+    context.rect(x, y, w, h);
+  });
+};
+
+/** Stacked metal in the header only; charcoal + studs on the rest of the board. */
+export const paintHeaderMetalField = (
+  context: CanvasRenderingContext2D,
+  image: Parameters<typeof paintBoardField>[1],
+  width: number,
+  height: number,
+  headerH: number,
+  scale: number,
+) => {
+  paintBoardField(context, image, width, height);
+  if (headerH < height) {
+    paintStuddedCharcoal(context, 0, headerH, width, height - headerH, scale);
+  }
+};
+
+/** Plot floor: charcoal board, faint hairline grid inside the plot rect. */
+export const paintCharcoalHairlineFloor = (
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  plot: { x: number; y: number; w: number; h: number },
+  scale: number,
+) => {
+  context.fillStyle = CHARCOAL_FLOOR;
+  context.fillRect(0, 0, width, height);
+  if (plot.w < 1 || plot.h < 1) {
+    return;
+  }
+  context.save();
+  context.beginPath();
+  context.rect(plot.x, plot.y, plot.w, plot.h);
+  context.clip();
+  context.strokeStyle = PLOT_HAIRLINE;
+  context.lineWidth = Math.max(1, 0.7 * scale);
+  const step = PLOT_HAIRLINE_STEP * scale;
+  const xEnd = plot.x + plot.w;
+  const yEnd = plot.y + plot.h;
+  for (let x = plot.x; x <= xEnd + 0.5; x += step) {
+    context.beginPath();
+    context.moveTo(x, plot.y);
+    context.lineTo(x, yEnd);
+    context.stroke();
+  }
+  for (let y = plot.y; y <= yEnd + 0.5; y += step) {
+    context.beginPath();
+    context.moveTo(plot.x, y);
+    context.lineTo(xEnd, y);
+    context.stroke();
   }
   context.restore();
 };

@@ -1272,6 +1272,28 @@ describe("composer chrome", () => {
     expect(shotGraphic).toContain("shotChartBoardRects");
     expect(shotCanvas).toContain("shotChartBoardRects");
     expect(shotCanvas).toContain("paintHalfCourt");
+    expect(shotCanvas).toContain("paintHeaderMetalField");
+    const shotCss = readFileSync(
+      join(root, "shotChartComposer/shotChartComposer.css"),
+      "utf8",
+    );
+    const plotCss = readFileSync(
+      join(root, "plotComposer/plotComposer.css"),
+      "utf8",
+    );
+    const plotCanvas = readFileSync(
+      join(root, "plotComposer/renderPlotCanvas.ts"),
+      "utf8",
+    );
+    expect(shotCss).toContain("clip-path: inset(0 0 calc(100% - var(--header-h)) 0)");
+    expect(shotCss).not.toMatch(
+      /\.shc-board \{[^}]*composer-background-texture/,
+    );
+    expect(plotCss).toContain("repeating-linear-gradient");
+    expect(plotCss).not.toMatch(
+      /\.plt-board \{[^}]*composer-background-texture/,
+    );
+    expect(plotCanvas).toContain("paintCharcoalHairlineFloor");
   });
 
   it("keeps Stat card + POTD recs on finals and leaderboard rows name then photo then logo", () => {
@@ -1315,6 +1337,8 @@ describe("composer chrome", () => {
     expect(statCardApp).toContain("commitHudStats");
     expect(statCardState).toContain("ensurePtsFirst");
     expect(statCardState).toContain("keepTovThenMin");
+    expect(statCardState).toContain("NO_HIGH_PIP_KEYS");
+    expect(statCardState).toMatch(/NO_HIGH_PIP_KEYS[\s\S]*"min"/);
     expect(statCardState).toContain("withAutoFillStatOrder");
     expect(statCardApp).not.toContain("filters=");
     expect(statCardApp).toContain("nightStandoutPickerRows(completedNightRows(rangeStandouts))");

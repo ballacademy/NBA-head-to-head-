@@ -382,18 +382,57 @@ export const addNamedLeaderboardEntries = (names: string[]) => {
     if (entries.some((entry) => normalizePlayerNameKey(entry.name) === key)) {
       return;
     }
-    entries = addLeaderboardEntry(entries, trimmed);
+    entries = addLeaderboardEntry(entries, trimmed, 1);
   });
   writeLeaderboardDraft({ ...draft, entries });
   return entries;
+};
+
+/** First time a blank row gets a name, seed that player at 1 win. */
+export const renameLeaderboardEntry = (
+  entries: LeaderboardEntry[],
+  id: string,
+  name: string,
+): LeaderboardEntry[] => {
+  const trimmed = name.slice(0, LEADERBOARD_NAME_MAX);
+  const nextKey = normalizePlayerNameKey(trimmed);
+  const current = entries.find((entry) => entry.id === id);
+  if (!current) {
+    return entries;
+  }
+  const wasNamed = Boolean(normalizePlayerNameKey(current.name));
+  const duplicate = Boolean(
+    nextKey &&
+      entries.some(
+        (other) =>
+          other.id !== id && normalizePlayerNameKey(other.name) === nextKey,
+      ),
+  );
+  if (duplicate) {
+    return entries;
+  }
+  return entries.map((entry) => {
+    if (entry.id !== id) {
+      return entry;
+    }
+    const firstWin = !wasNamed && Boolean(nextKey) && entry.wins === 0;
+    return {
+      ...entry,
+      name: trimmed,
+      wins: firstWin ? 1 : entry.wins,
+    };
+  });
 };
 
 export const patchLeaderboardEntry = (
   entries: LeaderboardEntry[],
   id: string,
   patch: Partial<Pick<LeaderboardEntry, "name" | "wins">>,
-): LeaderboardEntry[] =>
-  entries.map((entry) =>
+): LeaderboardEntry[] => {
+  if (patch.name !== undefined && patch.wins === undefined) {
+    return renameLeaderboardEntry(entries, id, patch.name);
+  }
+  return entries.map((entry) =>
     entry.id === id
       ? {
           ...entry,
@@ -408,6 +447,7 @@ export const patchLeaderboardEntry = (
         }
       : entry,
   );
+};
 
 export const removeLeaderboardEntry = (
   entries: LeaderboardEntry[],

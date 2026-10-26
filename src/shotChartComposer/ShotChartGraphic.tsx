@@ -16,6 +16,7 @@ import {
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
 import {
+  COURT_FLOOR,
   halfCourtSvgPaths,
   shotChartBoardRects,
   shotToPx,
@@ -183,7 +184,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
               y="1.5"
               width={paths.w - 3}
               height={paths.h - 3}
-              fill="rgba(8,8,10,0.35)"
+              fill={COURT_FLOOR}
               stroke="#f4f4f5"
               strokeWidth="3"
             />

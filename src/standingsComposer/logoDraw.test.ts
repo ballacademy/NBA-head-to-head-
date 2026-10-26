@@ -39,8 +39,11 @@ import {
   BANNER_STUD_FILL,
   BANNER_STUD_SIZE,
   BANNER_STUD_STEP,
+  CHARCOAL_FLOOR,
+  COURT_FLOOR,
   FIELD_TEXTURE_SRC,
   HEADER_TEXTURE_SRC,
+  PLOT_HAIRLINE_STEP,
   bannerStudMetrics,
   coverRect,
 } from "./headerTexture";
@@ -362,6 +365,9 @@ describe("header texture cover", () => {
     expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
     expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
     expect(BANNER_STUD_SIZE).toBeLessThan(BANNER_STUD_STEP / 2);
+    expect(CHARCOAL_FLOOR.toLowerCase()).toBe("#1c1c1c");
+    expect(COURT_FLOOR.toLowerCase()).toBe("#121212");
+    expect(PLOT_HAIRLINE_STEP).toBe(40);
     const { step, size, inset } = bannerStudMetrics(2);
     expect(step).toBe(20);
     expect(size).toBe(5);
