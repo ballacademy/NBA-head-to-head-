@@ -14,11 +14,22 @@ export { GRAPHIC_HEIGHT, GRAPHIC_WIDTH };
 export const TIER_HEADER_H = 140;
 export const TIER_FOOTER = 2;
 export const TIER_LABEL_W = 140;
+/** Color column may grow a bit so a word like MINUTES stays one line. */
+export const TIER_LABEL_W_MAX = 210;
 export const TIER_LABEL_PAD_X = 8;
 export const TIER_LABEL_INNER_W = TIER_LABEL_W - TIER_LABEL_PAD_X * 2;
+export const TIER_LABEL_INNER_W_MAX = TIER_LABEL_W_MAX - TIER_LABEL_PAD_X * 2;
+/** Extra room so Montserrat Black does not clip the last letter (CANDIDATE). */
+export const TIER_LABEL_FIT_SLACK = 6;
+/**
+ * Live Montserrat Black is wider than `measureTitleAdvance` (CANDIDATE at
+ * 28px is ~185px, not ~162). Scale so wrap/shrink match the painted glyphs.
+ */
+const TIER_LABEL_ADVANCE_SCALE = 1.14;
 export const TIER_LABEL_TRACK = 0.02;
 /** Long names wrap in the label column; this is not an 8-character typing cap. */
 export const TIER_LABEL_MAX_LENGTH = 48;
+export const TIER_LABEL_MAX_LINES = 4;
 export const TIER_LABEL_SIZE_ONE = 72;
 export const TIER_LABEL_SIZE_TWO = 48;
 export const TIER_LABEL_SIZE_LONG = 28;
@@ -49,8 +60,8 @@ export const TIER_TITLE_SIZE = 50;
 export const PLAYER_LOGO_WATERMARK_ALPHA = 0.22;
 export const TIER_TITLE_TRACK = 0.04;
 
-export const cellsContentWidth = () =>
-  GRAPHIC_WIDTH - TIER_LABEL_W - TIER_CELLS_INSET - TIER_PAD_RIGHT;
+export const cellsContentWidth = (labelW = TIER_LABEL_W) =>
+  GRAPHIC_WIDTH - labelW - TIER_CELLS_INSET - TIER_PAD_RIGHT;
 
 export const rowMetrics = (rowCount: number, boardH = GRAPHIC_HEIGHT) => {
   const count = Math.max(1, rowCount);
@@ -107,6 +118,7 @@ export interface TierBoardLayout {
   cellW: number;
   cellH: number;
   contentW: number;
+  labelW: number;
   cols: number;
   gridTemplate: string;
 }
@@ -120,19 +132,23 @@ export const EMPTY_TIER_LANES = 0.32;
 
 export const tierBoardLayout = (
   itemCounts: number[],
-  labelLineCounts: number[] = [],
   boardH = GRAPHIC_HEIGHT,
+  labelW = TIER_LABEL_W,
 ): TierBoardLayout => {
+  const columnW = Math.min(
+    TIER_LABEL_W_MAX,
+    Math.max(TIER_LABEL_W, labelW),
+  );
   const anyFilled = itemCounts.some((count) => count > 0);
-  const lanes = itemCounts.map((count, index) => {
+  const lanes = itemCounts.map((count) => {
     if (anyFilled && count === 0) {
       return EMPTY_TIER_LANES;
     }
-    return Math.max(tierLaneCount(count), Math.max(1, labelLineCounts[index] ?? 1));
+    return Math.max(1, tierLaneCount(count));
   });
   const totalLanes = Math.max(1, lanes.reduce((sum, count) => sum + count, 0));
   const bodyH = boardH - TIER_HEADER_H - TIER_FOOTER;
-  const contentW = cellsContentWidth();
+  const contentW = cellsContentWidth(columnW);
   /** Stretch lanes so the last tier meets the footer, 3–10 rows alike. */
   const laneH = bodyH / totalLanes;
   const cols = itemCounts.length
@@ -148,8 +164,9 @@ export const tierBoardLayout = (
     cellW: metrics.width,
     cellH: metrics.height,
     contentW,
+    labelW: columnW,
     cols,
-    gridTemplate: lanes.map((count) => `${count}fr`).join(" "),
+    gridTemplate: lanes.map((count) => `minmax(0, ${count}fr)`).join(" "),
   };
 };
 
@@ -192,12 +209,26 @@ export const baBadgeRect = () => ({
 });
 
 const labelWidthAt = (text: string, fontSize: number) =>
-  measureTitleAdvance(text.toUpperCase(), TIER_LABEL_TRACK) * fontSize;
+  measureTitleAdvance(text.toUpperCase(), TIER_LABEL_TRACK) *
+  fontSize *
+  TIER_LABEL_ADVANCE_SCALE;
 
-const lineFits = (text: string, fontSize: number) =>
-  labelWidthAt(text, fontSize) <= TIER_LABEL_INNER_W + 0.01;
+const lineFits = (text: string, fontSize: number, innerW: number) =>
+  labelWidthAt(text, fontSize) + TIER_LABEL_FIT_SLACK <= innerW + 0.01;
 
-export const wrapTierLabel = (label: string, fontSize: number): string[] => {
+const longestWordWidth = (words: string[], fontSize: number) =>
+  Math.max(0, ...words.map((word) => labelWidthAt(word, fontSize)));
+
+/**
+ * Wrap only at spaces. Never slice a word (MINUTES stays MINUTES, not
+ * MINUTE / S). A word that still overflows is its own line — callers shrink
+ * type or grow the color column first.
+ */
+export const wrapTierLabel = (
+  label: string,
+  fontSize: number,
+  innerW = TIER_LABEL_INNER_W,
+): string[] => {
   const text = label.replace(/\s+/g, " ").trim();
   if (!text) {
     return [" "];
@@ -205,31 +236,14 @@ export const wrapTierLabel = (label: string, fontSize: number): string[] => {
   const words = text.split(" ");
   const lines: string[] = [];
   let current = "";
-  const pushWord = (word: string) => {
-    if (lineFits(word, fontSize) || fontSize <= TIER_LABEL_SIZE_MIN) {
-      current = word;
-      return;
-    }
-    let chunk = "";
-    for (const char of word) {
-      const next = chunk + char;
-      if (chunk && !lineFits(next, fontSize)) {
-        lines.push(chunk);
-        chunk = char;
-      } else {
-        chunk = next;
-      }
-    }
-    current = chunk;
-  };
   for (const word of words) {
     const next = current ? `${current} ${word}` : word;
-    if (!current || lineFits(next, fontSize)) {
+    if (!current || lineFits(next, fontSize, innerW)) {
       current = next;
       continue;
     }
     lines.push(current);
-    pushWord(word);
+    current = word;
   }
   if (current) {
     lines.push(current);
@@ -251,23 +265,59 @@ const startingLabelSize = (label: string) => {
 export interface TierLabelLayout {
   lines: string[];
   fontSize: number;
+  columnW: number;
 }
 
 export const layoutTierLabel = (label: string): TierLabelLayout => {
   const trimmed = label.replace(/\s+/g, " ").trim();
+  const words = trimmed ? trimmed.split(" ") : [" "];
   let fontSize = startingLabelSize(trimmed);
+  let innerW = TIER_LABEL_INNER_W;
+  const needed = Math.ceil(
+    longestWordWidth(words, fontSize) + TIER_LABEL_FIT_SLACK,
+  );
+  if (needed > innerW) {
+    innerW = Math.min(TIER_LABEL_INNER_W_MAX, needed);
+  }
+  while (
+    fontSize > TIER_LABEL_SIZE_MIN &&
+    longestWordWidth(words, fontSize) + TIER_LABEL_FIT_SLACK > innerW + 0.01
+  ) {
+    fontSize -= 1;
+  }
   while (fontSize > TIER_LABEL_SIZE_MIN) {
-    const lines = wrapTierLabel(trimmed, fontSize);
-    const overflow = lines.some((line) => !lineFits(line.trim() || " ", fontSize));
-    if (!overflow && lines.length <= 4) {
-      return { lines, fontSize };
+    const trial = wrapTierLabel(trimmed, fontSize, innerW);
+    if (trial.length <= TIER_LABEL_MAX_LINES) {
+      break;
     }
     fontSize -= 1;
   }
-  return {
-    lines: wrapTierLabel(trimmed, TIER_LABEL_SIZE_MIN),
-    fontSize: TIER_LABEL_SIZE_MIN,
-  };
+  const lines = wrapTierLabel(trimmed, fontSize, innerW);
+  const usedInner = Math.max(
+    0,
+    ...lines.map((line) => labelWidthAt(line, fontSize)),
+  );
+  const columnW = Math.min(
+    TIER_LABEL_W_MAX,
+    Math.max(
+      TIER_LABEL_W,
+      Math.ceil(usedInner + TIER_LABEL_PAD_X * 2 + TIER_LABEL_FIT_SLACK),
+    ),
+  );
+  return { lines, fontSize, columnW };
+};
+
+export const boardLabelColumnWidth = (labels: readonly string[]) => {
+  if (!labels.length) {
+    return TIER_LABEL_W;
+  }
+  return Math.min(
+    TIER_LABEL_W_MAX,
+    Math.max(
+      TIER_LABEL_W,
+      ...labels.map((label) => layoutTierLabel(label).columnW),
+    ),
+  );
 };
 
 export const labelFontSize = (label: string) => layoutTierLabel(label).fontSize;

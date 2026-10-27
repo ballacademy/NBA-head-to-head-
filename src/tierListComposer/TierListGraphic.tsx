@@ -12,16 +12,17 @@ import { PlayerHeadshot } from "./PlayerHeadshot";
 import {
   BA_LOGO_SRC,
   baBadgeRect,
+  GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   layoutTierLabel,
   ADD_CHIP_COMPACT,
   addChipPlacement,
+  boardLabelColumnWidth,
   TIER_CELL_GAP,
   TIER_CELLS_INSET,
   TIER_FOOTER,
   TIER_HEADER_H,
   TIER_LABEL_MAX_LENGTH,
-  TIER_LABEL_W,
   TIER_PAD_RIGHT,
   TIER_ROW_PAD_Y,
   TIER_TITLE_SIZE,
@@ -117,9 +118,11 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
     const titleLines = splitTierTitle(title);
     const badge = baBadgeRect();
     const labelLayouts = rows.map((row) => layoutTierLabel(row.label));
+    const labelW = boardLabelColumnWidth(rows.map((row) => row.label));
     const layout = tierBoardLayout(
       rows.map((row) => row.teams.length),
-      labelLayouts.map((item) => item.lines.length),
+      GRAPHIC_HEIGHT,
+      labelW,
     );
 
     const setRefs = (node: HTMLElement | null) => {
@@ -161,7 +164,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
           {
             ["--u" as string]: `${unit}px`,
             ["--title-size" as string]: String(TIER_TITLE_SIZE),
-            ["--label-w" as string]: String(TIER_LABEL_W),
+            ["--label-w" as string]: String(layout.labelW),
             ["--header-h" as string]: String(TIER_HEADER_H),
             ["--footer-h" as string]: String(TIER_FOOTER),
             ["--add-compact" as string]: String(ADD_CHIP_COMPACT),

@@ -39,6 +39,7 @@ import {
   matchingTeamIds,
   parseEveryTeamStatMetric,
   playerStatValue,
+  previousSeason,
   teamStatValue,
   withRosterDepth,
   type EveryTeamStatMetric,
@@ -171,6 +172,8 @@ export function TierListComposerApp() {
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
   const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
+  const rowsRef = useRef(rows);
+  rowsRef.current = rows;
   const matchingIds = useMemo(
     () =>
       subject === "players"
@@ -341,17 +344,33 @@ export function TierListComposerApp() {
 
   const valuesForIds = (ids: string[], metric: EveryTeamStatMetric) => {
     const season = everyTeamCurrentSeason();
+    const prior = previousSeason(season);
     const values = new Map<string, number | null>();
     ids.forEach((id) => {
       if (subject === "teams") {
-        values.set(id, teamStatValue(id, season, metric, statsSample));
+        values.set(
+          id,
+          teamStatValue(id, season, metric, statsSample) ??
+            teamStatValue(id, season, metric, "regular") ??
+            teamStatValue(id, prior, metric, "regular"),
+        );
         return;
       }
       const player = getPlayer(id);
-      values.set(
-        id,
-        playerStatValue(id, season, metric, player?.team ?? null, statsSample),
-      );
+      const team = player?.team ?? null;
+      const live =
+        playerStatValue(id, season, metric, team, statsSample) ??
+        playerStatValue(id, season, metric, team, "regular") ??
+        playerStatValue(id, prior, metric, team, "regular");
+      if (live != null) {
+        values.set(id, live);
+        return;
+      }
+      if (metric === "points" && player && player.ppg > 0) {
+        values.set(id, player.ppg);
+        return;
+      }
+      values.set(id, null);
     });
     return values;
   };
@@ -373,10 +392,11 @@ export function TierListComposerApp() {
         setStatus("Couldn't load season stats.");
         return;
       }
-      let board = rows;
+      let board = rowsRef.current;
       let added = 0;
-      if (alsoPopulate) {
-        if (!matchingIds.length && usedTeamIds(board).size === 0) {
+      const occupied = usedTeamIds(board).size > 0;
+      if (alsoPopulate && !occupied) {
+        if (!matchingIds.length) {
           setStatus("No names match the current filters.");
           return;
         }
@@ -425,7 +445,7 @@ export function TierListComposerApp() {
   };
 
   const handleGroupByStat = (metric: EveryTeamStatMetric) => {
-    const empty = usedTeamIds(rows).size === 0;
+    const empty = usedTeamIds(rowsRef.current).size === 0;
     void applyTierStats(metric, empty);
   };
 

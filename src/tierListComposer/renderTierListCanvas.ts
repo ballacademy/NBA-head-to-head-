@@ -35,6 +35,7 @@ import {
   cellGridPosition,
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
+  boardLabelColumnWidth,
   layoutTierLabel,
   PLAYER_LOGO_WATERMARK_ALPHA,
   TIER_CELL_GAP,
@@ -42,7 +43,6 @@ import {
   TIER_FOOTER,
   TIER_HEADER_H,
   TIER_LABEL_TRACK,
-  TIER_LABEL_W,
   TIER_TITLE_SIZE,
   TIER_TITLE_TRACK,
   TIER_WRAP_COLS,
@@ -157,6 +157,7 @@ export const renderTierListCanvas = async (
   }
 
   const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+  const labelW = boardLabelColumnWidth(input.rows.map((row) => row.label));
   const width = GRAPHIC_WIDTH * scale;
   const height = boardH * scale;
   const canvas = document.createElement("canvas");
@@ -207,7 +208,7 @@ export const renderTierListCanvas = async (
       context,
       0,
       TIER_HEADER_H * scale,
-      TIER_LABEL_W * scale,
+      labelW * scale,
       (boardH - TIER_HEADER_H - TIER_FOOTER) * scale,
       scale,
     );
@@ -244,8 +245,8 @@ export const renderTierListCanvas = async (
   const labelLayouts = input.rows.map((row) => layoutTierLabel(row.label));
   const layout = tierBoardLayout(
     input.rows.map((row) => row.teams.length),
-    labelLayouts.map((item) => item.lines.length),
     boardH,
+    labelW,
   );
   const subject = input.subject ?? "teams";
   const cellArt = await Promise.all(
@@ -286,7 +287,7 @@ export const renderTierListCanvas = async (
     );
     const ink = inkOnTierColor(color);
     context.fillStyle = color;
-    context.fillRect(0, y, TIER_LABEL_W * scale, h);
+    context.fillRect(0, y, layout.labelW * scale, h);
     context.fillStyle = "rgba(255, 255, 255, 0.2)";
     context.fillRect(0, y, width, Math.max(1, 1.5 * scale));
 
@@ -294,7 +295,7 @@ export const renderTierListCanvas = async (
     const fontPx = labelLayout.fontSize * scale;
     const labelLineH = fontPx * 0.95;
     const labelBlockH = labelLineH * labelLayout.lines.length;
-    const labelX = (TIER_LABEL_W / 2) * scale;
+    const labelX = (layout.labelW / 2) * scale;
     const labelTop = y + (h - labelBlockH) / 2 + labelLineH / 2;
     withDropShadow(context, scale, () => {
       labelLayout.lines.forEach((line, lineIndex) => {
@@ -313,7 +314,7 @@ export const renderTierListCanvas = async (
     const cellW = layout.cellW * scale;
     const cellH = layout.cellH * scale;
     const gap = TIER_CELL_GAP * scale;
-    const startX = (TIER_LABEL_W + TIER_CELLS_INSET) * scale;
+    const startX = (layout.labelW + TIER_CELLS_INSET) * scale;
     const wrapRows = Math.max(1, Math.ceil(row.teams.length / TIER_WRAP_COLS));
     const blockH = wrapRows * cellH + Math.max(0, wrapRows - 1) * gap;
     const startY = y + (h - blockH) / 2;

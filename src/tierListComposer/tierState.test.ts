@@ -14,6 +14,7 @@ import {
 import {
   BA_LOGO_SRC,
   baBadgeRect,
+  boardLabelColumnWidth,
   cellGridPosition,
   cellMetrics,
   cellSize,
@@ -27,6 +28,8 @@ import {
   TIER_HEADER_H,
   TIER_LABEL_MAX_LENGTH,
   TIER_LABEL_SIZE_ONE,
+  TIER_LABEL_W,
+  TIER_LABEL_W_MAX,
   TIER_TITLE_SIZE,
   TIER_PAD_RIGHT,
   TIER_WRAP_COLS,
@@ -34,6 +37,7 @@ import {
   addChipPlacement,
   labelFontSize,
   layoutTierLabel,
+  wrapTierLabel,
   tierBoardLayout,
   tierLaneCount,
 } from "./tierLayout";
@@ -73,7 +77,7 @@ import {
   usedLabelsForPicker,
   usedTeamIds,
 } from "./tierState";
-import { NBA_ACTIVE_PLAYERS } from "./nbaActivePlayers";
+import { EXAMPLE_PLAYER_IDS, NBA_ACTIVE_PLAYERS } from "./nbaActivePlayers";
 
 hydrateEveryTeamRosters(
   catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
@@ -303,6 +307,49 @@ describe("tier rows", () => {
       );
     }
   });
+
+  it("re-ranks players already on the board without populate or filters", () => {
+    const stars = [
+      EXAMPLE_PLAYER_IDS.shai,
+      EXAMPLE_PLAYER_IDS.jokic,
+      EXAMPLE_PLAYER_IDS.luka,
+      EXAMPLE_PLAYER_IDS.tatum,
+      EXAMPLE_PLAYER_IDS.ant,
+      EXAMPLE_PLAYER_IDS.curry,
+      EXAMPLE_PLAYER_IDS.wemby,
+      EXAMPLE_PLAYER_IDS.lebron,
+    ];
+    const season = everyTeamCurrentSeason();
+    const values = new Map<string, number | null>(
+      stars.map((id) => {
+        const player = NBA_ACTIVE_PLAYERS.find((row) => row.id === id);
+        return [
+          id,
+          playerStatValue(id, season, "points", player?.team ?? null),
+        ];
+      }),
+    );
+    const scored = stars.filter((id) => values.get(id) != null);
+    expect(scored.length).toBe(stars.length);
+    let rows = createDefaultRows();
+    rows = [
+      { ...rows[0]!, teams: [...stars] },
+      ...rows.slice(1).map((row) => ({ ...row, teams: [] as string[] })),
+    ];
+    expect(rows[0]!.teams).toEqual(stars);
+    const sorted = groupIdsByValues(rows, values);
+    expect(sorted.flatMap((row) => row.teams).sort()).toEqual([...stars].sort());
+    expect(sorted[0]!.teams.length).toBeGreaterThan(0);
+    expect(sorted.some((row, index) => index > 0 && row.teams.length > 0)).toBe(
+      true,
+    );
+    expect(sorted[0]!.teams).not.toEqual(stars);
+    const top = sorted[0]!.teams[0]!;
+    const rest = sorted.flatMap((row) => row.teams).slice(1);
+    rest.forEach((id) => {
+      expect(values.get(top)!).toBeGreaterThanOrEqual(values.get(id)!);
+    });
+  });
 });
 
 describe("tier layout", () => {
@@ -352,7 +399,9 @@ describe("tier layout", () => {
     expect(eight.lanes[0]).toBe(1);
     expect(nine.lanes[0]).toBe(2);
     expect(nine.totalLanes).toBe(eight.totalLanes + 1);
-    expect(nine.gridTemplate).toBe("2fr 1fr 1fr 1fr 1fr 1fr");
+    expect(nine.gridTemplate).toBe(
+      "minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)",
+    );
     expect(nine.lanes[0]! * nine.laneH).toBeGreaterThan(eight.laneH);
     expect(nine.size).toBe(cellSize(nine.laneH, nine.contentW, TIER_WRAP_COLS));
     expect(nine.cellW).toBe(nine.size);
@@ -389,13 +438,44 @@ describe("tier layout", () => {
     expect(firstTeam.lines.join(" ").replace(/\s+/g, " ")).toMatch(
       /ALL NBA FIRST TEAM/i,
     );
-    const grown = tierBoardLayout(
-      [1, 1, 1, 1, 1, 1],
-      role.lines.length > 1 ? [role.lines.length, 1, 1, 1, 1, 1] : undefined,
-    );
-    const even = tierBoardLayout([1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]);
-    expect(grown.lanes[0]).toBeGreaterThan(even.lanes[0]!);
+    const roy = layoutTierLabel("ROY CANDIDATE");
+    expect(roy.lines.length).toBeGreaterThan(1);
+    expect(roy.lines.every((line) => !line.includes(" "))).toBe(true);
+    const grown = tierBoardLayout([4, 1, 1, 1, 1, 1]);
+    const even = tierBoardLayout([4, 1, 1, 1, 1, 1]);
+    expect(grown.lanes[0]).toBe(even.lanes[0]);
+    expect(grown.laneH).toBeCloseTo(even.laneH);
+    expect(grown.cellH).toBeCloseTo(even.cellH);
     expect(even.size).toBeGreaterThan(120);
+  });
+
+  it("keeps MINUTES one word and shares one label-column width across rows", () => {
+    const minutes = layoutTierLabel("MINUTES");
+    expect(minutes.lines).toEqual(["MINUTES"]);
+    const played = layoutTierLabel("PLAYED MINUTES");
+    expect(played.lines.join(" ")).toBe("PLAYED MINUTES");
+    expect(played.lines).not.toContain("MINUTE");
+    expect(played.lines).not.toContain("S");
+    expect(played.lines.every((line) => line === "PLAYED" || line === "MINUTES")).toBe(
+      true,
+    );
+    expect(wrapTierLabel("PLAYED MINUTES", 28).join("|")).not.toMatch(/MINUTE\|S/);
+    const roy = layoutTierLabel("ROY CANDIDATE");
+    expect(roy.columnW).toBeGreaterThan(TIER_LABEL_W);
+    expect(roy.columnW).toBeLessThanOrEqual(TIER_LABEL_W_MAX);
+    const letters = ["S", "A", "B", "C", "D", "F"];
+    const mixed = ["ROY CANDIDATE", "S", "A", "PLAYED MINUTES", "D", "F"];
+    const shared = boardLabelColumnWidth(mixed);
+    expect(shared).toBe(boardLabelColumnWidth(["ROY CANDIDATE"]));
+    expect(shared).toBeGreaterThan(boardLabelColumnWidth(letters));
+    expect(shared).toBeLessThanOrEqual(TIER_LABEL_W_MAX);
+    const withLong = tierBoardLayout([4, 1, 1, 1, 1, 1], GRAPHIC_HEIGHT, shared);
+    const short = tierBoardLayout([4, 1, 1, 1, 1, 1], GRAPHIC_HEIGHT, TIER_LABEL_W);
+    expect(withLong.labelW).toBe(shared);
+    expect(withLong.labelW).toBeGreaterThan(short.labelW);
+    expect(withLong.laneH).toBeCloseTo(short.laneH);
+    expect(withLong.cellH).toBeCloseTo(short.cellH);
+    expect(withLong.contentW).toBeLessThan(short.contentW);
   });
 
   it("grows square cells as the board has fewer tiers", () => {
@@ -424,13 +504,15 @@ describe("tier layout", () => {
     for (const layout of [three, six, ten]) {
       expect(layout.laneH * layout.totalLanes).toBeCloseTo(layout.bodyH, 8);
       expect(layout.bodyH).toBe(GRAPHIC_HEIGHT - TIER_HEADER_H - TIER_FOOTER);
-      expect(layout.gridTemplate.split(" ").every((part) => part.endsWith("fr"))).toBe(
-        true,
-      );
+      expect(
+        layout.gridTemplate
+          .split(/ (?=minmax)/)
+          .every((part) => /^minmax\(0, [\d.]+fr\)$/.test(part)),
+      ).toBe(true);
     }
     expect(three.laneH).toBeGreaterThan(six.laneH);
     expect(six.laneH).toBeGreaterThan(ten.laneH);
-    expect(three.gridTemplate).toBe("1fr 1fr 1fr");
+    expect(three.gridTemplate).toBe("minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)");
   });
 
   it("collapses empty tiers so filled rows eat leftover board", () => {
