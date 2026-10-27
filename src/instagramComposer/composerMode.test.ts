@@ -91,6 +91,8 @@ describe("composer mode", () => {
     expect(COMPOSER_TAB_GROUPS[1]!.tabs.map((tab) => tab.mode)).toEqual([
       "stat-card",
       "stat-card-cover",
+      "takeaways-cover",
+      "takeaways-card",
       "compare",
       "player-of-the-day",
       "potd-leaderboard",
@@ -111,7 +113,7 @@ describe("composer mode", () => {
       group.tabs.map((tab) => tab.mode),
     );
     expect(new Set(modes).size).toBe(modes.length);
-    expect(modes).toHaveLength(22);
+    expect(modes).toHaveLength(24);
   });
 
   it("opens pyramid and headline from path or query", () => {
@@ -163,6 +165,17 @@ describe("composer mode", () => {
     expect(readComposerMode("", "/locks")).toBe("picks");
     expect(readComposerMode("?composer=spreads", "/")).toBe("picks");
     expect(composerHref("picks")).toBe("/picks");
+    expect(readComposerMode("", "/takeaways")).toBe("takeaways-cover");
+    expect(readComposerMode("", "/nba-takeaways")).toBe("takeaways-cover");
+    expect(readComposerMode("", "/takeaway")).toBe("takeaways-cover");
+    expect(readComposerMode("?composer=takeaways", "/")).toBe("takeaways-cover");
+    expect(composerHref("takeaways-cover")).toBe("/takeaways");
+    expect(readComposerMode("", "/takeaways-card")).toBe("takeaways-card");
+    expect(readComposerMode("", "/takeaways-cards")).toBe("takeaways-card");
+    expect(readComposerMode("?composer=takeaways-card", "/")).toBe(
+      "takeaways-card",
+    );
+    expect(composerHref("takeaways-card")).toBe("/takeaways-card");
   });
 
   it("opens ranked lineups from path or query", () => {

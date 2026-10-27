@@ -20,7 +20,9 @@ export type ComposerMode =
   | "injury"
   | "schedule"
   | "shot-chart"
-  | "picks";
+  | "picks"
+  | "takeaways-cover"
+  | "takeaways-card";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -130,6 +132,26 @@ const SHOT_CHART_PATHS = new Set(["/shot-chart", "/shotchart", "/shots", "/shot"
 const SHOT_CHART_QUERY = new Set(["shot-chart", "shotchart", "shots", "shot"]);
 const PICKS_PATHS = new Set(["/picks", "/locks", "/spreads"]);
 const PICKS_QUERY = new Set(["picks", "locks", "spread", "spreads"]);
+const TAKEAWAYS_COVER_PATHS = new Set([
+  "/takeaways",
+  "/nba-takeaways",
+  "/takeaways-cover",
+  "/takeaway",
+]);
+const TAKEAWAYS_COVER_QUERY = new Set([
+  "takeaways",
+  "nba-takeaways",
+  "takeaways-cover",
+  "takeaway",
+]);
+const TAKEAWAYS_CARD_PATHS = new Set([
+  "/takeaways-card",
+  "/takeaways-cards",
+]);
+const TAKEAWAYS_CARD_QUERY = new Set([
+  "takeaways-card",
+  "takeaways-cards",
+]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -346,6 +368,18 @@ export const isPicksPath = (pathname: string) =>
 export const isPicksQuery = (search: string) =>
   PICKS_QUERY.has(queryToken(search));
 
+export const isTakeawaysCoverPath = (pathname: string) =>
+  TAKEAWAYS_COVER_PATHS.has(normalizePath(pathname));
+
+export const isTakeawaysCoverQuery = (search: string) =>
+  TAKEAWAYS_COVER_QUERY.has(queryToken(search));
+
+export const isTakeawaysCardPath = (pathname: string) =>
+  TAKEAWAYS_CARD_PATHS.has(normalizePath(pathname));
+
+export const isTakeawaysCardQuery = (search: string) =>
+  TAKEAWAYS_CARD_QUERY.has(queryToken(search));
+
 export const isMockTradeQuery = (search: string) =>
   MOCK_TRADE_QUERY.has(queryToken(search));
 
@@ -353,6 +387,12 @@ export const readComposerMode = (
   search = typeof window !== "undefined" ? window.location.search : "",
   pathname = typeof window !== "undefined" ? window.location.pathname : "/",
 ): ComposerMode => {
+  if (isTakeawaysCardPath(pathname)) {
+    return "takeaways-card";
+  }
+  if (isTakeawaysCoverPath(pathname)) {
+    return "takeaways-cover";
+  }
   if (isPicksPath(pathname)) {
     return "picks";
   }
@@ -415,6 +455,12 @@ export const readComposerMode = (
   }
   if (isTierListPath(pathname)) {
     return "tier";
+  }
+  if (isTakeawaysCardQuery(search)) {
+    return "takeaways-card";
+  }
+  if (isTakeawaysCoverQuery(search)) {
+    return "takeaways-cover";
   }
   if (isPicksQuery(search)) {
     return "picks";
@@ -524,6 +570,12 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "picks") {
     return "/picks";
+  }
+  if (mode === "takeaways-cover") {
+    return "/takeaways";
+  }
+  if (mode === "takeaways-card") {
+    return "/takeaways-card";
   }
   if (mode === "mock-trade") {
     return "/mock-trade";

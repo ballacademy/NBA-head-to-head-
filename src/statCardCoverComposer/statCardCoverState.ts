@@ -137,6 +137,9 @@ export const splitCoverTitle = (title: string) => {
   if (text === DEFAULT_COVER_TITLE) {
     return ["STARS AND", "STANDOUTS"];
   }
+  if (text === "NBA TAKEAWAYS") {
+    return ["NBA", "TAKEAWAYS"];
+  }
   if (measureTitleAdvance(text, SCC_TITLE_TRACK) <= SCC_TITLE_MAX_EM) {
     return [text];
   }

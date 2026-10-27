@@ -31,6 +31,8 @@ import { InjuryComposerApp } from "../injuryComposer/InjuryComposerApp";
 import { ScheduleComposerApp } from "../scheduleComposer/ScheduleComposerApp";
 import { ShotChartComposerApp } from "../shotChartComposer/ShotChartComposerApp";
 import { PicksComposerApp } from "../picksComposer/PicksComposerApp";
+import { TakeawaysCoverComposerApp } from "../takeawaysComposer/TakeawaysCoverComposerApp";
+import { TakeawaysCardComposerApp } from "../takeawaysComposer/TakeawaysCardComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -64,6 +66,7 @@ import "../injuryComposer/injuryComposer.css";
 import "../scheduleComposer/scheduleComposer.css";
 import "../shotChartComposer/shotChartComposer.css";
 import "../picksComposer/picksComposer.css";
+import "../takeawaysComposer/takeawaysComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -228,6 +231,10 @@ export function ComposerHub() {
         <ShotChartComposerApp />
       ) : mode === "picks" ? (
         <PicksComposerApp />
+      ) : mode === "takeaways-cover" ? (
+        <TakeawaysCoverComposerApp />
+      ) : mode === "takeaways-card" ? (
+        <TakeawaysCardComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

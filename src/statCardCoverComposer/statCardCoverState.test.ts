@@ -137,6 +137,7 @@ describe("stat card cover", () => {
     expect(draft.slots.every((slot) => !("stats" in slot))).toBe(true);
     expect(draft.title).toBe(DEFAULT_COVER_TITLE);
     expect(splitCoverTitle(draft.title)).toEqual(["STARS AND", "STANDOUTS"]);
+    expect(splitCoverTitle("NBA TAKEAWAYS")).toEqual(["NBA", "TAKEAWAYS"]);
     expect(draft.dateLine).toBe("OCT 15");
     expect(coverTitleForNight("2026-10-14", "2026-10-15", "2026-10-14")).toBe(
       DEFAULT_COVER_TITLE,

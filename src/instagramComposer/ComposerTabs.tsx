@@ -46,6 +46,8 @@ export const COMPOSER_TAB_GROUPS: {
     tabs: [
       { mode: "stat-card", label: "Stat card" },
       { mode: "stat-card-cover", label: "Cover" },
+      { mode: "takeaways-cover", label: "Takeaways" },
+      { mode: "takeaways-card", label: "Takeaway cards" },
       { mode: "compare", label: "Compare" },
       { mode: "player-of-the-day", label: "POTD" },
       { mode: "potd-leaderboard", label: "Leaderboard" },
@@ -78,6 +80,8 @@ export const COMPOSER_MODE_LABEL: Record<ComposerMode, string> = {
   lineup: "Lineup",
   "stat-card": "Stat card",
   "stat-card-cover": "Cover",
+  "takeaways-cover": "Takeaways",
+  "takeaways-card": "Takeaway cards",
   compare: "Compare",
   "player-of-the-day": "POTD",
   "potd-leaderboard": "Leaderboard",

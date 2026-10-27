@@ -16,6 +16,8 @@ const ALIASES: Array<{ needle: string; mode: ComposerMode }> = [
   { needle: "picks", mode: "picks" },
   { needle: "locks", mode: "picks" },
   { needle: "spreads", mode: "picks" },
+  { needle: "takeaways", mode: "takeaways-cover" },
+  { needle: "takeaway", mode: "takeaways-cover" },
   { needle: "xy", mode: "plot" },
   { needle: "scatter", mode: "plot" },
 ];

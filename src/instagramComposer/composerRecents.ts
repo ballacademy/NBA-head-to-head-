@@ -43,6 +43,8 @@ const isMode = (value: unknown): value is ComposerMode =>
     "schedule",
     "shot-chart",
     "picks",
+    "takeaways-cover",
+    "takeaways-card",
   ].includes(value);
 
 export const parseComposerRecents = (value: unknown): ComposerRecent[] => {

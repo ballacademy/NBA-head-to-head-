@@ -29,6 +29,7 @@ export const INJURY_LOOK_KEY = "ddgm:injury-composer-look";
 export const SCHEDULE_LOOK_KEY = "ddgm:schedule-composer-look";
 export const SHOT_CHART_LOOK_KEY = "ddgm:shot-chart-composer-look";
 export const PICKS_LOOK_KEY = "ddgm:picks-composer-look";
+export const TAKEAWAYS_LOOK_KEY = "ddgm:takeaways-composer-look";
 export const PURPLE_FLAIR_KEY = "ddgm:composer-purple-flair";
 
 export const FRAME_WHITE = "#ffffff";

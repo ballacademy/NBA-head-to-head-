@@ -28,6 +28,8 @@ export const COMPOSER_DRAFT_KEYS: Partial<Record<ComposerMode, string[]>> = {
   schedule: ["ddgm:schedule-composer"],
   "shot-chart": ["ddgm:shot-chart-composer"],
   picks: ["ddgm:picks-composer"],
+  "takeaways-cover": ["ddgm:takeaways-composer"],
+  "takeaways-card": ["ddgm:takeaways-composer"],
 };
 
 const notify = () => {

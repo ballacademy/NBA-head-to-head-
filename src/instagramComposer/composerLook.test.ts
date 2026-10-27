@@ -97,6 +97,7 @@ describe("composer look", () => {
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:schedule-composer:saves");
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:shot-chart-composer:saves");
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:picks-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:takeaways-composer:saves");
   });
 
   it("keeps kyber purple off by default and electric, not pastel", () => {

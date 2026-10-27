@@ -1,0 +1,51 @@
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import {
+  SCC_BA_INSET,
+  SCC_BA_SIZE,
+  SCC_DATE_SIZE,
+  SCC_DATE_TRACK,
+  SCC_FADE_H,
+  SCC_LOCKUP_SCRIM_H,
+  SCC_LOCKUP_TOP,
+  SCC_PILL_H,
+  SCC_PILL_PAD_X,
+  SCC_SWIPE_CHEV,
+  SCC_SWIPE_INSET,
+  SCC_SWIPE_LABEL,
+  SCC_SWIPE_SIZE,
+  SCC_TITLE_SIZE,
+} from "../statCardCoverComposer/statCardCoverLayout";
+
+export {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+  SCC_BA_INSET,
+  SCC_BA_SIZE,
+  SCC_DATE_SIZE,
+  SCC_DATE_TRACK,
+  SCC_FADE_H,
+  SCC_LOCKUP_SCRIM_H,
+  SCC_LOCKUP_TOP,
+  SCC_PILL_H,
+  SCC_PILL_PAD_X,
+  SCC_SWIPE_CHEV,
+  SCC_SWIPE_INSET,
+  SCC_SWIPE_LABEL,
+  SCC_SWIPE_SIZE,
+  SCC_TITLE_SIZE,
+};
+
+export const TK_WELL_H = 340;
+export const TK_WELL_PAD_X = 48;
+export const TK_WELL_PAD_Y = 28;
+export const TK_LINE_SIZE = 34;
+export const TK_LINE2_SIZE = 26;
+export const TK_INDEX_SIZE = 18;
+export const TK_FACT_SIZE = 16;
+export const TK_NAME_H = 168;
+export const TK_GHOST_SIZE = 14;
