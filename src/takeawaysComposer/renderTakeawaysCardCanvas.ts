@@ -27,13 +27,21 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   SCC_BA_INSET,
   SCC_BA_SIZE,
+  SCC_GOLD,
 } from "../statCardCoverComposer/statCardCoverLayout";
 import {
   TK_FACT_SIZE,
+  TK_GHOST_SIZE,
+  TK_GOLD_HAIR,
   TK_INDEX_SIZE,
   TK_LINE2_SIZE,
   TK_LINE_SIZE,
+  TK_NAME_FAMILY,
+  TK_NAME_GIVEN,
   TK_NAME_H,
+  TK_NAME_LOGO,
+  TK_PICK_SIZE,
+  TK_TYPE_AREA,
   TK_WELL_H,
   TK_WELL_PAD_X,
 } from "./takeawaysLayout";
@@ -45,6 +53,62 @@ import {
 import type { TakeawaysRenderInput } from "./renderTakeawaysCoverCanvas";
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
+
+const paintEmptyPoster = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+  teamFill = "#1c1c1c",
+) => {
+  context.fillStyle = "#0a0a0c";
+  context.fillRect(x, y, w, h);
+  const cx = x + w / 2;
+  const cy = y + h * 0.36;
+  const glow = context.createRadialGradient(
+    cx,
+    cy,
+    20 * scale,
+    cx,
+    cy,
+    Math.max(w, h) * 0.55,
+  );
+  glow.addColorStop(0, "rgba(212, 175, 55, 0.38)");
+  glow.addColorStop(0.48, teamFill);
+  glow.addColorStop(1, "#070708");
+  context.fillStyle = glow;
+  context.fillRect(x, y, w, h);
+  context.save();
+  context.globalAlpha = 0.22;
+  context.fillStyle = teamFill;
+  context.fillRect(x, y, w, h);
+  context.restore();
+  context.save();
+  context.font = `900 ${TK_PICK_SIZE * scale}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = SCC_GOLD;
+  context.fillText("PICK PLAYER", cx, y + h * 0.46, w - 48 * scale);
+  context.restore();
+};
+
+const paintWellHairline = (
+  context: CanvasRenderingContext2D,
+  y: number,
+  width: number,
+  scale: number,
+) => {
+  const gold = context.createLinearGradient(0, y, width, y);
+  gold.addColorStop(0, "rgba(250, 204, 21, 0)");
+  gold.addColorStop(0.18, "rgba(253, 230, 138, 0.95)");
+  gold.addColorStop(0.5, "#facc15");
+  gold.addColorStop(0.82, "rgba(253, 230, 138, 0.95)");
+  gold.addColorStop(1, "rgba(250, 204, 21, 0)");
+  context.fillStyle = gold;
+  context.fillRect(width * 0.08, y, width * 0.84, TK_GOLD_HAIR * scale);
+};
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement | null>((resolve) => {
@@ -111,12 +175,15 @@ export const renderTakeawaysCardCanvas = async (
   const bleed = overlay || input.well === "fade";
   const wellH = (overlay ? 280 : TK_WELL_H) * s;
   const photoH = bleed ? height : height - wellH;
+  const teamColors = getTeamColors(card.teamId ?? "");
   context.fillStyle = "#050505";
   context.fillRect(0, 0, width, height);
   if (input.purpleFlair) {
     paintPurpleCornerBloom(context, width, height, s);
   }
-  if (card.photoSrc) {
+  if (!card.photoSrc) {
+    paintEmptyPoster(context, 0, 0, width, photoH, s, teamColors.primary);
+  } else if (card.photoSrc) {
     const photo = card.photoSrc.startsWith("data:")
       ? await loadImage(card.photoSrc)
       : await loadCorsImage(card.photoSrc);
@@ -168,7 +235,7 @@ export const renderTakeawaysCardCanvas = async (
   } else if (input.well === "charcoal") {
     paintStuddedCharcoal(context, 0, wellY, width, wellH, s);
   } else if (input.well === "team") {
-    const fill = getTeamColors(card.teamId ?? "").primary;
+    const fill = teamColors.primary;
     const grad = context.createLinearGradient(0, wellY, 0, height);
     grad.addColorStop(0, fill);
     grad.addColorStop(1, fill);
@@ -177,27 +244,31 @@ export const renderTakeawaysCardCanvas = async (
   } else {
     const fade = context.createLinearGradient(0, wellY, 0, height);
     fade.addColorStop(0, "rgba(7,7,7,0)");
-    fade.addColorStop(0.28, "rgba(7,7,7,0.55)");
-    fade.addColorStop(0.58, "rgba(7,7,7,0.96)");
-    fade.addColorStop(1, "#070707");
+    fade.addColorStop(0.26, "rgba(7,7,7,0.52)");
+    fade.addColorStop(0.62, "rgba(7,7,7,0.94)");
+    fade.addColorStop(1, teamColors.primary);
     context.fillStyle = fade;
     context.fillRect(0, wellY, width, wellH);
   }
+  paintWellHairline(context, wellY, width, s);
   const team = getTeam(card.teamId);
   if (card.playerId || takeawaysCardName(card)) {
     const logo = team ? await loadImage(team.logoSrc) : null;
+    const nameY = bleed
+      ? height - TK_TYPE_AREA * s - TK_NAME_H * s
+      : photoH - TK_NAME_H * s;
     drawPlayerNameFade(context, {
       x: 0,
-      y: (bleed ? height - wellH : photoH) - TK_NAME_H * s,
+      y: nameY,
       w: width,
       h: TK_NAME_H * s,
       given: card.firstName,
       family: card.lastName,
       logo,
       logoSrc: team?.logoSrc,
-      logoSize: 44 * s,
-      familySize: 28 * s,
-      givenSize: 20 * s,
+      logoSize: TK_NAME_LOGO * s,
+      familySize: TK_NAME_FAMILY * s,
+      givenSize: TK_NAME_GIVEN * s,
       scale: s,
     });
   }
@@ -260,7 +331,7 @@ export const renderTakeawaysCardCanvas = async (
     );
   }
   if (input.showWeekGhost) {
-    context.font = `900 ${14 * s}px ${POSTER_FONT}`;
+    context.font = `900 ${TK_GHOST_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "top";
     context.fillStyle = "rgba(255,255,255,0.62)";

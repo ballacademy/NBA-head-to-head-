@@ -14,6 +14,11 @@ import {
   SCC_BA_SIZE,
 } from "../statCardCoverComposer/statCardCoverLayout";
 import {
+  TK_NAME_FAMILY,
+  TK_NAME_GIVEN,
+  TK_NAME_H,
+  TK_NAME_LOGO,
+  TK_TYPE_AREA,
   TK_WELL_H,
 } from "./takeawaysLayout";
 import {
@@ -74,6 +79,7 @@ export const TakeawaysCardGraphic = forwardRef<
   const team = getTeamColors(card.teamId ?? "");
   const total = Math.max(1, draft.cards.length);
   const label = takeawaysCardName(card) || "takeaway player";
+  const wellH = overlay ? 280 : TK_WELL_H;
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -112,6 +118,7 @@ export const TakeawaysCardGraphic = forwardRef<
         `is-${draft.well}`,
         overlay ? "is-overlay" : "",
         bleed ? "" : "is-well",
+        empty ? "is-empty" : "",
         exporting ? "is-exporting" : "",
         composerLookClass(look),
         composerFlairClass(purpleFlair),
@@ -122,8 +129,14 @@ export const TakeawaysCardGraphic = forwardRef<
       style={
         {
           ["--u" as string]: `${unit}px`,
-          ["--well-h" as string]: String(overlay ? 280 : TK_WELL_H),
+          ["--well-h" as string]: String(wellH),
+          ["--type-area" as string]: String(TK_TYPE_AREA),
+          ["--name-h" as string]: String(TK_NAME_H),
+          ["--name-logo" as string]: String(TK_NAME_LOGO),
+          ["--name-family" as string]: String(TK_NAME_FAMILY),
+          ["--name-given" as string]: String(TK_NAME_GIVEN),
           ["--team" as string]: team.primary,
+          ["--team-2" as string]: team.secondary,
         } as React.CSSProperties
       }
       aria-label="Instagram NBA takeaways card"

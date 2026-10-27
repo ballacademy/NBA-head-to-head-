@@ -29,17 +29,19 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   SCC_BA_INSET,
   SCC_BA_SIZE,
-  SCC_DATE_SIZE,
-  SCC_FADE_H,
-  SCC_LOCKUP_SCRIM_H,
   SCC_MARK,
-  SCC_PHOTO_SHIFT,
-  SCC_PILL_H,
-  SCC_TITLE_SIZE,
   coverCellRect,
   coverNameMetrics,
   coverSeamXs,
 } from "../statCardCoverComposer/statCardCoverLayout";
+import {
+  TK_DATE_SIZE,
+  TK_FADE_H,
+  TK_LOCKUP_SCRIM_H,
+  TK_PHOTO_SHIFT,
+  TK_PILL_H,
+  TK_TITLE_SIZE,
+} from "./takeawaysLayout";
 import {
   TAKEAWAYS_TITLE_MAX,
   splitTakeawaysTitle,
@@ -170,12 +172,12 @@ export const TakeawaysCoverGraphic = forwardRef<
       style={
         {
           ["--u" as string]: `${unit}px`,
-          ["--fade-h" as string]: String(SCC_FADE_H),
-          ["--lockup-scrim-h" as string]: String(SCC_LOCKUP_SCRIM_H),
-          ["--photo-shift" as string]: String(SCC_PHOTO_SHIFT),
-          ["--title-size" as string]: String(SCC_TITLE_SIZE),
-          ["--date-size" as string]: String(SCC_DATE_SIZE),
-          ["--pill-h" as string]: String(SCC_PILL_H),
+          ["--fade-h" as string]: String(TK_FADE_H),
+          ["--lockup-scrim-h" as string]: String(TK_LOCKUP_SCRIM_H),
+          ["--photo-shift" as string]: String(TK_PHOTO_SHIFT),
+          ["--title-size" as string]: String(TK_TITLE_SIZE),
+          ["--date-size" as string]: String(TK_DATE_SIZE),
+          ["--pill-h" as string]: String(TK_PILL_H),
           ["--name-h" as string]: String(names.nameH),
           ["--name-logo" as string]: String(names.logo),
           ["--name-family" as string]: String(names.family),
