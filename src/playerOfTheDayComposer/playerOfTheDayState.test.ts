@@ -62,6 +62,18 @@ describe("player of the day state", () => {
       firstName: "Giannis",
       lastName: "Antetokounmpo",
     });
+    expect(splitPlayerName("Tim Hardaway Jr.")).toEqual({
+      firstName: "Tim",
+      lastName: "Hardaway Jr.",
+    });
+    expect(splitPlayerName("Gary Payton II")).toEqual({
+      firstName: "Gary",
+      lastName: "Payton II",
+    });
+    expect(splitPlayerName("Tristan da Silva")).toEqual({
+      firstName: "Tristan da",
+      lastName: "Silva",
+    });
     const lines = splitPotdTitle(DEFAULT_POTD_TITLE);
     expect(lines).toHaveLength(2);
     expect(`${lines[0]} ${lines[1]}`).toBe(DEFAULT_POTD_TITLE);

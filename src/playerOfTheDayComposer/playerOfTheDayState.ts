@@ -1,3 +1,4 @@
+import { splitComposerPersonName as splitPlayerName } from "../instagramComposer/composerNameStyle";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import {
   readLeaderboardDraft,
@@ -225,19 +226,7 @@ export interface PotdDraft {
   wlColor?: boolean;
 }
 
-export const splitPlayerName = (name: string) => {
-  const parts = name.replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-  if (parts.length === 0) {
-    return { firstName: "", lastName: "" };
-  }
-  if (parts.length === 1) {
-    return { firstName: parts[0]!, lastName: "" };
-  }
-  return {
-    firstName: parts.slice(0, -1).join(" "),
-    lastName: parts.at(-1)!,
-  };
-};
+export { splitPlayerName };
 
 export const blankStats = (): LastGameStats => ({
   pts: "—",

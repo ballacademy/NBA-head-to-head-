@@ -36,6 +36,32 @@ describe("composer UX extras", () => {
       family: "A. Edwards",
     });
     expect(formatComposerPersonName("Nikola Jokic", "initial")).toBe("N. Jokic");
+    expect(formatComposerName("Gary", "Payton Jr.", "last")).toBe("Payton");
+    expect(formatComposerName("Gary Payton", "Jr.", "last")).toBe("Payton");
+    expect(formatComposerPersonName("Gary Payton Jr.", "last")).toBe("Payton");
+    expect(formatComposerPersonName("Tim Hardaway Jr.", "last")).toBe("Hardaway");
+    expect(formatComposerPersonName("Gary Payton Jr.", "full")).toBe(
+      "Gary Payton Jr.",
+    );
+    expect(formatComposerPersonName("Gary Payton Jr.", "initial")).toBe(
+      "G. Payton",
+    );
+    expect(formatComposerPersonName("Gary Payton II", "last")).toBe("Payton");
+    expect(formatComposerPersonName("Wendell Carter Jr.", "last")).toBe("Carter");
+    expect(formatComposerPersonName("Tim Hardaway Sr.", "last")).toBe("Hardaway");
+    expect(formatComposerPersonName("Henry Domercant III", "last")).toBe(
+      "Domercant",
+    );
+    expect(formatComposerPersonName("Patrick Ewing IV", "last")).toBe("Ewing");
+    expect(formatComposerPersonName("George Foreman V", "last")).toBe("Foreman");
+    expect(composerNameLines("Gary", "Payton Jr.", "last")).toEqual({
+      given: "",
+      family: "Payton",
+    });
+    expect(composerNameLines("Gary Payton", "Jr.", "full")).toEqual({
+      given: "Gary",
+      family: "Payton Jr.",
+    });
     expect(COMPOSER_NAME_STYLE_EVENT).toBe("ddgm:composer-name-style");
   });
 

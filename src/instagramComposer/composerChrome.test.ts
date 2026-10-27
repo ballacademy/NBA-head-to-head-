@@ -880,7 +880,8 @@ describe("composer chrome", () => {
     );
     expect(nameStyle).toContain("COMPOSER_NAME_STYLE_EVENT");
     expect(nameStyle).toContain("composerNameLines");
-    expect(nameStyle).toContain('formatComposerName(first, last, "initial")');
+    expect(nameStyle).toContain("isComposerNameSuffix");
+    expect(nameStyle).toContain('formatComposerName(firstName, lastName, "initial")');
     expect(nameFade).toContain("useComposerNameStyle");
     expect(nameFade).toContain("composerNameLines");
     expect(coverApp).toContain("portraitCount");

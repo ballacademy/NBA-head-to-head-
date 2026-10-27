@@ -194,8 +194,8 @@ describe("TOTW week stats export", () => {
     expect(getPlayer(porter)?.name).toBe("Michael Porter Jr.");
     expect(getPlayer(daSilva)?.name).toBe("Tristan da Silva");
     expect(splitPlayerName("Michael Porter Jr.")).toEqual({
-      firstName: "Michael Porter",
-      lastName: "Jr.",
+      firstName: "Michael",
+      lastName: "Porter Jr.",
     });
     expect(splitPlayerName("Tristan da Silva")).toEqual({
       firstName: "Tristan da",

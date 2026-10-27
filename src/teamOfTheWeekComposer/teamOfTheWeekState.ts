@@ -1,4 +1,5 @@
 import { storedOrLastShowNames } from "../instagramComposer/composerBoardDefaults";
+import { splitComposerPersonName as splitPlayerName } from "../instagramComposer/composerNameStyle";
 import { swapItems } from "../instagramComposer/composerSlotSwap";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters";
@@ -47,19 +48,7 @@ export interface TotwDraft {
   stripStatMetric?: EveryTeamStatMetric;
 }
 
-export const splitPlayerName = (name: string) => {
-  const parts = name.replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-  if (parts.length === 0) {
-    return { firstName: "", lastName: "" };
-  }
-  if (parts.length === 1) {
-    return { firstName: parts[0]!, lastName: "" };
-  }
-  return {
-    firstName: parts.slice(0, -1).join(" "),
-    lastName: parts.at(-1)!,
-  };
-};
+export { splitPlayerName };
 
 const padDate = (value: number) => String(value);
 
