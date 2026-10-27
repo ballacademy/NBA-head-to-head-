@@ -237,6 +237,9 @@ export const groupIdsByValues = (
   const ids = rows.flatMap((row) => row.teams);
   const scored = ids.filter((id) => values.get(id) != null);
   const held = ids.filter((id) => values.get(id) == null);
+  if (!scored.length) {
+    return rows;
+  }
   scored.sort(
     (left, right) =>
       (values.get(right) as number) - (values.get(left) as number) ||
@@ -270,6 +273,10 @@ export const populateAndGroupIds = (
     rows: groupIdsByValues(filled.rows, values, split),
   };
 };
+
+/** Empty cells only — keep labels, colors, row count, and ids. */
+export const clearTierOccupants = (rows: TierRow[]): TierRow[] =>
+  rows.map((row) => ({ ...row, teams: [] }));
 
 export const rowIndexForTeam = (rows: TierRow[], teamId: string) =>
   rows.findIndex((row) => row.teams.includes(teamId));

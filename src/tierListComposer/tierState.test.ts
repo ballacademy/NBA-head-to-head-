@@ -1,4 +1,12 @@
 import { describe, expect, it } from "vitest";
+import catalog from "../../data/every-team-historical-rosters.json";
+import {
+  everyTeamCurrentSeason,
+  hydrateEveryTeamRosters,
+  matchingTeamIds,
+  playerStatValue,
+  teamStatValue,
+} from "../everyTeamComposer/historicalRosters";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -32,6 +40,7 @@ import {
 import {
   addTeamToRow,
   addTier,
+  clearTierOccupants,
   createDefaultRows,
   createExampleRows,
   DEFAULT_TIER_TITLE,
@@ -64,6 +73,11 @@ import {
   usedLabelsForPicker,
   usedTeamIds,
 } from "./tierState";
+import { NBA_ACTIVE_PLAYERS } from "./nbaActivePlayers";
+
+hydrateEveryTeamRosters(
+  catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
+);
 
 describe("tier rows", () => {
   it("defaults to six S–F rows", () => {
@@ -215,6 +229,79 @@ describe("tier rows", () => {
     expect(oneStep.rows[0]!.teams).toEqual(["OKC"]);
     expect(oneStep.rows.map((row) => row.teams).flat()).toHaveLength(6);
     expect(oneStep.rows[0]!.teams).not.toEqual(filled.rows[0]!.teams);
+    const missing = groupIdsByValues(
+      filled.rows,
+      new Map(filled.rows[0]!.teams.map((id) => [id, null])),
+    );
+    expect(missing[0]!.teams).toEqual(filled.rows[0]!.teams);
+    expect(missing.slice(1).every((row) => row.teams.length === 0)).toBe(true);
+  });
+
+  it("clears occupants and keeps labels, colors, and row count", () => {
+    const rows = setTierColor(
+      setTierLabel(createExampleRows(), 0, "ELITE"),
+      1,
+      "#112233",
+    );
+    const cleared = clearTierOccupants(rows);
+    expect(cleared).toHaveLength(rows.length);
+    expect(cleared.every((row) => row.teams.length === 0)).toBe(true);
+    expect(cleared.map((row) => row.label)).toEqual(rows.map((row) => row.label));
+    expect(cleared.map((row) => row.color)).toEqual(rows.map((row) => row.color));
+    expect(cleared.map((row) => row.id)).toEqual(rows.map((row) => row.id));
+    expect(cleared[0]!.label).toBe("ELITE");
+    expect(cleared[1]!.color).toBe("#112233");
+  });
+
+  it("groups all 30 teams by real season points into S–F", () => {
+    const ids = matchingTeamIds();
+    expect(ids).toHaveLength(30);
+    const season = everyTeamCurrentSeason();
+    const values = new Map(
+      ids.map((id) => [id, teamStatValue(id, season, "points")]),
+    );
+    const scored = ids.filter((id) => values.get(id) != null);
+    expect(scored.length).toBe(30);
+    const grouped = populateAndGroupIds(createDefaultRows(), ids, values);
+    expect(grouped.added).toBe(30);
+    expect(grouped.rows.map((row) => row.teams).flat()).toHaveLength(30);
+    expect(grouped.rows[0]!.teams.length).toBeGreaterThan(0);
+    expect(grouped.rows[5]!.teams.length).toBeGreaterThan(0);
+    const top = grouped.rows[0]!.teams[0]!;
+    const bottom = grouped.rows[5]!.teams.at(-1)!;
+    expect(values.get(top)!).toBeGreaterThan(values.get(bottom)!);
+  });
+
+  it("groups players by real season averages, not invented numbers", () => {
+    const centers = NBA_ACTIVE_PLAYERS.filter(
+      (player) => player.position === "C" && player.role !== "coach",
+    ).slice(0, 12);
+    expect(centers.length).toBe(12);
+    const season = everyTeamCurrentSeason();
+    const values = new Map(
+      centers.map((player) => [
+        player.id,
+        playerStatValue(player.id, season, "points", player.team),
+      ]),
+    );
+    const scored = centers.filter((player) => values.get(player.id) != null);
+    expect(scored.length).toBeGreaterThan(8);
+    const grouped = populateAndGroupIds(
+      createDefaultRows(),
+      centers.map((player) => player.id),
+      values,
+    );
+    expect(grouped.added).toBe(12);
+    expect(grouped.rows[0]!.teams.length).toBeGreaterThan(0);
+    expect(grouped.rows.some((row, index) => index > 0 && row.teams.length)).toBe(
+      true,
+    );
+    const ranked = grouped.rows.flatMap((row) => row.teams).filter((id) => values.get(id) != null);
+    for (let index = 1; index < ranked.length; index += 1) {
+      expect(values.get(ranked[index - 1]!)!).toBeGreaterThanOrEqual(
+        values.get(ranked[index]!)!,
+      );
+    }
   });
 });
 

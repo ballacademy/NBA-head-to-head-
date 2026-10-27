@@ -62,10 +62,11 @@ import {
 import {
   addTeamToRow,
   addTier,
+  clearTierOccupants,
   createDefaultRows,
   DEFAULT_TIER_TITLE,
+  fillMatchingIds,
   groupIdsByValues,
-  populateAndGroupIds,
   isTierDraft,
   MAX_TIERS,
   MIN_TIERS,
@@ -163,6 +164,7 @@ export function TierListComposerApp() {
   const [rostersReady, setRostersReady] = useState(false);
   const [groupMetric, setGroupMetric] = useState<EveryTeamStatMetric>("points");
   const [tierSplit, setTierSplit] = useState<TierSplit>("even");
+  const [grouping, setGrouping] = useState(false);
   const [look, setLook] = useComposerLook(TIER_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [statsSample, setStatsSample] = useComposerStatsSample();
@@ -291,6 +293,19 @@ export function TierListComposerApp() {
     setStatus("Blank post.");
   };
 
+  const handleClearPlayers = () => {
+    if (!usedTeamIds(rows).size) {
+      setStatus("Board is already empty.");
+      return;
+    }
+    push(rows);
+    setRows(clearTierOccupants(rows));
+    setActive(null);
+    setStatus(
+      subject === "players" ? "Cleared players." : "Cleared teams.",
+    );
+  };
+
   const handleExportSquare = async () => {
     const node = boardRef.current;
     if (!node) {
@@ -341,56 +356,77 @@ export function TierListComposerApp() {
     return values;
   };
 
-  const handlePopulateMatching = () => {
-    if (!matchingIds.length && usedTeamIds(rows).size === 0) {
-      setStatus("No names match the current filters.");
+  const applyTierStats = async (
+    metric: EveryTeamStatMetric,
+    alsoPopulate: boolean,
+  ) => {
+    if (grouping) {
       return;
     }
-    const used = [...new Set([...usedTeamIds(rows), ...matchingIds])];
-    const values = valuesForIds(used, groupMetric);
-    const grouped = populateAndGroupIds(rows, matchingIds, values, tierSplit);
-    const scored = used.filter((id) => values.get(id) != null).length;
-    const label = autoSortMetricLabel(groupMetric);
-    push(rows);
-    setRows(grouped.rows);
-    setActive(null);
-    if (grouped.added === 0 && scored === 0) {
+    setGrouping(true);
+    setStatus("Loading season stats…");
+    try {
+      try {
+        await loadEveryTeamRosters();
+        setRostersReady(true);
+      } catch {
+        setStatus("Couldn't load season stats.");
+        return;
+      }
+      let board = rows;
+      let added = 0;
+      if (alsoPopulate) {
+        if (!matchingIds.length && usedTeamIds(board).size === 0) {
+          setStatus("No names match the current filters.");
+          return;
+        }
+        const filled = fillMatchingIds(board, matchingIds);
+        board = filled.rows;
+        added = filled.added;
+      }
+      const used = [...usedTeamIds(board)];
+      if (!used.length) {
+        setStatus(
+          matchingIds.length
+            ? "Populate matching names first, then group by a stat."
+            : "No names match the current filters.",
+        );
+        return;
+      }
+      const values = valuesForIds(used, metric);
+      const scored = used.filter((id) => values.get(id) != null).length;
+      const label = autoSortMetricLabel(metric);
+      const item = subject === "players" ? "player" : "team";
+      push(rows);
+      setActive(null);
+      if (scored === 0) {
+        if (added) {
+          setRows(board);
+        }
+        setStatus(
+          `No ${label} yet — last season’s table is used when this year has none.`,
+        );
+        return;
+      }
+      const grouped = groupIdsByValues(board, values, tierSplit);
+      setRows(grouped);
       setStatus(
-        matchingIds.length
-          ? "All matching names are already on the board."
-          : "No names match the current filters.",
+        added
+          ? `Filled ${added} matching ${item}${added === 1 ? "" : "s"} and grouped ${scored} by ${label} into ${grouped.length} tiers.`
+          : `Grouped ${scored} by ${label} into ${grouped.length} tiers (highest in ${grouped[0]?.label || "S"}).`,
       );
-      return;
+    } finally {
+      setGrouping(false);
     }
-    setStatus(
-      `Filled ${grouped.added} matching ${noun}${
-        grouped.added === 1 ? "" : "s"
-      } and grouped ${scored} by ${label} into ${grouped.rows.length} tiers.`,
-    );
+  };
+
+  const handlePopulateMatching = () => {
+    void applyTierStats(groupMetric, true);
   };
 
   const handleGroupByStat = (metric: EveryTeamStatMetric) => {
-    const used = [...usedTeamIds(rows)];
-    if (!used.length) {
-      setStatus("Populate matching names first, then group by a stat.");
-      return;
-    }
-    const values = valuesForIds(used, metric);
-    const scored = used.filter((id) => values.get(id) != null).length;
-    const label = autoSortMetricLabel(metric);
-    const grouped = groupIdsByValues(rows, values, tierSplit);
-    push(rows);
-    setRows(grouped);
-    setActive(null);
-    if (scored === 0) {
-      setStatus(
-        `No ${label} yet — last season’s table is used when this year has none.`,
-      );
-      return;
-    }
-    setStatus(
-      `Grouped ${scored} by ${label} into ${grouped.length} tiers (highest in ${grouped[0]?.label || "S"}).`,
-    );
+    const empty = usedTeamIds(rows).size === 0;
+    void applyTierStats(metric, empty);
   };
 
   const handleExportStory = async () => {
@@ -473,7 +509,9 @@ export function TierListComposerApp() {
           <button
             type="button"
             className="sc-chip"
+            aria-label="Populate matching"
             onClick={handlePopulateMatching}
+            disabled={grouping}
           >
             Populate matching
           </button>
@@ -506,7 +544,9 @@ export function TierListComposerApp() {
           <button
             type="button"
             className="sc-chip"
+            aria-label="Sort into tiers"
             onClick={() => handleGroupByStat(groupMetric)}
+            disabled={grouping}
           >
             Sort into tiers
           </button>
@@ -591,6 +631,14 @@ export function TierListComposerApp() {
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            aria-label="Clear players"
+            onClick={handleClearPlayers}
+          >
+            Clear players
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleReset}>
             Blank post
@@ -688,8 +736,9 @@ export function TierListComposerApp() {
           />
           </ComposerBoard>
           <p className="sc-hint">
-            Click a square to add a {noun}, or Populate matching to fill from the
-            current filters. Group by a stat ranks the board into S–A–… .
+            Click a square to add a {noun}, or Populate matching / Sort into
+            tiers to fill from the current filters and rank by a season stat.
+            Clear players empties cells and keeps labels, colors, and row count.
             Tiers range from 3 to 10. Downloads a 4:5 Instagram PNG — nothing is
             posted.
           </p>
