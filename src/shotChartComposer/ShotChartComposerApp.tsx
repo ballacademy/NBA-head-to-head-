@@ -3,7 +3,11 @@ import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { GRAPHIC_HEIGHT, STORY_DESIGN_HEIGHT } from "../standingsComposer/rankingState";
 import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
+import { ComposerHudExtras } from "../instagramComposer/ComposerHudExtras";
+import { ComposerHudSelect } from "../instagramComposer/ComposerHudSelect";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerNameStyleToggle } from "../instagramComposer/ComposerNameStyleToggle";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -12,6 +16,7 @@ import {
   rangeWeekLine,
   useComposerDateRange,
 } from "../instagramComposer/composerDateRange";
+import { useComposerNight } from "../instagramComposer/composerNight";
 import {
   SHOT_CHART_LOOK_KEY,
   useComposerLook,
@@ -35,14 +40,21 @@ import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { ShotChartGraphic } from "./ShotChartGraphic";
 import { exportShotChartPng } from "./exportShotChartPng";
 import { renderShotChartCanvas } from "./renderShotChartCanvas";
+import type { LastGame } from "../playerOfTheDayComposer/lastGame";
 import {
+  applyShotChartFilter,
   applyShotChartPlayer,
   defaultShotChartDraft,
   fetchRecentGames,
   fetchShotChartForGame,
+  formatShotMatchup,
   gamesForShotWindow,
+  isoDateOnly,
   isShotChartDraft,
+  shotChartFilter,
+  shotGameOptionLabel,
   type ShotChartDraft,
+  type ShotChartFilter,
   type ShotChartWindow,
 } from "./shotChartState";
 import "@fontsource/montserrat/latin-900.css";
@@ -76,8 +88,10 @@ export function ShotChartComposerApp() {
   const [look, setLook] = useComposerLook(SHOT_CHART_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const { range, setRange } = useComposerDateRange();
+  const night = useComposerNight();
   const { push, pop, canUndo } = useComposerUndo<ShotChartDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
+  const [recentGames, setRecentGames] = useState<LastGame[]>([]);
   const fillSeq = useRef(0);
 
   useEffect(() => {
@@ -87,6 +101,7 @@ export function ShotChartComposerApp() {
       ...loaded,
       from: loaded.from || range.from,
       to: loaded.to || range.to,
+      nightDate: loaded.nightDate || night.date,
     });
     setHydrated(true);
   }, []);
@@ -107,10 +122,16 @@ export function ShotChartComposerApp() {
     setStatus("Loading shots…");
     try {
       const games = await fetchRecentGames(next.playerId);
-      const windowGames = gamesForShotWindow(games, next.window, {
-        from: next.from || range.from,
-        to: next.to || range.to,
-      });
+      setRecentGames(games);
+      const windowGames = gamesForShotWindow(
+        games,
+        next.window,
+        {
+          from: next.from || range.from,
+          to: next.to || range.to,
+        },
+        { eventId: next.eventId, nightDate: next.nightDate || night.date },
+      );
       const batches = await Promise.all(
         windowGames.map((game) =>
           fetchShotChartForGame(game.eventId, next.playerId),
@@ -121,13 +142,18 @@ export function ShotChartComposerApp() {
       }
       const shots = batches.flat();
       const makes = shots.filter((shot) => shot.made).length;
-      const label =
-        next.window === "last-game"
+      const single = windowGames.length === 1 ? windowGames[0] : undefined;
+      const label = single
+        ? single.dateLabel || "LAST GAME"
+        : next.window === "last-game"
           ? windowGames[0]?.dateLabel || "LAST GAME"
           : rangeWeekLine(next.from || range.from, next.to || range.to);
       push(draft);
       setDraft({
         ...next,
+        nightDate: next.nightDate || night.date,
+        eventId: single?.eventId || "",
+        matchup: single ? formatShotMatchup(single) : "",
         shots,
         makes,
         attempts: shots.length,
@@ -154,6 +180,22 @@ export function ShotChartComposerApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
+  useEffect(() => {
+    if (!hydrated || !draft.playerId) {
+      setRecentGames([]);
+      return;
+    }
+    let cancelled = false;
+    void fetchRecentGames(draft.playerId).then((games) => {
+      if (!cancelled) {
+        setRecentGames(games);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, draft.playerId]);
+
   const pickPlayer = (playerId: string) => {
     const player = getPlayer(playerId);
     if (!player) {
@@ -172,9 +214,39 @@ export function ShotChartComposerApp() {
       window,
       from: range.from,
       to: range.to,
+      eventId: window === "range" ? "" : draft.eventId,
     };
     setDraft(next);
     void fillShots(next);
+  };
+
+  const setNight = (iso: string) => {
+    night.setDate(iso);
+    const next = {
+      ...draft,
+      window: "last-game" as const,
+      nightDate: iso,
+      eventId: "",
+    };
+    setDraft(next);
+    void fillShots(next);
+  };
+
+  const pickRecentGame = (eventId: string) => {
+    const game = recentGames.find((row) => row.eventId === eventId);
+    const next = {
+      ...draft,
+      window: "last-game" as const,
+      eventId,
+      nightDate: game ? isoDateOnly(game.gameDate) : draft.nightDate,
+      matchup: game ? formatShotMatchup(game) : "",
+    };
+    setDraft(next);
+    void fillShots(next);
+  };
+
+  const setShotFilter = (filter: ShotChartFilter) => {
+    setDraft((current) => applyShotChartFilter(current, filter));
   };
 
   const handleExport = async (story = false, square = false) => {
@@ -270,8 +342,10 @@ export function ShotChartComposerApp() {
                   setRange(next);
                   const updated = {
                     ...draft,
+                    window: "range" as const,
                     from: next.from,
                     to: next.to,
+                    eventId: "",
                   };
                   setDraft(updated);
                   void fillShots(updated);
@@ -279,14 +353,43 @@ export function ShotChartComposerApp() {
                 onFill={() => void fillShots()}
               />
             ) : (
-              <button
-                type="button"
-                className="sc-chip"
-                onClick={() => void fillShots()}
-                disabled={filling}
-              >
-                {filling ? "Loading…" : "Fill last game"}
-              </button>
+              <>
+                <ComposerNightDate
+                  date={draft.nightDate || night.date}
+                  todayIso={night.todayIso}
+                  yesterdayIso={night.yesterdayIso}
+                  onChange={setNight}
+                />
+                <label className="sc-field">
+                  Game
+                  <select
+                    value={draft.eventId || ""}
+                    aria-label="Recent game"
+                    onChange={(event) => pickRecentGame(event.target.value)}
+                  >
+                    <option value="">Latest</option>
+                    {draft.eventId &&
+                    !recentGames.some((game) => game.eventId === draft.eventId) ? (
+                      <option value={draft.eventId}>
+                        {draft.gameLabel || "Selected game"}
+                      </option>
+                    ) : null}
+                    {recentGames.slice(0, 20).map((game) => (
+                      <option key={game.eventId} value={game.eventId}>
+                        {shotGameOptionLabel(game)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  className="sc-chip"
+                  onClick={() => void fillShots()}
+                  disabled={filling}
+                >
+                  {filling ? "Loading…" : "Fill"}
+                </button>
+              </>
             )}
           </>
         }
@@ -300,40 +403,45 @@ export function ShotChartComposerApp() {
                 setDraft((current) => ({ ...current, showBa }))
               }
             />
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Makes</span>
-              <button
-                type="button"
-                className={draft.showMakes !== false ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showMakes !== false}
-                aria-label="Show made shots"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showMakes: current.showMakes === false,
-                  }))
-                }
-              >
-                {draft.showMakes !== false ? "On" : "Off"}
-              </button>
-            </label>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Misses</span>
-              <button
-                type="button"
-                className={draft.showMisses !== false ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={draft.showMisses !== false}
-                aria-label="Show missed shots"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showMisses: current.showMisses === false,
-                  }))
-                }
-              >
-                {draft.showMisses !== false ? "On" : "Off"}
-              </button>
-            </label>
+            <ComposerHudSelect
+              label="Shots"
+              ariaLabel="Makes or misses"
+              value={shotChartFilter(draft)}
+              options={[
+                { value: "both", label: "Both" },
+                { value: "makes", label: "Makes" },
+                { value: "misses", label: "Misses" },
+              ]}
+              onChange={setShotFilter}
+            />
+            <ComposerHudExtras
+              label="Board extras"
+              ariaLabel="Shot board extras"
+              items={[
+                {
+                  key: "opponent",
+                  label: "Opponent",
+                  on: draft.showOpponent === true,
+                  onChange: (showOpponent) =>
+                    setDraft((current) => ({ ...current, showOpponent })),
+                },
+                {
+                  key: "zones",
+                  label: "Zones",
+                  on: draft.showZones !== false,
+                  onChange: (showZones) =>
+                    setDraft((current) => ({ ...current, showZones })),
+                },
+                {
+                  key: "legend",
+                  label: "Legend",
+                  on: draft.showLegend !== false,
+                  onChange: (showLegend) =>
+                    setDraft((current) => ({ ...current, showLegend })),
+                },
+              ]}
+            />
+            <ComposerNameStyleToggle />
             <label className="sc-field">
               <span className="sc-toolbar__eyebrow">Story crop</span>
               <button

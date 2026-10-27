@@ -155,7 +155,9 @@ describe("composer mode", () => {
     expect(readComposerMode("", "/schedule")).toBe("schedule");
     expect(composerHref("schedule")).toBe("/schedule");
     expect(readComposerMode("", "/shot-chart")).toBe("shot-chart");
+    expect(readComposerMode("", "/shot")).toBe("shot-chart");
     expect(readComposerMode("?composer=shots", "/")).toBe("shot-chart");
+    expect(readComposerMode("?composer=shot", "/")).toBe("shot-chart");
     expect(composerHref("shot-chart")).toBe("/shot-chart");
     expect(readComposerMode("", "/picks")).toBe("picks");
     expect(readComposerMode("", "/locks")).toBe("picks");

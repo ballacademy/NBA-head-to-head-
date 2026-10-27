@@ -126,8 +126,8 @@ const INJURY_PATHS = new Set(["/injury", "/injuries", "/injury-report"]);
 const INJURY_QUERY = new Set(["injury", "injuries", "injury-report"]);
 const SCHEDULE_PATHS = new Set(["/schedule", "/schedule-poster", "/this-week"]);
 const SCHEDULE_QUERY = new Set(["schedule", "schedule-poster", "this-week"]);
-const SHOT_CHART_PATHS = new Set(["/shot-chart", "/shotchart", "/shots"]);
-const SHOT_CHART_QUERY = new Set(["shot-chart", "shotchart", "shots"]);
+const SHOT_CHART_PATHS = new Set(["/shot-chart", "/shotchart", "/shots", "/shot"]);
+const SHOT_CHART_QUERY = new Set(["shot-chart", "shotchart", "shots", "shot"]);
 const PICKS_PATHS = new Set(["/picks", "/locks", "/spreads"]);
 const PICKS_QUERY = new Set(["picks", "locks", "spread", "spreads"]);
 

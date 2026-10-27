@@ -178,6 +178,8 @@ describe("composer route", () => {
     expect(isStandingsComposerRoute("", "/mock-trade")).toBe(true);
     expect(isStandingsComposerRoute("", "/plot")).toBe(true);
     expect(isStandingsComposerRoute("", "/scatter")).toBe(true);
+    expect(isStandingsComposerRoute("", "/shot")).toBe(true);
+    expect(isStandingsComposerRoute("", "/shot-chart")).toBe(true);
     expect(isStandingsComposerRoute("?utm=try-live", "/")).toBe(true);
   });
 

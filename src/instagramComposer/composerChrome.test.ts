@@ -1252,6 +1252,16 @@ describe("composer chrome", () => {
     expect(totwPlusHud).toContain("Export pack");
     expect(shotHud).toContain("story: true");
     expect(shotHud).toContain("{ letterbox: false }");
+    expect(shotHud).toContain("ComposerNightDate");
+    expect(shotHud).toContain("ComposerHudExtras");
+    expect(shotHud).toContain("ComposerNameStyleToggle");
+    expect(shotHud).toContain('aria-label="Recent game"');
+    expect(shotHud).toContain('label: "Both"');
+    expect(shotHud).toContain('label: "Makes"');
+    expect(shotHud).toContain('label: "Misses"');
+    expect(shotHud).toContain('label: "Opponent"');
+    expect(shotHud).toContain('label: "Zones"');
+    expect(shotHud).toContain('label: "Legend"');
     const hotkeys = readFileSync(
       join(root, "instagramComposer/composerHotkeys.ts"),
       "utf8",
@@ -1282,15 +1292,29 @@ describe("composer chrome", () => {
     expect(shotState).toContain("item.shootingPlay !== true");
     expect(shotState).toContain("isFreeThrow");
     expect(shotState).not.toContain("Math.random");
+    expect(shotState).toContain("formatShotMatchup");
+    expect(shotState).toContain("showOpponent: false");
     expect(shotGraphic).toContain("No shot location data");
     expect(shotGraphic).toContain("shotChartBoardRects");
+    expect(shotGraphic).toContain("shc-title-plate");
+    expect(shotGraphic).toContain("shc-notch");
+    expect(shotGraphic).toContain("shotChartPlayerLabel");
     expect(shotCanvas).toContain("shotChartBoardRects");
     expect(shotCanvas).toContain("paintHalfCourt");
     expect(shotCanvas).toContain("paintHeaderMetalField");
+    expect(shotCanvas).toContain("drawBannerInterior");
+    const shotLayout = readFileSync(
+      join(root, "shotChartComposer/shotChartLayout.ts"),
+      "utf8",
+    );
+    expect(shotLayout).toContain("COURT_VIEW_H_FT");
+    expect(shotLayout).toContain("SHOT_COURT_GAP");
     const shotCss = readFileSync(
       join(root, "shotChartComposer/shotChartComposer.css"),
       "utf8",
     );
+    expect(shotCss).toContain(".shc-title-plate");
+    expect(shotCss).toContain(".shc-notch");
     const plotCss = readFileSync(
       join(root, "plotComposer/plotComposer.css"),
       "utf8",

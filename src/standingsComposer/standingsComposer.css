@@ -779,6 +779,7 @@ main.sc-stage {
 .is-purple .cmp-title-plate,
 .is-purple .mt-title-plate,
 .is-purple .cmp-sub-plate,
+.is-purple .shc-title-plate,
 .is-purple .pi-slot,
 .is-purple .qt-board .pod-photo {
   box-shadow:
@@ -814,7 +815,8 @@ main.sc-stage {
 }
 
 .is-purple .totw-week-notch,
-.is-purple .twp-week {
+.is-purple .twp-week,
+.is-purple .shc-notch {
   box-shadow:
     0 0 0 calc(2 * var(--u)) #b026ff,
     0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.45);

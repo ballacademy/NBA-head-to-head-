@@ -1,6 +1,6 @@
 .shc-board {
   --u: 1px;
-  --header-h: calc(228 * var(--u));
+  --header-h: calc(165 * var(--u));
   --frame-color: #fff;
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
@@ -50,6 +50,19 @@
   z-index: 6;
 }
 
+.shc-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: calc(8 * var(--u));
+  pointer-events: none;
+}
+
 .shc-brand,
 .shc-title-input {
   appearance: none;
@@ -63,29 +76,62 @@
 }
 
 .shc-brand {
-  position: absolute;
-  top: calc(16 * var(--u));
-  left: calc(110 * var(--u));
-  right: calc(110 * var(--u));
-  z-index: 4;
-  height: calc(28 * var(--u));
+  height: calc(32 * var(--u));
+  width: 70%;
+  pointer-events: auto;
   letter-spacing: 0.18em;
   font-size: calc(22 * var(--u));
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
+}
+
+.shc-brand--spacer {
+  pointer-events: none;
+}
+
+.shc-title-plate {
+  position: relative;
+  box-sizing: border-box;
+  width: 90.7%;
+  flex: 0 0 calc(73 * var(--u));
+  height: calc(73 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(12 * var(--u)) calc(20 * var(--u));
+  pointer-events: auto;
+  border: var(--frame-w) solid var(--frame-color);
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
 }
 
 .shc-title-block {
-  position: absolute;
-  top: calc(46 * var(--u));
-  left: calc(48 * var(--u));
-  right: calc(48 * var(--u));
-  z-index: 4;
-  height: calc(72 * var(--u));
+  position: relative;
+  width: 96%;
+  pointer-events: none;
 }
 
 .shc-title-line {
   display: block;
-  font-size: calc(40 * var(--u));
-  letter-spacing: 0.06em;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(38 * var(--u));
+  font-weight: 900;
+  font-style: italic;
+  font-synthesis: none;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 0.92;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow: calc(1.5 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.85);
 }
 
 .shc-title-input {
@@ -99,48 +145,99 @@
   overflow: hidden;
   color: transparent;
   caret-color: #fff;
+  font-size: calc(38 * var(--u));
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 0.92;
+  white-space: pre;
+  pointer-events: auto;
 }
 
-.shc-player {
-  position: absolute;
-  top: calc(118 * var(--u));
-  left: calc(40 * var(--u));
-  right: calc(40 * var(--u));
-  z-index: 4;
-  margin: 0;
-  padding: 0;
+.shc-title-input:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.shc-notch {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(3 * var(--u));
+  box-sizing: border-box;
+  margin-top: calc(-2 * var(--u));
+  width: max-content;
+  min-width: 0;
+  max-width: 78%;
+  height: calc(54 * var(--u));
+  padding: calc(6 * var(--u)) calc(72 * var(--u)) calc(7 * var(--u));
+  pointer-events: auto;
   border: 0;
-  background: transparent;
-  color: #fff;
-  text-align: center;
+  background: #fff;
+  color: #111;
   cursor: pointer;
+  clip-path: polygon(
+    calc(8 * var(--u)) 0,
+    calc(100% - 8 * var(--u)) 0,
+    100% 100%,
+    0 100%
+  );
 }
 
-.shc-player__given {
-  display: block;
-  font-family: var(--ig-poster);
-  font-size: calc(13 * var(--u));
-  font-weight: 900;
-  letter-spacing: 0.18em;
+.shc-notch:focus {
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
 }
 
-.shc-player__family {
-  display: block;
-  font-family: var(--ig-poster);
-  font-size: calc(36 * var(--u));
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  line-height: 1.05;
+.shc-notch__name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6 * var(--u));
+  width: max-content;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.shc-player__line {
+.shc-notch__logo {
+  flex: 0 0 calc(32 * var(--u));
+  width: calc(32 * var(--u));
+  height: calc(32 * var(--u));
+  overflow: visible;
+  pointer-events: none;
+}
+
+.shc-notch__logo canvas {
+  width: 100%;
+  height: 100%;
   display: block;
-  margin-top: calc(4 * var(--u));
+}
+
+.shc-notch__player {
+  min-width: 0;
+  color: #111;
   font-family: var(--ig-poster);
-  font-size: calc(14 * var(--u));
+  font-size: calc(16 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.16em;
-  color: #facc15;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shc-notch__meta {
+  color: #222;
+  font-family: var(--ig-poster);
+  font-size: calc(12 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .shc-court-wrap {
@@ -177,29 +274,37 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: calc(6 * var(--u)) calc(10 * var(--u));
+  gap: calc(10 * var(--u)) calc(12 * var(--u));
   margin: 0;
   padding: 0;
   list-style: none;
   font-family: var(--ig-poster);
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 .shc-zones li {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: calc(8 * var(--u));
   min-width: 0;
-  font-size: calc(12 * var(--u));
-  color: rgba(255, 255, 255, 0.78);
+  color: #fff;
+  font-size: calc(17 * var(--u));
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.shc-zones li span {
+  min-width: 0;
 }
 
 .shc-zones strong {
   color: #facc15;
-  font-size: calc(15 * var(--u));
-  letter-spacing: 0.04em;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
 .shc-legend {

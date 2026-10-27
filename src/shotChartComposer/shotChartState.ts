@@ -1,4 +1,8 @@
-import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import { normalizeComposerTitle } from "../instagramComposer/titleLayout";
+import {
+  formatComposerName,
+  type ComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import {
   datesInInclusiveRange,
   type ComposerDateRange,
@@ -21,9 +25,10 @@ export const ESPN_SUMMARY_URL = (eventId: string) =>
   `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${encodeURIComponent(eventId)}`;
 
 export const DEFAULT_SHOT_CHART_TITLE = "SHOT CHART";
-export const SHOT_CHART_TITLE_TRACK = 0.04;
+export const SHOT_CHART_TITLE_TRACK = 0.02;
 
 export type ShotChartWindow = "last-game" | "range";
+export type ShotChartFilter = "both" | "makes" | "misses";
 
 export interface ShotChartMake {
   x: number;
@@ -43,17 +48,77 @@ export interface ShotChartDraft {
   window: ShotChartWindow;
   from: string;
   to: string;
+  nightDate?: string;
+  eventId?: string;
   gameLabel: string;
+  matchup?: string;
   makes: number;
   attempts: number;
   shots: ShotChartMake[];
   showBa?: boolean;
   showMakes?: boolean;
   showMisses?: boolean;
+  showOpponent?: boolean;
+  showZones?: boolean;
+  showLegend?: boolean;
 }
 
-export const splitShotChartTitle = (title: string) =>
-  splitBalancedTitle(title, DEFAULT_SHOT_CHART_TITLE, SHOT_CHART_TITLE_TRACK);
+/** Always one line — never even-split SHOT / CHART. */
+export const splitShotChartTitle = (title: string) => {
+  const text = normalizeComposerTitle(title, DEFAULT_SHOT_CHART_TITLE);
+  return [text || DEFAULT_SHOT_CHART_TITLE];
+};
+
+export const shotChartFilter = (draft: Pick<ShotChartDraft, "showMakes" | "showMisses">): ShotChartFilter => {
+  if (draft.showMakes === false && draft.showMisses !== false) {
+    return "misses";
+  }
+  if (draft.showMisses === false) {
+    return "makes";
+  }
+  return "both";
+};
+
+export const applyShotChartFilter = (
+  draft: ShotChartDraft,
+  filter: ShotChartFilter,
+): ShotChartDraft => ({
+  ...draft,
+  showMakes: filter !== "misses",
+  showMisses: filter !== "makes",
+});
+
+export const formatShotMatchup = (game: Pick<LastGame, "opponentAbbrev" | "home">) => {
+  const opp = String(game.opponentAbbrev ?? "").trim().toUpperCase();
+  if (!opp) {
+    return "";
+  }
+  return game.home ? `vs ${opp}` : `@ ${opp}`;
+};
+
+export const isSingleShotGame = (draft: ShotChartDraft) => {
+  if (draft.eventId) {
+    return true;
+  }
+  if (draft.window === "last-game") {
+    return true;
+  }
+  const from = isoDateOnly(draft.from);
+  const to = isoDateOnly(draft.to);
+  return Boolean(from && from === to);
+};
+
+export const shotChartPlayerLabel = (
+  draft: ShotChartDraft,
+  style?: ComposerNameStyle,
+) =>
+  formatComposerName(draft.firstName, draft.lastName, style) || "PLAYER";
+
+export const formatZoneLockup = (
+  label: string,
+  makes: number,
+  attempts: number,
+) => [label.trim(), `${makes}–${attempts}`].filter(Boolean).join(" ");
 
 const rec = (value: unknown) =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : null;
@@ -150,12 +215,31 @@ export const fetchShotChartForGame = async (
   }
 };
 
+export const shotGameOptionLabel = (game: LastGame) => {
+  const date = (game.dateLabel || "").trim();
+  const matchup = formatShotMatchup(game);
+  return [date, matchup].filter(Boolean).join(" ") || game.resultLine || game.eventId;
+};
+
 export const gamesForShotWindow = (
   games: LastGame[],
   window: ShotChartWindow,
   range: ComposerDateRange,
+  opts: { eventId?: string; nightDate?: string } = {},
 ) => {
+  const eventId = (opts.eventId || "").trim();
+  if (eventId && window !== "range") {
+    const match = games.find((game) => game.eventId === eventId);
+    return match ? [match] : [];
+  }
   if (window === "last-game") {
+    const night = isoDateOnly(opts.nightDate || "");
+    if (night) {
+      const thatNight = games.filter((game) => isoDateOnly(game.gameDate) === night);
+      if (thatNight.length) {
+        return thatNight.slice(0, 1);
+      }
+    }
     return games.slice(0, 1);
   }
   return gamesInInclusiveRange(games, range.from, range.to);
@@ -172,13 +256,19 @@ export const defaultShotChartDraft = (): ShotChartDraft => ({
   window: "last-game",
   from: "",
   to: "",
+  nightDate: "",
+  eventId: "",
   gameLabel: "",
+  matchup: "",
   makes: 0,
   attempts: 0,
   shots: [],
   showBa: false,
   showMakes: true,
   showMisses: true,
+  showOpponent: false,
+  showZones: true,
+  showLegend: true,
 });
 
 export const isShotChartDraft = (value: unknown): value is ShotChartDraft =>
@@ -207,11 +297,24 @@ export const applyShotChartPlayer = (
     lastName: names.lastName,
     teamId: player.team,
     photoSrc: player.headshotUrl,
+    eventId: "",
+    matchup: "",
   };
 };
 
 export const shotLine = (makes: number, attempts: number) =>
   `${makes}-${attempts}`;
+
+export const shotChartNotchMeta = (draft: ShotChartDraft) => {
+  const fg = shotLine(draft.makes, draft.attempts);
+  const raw = (draft.gameLabel || "LAST GAME").trim();
+  const date = raw.replace(/\s*·\s*\d+[–-]\d+\s*$/u, "").trim() || "LAST GAME";
+  const matchup =
+    draft.showOpponent === true && isSingleShotGame(draft)
+      ? (draft.matchup || "").trim()
+      : "";
+  return [date, matchup, fg].filter(Boolean).join(" · ");
+};
 
 export const courtPoint = (shot: ShotChartMake, w: number, h: number) =>
   shotToPx(shot, { x: 0, y: 0, w, h });

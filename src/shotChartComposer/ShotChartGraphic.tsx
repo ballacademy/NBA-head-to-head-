@@ -5,25 +5,27 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import {
-  composerNameLines,
-  useComposerNameStyle,
-} from "../instagramComposer/composerNameStyle";
+import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
+import { TeamLogo } from "../standingsComposer/TeamLogo";
+import { getTeam } from "../standingsComposer/teams";
 import {
   COURT_FLOOR,
+  SHOT_HEADER_H,
+  SHOT_MAKE_R,
+  SHOT_MISS_R,
   halfCourtSvgPaths,
   shotChartBoardRects,
   shotToPx,
 } from "./shotChartLayout";
 import {
-  formatZoneSplit,
-  shotLine,
+  shotChartNotchMeta,
+  shotChartPlayerLabel,
   shotZoneSplits,
   splitShotChartTitle,
   visibleShots,
@@ -58,14 +60,17 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(0.4);
     const [nameStyle] = useComposerNameStyle();
-    const nameLines = composerNameLines(
-      draft.firstName,
-      draft.lastName,
-      nameStyle,
-    );
     const titleLines = splitShotChartTitle(draft.title);
+    const playerLabel = shotChartPlayerLabel(draft, nameStyle);
+    const notchMeta = shotChartNotchMeta(draft);
+    const team = getTeam(draft.teamId);
+    const showZones = draft.showZones !== false;
+    const showLegend = draft.showLegend !== false;
     const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
-    const rects = useMemo(() => shotChartBoardRects(boardH), [boardH]);
+    const rects = useMemo(
+      () => shotChartBoardRects(boardH, { showZones, showLegend }),
+      [boardH, showZones, showLegend],
+    );
     const court = rects.court;
     const paths = useMemo(
       () => halfCourtSvgPaths(court.w, court.h),
@@ -119,6 +124,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
           .join(" ")}
         style={{
           ["--u" as string]: `${unit}px`,
+          ["--header-h" as string]: `${SHOT_HEADER_H * unit}px`,
           height: story ? STORY_DESIGN_HEIGHT : undefined,
         }}
         aria-label="Instagram shot chart graphic"
@@ -131,39 +137,48 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             aria-hidden="true"
           />
         ) : null}
-        {draft.showBa ? null : (
-          <input
-            className="shc-brand"
-            value={draft.brand}
-            maxLength={24}
-            spellCheck={false}
-            aria-label="Brand label"
-            onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
-          />
-        )}
-        <div className="shc-title-block">
-          <ComposerTitleField
-            value={draft.title}
-            lines={titleLines}
-            ariaLabel="Shot chart title"
-            inputClassName="shc-title-input"
-            lineClassName="shc-title-line"
-            onChange={onTitleChange}
-          />
-        </div>
-        <button type="button" className="shc-player" onClick={onPick}>
-          {nameLines.given ? (
-            <span className="shc-player__given">
-              {nameLines.given || "PICK"}
+        <header className="shc-header">
+          {draft.showBa ? (
+            <div className="shc-brand shc-brand--spacer" aria-hidden="true" />
+          ) : (
+            <input
+              className="shc-brand"
+              value={draft.brand}
+              maxLength={24}
+              spellCheck={false}
+              aria-label="Brand label"
+              onChange={(event) => onComposerTextChange(event, onBrandChange, 24)}
+            />
+          )}
+          <div className="shc-title-plate">
+            <div className="shc-title-block">
+              <ComposerTitleField
+                value={draft.title}
+                lines={titleLines}
+                ariaLabel="Shot chart title"
+                inputClassName="shc-title-input"
+                lineClassName="shc-title-line"
+                onChange={onTitleChange}
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            className="shc-notch"
+            aria-label="Pick shooter"
+            onClick={onPick}
+          >
+            <span className="shc-notch__name">
+              {team ? (
+                <span className="shc-notch__logo">
+                  <TeamLogo src={team.logoSrc} label="" shadow={1} />
+                </span>
+              ) : null}
+              <span className="shc-notch__player">{playerLabel}</span>
             </span>
-          ) : null}
-          <span className="shc-player__family">
-            {nameLines.family || draft.lastName || "PLAYER"}
-          </span>
-          <span className="shc-player__line">
-            {draft.gameLabel || "LAST GAME"} · {shotLine(draft.makes, draft.attempts)}
-          </span>
-        </button>
+            <span className="shc-notch__meta">{notchMeta}</span>
+          </button>
+        </header>
         <div
           className="shc-court-wrap"
           style={{
@@ -220,7 +235,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
                   className={shot.made ? "is-make" : "is-miss"}
                   cx={point.x}
                   cy={point.y}
-                  r={shot.made ? 9 : 8}
+                  r={shot.made ? SHOT_MAKE_R : SHOT_MISS_R}
                   fill={shot.made ? "#facc15" : "none"}
                   stroke={shot.made ? "#111111" : "#fb7185"}
                   strokeWidth={shot.made ? 1.4 : 2.8}
@@ -232,7 +247,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             <p className="shc-empty">No shot location data</p>
           ) : null}
         </div>
-        {empty ? null : (
+        {empty || !showZones ? null : (
           <ul
             className="shc-zones"
             aria-label="Shot zone splits"
@@ -246,18 +261,22 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             {zones.map((zone) => (
               <li key={zone.id}>
                 <span>{zone.label}</span>
-                <strong>{formatZoneSplit(zone.makes, zone.attempts)}</strong>
+                <strong>
+                  {zone.makes}–{zone.attempts}
+                </strong>
               </li>
             ))}
           </ul>
         )}
-        <p
-          className="shc-legend"
-          style={{ top: `calc(${rects.legendY} * var(--u))` }}
-        >
-          <span className="is-make">MAKE</span>
-          <span className="is-miss">MISS</span>
-        </p>
+        {showLegend ? (
+          <p
+            className="shc-legend"
+            style={{ top: `calc(${rects.legendY} * var(--u))` }}
+          >
+            <span className="is-make">MAKE</span>
+            <span className="is-miss">MISS</span>
+          </p>
+        ) : null}
       </article>
     );
   },

@@ -83,6 +83,7 @@ export const isStandingsComposerPath = (pathname: string): boolean => {
     path === "/shot-chart" ||
     path === "/shotchart" ||
     path === "/shots" ||
+    path === "/shot" ||
     path === "/picks" ||
     path === "/locks" ||
     path === "/spreads"
