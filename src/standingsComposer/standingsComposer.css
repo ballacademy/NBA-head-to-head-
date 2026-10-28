@@ -717,6 +717,10 @@ main.sc-stage {
 .stc-board.is-none,
 .scc-board.is-none,
 .mt-board.is-none,
+.lb-board.is-none,
+.ls-board.is-none,
+.pn-board.is-none,
+.dr-board.is-none,
 .plt-board.is-none {
   --frame-w: 0px;
   --frame-color: transparent;

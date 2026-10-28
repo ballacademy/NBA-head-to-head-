@@ -743,9 +743,17 @@ describe("composer chrome", () => {
     expect(tabs).toContain('mode: "picks"');
     expect(tabs).toContain('mode: "takeaways-cover"');
     expect(tabs).toContain('mode: "takeaways-card"');
+    expect(tabs).toContain('mode: "leader-bars"');
+    expect(tabs).toContain('mode: "leader-split"');
+    expect(tabs).toContain('mode: "poster-news"');
+    expect(tabs).toContain('mode: "dual-ranks"');
     expect(hub).toContain("PicksComposerApp");
     expect(hub).toContain("TakeawaysCoverComposerApp");
     expect(hub).toContain("TakeawaysCardComposerApp");
+    expect(hub).toContain("LeaderBarsComposerApp");
+    expect(hub).toContain("LeaderSplitComposerApp");
+    expect(hub).toContain("PosterNewsComposerApp");
+    expect(hub).toContain("DualRanksComposerApp");
     expect(hub).toContain("is-hud-simple");
     expect(hub).toContain("InjuryComposerApp");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__filters");

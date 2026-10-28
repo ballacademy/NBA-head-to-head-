@@ -30,6 +30,10 @@ export const COMPOSER_DRAFT_KEYS: Partial<Record<ComposerMode, string[]>> = {
   picks: ["ddgm:picks-composer"],
   "takeaways-cover": ["ddgm:takeaways-composer"],
   "takeaways-card": ["ddgm:takeaways-composer"],
+  "leader-bars": ["ddgm:leader-bars-composer"],
+  "leader-split": ["ddgm:leader-split-composer"],
+  "poster-news": ["ddgm:poster-news-composer"],
+  "dual-ranks": ["ddgm:dual-ranks-composer"],
 };
 
 const notify = () => {

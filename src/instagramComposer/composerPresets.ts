@@ -149,6 +149,32 @@ export const PICKS_TITLE_PRESETS = [
   "SPREADS",
 ];
 
+export const LEADER_BARS_TITLE_PRESETS = [
+  "PPG LEADERS",
+  "PTS LEADERS",
+  "REB LEADERS",
+  "AST LEADERS",
+];
+
+export const LEADER_SPLIT_TITLE_PRESETS = [
+  "PPG LEADERS",
+  "PTS LEADERS",
+  "THIS WEEK",
+];
+
+export const POSTER_NEWS_KICKER_PRESETS = [
+  "BREAKING",
+  "REPORT",
+  "STATEMENT",
+  "INJURY",
+];
+
+export const DUAL_RANKS_TITLE_PRESETS = [
+  "SCORING",
+  "ASSISTS",
+  "REBOUNDS",
+];
+
 export const MOCK_TRADE_TITLE_PRESETS = [
   "MOCK TRADE",
   "3-TEAM TRADE",

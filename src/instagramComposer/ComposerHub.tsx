@@ -33,6 +33,10 @@ import { ShotChartComposerApp } from "../shotChartComposer/ShotChartComposerApp"
 import { PicksComposerApp } from "../picksComposer/PicksComposerApp";
 import { TakeawaysCoverComposerApp } from "../takeawaysComposer/TakeawaysCoverComposerApp";
 import { TakeawaysCardComposerApp } from "../takeawaysComposer/TakeawaysCardComposerApp";
+import { LeaderBarsComposerApp } from "../leaderBarsComposer/LeaderBarsComposerApp";
+import { LeaderSplitComposerApp } from "../leaderSplitComposer/LeaderSplitComposerApp";
+import { PosterNewsComposerApp } from "../posterNewsComposer/PosterNewsComposerApp";
+import { DualRanksComposerApp } from "../dualRanksComposer/DualRanksComposerApp";
 import {
   composerHref,
   readComposerMode,
@@ -67,6 +71,10 @@ import "../scheduleComposer/scheduleComposer.css";
 import "../shotChartComposer/shotChartComposer.css";
 import "../picksComposer/picksComposer.css";
 import "../takeawaysComposer/takeawaysComposer.css";
+import "../leaderBarsComposer/leaderBarsComposer.css";
+import "../leaderSplitComposer/leaderSplitComposer.css";
+import "../posterNewsComposer/posterNewsComposer.css";
+import "../dualRanksComposer/dualRanksComposer.css";
 
 export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
@@ -235,6 +243,14 @@ export function ComposerHub() {
         <TakeawaysCoverComposerApp />
       ) : mode === "takeaways-card" ? (
         <TakeawaysCardComposerApp />
+      ) : mode === "leader-bars" ? (
+        <LeaderBarsComposerApp />
+      ) : mode === "leader-split" ? (
+        <LeaderSplitComposerApp />
+      ) : mode === "poster-news" ? (
+        <PosterNewsComposerApp />
+      ) : mode === "dual-ranks" ? (
+        <DualRanksComposerApp />
       ) : (
         <StandingsComposerApp />
       )}

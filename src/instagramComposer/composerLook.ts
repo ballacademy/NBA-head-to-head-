@@ -30,6 +30,10 @@ export const SCHEDULE_LOOK_KEY = "ddgm:schedule-composer-look";
 export const SHOT_CHART_LOOK_KEY = "ddgm:shot-chart-composer-look";
 export const PICKS_LOOK_KEY = "ddgm:picks-composer-look";
 export const TAKEAWAYS_LOOK_KEY = "ddgm:takeaways-composer-look";
+export const LEADER_BARS_LOOK_KEY = "ddgm:leader-bars-composer-look";
+export const LEADER_SPLIT_LOOK_KEY = "ddgm:leader-split-composer-look";
+export const POSTER_NEWS_LOOK_KEY = "ddgm:poster-news-composer-look";
+export const DUAL_RANKS_LOOK_KEY = "ddgm:dual-ranks-composer-look";
 export const PURPLE_FLAIR_KEY = "ddgm:composer-purple-flair";
 
 export const FRAME_WHITE = "#ffffff";

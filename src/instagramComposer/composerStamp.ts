@@ -17,6 +17,10 @@ export const COMPOSER_STAMP_MODES = new Set<ComposerMode>([
   "plot",
   "injury",
   "schedule",
+  "leader-bars",
+  "leader-split",
+  "poster-news",
+  "dual-ranks",
 ]);
 
 export interface ComposerStamp {

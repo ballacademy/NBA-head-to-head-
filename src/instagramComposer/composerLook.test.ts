@@ -98,6 +98,10 @@ describe("composer look", () => {
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:shot-chart-composer:saves");
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:picks-composer:saves");
     expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:takeaways-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:leader-bars-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:leader-split-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:poster-news-composer:saves");
+    expect(COMPOSER_LIBRARY_KEYS).toContain("ddgm:dual-ranks-composer:saves");
   });
 
   it("keeps kyber purple off by default and electric, not pastel", () => {

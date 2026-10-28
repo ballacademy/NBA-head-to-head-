@@ -39,6 +39,9 @@ export const COMPOSER_TAB_GROUPS: {
       { mode: "plot", label: "Plot" },
       { mode: "ranked-lineups", label: "Ranked lineups" },
       { mode: "lineup", label: "Lineup" },
+      { mode: "leader-bars", label: "Leader bars" },
+      { mode: "leader-split", label: "Leader split" },
+      { mode: "dual-ranks", label: "Dual ranks" },
     ],
   },
   {
@@ -61,6 +64,7 @@ export const COMPOSER_TAB_GROUPS: {
     label: "News",
     tabs: [
       { mode: "headline", label: "Headline" },
+      { mode: "poster-news", label: "Poster news" },
       { mode: "quote", label: "Quote" },
       { mode: "mock-trade", label: "Mock trade" },
       { mode: "play-in", label: "Play-in" },
@@ -82,6 +86,10 @@ export const COMPOSER_MODE_LABEL: Record<ComposerMode, string> = {
   "stat-card-cover": "Cover",
   "takeaways-cover": "Takeaways",
   "takeaways-card": "Takeaway cards",
+  "leader-bars": "Leader bars",
+  "leader-split": "Leader split",
+  "poster-news": "Poster news",
+  "dual-ranks": "Dual ranks",
   compare: "Compare",
   "player-of-the-day": "POTD",
   "potd-leaderboard": "Leaderboard",

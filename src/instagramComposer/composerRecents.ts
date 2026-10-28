@@ -45,6 +45,10 @@ const isMode = (value: unknown): value is ComposerMode =>
     "picks",
     "takeaways-cover",
     "takeaways-card",
+    "leader-bars",
+    "leader-split",
+    "poster-news",
+    "dual-ranks",
   ].includes(value);
 
 export const parseComposerRecents = (value: unknown): ComposerRecent[] => {

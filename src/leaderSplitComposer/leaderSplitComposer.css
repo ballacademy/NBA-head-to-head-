@@ -1,0 +1,216 @@
+.ls-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --gold: #d4af37;
+  --list-w: 42%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  flex-direction: row;
+}
+
+.ls-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.ls-board.is-mirror {
+  flex-direction: row-reverse;
+}
+
+.ls-board.is-story,
+.ls-board.is-square {
+  flex-direction: column;
+}
+
+.ls-board.is-story.is-mirror,
+.ls-board.is-square.is-mirror {
+  flex-direction: column;
+}
+
+.ls-list {
+  flex: 0 0 var(--list-w);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  z-index: 2;
+  padding: calc(28 * var(--u)) calc(28 * var(--u)) calc(24 * var(--u));
+}
+
+.ls-board.is-story .ls-list,
+.ls-board.is-square .ls-list {
+  flex: 1 1 auto;
+  --list-w: 100%;
+}
+
+.ls-board .pod-photo {
+  position: relative;
+  flex: 1 1 auto;
+  z-index: 1;
+  border-radius: 0;
+  border: none;
+  touch-action: none;
+  cursor: grab;
+}
+
+.ls-board.is-story .pod-photo,
+.ls-board.is-square .pod-photo {
+  flex: 0 0 52%;
+}
+
+.ls-rows {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: calc(4 * var(--u));
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ls-row {
+  display: grid;
+  grid-template-columns: calc(36 * var(--u)) calc(32 * var(--u)) minmax(0, 1fr) calc(72 * var(--u));
+  align-items: center;
+  gap: calc(8 * var(--u));
+  min-height: calc(48 * var(--u));
+}
+
+.ls-rank,
+.ls-name,
+.ls-value {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  outline: none;
+  min-width: 0;
+}
+
+.ls-rank {
+  font-size: calc(18 * var(--u));
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.ls-logo,
+.ls-face {
+  width: calc(30 * var(--u));
+  height: calc(30 * var(--u));
+  object-fit: contain;
+}
+
+.ls-face {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ls-name {
+  font-size: calc(18 * var(--u));
+  letter-spacing: 0.02em;
+  text-align: left;
+}
+
+.ls-value {
+  font-size: calc(22 * var(--u));
+  text-align: right;
+}
+
+.ls-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(6, 6, 8, 0.96) 0%,
+    rgba(6, 6, 8, 0.55) 48%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.ls-photo-type {
+  position: absolute;
+  left: calc(36 * var(--u));
+  right: calc(36 * var(--u));
+  bottom: calc(36 * var(--u));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  pointer-events: none;
+}
+
+.ls-kicker,
+.ls-hero-name,
+.ls-hero-value {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+  color: #fff;
+}
+
+.ls-kicker {
+  color: var(--gold);
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.18em;
+  pointer-events: auto;
+  background: transparent;
+  border: 0;
+  outline: none;
+  width: 100%;
+}
+
+.ls-hero-name {
+  font-size: calc(72 * var(--u));
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+}
+
+.ls-hero-value {
+  font-size: calc(54 * var(--u));
+  color: var(--gold);
+}
+
+.ls-board .composer-ba {
+  z-index: 6;
+}
+
+.ls-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.ls-board.is-none {
+  --frame-w: 0px;
+  --frame-color: transparent;
+}
+
+.ls-photo-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ls-photo-wrap .pod-photo {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}

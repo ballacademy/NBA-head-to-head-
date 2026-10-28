@@ -22,7 +22,11 @@ export type ComposerMode =
   | "shot-chart"
   | "picks"
   | "takeaways-cover"
-  | "takeaways-card";
+  | "takeaways-card"
+  | "leader-bars"
+  | "leader-split"
+  | "poster-news"
+  | "dual-ranks";
 
 const TIER_PATHS = new Set(["/tier-list", "/tiers", "/tierlist"]);
 const TIER_QUERY = new Set(["tier", "tiers", "tier-list", "tierlist"]);
@@ -152,6 +156,22 @@ const TAKEAWAYS_CARD_QUERY = new Set([
   "takeaways-card",
   "takeaways-cards",
 ]);
+const LEADER_BARS_PATHS = new Set(["/leader-bars", "/bars"]);
+const LEADER_BARS_QUERY = new Set(["leader-bars", "bars"]);
+const LEADER_SPLIT_PATHS = new Set(["/leader-split", "/leaders"]);
+const LEADER_SPLIT_QUERY = new Set(["leader-split", "leaders"]);
+const POSTER_NEWS_PATHS = new Set([
+  "/poster-news",
+  "/poster",
+  "/breaking-poster",
+]);
+const POSTER_NEWS_QUERY = new Set([
+  "poster-news",
+  "poster",
+  "breaking-poster",
+]);
+const DUAL_RANKS_PATHS = new Set(["/dual-ranks", "/dual-rank"]);
+const DUAL_RANKS_QUERY = new Set(["dual-ranks", "dual-rank"]);
 
 const normalizePath = (pathname: string) => pathname.replace(/\/+$/, "") || "/";
 
@@ -380,6 +400,30 @@ export const isTakeawaysCardPath = (pathname: string) =>
 export const isTakeawaysCardQuery = (search: string) =>
   TAKEAWAYS_CARD_QUERY.has(queryToken(search));
 
+export const isLeaderBarsPath = (pathname: string) =>
+  LEADER_BARS_PATHS.has(normalizePath(pathname));
+
+export const isLeaderBarsQuery = (search: string) =>
+  LEADER_BARS_QUERY.has(queryToken(search));
+
+export const isLeaderSplitPath = (pathname: string) =>
+  LEADER_SPLIT_PATHS.has(normalizePath(pathname));
+
+export const isLeaderSplitQuery = (search: string) =>
+  LEADER_SPLIT_QUERY.has(queryToken(search));
+
+export const isPosterNewsPath = (pathname: string) =>
+  POSTER_NEWS_PATHS.has(normalizePath(pathname));
+
+export const isPosterNewsQuery = (search: string) =>
+  POSTER_NEWS_QUERY.has(queryToken(search));
+
+export const isDualRanksPath = (pathname: string) =>
+  DUAL_RANKS_PATHS.has(normalizePath(pathname));
+
+export const isDualRanksQuery = (search: string) =>
+  DUAL_RANKS_QUERY.has(queryToken(search));
+
 export const isMockTradeQuery = (search: string) =>
   MOCK_TRADE_QUERY.has(queryToken(search));
 
@@ -392,6 +436,18 @@ export const readComposerMode = (
   }
   if (isTakeawaysCoverPath(pathname)) {
     return "takeaways-cover";
+  }
+  if (isLeaderBarsPath(pathname)) {
+    return "leader-bars";
+  }
+  if (isLeaderSplitPath(pathname)) {
+    return "leader-split";
+  }
+  if (isPosterNewsPath(pathname)) {
+    return "poster-news";
+  }
+  if (isDualRanksPath(pathname)) {
+    return "dual-ranks";
   }
   if (isPicksPath(pathname)) {
     return "picks";
@@ -461,6 +517,18 @@ export const readComposerMode = (
   }
   if (isTakeawaysCoverQuery(search)) {
     return "takeaways-cover";
+  }
+  if (isLeaderBarsQuery(search)) {
+    return "leader-bars";
+  }
+  if (isLeaderSplitQuery(search)) {
+    return "leader-split";
+  }
+  if (isPosterNewsQuery(search)) {
+    return "poster-news";
+  }
+  if (isDualRanksQuery(search)) {
+    return "dual-ranks";
   }
   if (isPicksQuery(search)) {
     return "picks";
@@ -576,6 +644,18 @@ export const composerHref = (mode: ComposerMode) => {
   }
   if (mode === "takeaways-card") {
     return "/takeaways-card";
+  }
+  if (mode === "leader-bars") {
+    return "/leader-bars";
+  }
+  if (mode === "leader-split") {
+    return "/leader-split";
+  }
+  if (mode === "poster-news") {
+    return "/poster-news";
+  }
+  if (mode === "dual-ranks") {
+    return "/dual-ranks";
   }
   if (mode === "mock-trade") {
     return "/mock-trade";

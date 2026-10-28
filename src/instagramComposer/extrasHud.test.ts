@@ -30,6 +30,10 @@ describe("extras 17–32 HUD helpers", () => {
     expect(jumpComposerMode("locks", tabs)).toBe("picks");
     expect(jumpComposerMode("takeaways", tabs)).toBe("takeaways-cover");
     expect(jumpComposerMode("takeaway cards", tabs)).toBe("takeaways-card");
+    expect(jumpComposerMode("bars", tabs)).toBe("leader-bars");
+    expect(jumpComposerMode("leaders", tabs)).toBe("leader-split");
+    expect(jumpComposerMode("poster", tabs)).toBe("poster-news");
+    expect(jumpComposerMode("dual", tabs)).toBe("dual-ranks");
   });
 
   it("parses carry and recent player ids", () => {

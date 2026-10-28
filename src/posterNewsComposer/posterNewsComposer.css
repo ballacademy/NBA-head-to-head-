@@ -1,0 +1,161 @@
+.pn-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --gold: #d4af37;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #0b0b0b;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.pn-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.pn-board .pod-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 0;
+  border: var(--frame-w) solid var(--frame-color);
+  touch-action: none;
+  cursor: grab;
+}
+
+.pn-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 58%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(6, 6, 8, 0.98) 0%,
+    rgba(6, 6, 8, 0.82) 32%,
+    rgba(6, 6, 8, 0.4) 68%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.pn-type {
+  position: absolute;
+  left: calc(48 * var(--u));
+  right: calc(48 * var(--u));
+  bottom: calc(48 * var(--u));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 * var(--u));
+}
+
+.pn-kicker-row {
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--u));
+}
+
+.pn-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(42 * var(--u));
+  padding: 0 calc(16 * var(--u));
+  border: calc(2 * var(--u)) solid var(--gold);
+  background: rgba(8, 8, 10, 0.55);
+  color: var(--gold);
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.pn-date {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  font-size: calc(16 * var(--u));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.pn-given,
+.pn-family,
+.pn-line {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  outline: none;
+  width: 100%;
+  padding: 0;
+  letter-spacing: -0.02em;
+}
+
+.pn-given {
+  font-size: calc(36 * var(--u));
+  letter-spacing: 0.08em;
+}
+
+.pn-family {
+  font-size: calc(92 * var(--u));
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+}
+
+.pn-line {
+  font-size: calc(48 * var(--u));
+  line-height: 0.95;
+}
+
+.pn-board.is-even .pn-given,
+.pn-board.is-even .pn-family {
+  display: none;
+}
+
+.pn-source {
+  font-family: var(--ig-poster);
+  font-weight: 800;
+  font-size: calc(16 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.pn-grade {
+  position: absolute;
+  right: calc(28 * var(--u));
+  bottom: calc(108 * var(--u));
+  width: calc(118 * var(--u));
+  height: calc(88 * var(--u));
+  z-index: 6;
+}
+
+.pn-board .composer-ba {
+  z-index: 6;
+}
+
+.pn-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.pn-board.is-none {
+  --frame-w: 0px;
+  --frame-color: transparent;
+}

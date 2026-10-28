@@ -87,6 +87,9 @@ describe("composer mode", () => {
       "plot",
       "ranked-lineups",
       "lineup",
+      "leader-bars",
+      "leader-split",
+      "dual-ranks",
     ]);
     expect(COMPOSER_TAB_GROUPS[1]!.tabs.map((tab) => tab.mode)).toEqual([
       "stat-card",
@@ -103,6 +106,7 @@ describe("composer mode", () => {
     ]);
     expect(COMPOSER_TAB_GROUPS[2]!.tabs.map((tab) => tab.mode)).toEqual([
       "headline",
+      "poster-news",
       "quote",
       "mock-trade",
       "play-in",
@@ -113,7 +117,7 @@ describe("composer mode", () => {
       group.tabs.map((tab) => tab.mode),
     );
     expect(new Set(modes).size).toBe(modes.length);
-    expect(modes).toHaveLength(24);
+    expect(modes).toHaveLength(28);
   });
 
   it("opens pyramid and headline from path or query", () => {
@@ -176,6 +180,22 @@ describe("composer mode", () => {
       "takeaways-card",
     );
     expect(composerHref("takeaways-card")).toBe("/takeaways-card");
+    expect(readComposerMode("", "/leader-bars")).toBe("leader-bars");
+    expect(readComposerMode("", "/bars")).toBe("leader-bars");
+    expect(readComposerMode("?composer=leader-bars", "/")).toBe("leader-bars");
+    expect(composerHref("leader-bars")).toBe("/leader-bars");
+    expect(readComposerMode("", "/leader-split")).toBe("leader-split");
+    expect(readComposerMode("", "/leaders")).toBe("leader-split");
+    expect(readComposerMode("", "/split")).toBe("compare");
+    expect(composerHref("leader-split")).toBe("/leader-split");
+    expect(readComposerMode("", "/poster-news")).toBe("poster-news");
+    expect(readComposerMode("", "/poster")).toBe("poster-news");
+    expect(readComposerMode("", "/breaking-poster")).toBe("poster-news");
+    expect(composerHref("poster-news")).toBe("/poster-news");
+    expect(readComposerMode("", "/dual-ranks")).toBe("dual-ranks");
+    expect(readComposerMode("", "/dual-rank")).toBe("dual-ranks");
+    expect(composerHref("dual-ranks")).toBe("/dual-ranks");
+    expect(readComposerMode("", "/leaderboard")).toBe("potd-leaderboard");
   });
 
   it("opens ranked lineups from path or query", () => {
