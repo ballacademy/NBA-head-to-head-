@@ -12,6 +12,7 @@ import {
 import { LEADER_GOLD } from "../leaderboardComposer/leaderboardFill";
 import {
   paintLeaderBa,
+  paintLeaderCharcoalBoard,
   paintLeaderFrame,
   paintLeaderPhoto,
   POSTER_FONT,
@@ -41,18 +42,19 @@ export const renderPosterNewsCanvas = async (
     throw new Error("Could not open canvas");
   }
   await document.fonts?.ready.catch(() => undefined);
-  context.fillStyle = "#0b0b0b";
-  context.fillRect(0, 0, width, height);
-  await paintLeaderPhoto(
-    context,
-    input.photoSrc,
-    input.pan,
-    0,
-    0,
-    width,
-    height,
-    input.photoGrade,
-  );
+  paintLeaderCharcoalBoard(context, width, height);
+  if (input.photoSrc) {
+    await paintLeaderPhoto(
+      context,
+      input.photoSrc,
+      input.pan,
+      0,
+      0,
+      width,
+      height,
+      input.photoGrade,
+    );
+  }
   const fade = context.createLinearGradient(0, height * 0.42, 0, height);
   fade.addColorStop(0, "rgba(6,6,8,0)");
   fade.addColorStop(0.32, "rgba(6,6,8,0.4)");

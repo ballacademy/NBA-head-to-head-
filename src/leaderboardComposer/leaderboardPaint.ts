@@ -18,8 +18,12 @@ import {
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
+  CHARCOAL_FLOOR,
   FIELD_TEXTURE_SRC,
+  PLOT_HAIRLINE,
   paintBoardField,
+  paintHeaderMetalField,
+  paintStuddedCharcoal,
 } from "../standingsComposer/headerTexture";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
@@ -116,6 +120,70 @@ export const paintLeaderMetal = async (
 ) => {
   const metal = await loadImage(FIELD_TEXTURE_SRC);
   paintBoardField(context, metal, width, height);
+};
+
+/** Shot mix: stacked metal through the title plate, charcoal floor under the table. */
+export const paintLeaderTitleMetalFloor = async (
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  titleBottom: number,
+  scale: number,
+) => {
+  const metal = await loadImage(FIELD_TEXTURE_SRC);
+  paintHeaderMetalField(context, metal, width, height, titleBottom, scale);
+};
+
+export const paintLeaderCharcoalPane = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+) => {
+  if (w < 1 || h < 1) {
+    return;
+  }
+  paintStuddedCharcoal(context, x, y, w, h, scale);
+};
+
+/** Horizontal hairlines across a charcoal list/column pane. */
+export const paintLeaderHairlineRows = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  count: number,
+  scale: number,
+) => {
+  paintLeaderCharcoalPane(context, x, y, w, h, scale);
+  const n = Math.max(1, count);
+  if (n < 2 || h < 2) {
+    return;
+  }
+  context.save();
+  context.strokeStyle = PLOT_HAIRLINE;
+  context.lineWidth = Math.max(1, 0.7 * scale);
+  const step = h / n;
+  for (let index = 1; index < n; index += 1) {
+    const yy = y + index * step;
+    context.beginPath();
+    context.moveTo(x, yy);
+    context.lineTo(x + w, yy);
+    context.stroke();
+  }
+  context.restore();
+};
+
+export const paintLeaderCharcoalBoard = (
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+) => {
+  context.fillStyle = CHARCOAL_FLOOR;
+  context.fillRect(0, 0, width, height);
 };
 
 export const paintLeaderFrame = (
@@ -354,8 +422,7 @@ export const paintTitlePlate = (
   scale: number,
 ) => {
   const s = scale;
-  context.fillStyle = "#1c1c1c";
-  context.fillRect(x, y, w, h);
+  paintStuddedCharcoal(context, x, y, w, h, scale);
   context.strokeStyle = "#fff";
   context.lineWidth = Math.max(2, 3 * s);
   context.strokeRect(x + 1.5 * s, y + 1.5 * s, w - 3 * s, h - 3 * s);

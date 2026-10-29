@@ -26,8 +26,8 @@ import {
   paintBarRow,
   paintLeaderBa,
   paintLeaderFrame,
-  paintLeaderMetal,
   paintLeaderPhoto,
+  paintLeaderTitleMetalFloor,
   paintTitlePlate,
 } from "../leaderboardComposer/leaderboardPaint";
 
@@ -54,11 +54,17 @@ export const renderLeaderBarsCanvas = async (
     throw new Error("Could not open canvas");
   }
   await document.fonts?.ready.catch(() => undefined);
-  await paintLeaderMetal(context, width, height, scale);
   const photoOnTop = input.photoPos !== "bottom";
   const photo = leaderBarsPhotoRect(photoOnTop, boardH);
   const title = leaderBarsTitleRect(photoOnTop, boardH);
   const board = leaderBarsBoardRect(photoOnTop, boardH);
+  await paintLeaderTitleMetalFloor(
+    context,
+    width,
+    height,
+    (title.y + title.h) * scale,
+    scale,
+  );
   await paintLeaderPhoto(
     context,
     input.photoSrc,

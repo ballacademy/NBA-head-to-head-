@@ -8,7 +8,7 @@ import { LEADER_GOLD } from "../leaderboardComposer/leaderboardFill";
 import {
   paintLeaderBa,
   paintLeaderFrame,
-  paintLeaderMetal,
+  paintLeaderHairlineRows,
   paintLeaderPhoto,
   paintListRow,
   POSTER_FONT,
@@ -40,7 +40,6 @@ export const renderDualRanksCanvas = async (
     throw new Error("Could not open canvas");
   }
   await document.fonts?.ready.catch(() => undefined);
-  await paintLeaderMetal(context, width, height, scale);
   const photoW = restack ? GRAPHIC_WIDTH : Math.round(GRAPHIC_WIDTH * 0.45);
   const photoH = restack
     ? input.layout === "well"
@@ -66,6 +65,19 @@ export const renderDualRanksCanvas = async (
   const boardW = restack ? GRAPHIC_WIDTH - 48 : GRAPHIC_WIDTH - photoW - 40;
   const boardHArea = restack ? boardH - photoH - 36 : boardH - 56;
   const colW = colCount > 1 ? (boardW - 16) / 2 : boardW;
+  const paneX = restack ? 0 : photoW;
+  const paneY = restack && input.layout === "well" ? Math.round(boardH * 0.58) : restack ? photoH : 0;
+  const paneW = restack ? GRAPHIC_WIDTH : GRAPHIC_WIDTH - photoW;
+  const paneH = restack ? boardH - paneY : boardH;
+  paintLeaderHairlineRows(
+    context,
+    paneX * scale,
+    paneY * scale,
+    paneW * scale,
+    paneH * scale,
+    Math.max(cols.left.length, cols.right.length, 8),
+    scale,
+  );
   const paintCol = async (
     header: string,
     rows: typeof cols.left,

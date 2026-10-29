@@ -8,10 +8,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: #0b0b0b;
-  background-image: url("/composer-background-texture.png");
-  background-size: cover;
-  background-position: center;
+  background-color: #1c1c1c;
   color: #fff;
   overflow: hidden;
   user-select: none;
@@ -64,6 +61,10 @@
   padding: calc(24 * var(--u)) calc(16 * var(--u)) calc(24 * var(--u)) calc(12 * var(--u));
   min-width: 0;
   z-index: 2;
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
 }
 
 .dr-board.is-well .dr-cols {
@@ -120,6 +121,10 @@
   min-height: calc(40 * var(--u));
   padding: 0 calc(2 * var(--u));
   overflow: hidden;
+}
+
+.dr-row + .dr-row:not(.is-feature) {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .dr-row.is-feature {

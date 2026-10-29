@@ -9,7 +9,7 @@ import { LEADER_GOLD, squareLeaderRows, visibleLeaderRows } from "../leaderboard
 import {
   paintLeaderBa,
   paintLeaderFrame,
-  paintLeaderMetal,
+  paintLeaderHairlineRows,
   paintLeaderPhoto,
   paintListRow,
   POSTER_FONT,
@@ -41,7 +41,6 @@ export const renderLeaderSplitCanvas = async (
     throw new Error("Could not open canvas");
   }
   await document.fonts?.ready.catch(() => undefined);
-  await paintLeaderMetal(context, width, height, scale);
   const listW = restack ? GRAPHIC_WIDTH : Math.round(GRAPHIC_WIDTH * 0.42);
   const photoW = restack ? GRAPHIC_WIDTH : GRAPHIC_WIDTH - listW;
   const photoH = restack ? Math.round(boardH * 0.52) : boardH;
@@ -106,6 +105,15 @@ export const renderLeaderSplitCanvas = async (
   const pad = 28;
   const usableH = listH - pad * 2;
   const rowH = rows.length ? Math.min(56, usableH / rows.length) : 48;
+  paintLeaderHairlineRows(
+    context,
+    listX * s,
+    listY * s,
+    listW * s,
+    listH * s,
+    Math.max(rows.length, 8),
+    scale,
+  );
   for (let index = 0; index < rows.length; index += 1) {
     await paintListRow(
       context,
