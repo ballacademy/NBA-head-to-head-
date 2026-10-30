@@ -437,7 +437,9 @@
   box-sizing: border-box;
   border: var(--frame-w) solid var(--frame-color);
   overflow: hidden;
-  min-height: calc(236 * var(--u));
+  min-height: calc(296 * var(--u));
+  height: calc(296 * var(--u));
+  flex: 0 0 calc(296 * var(--u));
   background: var(--team-fill);
   color: #fff;
 }
@@ -460,8 +462,8 @@
   z-index: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: calc(6 * var(--u)) 0;
-  padding: calc(22 * var(--u)) calc(8 * var(--u));
+  gap: 0;
+  padding: calc(30 * var(--u)) calc(8 * var(--u));
   height: 100%;
   box-sizing: border-box;
   align-content: space-evenly;

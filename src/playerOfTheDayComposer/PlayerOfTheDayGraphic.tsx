@@ -15,7 +15,7 @@ import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { PhotoFrame } from "./PhotoFrame";
-import { statsFillForTeam } from "./playerOfTheDayLayout";
+import { POTD_STAT_FIELDS, statsFillForTeam } from "./playerOfTheDayLayout";
 import {
   potdResultFromDisplay,
   potdResultLineDisplay,
@@ -48,17 +48,6 @@ interface PlayerOfTheDayGraphicProps {
   onPan: (index: number, pan: PhotoPan) => void;
   onUpload: (index: number, dataUrl: string) => void;
 }
-
-const STAT_FIELDS: Array<{ key: keyof LastGameStats; label: string }> = [
-  { key: "pts", label: "PTS" },
-  { key: "blk", label: "BLK" },
-  { key: "reb", label: "REB" },
-  { key: "fg", label: "FG" },
-  { key: "ast", label: "AST" },
-  { key: "three", label: "3P" },
-  { key: "stl", label: "STL" },
-  { key: "tov", label: "TOV" },
-];
 
 export const PlayerOfTheDayGraphic = forwardRef<
   HTMLElement,
@@ -227,10 +216,10 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   </div>
                 ) : null}
                 <div className="pod-stats__grid">
-                  {STAT_FIELDS.map((field) => (
+                  {POTD_STAT_FIELDS.map((field) => (
                     <label key={field.key} className="pod-stat">
                       <input
-                        value={card.stats[field.key]}
+                        value={card.stats[field.key] ?? ""}
                         maxLength={8}
                         aria-label={`${field.label} ${index === 0 ? "left" : "right"}`}
                         onChange={(event) =>

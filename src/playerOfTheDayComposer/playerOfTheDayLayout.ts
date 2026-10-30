@@ -44,7 +44,8 @@ export const POTD_WL_CHIP_H = 26;
 export const POTD_WL_CHIP_RADIUS = 6;
 export const POTD_WL_CHIP_GAP = 8;
 export const POTD_WL_CHIP_SIZE = 15;
-export const POTD_STATS_H = 236;
+/** Five rows (PTS/REB/AST/STL/BLK | FG/3P/FT/TOV/MIN). Taller than the old 4-row 236 so 38u type still has air. */
+export const POTD_STATS_H = 296;
 /** Small enough that two italic lines plus stroke sit inside the plate padding. */
 export const POTD_TITLE_SIZE = 46;
 export const POTD_TITLE_PAD = 14;
@@ -54,6 +55,21 @@ export const POTD_PLATE_H = 124;
 export const POTD_BRAND_SIZE = 28;
 export const POTD_DATE_SIZE = 22;
 export const POTD_STAT_SIZE = 38;
+/** Interleaved L/R for the 2-column grid: left PTS→BLK last, right FG→3P→FT→TOV→MIN last. */
+export const POTD_STAT_FIELDS = [
+  { key: "pts", label: "PTS" },
+  { key: "fg", label: "FG" },
+  { key: "reb", label: "REB" },
+  { key: "three", label: "3P" },
+  { key: "ast", label: "AST" },
+  { key: "ft", label: "FT" },
+  { key: "stl", label: "STL" },
+  { key: "tov", label: "TOV" },
+  { key: "blk", label: "BLK" },
+  { key: "min", label: "MIN" },
+] as const;
+export type PotdStatKey = (typeof POTD_STAT_FIELDS)[number]["key"];
+export const POTD_STAT_ROWS = POTD_STAT_FIELDS.length / 2;
 export const POTD_NAME_SIZE = 36;
 /** Overlay frame around the photo — sits above the image so custom fills cannot hide it. */
 export const POTD_PHOTO_BORDER = 4;
@@ -121,7 +137,7 @@ export const potdStatCell = (
   const row = Math.floor(index / 2);
   const colW = cardW / 2;
   const padY = statsH * 0.1;
-  const rowH = (statsH - padY * 2) / 4;
+  const rowH = (statsH - padY * 2) / POTD_STAT_ROWS;
   return {
     cx: cardX + colW * (col + 0.5),
     cy: statsY + padY + rowH * (row + 0.5),

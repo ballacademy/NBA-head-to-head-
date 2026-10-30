@@ -440,14 +440,44 @@ describe("player of the day state", () => {
     expect(potdLayout.potdPhotoBorderColor("white")).toBe("#ffffff");
     expect(potdLayout.potdPhotoBorderColor("black")).toBe("#0a0a0a");
     expect(potdLayout.potdPhotoBorderColor("black")).not.toMatch(/d4|ec|ff.?f4/i);
-    const left = potdLayout.potdStatCell(0, 520, 0, 236, 0);
-    const right = potdLayout.potdStatCell(0, 520, 0, 236, 1);
-    const nextRow = potdLayout.potdStatCell(0, 520, 0, 236, 2);
+    expect(potdLayout.POTD_STAT_FIELDS.map((field) => field.label)).toEqual([
+      "PTS",
+      "FG",
+      "REB",
+      "3P",
+      "AST",
+      "FT",
+      "STL",
+      "TOV",
+      "BLK",
+      "MIN",
+    ]);
+    expect(potdLayout.POTD_STAT_ROWS).toBe(5);
+    expect(potdLayout.POTD_STATS_H).toBe(296);
+    const statsH = potdLayout.POTD_STATS_H;
+    const left = potdLayout.potdStatCell(0, 520, 0, statsH, 0);
+    const right = potdLayout.potdStatCell(0, 520, 0, statsH, 1);
+    const nextRow = potdLayout.potdStatCell(0, 520, 0, statsH, 2);
+    const blk = potdLayout.potdStatCell(0, 520, 0, statsH, 8);
+    const min = potdLayout.potdStatCell(0, 520, 0, statsH, 9);
     expect(left.cx).toBeCloseTo(130);
     expect(right.cx).toBeCloseTo(390);
-    expect(left.cy).toBeCloseTo(nextRow.cy - (236 * 0.8) / 4);
+    expect(blk.cx).toBeCloseTo(left.cx);
+    expect(min.cx).toBeCloseTo(right.cx);
+    expect(min.cy).toBeCloseTo(blk.cy);
+    expect(left.cy).toBeCloseTo(
+      nextRow.cy - (statsH * 0.8) / potdLayout.POTD_STAT_ROWS,
+    );
     expect(left.cy).toBeGreaterThan(20);
     expect(left.cy).toBeLessThan(80);
+    const photoH =
+      potdLayout.GRAPHIC_HEIGHT -
+      potdLayout.POTD_HEADER_H -
+      potdLayout.POTD_FOOTER -
+      potdLayout.POTD_NAME_H -
+      potdLayout.POTD_RESULT_H -
+      statsH;
+    expect(photoH).toBeGreaterThan(780);
     expect(potdLayout.POTD_CARD_RADIUS).toBe(14);
     expect(potdLayout.POTD_CARD_RADIUS).toBeGreaterThan(8);
     expect(potdLayout.POTD_CARD_RADIUS).toBeLessThan(28);

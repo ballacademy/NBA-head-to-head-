@@ -63,6 +63,7 @@ import {
   potdCardX,
   potdNameSize,
   potdResultSize,
+  POTD_STAT_FIELDS,
   potdStatCell,
   potdStatSize,
   statsFillForTeam,
@@ -81,20 +82,6 @@ import {
 export { canvasToPngBlob };
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
-
-const STAT_FIELDS: Array<{
-  key: "pts" | "blk" | "reb" | "fg" | "ast" | "three" | "stl" | "tov";
-  label: string;
-}> = [
-  { key: "pts", label: "PTS" },
-  { key: "blk", label: "BLK" },
-  { key: "reb", label: "REB" },
-  { key: "fg", label: "FG" },
-  { key: "ast", label: "AST" },
-  { key: "three", label: "3P" },
-  { key: "stl", label: "STL" },
-  { key: "tov", label: "TOV" },
-];
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement | null>((resolve) => {
@@ -441,11 +428,11 @@ export const renderPlayerOfTheDayCanvas = async (
     context.fillStyle = "#fff";
     context.textBaseline = "middle";
     context.textAlign = "center";
-    STAT_FIELDS.forEach((field, statIndex) => {
+    POTD_STAT_FIELDS.forEach((field, statIndex) => {
       const { cx, cy } = potdStatCell(x, w, statsY, statsH, statIndex);
       withShadow(context, s, () => {
         context.fillText(
-          `${card.stats[field.key]} ${field.label}`.toUpperCase(),
+          `${card.stats[field.key] ?? ""} ${field.label}`.toUpperCase(),
           cx,
           cy,
         );
