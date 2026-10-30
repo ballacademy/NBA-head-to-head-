@@ -7,3 +7,5 @@ dist
 __pycache__/
 *.pyc
 scripts/fonts/
+data/.every-team-cache/
+data/.team-stats-cache/

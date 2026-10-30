@@ -1,0 +1,337 @@
+/* Instagram pyramid — 4:5 stack pinned to the bottom, heads pop out. */
+
+.pyr-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(2 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --pyr-cell: 248;
+  --pyr-col-gap: 12;
+  --pyr-row-gap: 46;
+  --pyr-pop: 74;
+  --pyr-pad-x: 28;
+  --pyr-pad-top: 16;
+  --pyr-pad-bottom: 36;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  display: grid;
+  grid-template-rows: calc(118 * var(--u)) minmax(0, 1fr);
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.pyr-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.pyr-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.pyr-board.is-purple {
+  --frame-w: calc(4 * var(--u));
+}
+
+.pyr-header {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: calc(22 * var(--u)) calc(48 * var(--u)) 0;
+}
+
+.pyr-title {
+  margin: 0;
+  width: 88%;
+  height: calc(72 * var(--u));
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(54 * var(--u));
+  font-weight: 900;
+  font-synthesis: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
+}
+
+.pyr-title:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.pyr-rows {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(var(--pyr-row-gap) * var(--u));
+  padding: calc(var(--pyr-pad-top) * var(--u)) calc(var(--pyr-pad-x) * var(--u))
+    calc(var(--pyr-pad-bottom) * var(--u));
+  min-height: 0;
+  overflow: visible;
+}
+
+.pyr-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), calc(var(--pyr-cell) * var(--u)));
+  gap: calc(var(--pyr-col-gap) * var(--u));
+  height: calc(var(--pyr-cell) * var(--u));
+  overflow: visible;
+  z-index: var(--z);
+}
+
+.pyr-cell {
+  position: relative;
+  width: calc(var(--pyr-cell) * var(--u));
+  height: calc(var(--pyr-cell) * var(--u));
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+  background: transparent;
+}
+
+.pyr-row-label {
+  position: absolute;
+  right: calc(100% + 10 * var(--u));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  max-width: calc(88 * var(--u));
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: right;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.85);
+}
+
+.pyr-cell .pod-photo {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  isolation: isolate;
+  touch-action: none;
+  cursor: grab;
+  background-color: #161616;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.pyr-cell.has-team .pod-photo {
+  background-color: var(--team-from, #161616);
+  background-image:
+    linear-gradient(
+      158deg,
+      var(--team-from, #2a2a2a) 0%,
+      var(--team-to, #0a0a0a) 100%
+    ),
+    url("/composer-background-texture.png");
+  background-size: auto, cover;
+  background-blend-mode: normal, overlay;
+}
+
+.pyr-board.is-purple .pyr-cell .pod-photo,
+.pyr-board.is-purple .pyr-cell.has-team .pod-photo {
+  background-color: #6a00e6;
+  background-image:
+    linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(232, 200, 255, 0.28) 16%,
+      rgba(176, 38, 255, 0.55) 42%,
+      rgba(106, 0, 230, 0.92) 70%,
+      rgba(36, 0, 96, 1) 100%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='0.9' fill='%23f0d6ff' fill-opacity='0.35'/%3E%3C/svg%3E"),
+    url("/composer-background-texture.png");
+  background-size:
+    auto,
+    calc(10 * var(--u)) calc(10 * var(--u)),
+    cover;
+  background-position: center;
+  background-blend-mode: normal, overlay, overlay;
+}
+
+/* Top stroke sits behind the head; leftover top shows in transparent pixels. */
+.pyr-cell .pod-photo.is-pop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-top: var(--frame-w) solid var(--frame-color);
+  box-sizing: border-box;
+}
+
+/* Empty cells keep a full frame. Popped cells paint L/R/bottom on top of the photo. */
+.pyr-cell .pod-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
+
+.pyr-cell .pod-photo.is-pop::after {
+  box-shadow: none;
+  border: var(--frame-w) solid var(--frame-color);
+  border-top: 0;
+}
+
+.pyr-cell__pip {
+  position: absolute;
+  top: calc(8 * var(--u));
+  left: calc(8 * var(--u));
+  z-index: 7;
+  min-width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  padding: 0 calc(6 * var(--u));
+  border-radius: calc(11 * var(--u));
+  background: rgba(0, 0, 0, 0.72);
+  color: #facc15;
+  font-family: var(--ig-poster);
+  font-size: calc(12 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pyr-cell__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  margin: 0;
+  padding: 28% 6% 6%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.94) 0%,
+    rgba(0, 0, 0, 0.7) 42%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(13 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  pointer-events: none;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88);
+}
+
+.pyr-cell .pod-photo.is-pop .pod-photo__surface {
+  top: calc(var(--pyr-pop) * var(--u) * -1);
+  height: calc(100% + var(--pyr-pop) * var(--u));
+  overflow: hidden;
+  z-index: 2;
+  background: transparent;
+}
+
+.pyr-cell .pod-photo.is-pop .pod-photo__img {
+  position: relative;
+  z-index: 2;
+}
+
+/* Kyber rim on the popped-out head only — clipped at the cell lip. */
+.pyr-cell .pod-photo.is-pop .pod-photo__pop-rim {
+  position: absolute;
+  left: calc(-12 * var(--u));
+  width: calc(100% + 24 * var(--u));
+  top: calc((var(--pyr-pop) + 16) * var(--u) * -1);
+  height: calc((var(--pyr-pop) + 16) * var(--u));
+  overflow: hidden;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.pyr-cell .pod-photo.is-pop .pod-photo__pop-rim .pod-photo__img {
+  position: absolute;
+  left: calc(12 * var(--u));
+  width: calc(var(--pyr-cell) * var(--u));
+  top: calc(16 * var(--u));
+  height: calc((var(--pyr-cell) + var(--pyr-pop)) * var(--u));
+  filter:
+    drop-shadow(0 0 1px #f7edff)
+    drop-shadow(0 0 2.5px #e0b3ff)
+    drop-shadow(0 0 6px #b026ff)
+    drop-shadow(0 0 11px rgba(176, 38, 255, 0.7));
+}
+
+.pyr-cell .pod-photo__pick {
+  font-size: calc(15 * var(--u));
+  letter-spacing: 0.06em;
+  padding: 0 calc(8 * var(--u));
+}
+
+.pyr-cell .pod-photo__tools {
+  left: calc(6 * var(--u));
+  right: calc(6 * var(--u));
+  bottom: calc(8 * var(--u));
+  gap: calc(4 * var(--u));
+  z-index: 5;
+}
+
+.pyr-cell .pod-photo__tool {
+  height: calc(22 * var(--u));
+  font-size: calc(9 * var(--u));
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pyr-cell .pod-photo__tool {
+    height: max(28px, calc(22 * var(--u)));
+    min-height: 28px;
+    font-size: max(11px, calc(9 * var(--u)));
+  }
+}
+
+.pyr-board:not(.is-purple) .pyr-cell .pod-photo.is-pop .pod-photo__pop-rim {
+  display: none;
+}
+
+.pyr-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.pyr-board .composer-ba {
+  z-index: 24;
+}

@@ -1,0 +1,945 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
+import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
+import {
+  STAT_CARD_COVER_LOOK_KEY,
+  useComposerLook,
+  usePurpleFlair,
+} from "../instagramComposer/composerLook";
+import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
+import { ComposerHudExtras } from "../instagramComposer/ComposerHudExtras";
+import { ComposerPhotoHud } from "../instagramComposer/ComposerPhotoHud";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import {
+  lastNightRange,
+  matchDateRangePreset,
+  useStatCoverDateRange,
+} from "../instagramComposer/composerDateRange";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
+import { nightStandoutPickerRows } from "../instagramComposer/composerNight";
+import {
+  completedNightRows,
+  fetchStandoutsInRange,
+} from "../playerOfTheDayComposer/nightStandouts";
+import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
+import { bytesFromBlob, downloadZip } from "../instagramComposer/downloadZip";
+import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import { renderStatCardCanvas } from "../statCardComposer/renderStatCardCanvas";
+import { nextStatsLeft, statsLeftAt } from "../statCardComposer/statCardLayout";
+import {
+  peekStatCardStatsLeft,
+  persistStatCardStatsLeft,
+  playerName,
+  statCardFromCoverSlot,
+} from "../statCardComposer/statCardState";
+import {
+  copyGraphicCaption,
+  graphicCaption,
+} from "../instagramComposer/graphicCaption";
+import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
+import { useComposerUndo } from "../instagramComposer/useComposerUndo";
+import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
+import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import { hydrateJsonStorage, readJson, writeJson } from "../lib/browserStorage";
+import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
+import { PlayerPicker } from "../tierListComposer/PlayerPicker";
+import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { StatCardCoverGraphic } from "./StatCardCoverGraphic";
+import { exportStatCardCoverPng } from "./exportStatCardCoverPng";
+import { renderStatCardCoverCanvas } from "./renderStatCardCoverCanvas";
+import {
+  DEFAULT_COVER_TITLE,
+  SCC_DATE_MAX,
+  SCC_TITLE_MAX,
+  applyCoverRange,
+  parseCoverSlotCount,
+  clearCoverSlot,
+  coverDraftOccupied,
+  coverPasteSlotIndex,
+  coverSlotName,
+  coverSlotNames,
+  defaultStatCardCoverDraft,
+  fillCoverFromStandouts,
+  hasCustomPhoto,
+  isStatCardCoverDraft,
+  normalizeStatCardCoverDraft,
+  patchCoverSlot,
+  setCoverSlotPhotoAt,
+  setCoverSlotPlayer,
+  insertCoverSlots,
+  swapCoverSlots,
+  usedCoverPlayerIds,
+  type StatCardCoverDraft,
+} from "./statCardCoverState";
+import "@fontsource/montserrat/latin-900.css";
+import "./statCardCoverComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import {
+  nextEmptySlotIndex,
+  slotMissingPlayer,
+} from "../instagramComposer/nextEmptySlot";
+
+const STORAGE_KEY = "ddgm:stat-card-cover-composer";
+const SAVES_KEY = "ddgm:stat-card-cover-composer:saves";
+
+const loadDraft = (): StatCardCoverDraft => {
+  const stored = readJson<Partial<StatCardCoverDraft>>(STORAGE_KEY);
+  if (isStatCardCoverDraft(stored)) {
+    return normalizeStatCardCoverDraft(stored);
+  }
+  return defaultStatCardCoverDraft();
+};
+
+export function StatCardCoverComposerApp() {
+  const boardRef = useRef<HTMLElement | null>(null);
+  const empty = defaultStatCardCoverDraft();
+  const [draft, setDraft] = useState<StatCardCoverDraft>(empty);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [photoTarget, setPhotoTarget] = useState(0);
+  const [exporting, setExporting] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const [look, setLook] = useComposerLook(STAT_CARD_COVER_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
+  const [storyCrop, setStoryCrop] = useState(false);
+  const [keepPrompt, setKeepPrompt] = useState<{
+    index: number;
+    playerId: string;
+    playerName: string;
+  } | null>(null);
+  const filledKey = useRef("");
+  const autoFill = useRef(true);
+  const { push, pop, canUndo } = useComposerUndo<StatCardCoverDraft>();
+  const { range, setRange } = useStatCoverDateRange();
+  const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
+  const [standoutsLoading, setStandoutsLoading] = useState(false);
+  const pickerOpen = activeIndex != null;
+
+  useEffect(() => {
+    document.title = "Stat card cover";
+    void hydrateJsonStorage().then(() => {
+      const loaded = loadDraft();
+      if (coverDraftOccupied(loaded)) {
+        autoFill.current = false;
+        filledKey.current = `${loaded.gameDate}:${loaded.slots
+          .map((slot) => slot.playerId ?? "")
+          .join(",")}`;
+      }
+      setDraft(loaded);
+      setHydrated(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) {
+      writeJson(STORAGE_KEY, draft);
+    }
+  }, [draft, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    let cancelled = false;
+    const from = range.from;
+    const to = range.to;
+    setStandoutsLoading(true);
+    void fetchStandoutsInRange(from, to)
+      .then((rows) => {
+        if (cancelled) {
+          return;
+        }
+        setRangeStandouts(rows);
+        if (!autoFill.current) {
+          return;
+        }
+        const notable = completedNightRows(rows);
+        const key = `${from}:${to}:${notable.map((row) => row.athleteId).join(",")}`;
+        if (filledKey.current === key) {
+          return;
+        }
+        filledKey.current = key;
+        setDraft((current) =>
+          fillCoverFromStandouts(
+            applyCoverRange(current, from, to),
+            notable,
+          ),
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setStandoutsLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, range.from, range.to]);
+
+  useEffect(() => {
+    if (!hydrated || !pickerOpen) {
+      return;
+    }
+    let cancelled = false;
+    setStandoutsLoading(true);
+    void fetchStandoutsInRange(range.from, range.to)
+      .then((rows) => {
+        if (!cancelled) {
+          setRangeStandouts(rows);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setStandoutsLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, pickerOpen, range.from, range.to]);
+
+  const closePicker = useCallback(() => setActiveIndex(null), []);
+
+  const fillFromNight = () => {
+    autoFill.current = true;
+    void fetchStandoutsInRange(range.from, range.to).then((rows) => {
+      const notable = completedNightRows(rows);
+      const key = `${range.from}:${range.to}:${notable.map((row) => row.athleteId).join(",")}`;
+      filledKey.current = key;
+      setRangeStandouts(rows);
+      setDraft((current) => {
+        const next = fillCoverFromStandouts(
+          applyCoverRange(current, range.from, range.to),
+          notable,
+        );
+        const filled = next.slots.filter((slot) => slot.playerId).length;
+        setStatus(
+          filled
+            ? `Cover filled with ${filled} standout${filled === 1 ? "" : "s"}.`
+            : "No standouts for that range yet — pick players for the empty slots.",
+        );
+        return next;
+      });
+    });
+  };
+
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
+    const node = boardRef.current;
+    if (!node) {
+      setStatus("Graphic is not ready to export.");
+      return;
+    }
+    setExporting(true);
+    setStatus("Rendering PNG…");
+    setActiveIndex(null);
+    try {
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      await exportStatCardCoverPng(
+        node,
+        filename ??
+          exportFilenameFromTitle(draft.title || "stat-card-cover", "stat-card-cover"),
+        { ...draft, look, purpleFlair, photoGrade, story },
+        story,
+        square,
+      );
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not export PNG.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const commitPick = (
+    index: number,
+    playerId: string,
+    keepCustomPhoto: boolean,
+  ) => {
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    push(draft);
+    setDraft((current) => {
+      const slots = setCoverSlotPlayer(current.slots, index, player, keepCustomPhoto);
+      setActiveIndex(nextEmptySlotIndex(slots, index, slotMissingPlayer));
+      return { ...current, slots };
+    });
+    setKeepPrompt(null);
+    setStatus(
+      keepCustomPhoto
+        ? `Kept the photo for ${player.name}.`
+        : `Filled ${player.name}. Headshot is in — paste or upload an action photo if you want.`,
+    );
+  };
+
+  const handlePick = (playerId: string) => {
+    if (activeIndex == null) {
+      return;
+    }
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    const current = draft.slots[activeIndex];
+    if (current && hasCustomPhoto(current)) {
+      setKeepPrompt({
+        index: activeIndex,
+        playerId: player.id,
+        playerName: player.name,
+      });
+      setActiveIndex(null);
+      return;
+    }
+    commitPick(activeIndex, player.id, false);
+  };
+
+  useEffect(() => {
+    const onPaste = (event: ClipboardEvent) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      if (target instanceof Element && target.closest(".pod-photo")) {
+        return;
+      }
+      void dataUrlFromClipboard(event).then((dataUrl) => {
+        if (!dataUrl) {
+          return;
+        }
+        event.preventDefault();
+        const index = coverPasteSlotIndex(photoTarget, activeIndex);
+        setDraft((current) => ({
+          ...current,
+          slots: setCoverSlotPhotoAt(current.slots, index, dataUrl),
+        }));
+        setStatus("Pasted photo into the cover slot.");
+      });
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [activeIndex, photoTarget]);
+
+  const stem = draft.title || "stat-card-cover";
+  const currentId =
+    activeIndex != null ? draft.slots[activeIndex]?.playerId ?? null : null;
+
+  return (
+    <div className="sc-composer">
+      <ComposerToolbar
+        title="Cover"
+        identity={
+          <>
+            <label className="sc-field sc-field--wide">
+              Title
+              <input
+                value={draft.title}
+                maxLength={SCC_TITLE_MAX}
+                onChange={(event) =>
+                  onComposerTextChange(event, (title) =>
+                    setDraft((current) => ({
+                      ...current,
+                      title: title.slice(0, SCC_TITLE_MAX),
+                    })),
+                    SCC_TITLE_MAX,
+                  )
+                }
+              />
+            </label>
+            <div className="sc-look" role="group" aria-label="Cover title presets">
+              <button
+                type="button"
+                className={
+                  draft.title.trim().toUpperCase() === DEFAULT_COVER_TITLE
+                    ? "sc-chip is-on"
+                    : "sc-chip"
+                }
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    title: DEFAULT_COVER_TITLE,
+                  }))
+                }
+              >
+                Stars and standouts
+              </button>
+            </div>
+            <label className="sc-field">
+              Date pill
+              <input
+                value={draft.dateLine}
+                maxLength={SCC_DATE_MAX}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    dateLine: event.target.value.slice(0, SCC_DATE_MAX),
+                  }))
+                }
+              />
+            </label>
+          </>
+        }
+        data={
+          <>
+            <ComposerDateRange
+              from={range.from}
+              to={range.to}
+              simpleSet="night"
+              onChange={(next) => {
+                setRange(next);
+              }}
+              onFill={fillFromNight}
+              fillLabel="Fill cover"
+            />
+            <ComposerPhotoHud
+              onPick={() => {
+                const index = activeIndex ?? photoTarget;
+                setPhotoTarget(index);
+                setActiveIndex(index);
+              }}
+              onUpload={(dataUrl) => {
+                const index = activeIndex ?? photoTarget;
+                setDraft((current) => ({
+                  ...current,
+                  slots: setCoverSlotPhotoAt(current.slots, index, dataUrl),
+                }));
+                setStatus("Photo cropped inside the frame — pinch or drag.");
+              }}
+              onUploadMany={(urls) => {
+                const start = activeIndex ?? photoTarget;
+                setDraft((current) => {
+                  let slots = current.slots;
+                  urls.forEach((url, offset) => {
+                    slots = setCoverSlotPhotoAt(slots, start + offset, url);
+                  });
+                  return { ...current, slots };
+                });
+                setStatus("Dropped photos into cover slots.");
+              }}
+            />
+            <div className="sc-look" role="group" aria-label="Portraits">
+              <span className="sc-look__label">Portraits</span>
+              {[2, 3, 4].map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  className={
+                    parseCoverSlotCount(draft.portraitCount) === count
+                      ? "sc-chip is-on"
+                      : "sc-chip"
+                  }
+                  aria-pressed={parseCoverSlotCount(draft.portraitCount) === count}
+                  onClick={() =>
+                    setDraft((current) =>
+                      normalizeStatCardCoverDraft({
+                        ...current,
+                        portraitCount: count,
+                      }),
+                    )
+                  }
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
+          </>
+        }
+        filters={
+          <>
+            <span className="sc-toolbar__eyebrow">Cover slots</span>
+            {draft.slots.map((slot, index) => (
+              <div key={`cover-slot-${index}`} className="sc-field sc-field--stat-slot">
+                {`Player ${index + 1}`}
+                <div className="sc-stat-slot">
+                  <button
+                    type="button"
+                    className="sc-chip"
+                    onClick={() => {
+                      setPhotoTarget(index);
+                      setActiveIndex(index);
+                    }}
+                  >
+                    {coverSlotName(slot) || "Pick"}
+                  </button>
+                  {slot.playerId ? (
+                    <button
+                      type="button"
+                      className="sc-chip sc-stat-slot__remove"
+                      aria-label={`Remove player ${index + 1}`}
+                      onClick={() => {
+                        push(draft);
+                        setDraft((current) => ({
+                          ...current,
+                          slots: clearCoverSlot(current.slots, index),
+                        }));
+                      }}
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </>
+        }
+        board={
+          <>
+            <ComposerLookToggle look={look} onChange={setLook} />
+            <BaMarkToggle
+              on={draft.showBa !== false}
+              onChange={(showBa) =>
+                setDraft((current) => ({ ...current, showBa }))
+              }
+            />
+            <WatermarkToggle
+              value={draft.watermark}
+              onChange={(watermark) =>
+                setDraft((current) => ({ ...current, watermark }))
+              }
+            />
+            <ComposerHudExtras
+              label="Board extras"
+              ariaLabel="Cover board extras"
+              items={[
+                {
+                  key: "photo-look",
+                  label: "Photo look",
+                  on: photoGrade,
+                  onChange: setPhotoGrade,
+                },
+                {
+                  key: "purple",
+                  label: "Purple",
+                  on: purpleFlair,
+                  onChange: setPurpleFlair,
+                },
+                {
+                  key: "gold",
+                  label: "Gold",
+                  on: draft.showGold !== false,
+                  onChange: (showGold) =>
+                    setDraft((current) => ({ ...current, showGold })),
+                },
+                {
+                  key: "story-crop",
+                  label: "Story crop",
+                  on: storyCrop,
+                  onChange: setStoryCrop,
+                },
+              ]}
+            />
+            {photoGrade ? (
+              <PhotoGradeToggle
+                on={photoGrade}
+                onChange={setPhotoGrade}
+                intensity={gradeIntensity}
+                onIntensityChange={setGradeIntensity}
+                slidersOnly
+              />
+            ) : null}
+          </>
+        }
+        persist={
+          <ComposerSaves
+            storageKey={SAVES_KEY}
+            board={draft}
+            onLoad={(next) => {
+              const loaded = normalizeStatCardCoverDraft(next);
+              autoFill.current = false;
+              filledKey.current = `${loaded.gameDate}:${loaded.slots
+                .map((slot) => slot.playerId ?? "")
+                .join(",")}`;
+              setDraft(loaded);
+              setStatus("Loaded named graphic.");
+            }}
+          />
+        }
+        actions={
+          <>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                const previous = pop();
+                if (previous) {
+                  setDraft(previous);
+                  setStatus("Undid last change.");
+                }
+              }}
+              disabled={!canUndo}
+            >
+              Undo
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                push(draft);
+                autoFill.current = false;
+                filledKey.current = "";
+                setDraft(keepComposerPhotos(defaultStatCardCoverDraft(), draft));
+                setStatus("Reset — photos kept.");
+              }}
+            >
+              Reset keep photos
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
+                push(draft);
+                autoFill.current = false;
+                filledKey.current = "";
+                setDraft(defaultStatCardCoverDraft());
+                setStatus("Blank post.");
+              }}
+            >
+              Blank post
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                void copyGraphicCaption(
+                  graphicCaption(draft.title, coverSlotNames(draft), [
+                    draft.dateLine,
+                  ]),
+                ).then(
+                  () => setStatus("Caption copied."),
+                  () => setStatus("Could not copy caption."),
+                );
+              }}
+            >
+              Copy caption
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost sc-hud-full-only"
+              onClick={() =>
+                void handleExport(
+                  exportFilenameFromTitle(stem, "stat-card-cover", "", true),
+                  true,
+                )
+              }
+              disabled={exporting}
+            >
+              Export 9:16
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
+              onClick={() => void handleExport(undefined, false, true)}
+              disabled={exporting}
+              aria-label="Export 1:1"
+            >
+              Export 1:1
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                void (async () => {
+                  setExporting(true);
+                  try {
+                    const filename = exportFilenameFromTitle(
+                      stem,
+                      "stat-card-cover",
+                    );
+                    await downloadExportPack(
+                      () =>
+                        renderStatCardCoverCanvas(
+                          { ...draft, look, purpleFlair, photoGrade },
+                          2,
+                        ),
+                      filename,
+                      [
+                        {
+                          filename: storyFilename(filename),
+                          render: () =>
+                            renderStatCardCoverCanvas(
+                              {
+                                ...draft,
+                                look,
+                                purpleFlair,
+                                photoGrade,
+                                story: true,
+                              },
+                              2,
+                            ),
+                        },
+                      ],
+                      { letterbox: false },
+                    );
+                    setStatus("Pack download started (4:5 + 9:16 + 1:1).");
+                  } catch (error) {
+                    console.error(error);
+                    setStatus("Could not export pack.");
+                  } finally {
+                    setExporting(false);
+                  }
+                })();
+              }}
+              disabled={exporting}
+            >
+              Export pack
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                void (async () => {
+                  setExporting(true);
+                  setStatus("Rendering cover + cards…");
+                  try {
+                    const rows =
+                      rangeStandouts.length
+                        ? rangeStandouts
+                        : await fetchStandoutsInRange(range.from, range.to);
+                    const standoutsById = new Map(
+                      rows.map((row) => [row.athleteId, row]),
+                    );
+                    const files: Array<{ name: string; bytes: Uint8Array }> = [];
+                    const coverCanvas = await renderStatCardCoverCanvas(
+                      { ...draft, look, purpleFlair, photoGrade },
+                      2,
+                    );
+                    files.push({
+                      name: exportFilenameFromTitle(stem, "stat-card-cover"),
+                      bytes: await bytesFromBlob(await canvasToPngBlob(coverCanvas)),
+                    });
+                    let index = 0;
+                    let skippedHeadshots = 0;
+                    const startLeft = peekStatCardStatsLeft(draft.gameDate);
+                    for (const slot of draft.slots) {
+                      if (!slot.playerId) {
+                        continue;
+                      }
+                      if (!hasCustomPhoto(slot)) {
+                        skippedHeadshots += 1;
+                        continue;
+                      }
+                      const card = statCardFromCoverSlot(
+                        slot,
+                        standoutsById.get(slot.playerId ?? "")?.game ?? null,
+                        draft.gameDate,
+                      );
+                      if (!card) {
+                        continue;
+                      }
+                      const statsLeft = statsLeftAt(startLeft, index);
+                      index += 1;
+                      const cardCanvas = await renderStatCardCanvas(
+                        {
+                          ...card,
+                          statsLeft,
+                          look,
+                          purpleFlair,
+                          photoGrade,
+                        },
+                        2,
+                      );
+                      files.push({
+                        name: exportFilenameFromTitle(
+                          playerName(card) || `stat-card-${index}`,
+                          "stat-card",
+                        ),
+                        bytes: await bytesFromBlob(
+                          await canvasToPngBlob(cardCanvas),
+                        ),
+                      });
+                    }
+                    const caption = graphicCaption(
+                      draft.title,
+                      coverSlotNames(draft),
+                      [draft.dateLine],
+                    );
+                    files.push({
+                      name: "caption.txt",
+                      bytes: new TextEncoder().encode(caption),
+                    });
+                    await downloadZip(
+                      exportFilenameFromTitle(stem, "stat-card-cover").replace(
+                        /\.png$/i,
+                        "-cards.zip",
+                      ),
+                      files,
+                    );
+                    persistStatCardStatsLeft(
+                      nextStatsLeft(startLeft, index),
+                      draft.gameDate,
+                    );
+                    const skipped =
+                      skippedHeadshots > 0
+                        ? ` Skipped ${skippedHeadshots} headshot-only slot${
+                            skippedHeadshots === 1 ? "" : "s"
+                          }.`
+                        : "";
+                    setStatus(
+                      `Cover + cards download started (${index} action photo${
+                        index === 1 ? "" : "s"
+                      }).${skipped}`,
+                    );
+                  } catch (error) {
+                    console.error(error);
+                    setStatus("Could not export cover + cards.");
+                  } finally {
+                    setExporting(false);
+                  }
+                })();
+              }}
+              disabled={exporting}
+            >
+              Cover + cards
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--primary"
+              onClick={() => void handleExport()}
+              disabled={exporting}
+            >
+              {exporting ? "Exporting…" : "Export PNG"}
+            </button>
+          </>
+        }
+      />
+
+      <main className="sc-stage">
+        <div className="sc-stage__frame">
+          <div className="sc-board-wrap">
+            <ComposerBoard height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}>
+              <StatCardCoverGraphic
+                ref={boardRef}
+                draft={draft}
+                look={look}
+                purpleFlair={purpleFlair}
+                photoGrade={photoGrade}
+                exporting={exporting}
+                story={storyCrop}
+                onTitleChange={(title) =>
+                  setDraft((current) => ({ ...current, title }))
+                }
+                onDateLineChange={(dateLine) =>
+                  setDraft((current) => ({ ...current, dateLine }))
+                }
+                onHover={setPhotoTarget}
+                onPick={(index) => {
+                  setPhotoTarget(index);
+                  setActiveIndex(index);
+                }}
+                onPan={(index, pan) => {
+                  setPhotoTarget(index);
+                  setDraft((current) => ({
+                    ...current,
+                    slots: patchCoverSlot(current.slots, index, { pan }),
+                  }));
+                }}
+                onUpload={(index, dataUrl) => {
+                  setPhotoTarget(index);
+                  setDraft((current) => ({
+                    ...current,
+                    slots: setCoverSlotPhotoAt(current.slots, index, dataUrl),
+                  }));
+                  setStatus("Photo cropped inside the frame — pinch or drag.");
+                }}
+                onNameChange={(index, names) =>
+                  setDraft((current) => ({
+                    ...current,
+                    slots: patchCoverSlot(current.slots, index, names),
+                  }))
+                }
+                onSwap={(from, to) => {
+                  push(draft);
+                  setDraft((current) => ({
+                    ...current,
+                    slots: insertCoverSlots(current.slots, from, to),
+                  }));
+                  setStatus("Reordered cover portraits.");
+                }}
+              />
+            </ComposerBoard>
+            <StoryCropGuide on={storyCrop} />
+          </div>
+          <p className="sc-hint">
+            Stars and standouts cover — 2, 3, or 4 full-bleed faces in one row,
+            no individual stats. Drag a portrait on the preview to reorder slots.
+            Fill from a date range. Export pack is the cover at 4:5 + 9:16 + 1:1.
+            Cover + cards zips action-photo slots only. Downloads Instagram
+            PNGs — nothing is posted.
+          </p>
+          {status ? <p className="sc-status">{status}</p> : null}
+        </div>
+      </main>
+
+      {activeIndex != null ? (
+        <PlayerPicker
+          heading={`Pick cover player ${activeIndex + 1}`}
+          hint="Leads with standouts from the selected range. Headshot drops in — upload or paste an action photo to replace it."
+          currentId={currentId}
+          usedLabels={usedCoverPlayerIds(draft.slots)}
+          suggested={nightStandoutPickerRows(
+            completedNightRows(rangeStandouts),
+          )}
+          suggestedHeading="Range standouts"
+          suggestedLoading={standoutsLoading}
+          suggestedEmpty="No standouts for this night yet."
+          onJumpLastNight={
+            matchDateRangePreset(range.from, range.to) === "tonight"
+              ? () => setRange(lastNightRange())
+              : undefined
+          }
+          onPick={handlePick}
+          onClear={() => {
+            push(draft);
+            setDraft((current) => ({
+              ...current,
+              slots: clearCoverSlot(current.slots, activeIndex),
+            }));
+            setActiveIndex(null);
+          }}
+          onClose={closePicker}
+        />
+      ) : null}
+      {keepPrompt ? (
+        <KeepCustomPhotoDialog
+          playerName={keepPrompt.playerName}
+          onKeep={() =>
+            commitPick(keepPrompt.index, keepPrompt.playerId, true)
+          }
+          onReplace={() =>
+            commitPick(keepPrompt.index, keepPrompt.playerId, false)
+          }
+          onClose={() => setKeepPrompt(null)}
+        />
+      ) : null}
+    </div>
+  );
+}

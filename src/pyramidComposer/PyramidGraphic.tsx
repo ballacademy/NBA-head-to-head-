@@ -1,0 +1,254 @@
+import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  composerSlotClass,
+  useComposerSlotSwap,
+} from "../instagramComposer/composerSlotSwap";
+import {
+  composerFlairClass,
+  composerLookClass,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
+import { formatComposerName, useComposerNameStyle } from "../instagramComposer/composerNameStyle";
+import { composerGradeClass } from "../instagramComposer/photoGrade";
+import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
+import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import { getTeam } from "../standingsComposer/teams";
+import { pyramidMetrics, PYR_DEFAULT_ROWS } from "./pyramidLayout";
+import { pyramidSlotPops, type PyramidSlot } from "./pyramidState";
+
+interface PyramidGraphicProps {
+  title: string;
+  slots: PyramidSlot[];
+  rows?: number;
+  rowLabels?: string[];
+  look?: ComposerLook;
+  purpleFlair?: boolean;
+  photoGrade?: boolean;
+  showBa?: boolean;
+  showNames?: boolean;
+  showRankPip?: boolean;
+  exporting?: boolean;
+  story?: boolean;
+  onTitleChange: (value: string) => void;
+  onPick: (index: number) => void;
+  onHover?: (index: number) => void;
+  onPan: (index: number, pan: PhotoPan) => void;
+  onUpload: (index: number, dataUrl: string) => void;
+  onSwap?: (from: number, to: number) => void;
+}
+
+export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
+  function PyramidGraphic(
+    {
+      title,
+      slots,
+      rows = PYR_DEFAULT_ROWS,
+      rowLabels = [],
+      look = "white",
+      purpleFlair = false,
+      photoGrade = false,
+      showBa = true,
+      showNames = false,
+      showRankPip = true,
+      exporting = false,
+      story = false,
+      onTitleChange,
+      onPick,
+      onHover,
+      onPan,
+      onUpload,
+      onSwap,
+    },
+    ref,
+  ) {
+    const localRef = useRef<HTMLElement | null>(null);
+    const [nameStyle] = useComposerNameStyle();
+    const [unit, setUnit] = useState(0.4);
+    const slotSwap = useComposerSlotSwap({
+      enabled: !exporting,
+      onSwap,
+    });
+    const metrics = pyramidMetrics(
+      rows,
+      story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT,
+    );
+
+    const setRefs = (node: HTMLElement | null) => {
+      localRef.current = node;
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    };
+
+    useLayoutEffect(() => {
+      const node = localRef.current;
+      if (!node) {
+        return;
+      }
+      const sync = () => {
+        const width = node.offsetWidth;
+        if (width > 0) {
+          setUnit(width / GRAPHIC_WIDTH);
+        }
+      };
+      sync();
+      if (typeof ResizeObserver === "undefined") {
+        return;
+      }
+      const observer = new ResizeObserver(sync);
+      observer.observe(node);
+      return () => observer.disconnect();
+    }, []);
+
+    let cursor = 0;
+
+    return (
+      <article
+        ref={setRefs}
+        className={[
+          "pyr-board",
+          exporting ? "is-exporting" : "",
+          composerLookClass(look),
+          composerFlairClass(purpleFlair),
+          composerGradeClass(photoGrade),
+          story ? "is-story" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--pyr-cell" as string]: String(metrics.cell),
+            ["--pyr-col-gap" as string]: String(metrics.colGap),
+            ["--pyr-row-gap" as string]: String(metrics.rowGap),
+            ["--pyr-pop" as string]: String(metrics.pop),
+            ["--pyr-pad-top" as string]: String(metrics.padTop),
+          } as React.CSSProperties
+        }
+        aria-label="Instagram pyramid graphic"
+      >
+        {showBa ? (
+          <img
+            className="composer-ba"
+            src="/ba-logo-circled.png"
+            alt=""
+            aria-hidden="true"
+          />
+        ) : null}
+        <header className="pyr-header">
+          <input
+            className="pyr-title"
+            value={title}
+            maxLength={48}
+            spellCheck={false}
+            aria-label="Pyramid title"
+            onChange={(event) => onComposerTextChange(event, onTitleChange, 48)}
+          />
+        </header>
+        <div className="pyr-rows">
+          {metrics.rows.map((count, row) => {
+            const start = cursor;
+            cursor += count;
+            const rowLabel = (rowLabels[row] ?? "").trim();
+            return (
+              <div
+                key={`pyr-row-${row}`}
+                className="pyr-row"
+                style={
+                  {
+                    ["--cols" as string]: count,
+                    ["--z" as string]: String(row + 1),
+                  } as React.CSSProperties
+                }
+              >
+                {rowLabel ? (
+                  <span className="pyr-row-label">{rowLabel}</span>
+                ) : null}
+                {Array.from({ length: count }, (_, col) => {
+                  const index = start + col;
+                  const slot = slots[index];
+                  if (!slot) {
+                    return null;
+                  }
+                  const empty = !slot.photoSrc;
+                  const pops = pyramidSlotPops(slot);
+                  const name = formatComposerName(
+                    slot.firstName,
+                    slot.lastName,
+                    nameStyle,
+                  );
+                  const label = name || `slot ${index + 1}`;
+                  const team = getTeam(slot.teamId);
+                  return (
+                    <section
+                      key={`pyr-cell-${index}`}
+                      className={[
+                        "pyr-cell",
+                        team ? "has-team" : "",
+                        composerSlotClass(
+                          index,
+                          slotSwap.draggingFrom,
+                          slotSwap.dropIndex,
+                        ),
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      data-composer-slot={index}
+                      style={
+                        team
+                          ? ({
+                              ["--team-from" as string]: team.cellFrom,
+                              ["--team-to" as string]: team.cellTo,
+                            } as React.CSSProperties)
+                          : undefined
+                      }
+                      aria-label={`Pyramid slot ${index + 1}`}
+                      onPointerEnter={() => onHover?.(index)}
+                      onPointerDown={(event) =>
+                        slotSwap.startDrag(index, event)
+                      }
+                    >
+                      <PhotoFrame
+                        src={slot.photoSrc}
+                        label={label}
+                        pan={slot.pan}
+                        custom={slot.customPhoto}
+                        empty={empty}
+                        pop={pops}
+                        slotSwapEnabled={!exporting && Boolean(onSwap)}
+                        onPan={(pan) => onPan(index, pan)}
+                        onUpload={(dataUrl) => onUpload(index, dataUrl)}
+                        onUploadMany={(urls) =>
+                          urls.forEach((url, offset) =>
+                            onUpload(index + offset, url),
+                          )
+                        }
+                        onPick={() => onPick(index)}
+                      />
+                      {showRankPip ? (
+                        <span className="pyr-cell__pip" aria-hidden="true">
+                          {index + 1}
+                        </span>
+                      ) : null}
+                      {showNames && name ? (
+                        <p className="pyr-cell__name">{name}</p>
+                      ) : null}
+                    </section>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </article>
+    );
+  },
+);

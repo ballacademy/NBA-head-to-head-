@@ -1,0 +1,133 @@
+const COMPOSER_HUB_TOKENS = new Set([
+  "rankings",
+  "standings-graphic",
+  "ig-rankings",
+  "standings-composer",
+]);
+
+/** Explicit Draft Day GM entry — otherwise this branch opens the composer. */
+const GAME_APP_HUB_TOKENS = new Set(["play", "draft", "game", "ddgm"]);
+
+const normalizeToken = (value: string | null | undefined) =>
+  value?.trim().toLowerCase().replace(/[\s_]+/g, "-") ?? "";
+
+export const isStandingsComposerHub = (
+  value: string | null | undefined,
+): boolean => {
+  const token = normalizeToken(value);
+  return Boolean(token && COMPOSER_HUB_TOKENS.has(token));
+};
+
+export const isStandingsComposerPath = (pathname: string): boolean => {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  return (
+    path === "/" ||
+    path === "/rankings" ||
+    path.endsWith("/rankings.html") ||
+    path === "/standings-composer" ||
+    path === "/tier-list" ||
+    path === "/tiers" ||
+    path === "/tierlist" ||
+    path === "/every-team" ||
+    path === "/everyteam" ||
+    path === "/by-team" ||
+    path === "/byteam" ||
+    path === "/player-of-the-day" ||
+    path === "/potd" ||
+    path === "/player-of-day" ||
+    path === "/potd-leaderboard" ||
+    path === "/leaderboard" ||
+    path === "/potd-lb" ||
+    path === "/team-of-the-week" ||
+    path === "/totw" ||
+    path === "/team-of-week" ||
+    path === "/team-of-the-week-plus" ||
+    path === "/totw-plus" ||
+    path === "/team-of-week-plus" ||
+    path === "/ranked-lineups" ||
+    path === "/ranked-lineup" ||
+    path === "/lineups" ||
+    path === "/lineup" ||
+    path === "/starting-lineup" ||
+    path === "/compare" ||
+    path === "/comparison" ||
+    path === "/split" ||
+    path === "/quote" ||
+    path === "/pull-quote" ||
+    path === "/play-in" ||
+    path === "/playin" ||
+    path === "/mini-bracket" ||
+    path === "/stat-card" ||
+    path === "/statcard" ||
+    path === "/player-card" ||
+    path === "/stat-card-cover" ||
+    path === "/stat-cover" ||
+    path === "/cover" ||
+    path === "/pyramid" ||
+    path === "/coy-pyramid" ||
+    path === "/headline" ||
+    path === "/hot-take" ||
+    path === "/hottake" ||
+    path === "/mock-trade" ||
+    path === "/mocktrade" ||
+    path === "/trade-machine" ||
+    path === "/plot" ||
+    path === "/scatter" ||
+    path === "/xy" ||
+    path === "/injury" ||
+    path === "/injuries" ||
+    path === "/injury-report" ||
+    path === "/schedule" ||
+    path === "/schedule-poster" ||
+    path === "/this-week" ||
+    path === "/shot-chart" ||
+    path === "/shotchart" ||
+    path === "/shots" ||
+    path === "/shot" ||
+    path === "/picks" ||
+    path === "/locks" ||
+    path === "/spreads" ||
+    path === "/takeaways" ||
+    path === "/nba-takeaways" ||
+    path === "/takeaways-cover" ||
+    path === "/takeaway" ||
+    path === "/takeaways-card" ||
+    path === "/takeaways-cards" ||
+    path === "/leader-bars" ||
+    path === "/bars" ||
+    path === "/leader-split" ||
+    path === "/leaders" ||
+    path === "/poster-news" ||
+    path === "/poster" ||
+    path === "/breaking-poster" ||
+    path === "/dual-ranks" ||
+    path === "/dual-rank"
+  );
+};
+
+export const isGameAppHub = (value: string | null | undefined): boolean => {
+  const token = normalizeToken(value);
+  return Boolean(token && GAME_APP_HUB_TOKENS.has(token));
+};
+
+/**
+ * This branch’s product is the Instagram composer hub. `/`, `/rankings`,
+ * `/tier-list`, `/every-team`, and `?hub=rankings` all open it. Draft Day GM
+ * only loads for `?hub=play`.
+ */
+export const isStandingsComposerRoute = (
+  search = typeof window !== "undefined" ? window.location.search : "",
+  pathname = typeof window !== "undefined" ? window.location.pathname : "/",
+): boolean => {
+  try {
+    const hub = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    ).get("hub");
+    if (isGameAppHub(hub)) {
+      return false;
+    }
+    return true;
+  } catch {
+    return true;
+  }
+};

@@ -1,0 +1,430 @@
+.tk-cover.is-metal {
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.tk-cover.is-type-only .scc-cell {
+  display: none;
+}
+
+.tk-cover.is-type-only:not(.is-metal) {
+  background-color: #0a0a0c;
+  background-image: radial-gradient(
+    ellipse 78% 58% at 50% 42%,
+    rgba(212, 175, 55, 0.36) 0%,
+    rgba(250, 204, 21, 0.1) 46%,
+    #070708 100%
+  );
+}
+
+.tk-cover .scc-cell .pod-photo.is-empty {
+  background-color: #0a0a0c;
+  background-image: radial-gradient(
+    ellipse 80% 58% at 50% 40%,
+    rgba(212, 175, 55, 0.34) 0%,
+    rgba(250, 204, 21, 0.08) 52%,
+    #070708 100%
+  );
+}
+
+.tk-cover .scc-cell .pod-photo__pick {
+  font-size: calc(28 * var(--u));
+  letter-spacing: 0.16em;
+  color: #facc15;
+  text-shadow:
+    0 0 calc(12 * var(--u)) rgba(250, 204, 21, 0.35),
+    calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.72);
+  background: transparent;
+  padding: 0 calc(12 * var(--u)) calc(var(--name-h) * var(--u));
+}
+
+.tk-cover .scc-top-fade {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.96) 0%,
+    rgba(0, 0, 0, 0.86) 26%,
+    rgba(0, 0, 0, 0.56) 52%,
+    rgba(0, 0, 0, 0.2) 78%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.tk-cover .scc-lockup-scrim {
+  background: radial-gradient(
+    ellipse 82% 80% at 50% 18%,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.28) 58%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.tk-cover.is-gold .scc-title-line {
+  color: #fde68a;
+  -webkit-text-stroke: calc(4 * var(--u)) #000;
+  text-shadow:
+    0 0 calc(22 * var(--u)) rgba(250, 204, 21, 0.55),
+    0 0 calc(8 * var(--u)) rgba(250, 204, 21, 0.82),
+    calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78),
+    0 calc(10 * var(--u)) calc(22 * var(--u)) rgba(0, 0, 0, 0.55);
+}
+
+.tk-cover.is-gold .scc-seam {
+  width: calc(28 * var(--u));
+  margin-left: calc(-14 * var(--u));
+}
+
+.tk-cover.is-gold .scc-seam::after {
+  width: calc(3 * var(--u));
+  margin-left: calc(-1.5 * var(--u));
+  background: linear-gradient(
+    to bottom,
+    rgba(250, 204, 21, 0) 0%,
+    rgba(212, 175, 55, 0.9) 16%,
+    rgba(253, 230, 138, 1) 50%,
+    rgba(212, 175, 55, 0.9) 84%,
+    rgba(250, 204, 21, 0) 100%
+  );
+  box-shadow: 0 0 calc(16 * var(--u)) rgba(250, 204, 21, 0.5);
+}
+
+.tk-cover.is-gold .scc-pill {
+  background: #facc15;
+  color: #111;
+  border-color: #fde68a;
+  border-width: calc(2.5 * var(--u));
+  box-shadow:
+    0 0 calc(18 * var(--u)) rgba(250, 204, 21, 0.48),
+    calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+}
+
+.tk-cover.is-plate .scc-title-line {
+  display: none;
+}
+
+.tk-title-plate {
+  position: absolute;
+  left: 50%;
+  top: calc(56 * var(--u));
+  z-index: 6;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  max-width: calc(920 * var(--u));
+  padding: calc(14 * var(--u)) calc(28 * var(--u)) calc(12 * var(--u));
+  border: calc(3 * var(--u)) solid #fff;
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+}
+
+.tk-title-plate .scc-title-line,
+.tk-title-plate .scc-title-input {
+  display: block;
+  color: #fff;
+  font-size: calc(48 * var(--u));
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-shadow: none;
+}
+
+.tk-cover.is-plate .scc-pill {
+  top: calc(168 * var(--u));
+}
+
+.tk-range {
+  position: absolute;
+  left: 50%;
+  top: calc(248 * var(--u));
+  z-index: 6;
+  transform: translateX(-50%);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--ig-poster);
+  font-size: calc(14 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.72);
+}
+
+.tk-cover.is-plate .tk-range {
+  top: calc(228 * var(--u));
+}
+
+.tk-card {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --well-h: 420;
+  --type-area: 248;
+  --name-h: 220;
+  --name-logo: 64;
+  --name-family: 42;
+  --name-given: 24;
+  --team: #1c1c1c;
+  --team-2: #facc15;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #050505;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+.tk-card.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.tk-card.is-none {
+  --frame-color: transparent;
+  --frame-w: 0px;
+}
+
+.tk-card .pod-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 0;
+  border: var(--frame-w) solid var(--frame-color);
+  touch-action: none;
+  cursor: grab;
+}
+
+.tk-card.is-well .pod-photo {
+  bottom: calc(var(--well-h) * var(--u));
+}
+
+.tk-card.is-fade .pod-photo,
+.tk-card.is-overlay .pod-photo {
+  bottom: 0;
+}
+
+.tk-card .pod-photo.is-empty {
+  background-color: #0a0a0c;
+  background-image: radial-gradient(
+    ellipse 72% 58% at 50% 36%,
+    rgba(212, 175, 55, 0.38) 0%,
+    color-mix(in srgb, var(--team) 28%, #0a0a0c) 48%,
+    #070708 100%
+  );
+  cursor: pointer;
+}
+
+.tk-card .pod-photo__pick {
+  font-size: calc(36 * var(--u));
+  letter-spacing: 0.18em;
+  color: #facc15;
+  text-shadow:
+    0 0 calc(16 * var(--u)) rgba(250, 204, 21, 0.4),
+    calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.78);
+  background: transparent;
+}
+
+.tk-card .pod-photo__tools {
+  left: calc(12 * var(--u));
+  right: auto;
+  top: auto;
+  bottom: calc(var(--well-h) * var(--u) + 188 * var(--u));
+  z-index: 5;
+}
+
+.tk-card.is-overlay .pod-photo__tools,
+.tk-card.is-fade .pod-photo__tools {
+  bottom: calc(360 * var(--u));
+}
+
+.tk-well {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  height: calc(var(--well-h) * var(--u));
+  padding: calc(28 * var(--u)) calc(48 * var(--u)) calc(36 * var(--u));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: calc(10 * var(--u));
+}
+
+.tk-well::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: calc(3 * var(--u));
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(250, 204, 21, 0) 0%,
+    rgba(253, 230, 138, 0.95) 18%,
+    #facc15 50%,
+    rgba(253, 230, 138, 0.95) 82%,
+    rgba(250, 204, 21, 0) 100%
+  );
+  box-shadow: 0 0 calc(12 * var(--u)) rgba(250, 204, 21, 0.35);
+}
+
+.tk-card.is-overlay .tk-well {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--team) 42%, #060608) 0%,
+    rgba(6, 6, 8, 0.55) 58%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.tk-card.is-fade .tk-well {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--team) 48%, #070707) 0%,
+    rgba(7, 7, 7, 0.94) 38%,
+    rgba(7, 7, 7, 0.52) 74%,
+    rgba(7, 7, 7, 0) 100%
+  );
+}
+
+.tk-card.is-metal .tk-well {
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center bottom;
+}
+
+.tk-card.is-charcoal .tk-well {
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+}
+
+.tk-card.is-team .tk-well {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--team) 42%, #0b0b0b) 0%,
+    var(--team) 72%,
+    color-mix(in srgb, var(--team) 78%, #050505) 100%
+  );
+}
+
+.tk-line {
+  margin: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: left;
+  resize: none;
+  outline: none;
+}
+
+.tk-line--1 {
+  font-size: calc(48 * var(--u));
+  line-height: 0.95;
+  min-height: calc(88 * var(--u));
+}
+
+.tk-line--2 {
+  font-size: calc(30 * var(--u));
+  line-height: 1;
+  min-height: calc(52 * var(--u));
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tk-line::placeholder {
+  color: rgba(250, 204, 21, 0.42);
+}
+
+.tk-fact {
+  align-self: flex-start;
+  margin: 0 0 calc(8 * var(--u));
+  padding: calc(8 * var(--u)) calc(14 * var(--u));
+  border: calc(2 * var(--u)) solid rgba(250, 204, 21, 0.88);
+  border-radius: calc(999 * var(--u));
+  background: rgba(0, 0, 0, 0.35);
+  color: #fde68a;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.tk-index {
+  position: absolute;
+  left: calc(28 * var(--u));
+  top: calc(28 * var(--u));
+  z-index: 6;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.72);
+}
+
+.tk-ghost {
+  position: absolute;
+  left: 50%;
+  top: calc(28 * var(--u));
+  z-index: 6;
+  transform: translateX(-50%);
+  margin: 0;
+  color: rgba(250, 204, 21, 0.72);
+  font-family: var(--ig-poster);
+  font-size: calc(16 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.tk-card .ig-name-fade {
+  z-index: 4;
+  bottom: calc(var(--well-h) * var(--u));
+  height: calc(var(--name-h, 220) * var(--u) - var(--frame-w, 0px));
+  padding: 0 calc(18 * var(--u)) calc(12 * var(--u));
+}
+
+.tk-card.is-overlay .ig-name-fade,
+.tk-card.is-fade .ig-name-fade {
+  bottom: calc(var(--type-area) * var(--u));
+}
+
+.tk-card .ig-name-fade__given {
+  height: calc((var(--name-given, 24) + 6) * var(--u));
+  font-size: calc(var(--name-given, 24) * var(--u));
+  letter-spacing: 0.1em;
+  opacity: 1;
+}
+
+.tk-card .ig-name-fade__family {
+  min-height: calc((var(--name-family, 42) + 2) * var(--u));
+  max-height: calc((var(--name-family, 42) + 8) * var(--u));
+  font-size: calc(var(--name-family, 42) * var(--u));
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.tk-card.is-exporting .pod-photo__tools,
+.tk-cover.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.tk-card.is-exporting .tk-line::placeholder,
+.tk-card.is-exporting .tk-fact::placeholder {
+  color: transparent;
+}
+
+.tk-card.is-exporting .tk-line--2:placeholder-shown,
+.tk-card.is-exporting .tk-fact:placeholder-shown {
+  display: none;
+}

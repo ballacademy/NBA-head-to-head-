@@ -1,0 +1,356 @@
+/* Scatter plot — 4:5 chart with labeled axes and team/player marks. */
+
+.plt-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  background-color: #1c1c1c;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
+
+.plt-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.plt-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.plt-board.is-none {
+  box-shadow: none;
+}
+
+.plt-board .composer-ba {
+  top: calc(22 * var(--u));
+  right: calc(22 * var(--u));
+  width: calc(68 * var(--u));
+  height: calc(68 * var(--u));
+  z-index: 6;
+}
+
+.plt-brand {
+  position: absolute;
+  top: calc(20 * var(--u));
+  left: calc(110 * var(--u));
+  right: calc(110 * var(--u));
+  z-index: 4;
+  margin: 0;
+  height: calc(28 * var(--u));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(24 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
+    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
+}
+
+.plt-title-block {
+  position: absolute;
+  top: calc(48 * var(--u));
+  left: calc(80 * var(--u));
+  right: calc(80 * var(--u));
+  z-index: 4;
+  height: calc(78 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.plt-title-block .composer-title-stack {
+  height: 100%;
+}
+
+.plt-title-line {
+  display: block;
+  margin: 0;
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(40 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 0.95;
+  -webkit-text-stroke: calc(2.8 * var(--u)) #000;
+  paint-order: stroke fill;
+  text-shadow: calc(1.2 * var(--u)) calc(1.4 * var(--u)) 0 rgba(0, 0, 0, 0.72);
+}
+
+.plt-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  resize: none;
+  overflow: hidden;
+  appearance: none;
+  background: transparent;
+  color: transparent;
+  caret-color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(40 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 0.95;
+  white-space: pre;
+  pointer-events: auto;
+}
+
+.plt-kicker {
+  position: absolute;
+  top: calc(128 * var(--u));
+  left: calc(80 * var(--u));
+  right: calc(80 * var(--u));
+  z-index: 4;
+  margin: 0;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(16 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.plt-plot {
+  position: absolute;
+  left: calc(var(--plot-x) * var(--u));
+  top: calc(var(--plot-y) * var(--u));
+  width: calc(var(--plot-w) * var(--u));
+  height: calc(var(--plot-h) * var(--u));
+  z-index: 2;
+  overflow: visible;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.08) 0,
+      rgba(255, 255, 255, 0.08) 1px,
+      transparent 1px,
+      transparent calc(40 * var(--u))
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.08) 0,
+      rgba(255, 255, 255, 0.08) 1px,
+      transparent 1px,
+      transparent calc(40 * var(--u))
+    );
+}
+
+.plt-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.plt-grid line {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+}
+
+.plt-grid .plt-axis {
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.6;
+}
+
+.plt-tick {
+  fill: rgba(255, 255, 255, 0.72);
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.plt-axis-title {
+  position: absolute;
+  margin: 0;
+  font-family: var(--ig-poster);
+  font-size: calc(16 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+  pointer-events: none;
+}
+
+.plt-axis-title.is-x {
+  left: 0;
+  right: 0;
+  bottom: calc(-52 * var(--u));
+  text-align: center;
+}
+
+.plt-axis-title.is-y {
+  left: calc(-40 * var(--u));
+  top: 0;
+  bottom: 0;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: center;
+}
+
+.plt-mark {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+}
+
+.plt-mark.is-hot {
+  z-index: 5;
+}
+
+.plt-mark.is-hot .plt-dot,
+.plt-mark.is-hot .plt-face,
+.plt-mark.is-hot .plt-logo {
+  box-shadow:
+    0 0 0 calc(3 * var(--u)) #facc15,
+    0 0 calc(18 * var(--u)) calc(4 * var(--u)) rgba(250, 204, 21, 0.55);
+}
+
+.plt-quad {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  max-width: 42%;
+  color: rgba(250, 204, 21, 0.88);
+  font-family: var(--ig-poster);
+  font-size: calc(13 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  pointer-events: none;
+  text-shadow: 0 0 calc(8 * var(--u)) rgba(0, 0, 0, 0.85);
+}
+
+.plt-quad.is-tl {
+  top: calc(8 * var(--u));
+  left: calc(8 * var(--u));
+}
+
+.plt-quad.is-tr {
+  top: calc(8 * var(--u));
+  right: calc(8 * var(--u));
+  text-align: right;
+}
+
+.plt-quad.is-bl {
+  bottom: calc(8 * var(--u));
+  left: calc(8 * var(--u));
+}
+
+.plt-quad.is-br {
+  bottom: calc(8 * var(--u));
+  right: calc(8 * var(--u));
+  text-align: right;
+}
+
+.plt-face,
+.plt-face img,
+.plt-dot {
+  display: block;
+  width: calc(var(--mark) * var(--u));
+  height: calc(var(--mark) * var(--u));
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.plt-logo,
+.plt-logo canvas {
+  display: block;
+  width: calc(var(--mark) * var(--u));
+  height: calc(var(--mark) * var(--u));
+  border-radius: 0;
+  background: transparent;
+}
+
+.plt-dot {
+  box-shadow:
+    0 0 0 calc(1.4 * var(--u)) rgba(0, 0, 0, 0.55),
+    0 calc(1 * var(--u)) calc(2 * var(--u)) rgba(0, 0, 0, 0.4);
+}
+
+.plt-face {
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 calc(1.6 * var(--u)) rgba(255, 255, 255, 0.85),
+    0 calc(1.4 * var(--u)) calc(3 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+
+.plt-logo {
+  width: calc(var(--mark) * var(--u));
+  height: calc(var(--mark) * var(--u));
+  filter: drop-shadow(0 calc(1.4 * var(--u)) calc(2 * var(--u)) rgba(0, 0, 0, 0.55));
+}
+
+.plt-label {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  font-family: var(--ig-poster);
+  font-size: calc(12 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    calc(1 * var(--u)) calc(1 * var(--u)) 0 #000,
+    0 0 calc(4 * var(--u)) #000;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.plt-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  pointer-events: none;
+}
+
+.plt-brand:focus,
+.plt-title-input:focus {
+  outline: 1px dashed rgba(255, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+.plt-board.is-exporting .plt-brand:focus,
+.plt-board.is-exporting .plt-title-input:focus {
+  outline: none;
+}

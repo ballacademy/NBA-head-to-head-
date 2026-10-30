@@ -1,0 +1,269 @@
+.ls-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --gold: #d4af37;
+  --list-w: 42%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #1c1c1c;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  flex-direction: row;
+}
+
+.ls-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.ls-board.is-mirror {
+  flex-direction: row-reverse;
+}
+
+.ls-board.is-story,
+.ls-board.is-square {
+  flex-direction: column;
+}
+
+.ls-board.is-story.is-mirror,
+.ls-board.is-square.is-mirror {
+  flex-direction: column;
+}
+
+.ls-list {
+  flex: 0 0 var(--list-w);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  z-index: 2;
+  padding: calc(28 * var(--u)) calc(28 * var(--u)) calc(24 * var(--u));
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
+}
+
+.ls-board.is-story .ls-list,
+.ls-board.is-square .ls-list {
+  flex: 1 1 auto;
+  --list-w: 100%;
+}
+
+.ls-board .pod-photo {
+  position: relative;
+  flex: 1 1 auto;
+  z-index: 1;
+  border-radius: 0;
+  border: none;
+  touch-action: none;
+  cursor: grab;
+}
+
+.ls-board.is-story .pod-photo,
+.ls-board.is-square .pod-photo {
+  flex: 0 0 52%;
+}
+
+.ls-rows {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: calc(4 * var(--u));
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ls-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: calc(36 * var(--u)) calc(32 * var(--u)) minmax(0, 1fr) calc(72 * var(--u));
+  align-items: center;
+  gap: calc(8 * var(--u));
+  min-height: calc(48 * var(--u));
+}
+
+.ls-row + .ls-row {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.ls-board.is-plates .ls-rows {
+  justify-content: stretch;
+  gap: calc(8 * var(--u));
+}
+
+.ls-board.is-plates .ls-row {
+  flex: 1 1 0;
+  min-height: calc(56 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border-radius: calc(8 * var(--u));
+  overflow: hidden;
+  background: var(--team-fill, #2a2a2a);
+  box-shadow: inset calc(6 * var(--u)) 0 0 var(--team-accent, rgba(255, 255, 255, 0.18));
+}
+
+.ls-board.is-plates .ls-row + .ls-row {
+  box-shadow: inset calc(6 * var(--u)) 0 0 var(--team-accent, rgba(255, 255, 255, 0.18));
+}
+
+.ls-row__mark {
+  display: none;
+}
+
+.ls-board.is-plates .ls-row__mark {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  right: 6%;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 78%;
+  width: auto;
+  max-width: 42%;
+  opacity: 0.18;
+  pointer-events: none;
+  object-fit: contain;
+}
+
+.ls-board.is-plates .ls-rank,
+.ls-board.is-plates .ls-logo,
+.ls-board.is-plates .ls-face,
+.ls-board.is-plates .ls-name,
+.ls-board.is-plates .ls-value {
+  position: relative;
+  z-index: 1;
+}
+
+.ls-rank,
+.ls-name,
+.ls-value {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  outline: none;
+  min-width: 0;
+}
+
+.ls-rank {
+  font-size: calc(18 * var(--u));
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.ls-logo,
+.ls-face {
+  width: calc(30 * var(--u));
+  height: calc(30 * var(--u));
+  object-fit: contain;
+}
+
+.ls-face {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ls-name {
+  font-size: calc(18 * var(--u));
+  letter-spacing: 0.02em;
+  text-align: left;
+}
+
+.ls-value {
+  font-size: calc(22 * var(--u));
+  text-align: right;
+}
+
+.ls-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(6, 6, 8, 0.96) 0%,
+    rgba(6, 6, 8, 0.55) 48%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.ls-photo-type {
+  position: absolute;
+  left: calc(36 * var(--u));
+  right: calc(36 * var(--u));
+  bottom: calc(36 * var(--u));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  pointer-events: none;
+}
+
+.ls-kicker,
+.ls-hero-name,
+.ls-hero-value {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+  color: #fff;
+}
+
+.ls-kicker {
+  color: var(--gold);
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.18em;
+  pointer-events: auto;
+  background: transparent;
+  border: 0;
+  outline: none;
+  width: 100%;
+}
+
+.ls-hero-name {
+  font-size: calc(72 * var(--u));
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+}
+
+.ls-hero-value {
+  font-size: calc(54 * var(--u));
+  color: var(--gold);
+}
+
+.ls-board .composer-ba {
+  z-index: 6;
+}
+
+.ls-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.ls-board.is-none {
+  --frame-w: 0px;
+  --frame-color: transparent;
+}
+
+.ls-photo-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ls-photo-wrap .pod-photo {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
