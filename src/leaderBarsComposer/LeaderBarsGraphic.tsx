@@ -19,6 +19,10 @@ import {
   type LeaderRow,
 } from "../leaderboardComposer/leaderboardFill";
 import {
+  leaderPlateAccent,
+  leaderPlateFill,
+} from "../leaderboardComposer/leaderPlate";
+import {
   leaderBarsExportRows,
   splitLeaderBarsTitle,
   type LeaderBarsDraft,
@@ -99,6 +103,7 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
         ref={setRefs}
         className={[
           "lb-board",
+          draft.namePlates !== false ? "is-plates" : "",
           draft.photoPos === "bottom" ? "is-bottom" : "",
           story ? "is-story" : "",
           square ? "is-square" : "",
@@ -152,15 +157,24 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
               return (
                 <li
                   key={`lb-row-${index}`}
-                  className={["lb-row", gold ? "is-gold" : ""]
+                  className={[
+                    "lb-row",
+                    gold ? "is-gold" : "",
+                    draft.namePlates !== false ? "is-plate" : "",
+                  ]
                     .filter(Boolean)
                     .join(" ")}
                   style={
                     {
                       ["--team-bar" as string]: teamColor,
+                      ["--team-fill" as string]: leaderPlateFill(row.teamId),
+                      ["--team-accent" as string]: leaderPlateAccent(row.teamId),
                     } as React.CSSProperties
                   }
                 >
+                  {draft.namePlates !== false && logo ? (
+                    <img className="lb-row__mark" src={logo} alt="" />
+                  ) : null}
                   <span className="lb-rank">{index + 1}</span>
                   {draft.showBarHeadshots && row.headshotUrl ? (
                     <img className="lb-face" src={row.headshotUrl} alt="" />

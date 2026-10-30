@@ -34,6 +34,8 @@ export interface LeaderSplitDraft {
   season: string;
   mirror: boolean;
   showListHeadshots: boolean;
+  /** Team-color name plates. Default On; Off restores hairline rows. */
+  namePlates: boolean;
   playerId: string | null;
   teamId: string | null;
   photoSrc: string | null;
@@ -65,6 +67,7 @@ export const defaultLeaderSplitDraft = (
   season,
   mirror: false,
   showListHeadshots: false,
+  namePlates: true,
   playerId: null,
   teamId: null,
   photoSrc: null,
@@ -86,6 +89,7 @@ export const normalizeLeaderSplitDraft = (
   ),
   mirror: value.mirror === true,
   showListHeadshots: value.showListHeadshots === true,
+  namePlates: value.namePlates !== false,
   customPhoto: value.customPhoto === true,
   pan: isPhotoPan(value.pan) ? value.pan : fallback.pan,
   photoSrc: isNullable(value.photoSrc) ? value.photoSrc : fallback.photoSrc,

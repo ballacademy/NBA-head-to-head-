@@ -44,6 +44,8 @@ export interface DualRanksDraft {
   to: string;
   season: string;
   layout: DualRanksLayout;
+  /** Team-color name plates. Default On; Off restores hairline rows. */
+  namePlates: boolean;
   featuredPlayerId: string | null;
   playerId: string | null;
   teamId: string | null;
@@ -76,6 +78,7 @@ export const defaultDualRanksDraft = (season = "2026-27"): DualRanksDraft => ({
   to: "",
   season,
   layout: "side",
+  namePlates: true,
   featuredPlayerId: null,
   playerId: null,
   teamId: null,
@@ -104,6 +107,7 @@ export const normalizeDualRanksDraft = (
     rightRows: resizeLeaderRows(value.rightRows ?? fallback.rightRows, count),
     layout:
       value.layout === "top" || value.layout === "well" ? value.layout : "side",
+    namePlates: value.namePlates !== false,
     customPhoto: value.customPhoto === true,
     pan: isPhotoPan(value.pan) ? value.pan : fallback.pan,
     photoSrc: isNullable(value.photoSrc) ? value.photoSrc : fallback.photoSrc,

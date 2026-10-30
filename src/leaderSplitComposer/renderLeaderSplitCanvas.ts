@@ -7,7 +7,9 @@ import {
 } from "../standingsComposer/rankingState";
 import { LEADER_GOLD, squareLeaderRows, visibleLeaderRows } from "../leaderboardComposer/leaderboardFill";
 import {
+  packedLeaderRowH,
   paintLeaderBa,
+  paintLeaderCharcoalPane,
   paintLeaderFrame,
   paintLeaderHairlineRows,
   paintLeaderPhoto,
@@ -104,28 +106,46 @@ export const renderLeaderSplitCanvas = async (
   }
   const pad = 28;
   const usableH = listH - pad * 2;
-  const rowH = rows.length ? Math.min(56, usableH / rows.length) : 48;
-  paintLeaderHairlineRows(
-    context,
-    listX * s,
-    listY * s,
-    listW * s,
-    listH * s,
-    Math.max(rows.length, 8),
-    scale,
-  );
+  const plates = input.namePlates !== false;
+  const gap = plates ? 8 : 0;
+  const rowH = rows.length
+    ? plates
+      ? packedLeaderRowH(usableH, rows.length, gap)
+      : Math.min(56, usableH / rows.length)
+    : 48;
+  if (plates) {
+    paintLeaderCharcoalPane(
+      context,
+      listX * s,
+      listY * s,
+      listW * s,
+      listH * s,
+      scale,
+    );
+  } else {
+    paintLeaderHairlineRows(
+      context,
+      listX * s,
+      listY * s,
+      listW * s,
+      listH * s,
+      Math.max(rows.length, 8),
+      scale,
+    );
+  }
   for (let index = 0; index < rows.length; index += 1) {
     await paintListRow(
       context,
       rows[index]!,
       index + 1,
       (listX + pad) * s,
-      (listY + pad + index * rowH) * s,
+      (listY + pad + index * (rowH + gap)) * s,
       (listW - pad * 2) * s,
       rowH * s,
       false,
       input.showListHeadshots,
       scale,
+      plates,
     );
   }
   paintLeaderFrame(context, width, height, input.look, scale, input.purpleFlair);

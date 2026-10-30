@@ -6,7 +6,9 @@ import {
 } from "../standingsComposer/rankingState";
 import { LEADER_GOLD } from "../leaderboardComposer/leaderboardFill";
 import {
+  packedLeaderRowH,
   paintLeaderBa,
+  paintLeaderCharcoalPane,
   paintLeaderFrame,
   paintLeaderHairlineRows,
   paintLeaderPhoto,
@@ -69,15 +71,27 @@ export const renderDualRanksCanvas = async (
   const paneY = restack && input.layout === "well" ? Math.round(boardH * 0.58) : restack ? photoH : 0;
   const paneW = restack ? GRAPHIC_WIDTH : GRAPHIC_WIDTH - photoW;
   const paneH = restack ? boardH - paneY : boardH;
-  paintLeaderHairlineRows(
-    context,
-    paneX * scale,
-    paneY * scale,
-    paneW * scale,
-    paneH * scale,
-    Math.max(cols.left.length, cols.right.length, 8),
-    scale,
-  );
+  const plates = input.namePlates !== false;
+  if (plates) {
+    paintLeaderCharcoalPane(
+      context,
+      paneX * scale,
+      paneY * scale,
+      paneW * scale,
+      paneH * scale,
+      scale,
+    );
+  } else {
+    paintLeaderHairlineRows(
+      context,
+      paneX * scale,
+      paneY * scale,
+      paneW * scale,
+      paneH * scale,
+      Math.max(cols.left.length, cols.right.length, 8),
+      scale,
+    );
+  }
   const paintCol = async (
     header: string,
     rows: typeof cols.left,
@@ -91,14 +105,19 @@ export const renderDualRanksCanvas = async (
     setTracking(context, 0.14 * 18 * s);
     context.fillText(header.toUpperCase(), x * s, boardY * s, colW * s);
     setTracking(context, 0);
-    const rowH = rows.length ? Math.min(48, (boardHArea - 32) / rows.length) : 40;
+    const gap = plates ? 6 : 0;
+    const rowH = rows.length
+      ? plates
+        ? packedLeaderRowH(boardHArea - 32, rows.length, gap)
+        : Math.min(48, (boardHArea - 32) / rows.length)
+      : 40;
     for (let index = 0; index < rows.length; index += 1) {
       await paintListRow(
         context,
         rows[index]!,
         index + 1,
         x * s,
-        (boardY + 28 + index * rowH) * s,
+        (boardY + 28 + index * (rowH + gap)) * s,
         colW * s,
         rowH * s,
         Boolean(
@@ -107,6 +126,7 @@ export const renderDualRanksCanvas = async (
         ),
         false,
         scale,
+        plates,
       );
     }
   };

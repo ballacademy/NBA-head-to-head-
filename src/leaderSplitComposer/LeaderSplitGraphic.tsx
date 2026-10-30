@@ -12,6 +12,10 @@ import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { leaderRowName, type LeaderRow } from "../leaderboardComposer/leaderboardFill";
 import {
+  leaderPlateAccent,
+  leaderPlateFill,
+} from "../leaderboardComposer/leaderPlate";
+import {
   leaderSplitExportRows,
   type LeaderSplitDraft,
 } from "./leaderSplitState";
@@ -100,9 +104,22 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
             return (
               <li
                 key={`ls-row-${index}`}
-                className="ls-row"
+                className={["ls-row", draft.namePlates !== false ? "is-plate" : ""]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={
+                  draft.namePlates !== false
+                    ? ({
+                        ["--team-fill" as string]: leaderPlateFill(row.teamId),
+                        ["--team-accent" as string]: leaderPlateAccent(row.teamId),
+                      } as React.CSSProperties)
+                    : undefined
+                }
                 onClick={() => onPickRow?.(index)}
               >
+                {draft.namePlates !== false && logo ? (
+                  <img className="ls-row__mark" src={logo} alt="" />
+                ) : null}
                 <span className="ls-rank">{index + 1}</span>
                 {draft.showListHeadshots && row.headshotUrl ? (
                   <img className="ls-face" src={row.headshotUrl} alt="" />
@@ -173,6 +190,7 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
         ref={setRefs}
         className={[
           "ls-board",
+          draft.namePlates !== false ? "is-plates" : "",
           draft.mirror ? "is-mirror" : "",
           story ? "is-story" : "",
           square ? "is-square" : "",

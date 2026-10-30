@@ -27,6 +27,27 @@ describe("leader format floors", () => {
     expect(paint).toContain("paintStuddedCharcoal");
   });
 
+  it("ships team-color name plates on the three list formats", () => {
+    expect(read("leaderSplitComposer/LeaderSplitComposerApp.tsx")).toContain(
+      "Name plates",
+    );
+    expect(read("dualRanksComposer/DualRanksComposerApp.tsx")).toContain(
+      "Name plates",
+    );
+    expect(read("leaderBarsComposer/LeaderBarsComposerApp.tsx")).toContain(
+      "Name plates",
+    );
+    expect(read("leaderSplitComposer/leaderSplitComposer.css")).toContain(
+      ".ls-board.is-plates",
+    );
+    expect(read("dualRanksComposer/dualRanksComposer.css")).toContain(
+      ".dr-board.is-plates",
+    );
+    expect(read("leaderBarsComposer/leaderBarsComposer.css")).toContain(
+      ".lb-board.is-plates",
+    );
+  });
+
   it("uses charcoal hairline list panes on Leader split and Dual ranks", () => {
     const splitCss = read("leaderSplitComposer/leaderSplitComposer.css");
     const dualCss = read("dualRanksComposer/dualRanksComposer.css");

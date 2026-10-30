@@ -30,6 +30,9 @@ import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { formatComposerName } from "../instagramComposer/composerNameStyle";
 import { abbreviateOverflowName } from "../instagramComposer/nameFit";
 import { LEADER_GOLD, type LeaderRow } from "./leaderboardFill";
+import { leaderPlateAccent, leaderPlateFill } from "./leaderPlate";
+
+export { leaderPlateAccent, leaderPlateFill, packedLeaderRowH } from "./leaderPlate";
 
 export const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
 export const BA_SRC = "/ba-logo-circled.png";
@@ -260,6 +263,62 @@ export const paintTeamLogo = async (
   );
 };
 
+const roundPlate = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) => {
+  context.beginPath();
+  if (typeof context.roundRect === "function") {
+    context.roundRect(x, y, w, h, r);
+    return;
+  }
+  context.rect(x, y, w, h);
+};
+
+const paintNamePlate = async (
+  context: CanvasRenderingContext2D,
+  row: LeaderRow,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+  gold = false,
+) => {
+  const s = scale;
+  const radius = Math.min(8 * s, h / 4);
+  context.save();
+  roundPlate(context, x, y, w, h, radius);
+  context.clip();
+  context.fillStyle = leaderPlateFill(row.teamId);
+  context.fillRect(x, y, w, h);
+  context.fillStyle = gold ? LEADER_GOLD : leaderPlateAccent(row.teamId);
+  context.fillRect(x, y, Math.max(4 * s, 6 * s), h);
+  if (row.teamId) {
+    const mark = Math.min(h * 0.78, 72 * s);
+    context.globalAlpha = 0.18;
+    await paintTeamLogo(
+      context,
+      row.teamId,
+      x + w - mark - 10 * s,
+      y + (h - mark) / 2,
+      mark,
+    );
+    context.globalAlpha = 1;
+  }
+  context.restore();
+  context.save();
+  context.strokeStyle = gold ? LEADER_GOLD : "rgba(0,0,0,0.35)";
+  context.lineWidth = Math.max(1, gold ? 1.6 * s : 1 * s);
+  roundPlate(context, x + 0.5, y + 0.5, w - 1, h - 1, Math.max(0, radius - 0.5));
+  context.stroke();
+  context.restore();
+};
+
 export const paintBarRow = async (
   context: CanvasRenderingContext2D,
   row: LeaderRow,
@@ -273,16 +332,22 @@ export const paintBarRow = async (
   teamColorBars: boolean,
   showHeadshots: boolean,
   scale: number,
+  namePlates = false,
 ) => {
   const s = scale;
   const gold = goldFirst && rank === 1;
   const pad = 10 * s;
-  context.fillStyle = gold ? "rgba(212, 175, 55, 0.16)" : "rgba(255,255,255,0.04)";
-  context.fillRect(x, y, w, h);
-  context.strokeStyle = gold ? LEADER_GOLD : "rgba(255,255,255,0.22)";
-  context.lineWidth = Math.max(1, 1.25 * s);
-  context.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-  context.font = `900 ${Math.round(h * 0.42)}px ${POSTER_FONT}`;
+  if (namePlates) {
+    await paintNamePlate(context, row, x, y, w, h, scale, gold);
+  } else {
+    context.fillStyle = gold ? "rgba(212, 175, 55, 0.16)" : "rgba(255,255,255,0.04)";
+    context.fillRect(x, y, w, h);
+    context.strokeStyle = gold ? LEADER_GOLD : "rgba(255,255,255,0.22)";
+    context.lineWidth = Math.max(1, 1.25 * s);
+    context.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  }
+  const rankSize = namePlates ? Math.min(22 * s, h * 0.4) : Math.round(h * 0.42);
+  context.font = `900 ${rankSize}px ${POSTER_FONT}`;
   context.textAlign = "left";
   context.textBaseline = "middle";
   context.fillStyle = gold ? LEADER_GOLD : "#fff";
@@ -321,7 +386,8 @@ export const paintBarRow = async (
     );
   }
   const name = formatComposerName(row.firstName, row.lastName) || "";
-  context.font = `900 ${Math.round(h * 0.36)}px ${POSTER_FONT}`;
+  const nameSize = namePlates ? Math.min(20 * s, h * 0.34) : Math.round(h * 0.36);
+  context.font = `900 ${nameSize}px ${POSTER_FONT}`;
   context.fillStyle = "#fff";
   context.textAlign = "left";
   const nameX = logoX + logoSize + 10 * s;
@@ -343,7 +409,7 @@ export const paintBarRow = async (
         : "#f4f4f4";
     context.fillRect(barX, barY, fillW, barH);
   }
-  context.font = `900 ${Math.round(h * 0.4)}px ${POSTER_FONT}`;
+  context.font = `900 ${namePlates ? Math.min(24 * s, h * 0.38) : Math.round(h * 0.4)}px ${POSTER_FONT}`;
   context.textAlign = "right";
   context.fillStyle = gold ? LEADER_GOLD : "#fff";
   context.fillText(row.value, x + w - pad, y + h / 2, valueW);
@@ -360,13 +426,17 @@ export const paintListRow = async (
   highlight: boolean,
   showHeadshots: boolean,
   scale: number,
+  namePlates = false,
 ) => {
   const s = scale;
-  if (highlight) {
+  if (namePlates) {
+    await paintNamePlate(context, row, x, y + 1 * s, w, h - 2 * s, scale, highlight);
+  } else if (highlight) {
     context.fillStyle = "rgba(212, 175, 55, 0.18)";
     context.fillRect(x, y, w, h);
   }
-  context.font = `900 ${Math.round(h * 0.42)}px ${POSTER_FONT}`;
+  const typeH = namePlates ? Math.min(22 * s, h * 0.38) : Math.round(h * 0.42);
+  context.font = `900 ${typeH}px ${POSTER_FONT}`;
   context.textAlign = "left";
   context.textBaseline = "middle";
   context.fillStyle = highlight ? LEADER_GOLD : "rgba(255,255,255,0.7)";
@@ -400,7 +470,8 @@ export const paintListRow = async (
   }
   const name = formatComposerName(row.firstName, row.lastName).toUpperCase();
   context.fillStyle = highlight ? LEADER_GOLD : "#fff";
-  context.font = `900 ${Math.round(h * 0.34)}px ${POSTER_FONT}`;
+  const nameSize = namePlates ? Math.min(18 * s, h * 0.32) : Math.round(h * 0.34);
+  context.font = `900 ${nameSize}px ${POSTER_FONT}`;
   const nameX = logoX + logoSize + 8 * s;
   const nameMax = Math.max(48 * s, w - (nameX - x) - 70 * s);
   const fitted = abbreviateOverflowName(name, nameMax, (value) =>
@@ -408,7 +479,7 @@ export const paintListRow = async (
   );
   context.fillText(fitted, nameX, y + h / 2, nameMax);
   context.textAlign = "right";
-  context.font = `900 ${Math.round(h * 0.4)}px ${POSTER_FONT}`;
+  context.font = `900 ${namePlates ? Math.min(22 * s, h * 0.36) : Math.round(h * 0.4)}px ${POSTER_FONT}`;
   context.fillText(row.value, x + w - 10 * s, y + h / 2, 80 * s);
 };
 

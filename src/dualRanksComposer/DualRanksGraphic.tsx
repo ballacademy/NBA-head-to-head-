@@ -11,6 +11,10 @@ import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { leaderRowName, type LeaderRow } from "../leaderboardComposer/leaderboardFill";
+import {
+  leaderPlateAccent,
+  leaderPlateFill,
+} from "../leaderboardComposer/leaderPlate";
 import { dualExportColumns, fitDualRankName, type DualRanksDraft } from "./dualRanksState";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 
@@ -38,6 +42,7 @@ const Column = ({
   onHeader,
   onRow,
   nameStyle,
+  namePlates,
 }: {
   header: string;
   rows: LeaderRow[];
@@ -47,6 +52,7 @@ const Column = ({
   onHeader: (value: string) => void;
   onRow: (index: number, patch: Partial<LeaderRow>) => void;
   nameStyle: "full" | "last" | "initial";
+  namePlates: boolean;
 }) => (
   <div className="dr-col">
     <input
@@ -65,10 +71,25 @@ const Column = ({
         return (
           <li
             key={`${aria}-${index}`}
-            className={["dr-row", featured ? "is-feature" : ""]
+            className={[
+              "dr-row",
+              featured ? "is-feature" : "",
+              namePlates ? "is-plate" : "",
+            ]
               .filter(Boolean)
               .join(" ")}
+            style={
+              namePlates
+                ? ({
+                    ["--team-fill" as string]: leaderPlateFill(row.teamId),
+                    ["--team-accent" as string]: leaderPlateAccent(row.teamId),
+                  } as React.CSSProperties)
+                : undefined
+            }
           >
+            {namePlates && logo ? (
+              <img className="dr-row__mark" src={logo} alt="" />
+            ) : null}
             <span className="dr-rank">{index + 1}</span>
             {logo ? <img className="dr-logo" src={logo} alt="" /> : <span className="dr-logo" />}
             <input
@@ -158,6 +179,7 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
         ref={setRefs}
         className={[
           "dr-board",
+          draft.namePlates !== false ? "is-plates" : "",
           layoutClass,
           story ? "is-story" : "",
           square ? "is-square" : "",
@@ -197,6 +219,7 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
               onHeader={(value) => onHeaderChange("left", value)}
               onRow={(index, patch) => onRowChange("left", index, patch)}
               nameStyle={nameStyle}
+              namePlates={draft.namePlates !== false}
             />
           )}
           {cols.hideRight ? null : (
@@ -209,6 +232,7 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
               onHeader={(value) => onHeaderChange("right", value)}
               onRow={(index, patch) => onRowChange("right", index, patch)}
               nameStyle={nameStyle}
+              namePlates={draft.namePlates !== false}
             />
           )}
         </div>

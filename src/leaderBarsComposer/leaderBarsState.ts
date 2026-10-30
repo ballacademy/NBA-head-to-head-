@@ -40,6 +40,8 @@ export interface LeaderBarsDraft {
   photoPos: LeaderBarsPhotoPos;
   barStyle: LeaderBarsBarStyle;
   showBarHeadshots: boolean;
+  /** Team-color name plates on each bar row. Default On; Off restores the faint box. */
+  namePlates: boolean;
   playerId: string | null;
   teamId: string | null;
   photoSrc: string | null;
@@ -73,6 +75,7 @@ export const defaultLeaderBarsDraft = (
   photoPos: "top",
   barStyle: "gold",
   showBarHeadshots: false,
+  namePlates: true,
   playerId: null,
   teamId: null,
   photoSrc: null,
@@ -94,6 +97,7 @@ export const normalizeLeaderBarsDraft = (
     photoPos: value.photoPos === "bottom" ? "bottom" : "top",
     barStyle: value.barStyle === "team" ? "team" : "gold",
     showBarHeadshots: value.showBarHeadshots === true,
+    namePlates: value.namePlates !== false,
     customPhoto: value.customPhoto === true,
     pan: isPhotoPan(value.pan) ? value.pan : fallback.pan,
     photoSrc: isNullable(value.photoSrc) ? value.photoSrc : fallback.photoSrc,

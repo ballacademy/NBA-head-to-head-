@@ -49,6 +49,12 @@ describe("dual ranks", () => {
     ).not.toBe("SHAI GILGEOUS-ALEXANDER");
   });
 
+  it("defaults team-color name plates on and Off restores the stored false", () => {
+    expect(defaultDualRanksDraft().namePlates).toBe(true);
+    expect(normalizeDualRanksDraft({}).namePlates).toBe(true);
+    expect(normalizeDualRanksDraft({ namePlates: false }).namePlates).toBe(false);
+  });
+
   it("does not invent a featured rank when the player is missing from the table", () => {
     const draft = defaultDualRanksDraft();
     expect(draft.featuredPlayerId).toBeNull();

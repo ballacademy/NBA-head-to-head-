@@ -411,6 +411,21 @@ export function LeaderBarsComposerApp() {
                 setDraft((current) => ({ ...current, barStyle }))
               }
             />
+            <ComposerHudSelect
+              label="Name plates"
+              ariaLabel="Team-color name plates"
+              value={draft.namePlates !== false ? "on" : "off"}
+              options={[
+                { value: "on", label: "On" },
+                { value: "off", label: "Off" },
+              ]}
+              onChange={(value) =>
+                setDraft((current) => ({
+                  ...current,
+                  namePlates: value === "on",
+                }))
+              }
+            />
             <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
             <PhotoGradeToggle
               on={photoGrade}

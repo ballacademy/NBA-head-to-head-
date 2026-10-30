@@ -23,6 +23,7 @@ import {
   visibleLeaderRows,
 } from "../leaderboardComposer/leaderboardFill";
 import {
+  packedLeaderRowH,
   paintBarRow,
   paintLeaderBa,
   paintLeaderFrame,
@@ -94,10 +95,13 @@ export const renderLeaderBarsCanvas = async (
     true,
   );
   const max = maxLeaderRaw(rows);
+  const plates = input.namePlates !== false;
   const gap = 8;
   const rowH =
     rows.length > 0
-      ? Math.min(64, (board.h - gap * (rows.length - 1)) / rows.length)
+      ? plates
+        ? packedLeaderRowH(board.h, rows.length, gap)
+        : Math.min(64, (board.h - gap * (rows.length - 1)) / rows.length)
       : 52;
   for (let index = 0; index < rows.length; index += 1) {
     await paintBarRow(
@@ -113,6 +117,7 @@ export const renderLeaderBarsCanvas = async (
       input.barStyle === "team",
       input.showBarHeadshots,
       scale,
+      plates,
     );
   }
   paintLeaderFrame(
