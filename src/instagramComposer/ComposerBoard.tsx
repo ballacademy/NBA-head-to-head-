@@ -19,8 +19,8 @@ import {
  *
  * Fit: wrap is contain-sized by CSS; zoom follows wrap width so the
  * whole 4:5 / 9:16 / 1:1 paints with overflow hidden (no inner scroll).
- * 75 / 100: wrap is the full zoomed graphic so titles are not cropped
- * inside a 520px pane.
+ * 75 / 100: wrap is the zoomed graphic at PREVIEW_ZOOM_NATURAL_SCALE
+ * (100% = half the 1200×1500 design, today’s 50%).
  */
 export function ComposerBoard({
   children,

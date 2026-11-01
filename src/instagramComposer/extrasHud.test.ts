@@ -12,7 +12,10 @@ import {
 import { parseComposerHudMode } from "./composerHudMode";
 import { fillQualityMessage } from "./composerFillToast";
 import { nextEmptySlotIndex, slotMissingPlayer } from "./nextEmptySlot";
-import { previewZoomFactor } from "./composerPreviewZoom";
+import {
+  PREVIEW_ZOOM_NATURAL_SCALE,
+  previewZoomFactor,
+} from "./composerPreviewZoom";
 import { parseComposerBaCorner } from "./composerBaCorner";
 import { exportFilenameFromTitle } from "./composerPresets";
 import { BLANK_POST_CONFIRM } from "./confirmBlankPost";
@@ -118,9 +121,10 @@ describe("extras 17–32 HUD helpers", () => {
   });
 
   it("zooms Fit vs 75% vs 100%", () => {
+    expect(PREVIEW_ZOOM_NATURAL_SCALE).toBe(0.5);
     expect(previewZoomFactor(0.4, "fit")).toBe(0.4);
-    expect(previewZoomFactor(0.4, "75")).toBe(0.75);
-    expect(previewZoomFactor(0.4, "100")).toBe(1);
+    expect(previewZoomFactor(0.4, "75")).toBe(0.375);
+    expect(previewZoomFactor(0.4, "100")).toBe(0.5);
   });
 
   it("parses BA corners and names files with player + date", () => {

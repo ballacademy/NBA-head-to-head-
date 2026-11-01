@@ -243,6 +243,13 @@ describe("composer chrome", () => {
     expect(sheet).not.toContain("calc((100dvh - 180px) * 0.8)");
     expect(board).toContain("width: width * factor");
     expect(board).toContain('data-preview-zoom={previewZoom}');
+    expect(board).toContain("PREVIEW_ZOOM_NATURAL_SCALE");
+    const previewZoom = readFileSync(
+      join(root, "instagramComposer/composerPreviewZoom.ts"),
+      "utf8",
+    );
+    expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
+    expect(previewZoom).toContain("0.75 * PREVIEW_ZOOM_NATURAL_SCALE");
     const hub = readFileSync(
       join(root, "instagramComposer/ComposerHub.tsx"),
       "utf8",
