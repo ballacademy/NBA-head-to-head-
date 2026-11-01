@@ -786,7 +786,7 @@ export const ESPN_TEAM_SCHEDULE_URL = (
   seasonYear = espnGamelogSeasonYear(),
   seasonType = 1,
 ) =>
-  `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${espnTeamId}/schedule?season=${seasonYear}&seasontype=${seasonType}`;
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${espnTeamId}/schedule?season=${seasonYear}&seasontype=${seasonType}`;
 
 export interface TeamLastNight {
   game: LastGame | null;

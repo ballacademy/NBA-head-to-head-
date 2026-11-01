@@ -151,9 +151,11 @@ export const tierBoardLayout = (
   const contentW = cellsContentWidth(columnW);
   /** Stretch lanes so the last tier meets the footer, 3–10 rows alike. */
   const laneH = bodyH / totalLanes;
-  const cols = itemCounts.length
-    ? Math.max(1, ...itemCounts.map((count) => laneSlotCount(count)))
-    : 1;
+  const cols = !anyFilled && itemCounts.length
+    ? TIER_WRAP_COLS
+    : itemCounts.length
+      ? Math.max(1, ...itemCounts.map((count) => laneSlotCount(count)))
+      : 1;
   const metrics = cellMetrics(laneH, contentW, cols);
   return {
     lanes,
@@ -189,9 +191,13 @@ export type AddChipPlacement =
 export const addChipPlacement = (
   itemCount: number,
   cols: number,
+  boardEmpty = false,
 ): AddChipPlacement => {
   const filled = Math.max(0, itemCount);
   if (filled === 0) {
+    if (boardEmpty && cols > 1) {
+      return { kind: "slot", col: 0, wrapRow: 0 };
+    }
     return { kind: "compact", empty: true, wrapRow: 0 };
   }
   const next = cellGridPosition(filled);

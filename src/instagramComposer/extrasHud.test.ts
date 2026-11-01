@@ -1,12 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { COMPOSER_TAB_GROUPS } from "./ComposerTabs";
 import { jumpComposerMode, matchingComposerTabs } from "./composerJump";
 import { parseComposerCarry } from "./composerCarry";
 import { parseRecentPlayerIds } from "./composerRecentPlayers";
 import {
+  COMPOSER_HOTKEY_FILL_LABELS,
   composerHotkeyAction,
   isComposerTypingTarget,
+  runComposerHotkey,
 } from "./composerHotkeys";
+import { parseComposerHudMode } from "./composerHudMode";
 import { fillQualityMessage } from "./composerFillToast";
 import { nextEmptySlotIndex, slotMissingPlayer } from "./nextEmptySlot";
 import { previewZoomFactor } from "./composerPreviewZoom";
@@ -47,6 +50,13 @@ describe("extras 17–32 HUD helpers", () => {
     ]);
   });
 
+  it("defaults HUD to Simple and keeps a remembered Full", () => {
+    expect(parseComposerHudMode(null)).toBe("simple");
+    expect(parseComposerHudMode(undefined)).toBe("simple");
+    expect(parseComposerHudMode("simple")).toBe("simple");
+    expect(parseComposerHudMode("full")).toBe("full");
+  });
+
   it("maps F/E/Z/1/2/3 and ignores typing targets", () => {
     expect(isComposerTypingTarget(null)).toBe(false);
     const key = (k: string) =>
@@ -72,6 +82,27 @@ describe("extras 17–32 HUD helpers", () => {
         target: null,
       } as KeyboardEvent),
     ).toBe("fill");
+    expect(COMPOSER_HOTKEY_FILL_LABELS).toEqual(
+      expect.arrayContaining([
+        "Fill East",
+        "Fill West",
+        "Fill range",
+        "Fill cover",
+        "Fill names",
+        "Fill ranking",
+        "Fill schedule",
+        "Fill report",
+        "Auto-fill 7–10",
+        "Populate matching",
+      ]),
+    );
+    const east = { textContent: "Fill East", disabled: false, click: vi.fn() };
+    const generic = { textContent: "Fill", disabled: false, click: vi.fn() };
+    runComposerHotkey("fill", {
+      querySelectorAll: () => [generic, east],
+    } as unknown as ParentNode);
+    expect(east.click).toHaveBeenCalledTimes(1);
+    expect(generic.click).not.toHaveBeenCalled();
   });
 
   it("toasts preseason and under-2 GP fills", () => {

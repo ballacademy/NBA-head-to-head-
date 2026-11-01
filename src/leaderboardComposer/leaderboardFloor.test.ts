@@ -27,6 +27,24 @@ describe("leader format floors", () => {
     expect(paint).toContain("paintStuddedCharcoal");
   });
 
+  it("keeps an on-board title on empty Leader split, Dual ranks, and Leader bars", () => {
+    expect(read("leaderSplitComposer/LeaderSplitGraphic.tsx")).toContain(
+      "ls-list-title",
+    );
+    expect(read("leaderSplitComposer/leaderSplitComposer.css")).toContain(
+      ".ls-list-title",
+    );
+    expect(read("dualRanksComposer/DualRanksGraphic.tsx")).toContain(
+      "dr-empty-title",
+    );
+    expect(read("leaderBarsComposer/LeaderBarsGraphic.tsx")).toContain(
+      "empty ? \"is-empty\"",
+    );
+    expect(read("leaderBarsComposer/LeaderBarsGraphic.tsx")).toContain(
+      "ComposerTitleField",
+    );
+  });
+
   it("ships team-color name plates on the three list formats", () => {
     expect(read("leaderSplitComposer/LeaderSplitComposerApp.tsx")).toContain(
       "Name plates",

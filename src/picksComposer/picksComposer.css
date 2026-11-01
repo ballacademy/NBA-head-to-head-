@@ -754,6 +754,15 @@
   outline-offset: 1px;
 }
 
+.pk-hud-ats__hint {
+  margin: 0;
+  max-width: 280px;
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
 .pk-board.is-exporting .pk-row__tools,
 .pk-board.is-exporting .pk-logo-edit,
 .pk-board.is-exporting .pk-check:not(.is-on),

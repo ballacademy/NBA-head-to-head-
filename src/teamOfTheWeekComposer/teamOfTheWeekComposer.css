@@ -141,7 +141,7 @@
 }
 
 @media (hover: none), (pointer: coarse) {
-  .totw-strip .pod-photo__tools {
+  .totw-strip .pod-photo.is-empty .pod-photo__tools {
     opacity: 1;
     pointer-events: auto;
   }

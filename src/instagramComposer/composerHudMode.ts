@@ -7,7 +7,7 @@ export const COMPOSER_HUD_MODE_EVENT = "ddgm:composer-hud-mode";
 export type ComposerHudMode = "simple" | "full";
 
 export const parseComposerHudMode = (value: unknown): ComposerHudMode =>
-  value === "simple" ? "simple" : "full";
+  value === "full" ? "full" : "simple";
 
 export const readComposerHudMode = (): ComposerHudMode =>
   parseComposerHudMode(readJson<unknown>(COMPOSER_HUD_MODE_KEY));

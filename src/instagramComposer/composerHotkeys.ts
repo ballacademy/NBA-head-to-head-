@@ -54,13 +54,45 @@ export const composerHotkeyAction = (event: KeyboardEvent) => {
   return null;
 };
 
-const clickNamed = (root: ParentNode, names: string[]) => {
+const buttonLabel = (el: Element) =>
+  (el.textContent || "").replace(/\s+/g, " ").trim();
+
+/** Specific Fill labels first so F does not land on a generic Fill. */
+export const COMPOSER_HOTKEY_FILL_LABELS = [
+  "Fill East",
+  "Fill West",
+  "Fill range",
+  "Fill cover",
+  "Fill names",
+  "Fill ranking",
+  "Fill schedule",
+  "Fill report",
+  "Fill last game",
+  "Fill last night",
+  "Fill shots",
+  "Populate matching",
+  "Populate",
+  "Auto-fill 7–10",
+  "Auto-fill 7-10",
+  "Fill",
+  "Auto-fill",
+] as const;
+
+const clickNamed = (root: ParentNode, names: readonly string[]) => {
   const buttons = [...root.querySelectorAll("button")];
-  const button = buttons.find((el) =>
-    names.some((name) => (el.textContent || "").trim() === name),
-  );
-  button?.click();
-  return Boolean(button);
+  for (const name of names) {
+    const button = buttons.find((el) => {
+      if ((el as HTMLButtonElement).disabled) {
+        return false;
+      }
+      return buttonLabel(el) === name;
+    });
+    if (button) {
+      button.click();
+      return true;
+    }
+  }
+  return false;
 };
 
 export const runComposerHotkey = (
@@ -68,14 +100,7 @@ export const runComposerHotkey = (
   root: ParentNode,
 ) => {
   if (action === "fill") {
-    return clickNamed(root, [
-      "Fill last game",
-      "Fill last night",
-      "Fill shots",
-      "Populate",
-      "Fill",
-      "Auto-fill",
-    ]);
+    return clickNamed(root, COMPOSER_HOTKEY_FILL_LABELS);
   }
   if (action === "export" || action === "ratio-4-5") {
     return clickNamed(root, ["Export PNG"]);

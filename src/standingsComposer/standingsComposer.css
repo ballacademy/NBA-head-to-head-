@@ -318,7 +318,9 @@
 }
 
 .sc-toolbar__identity {
-  flex: 1 1 280px;
+  flex: 2 1 420px;
+  min-width: min(100%, 280px);
+  overflow: visible;
 }
 
 .sc-toolbar__row--data,
@@ -393,6 +395,7 @@
   min-width: 140px;
   flex: 1 1 140px;
   max-width: 280px;
+  overflow: visible;
 }
 
 .sc-field--range {
@@ -418,8 +421,9 @@
 }
 
 .sc-field--wide {
-  flex: 1.4 1 240px;
-  max-width: 520px;
+  flex: 2 1 360px;
+  max-width: none;
+  min-width: min(100%, 280px);
 }
 
 .sc-stat-slots {
@@ -492,6 +496,7 @@
 .sc-field input,
 .sc-field select {
   width: 100%;
+  min-width: 0;
   height: 32px;
   padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -503,6 +508,8 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  overflow-x: auto;
+  text-overflow: clip;
 }
 
 .sc-field input:focus,

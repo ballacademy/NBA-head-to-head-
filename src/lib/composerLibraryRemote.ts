@@ -3,7 +3,7 @@ import {
   exportComposerLibrary,
   mergeComposerLibraryFiles,
 } from "../instagramComposer/composerLibrary";
-import { isPlayerAccountLinked } from "./accountGate";
+import { isPlayerAccountLinked, peekCachedAccountLinked } from "./accountGate";
 import {
   fetchRemoteComposerLibrary,
   pushRemoteComposerLibrary,
@@ -19,6 +19,9 @@ export const resetComposerLibraryPullGate = () => {
 export const pullAndMergeComposerLibrary = async (
   playerId = getOrCreatePlayerIdentity().playerId,
 ) => {
+  if (peekCachedAccountLinked(playerId) !== true) {
+    return null;
+  }
   const remote = await fetchRemoteComposerLibrary(playerId);
   if (!remote?.library) {
     return null;

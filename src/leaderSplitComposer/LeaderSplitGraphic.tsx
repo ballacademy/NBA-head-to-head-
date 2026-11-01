@@ -96,6 +96,13 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
 
     const list = (
       <div className="ls-list">
+        <input
+          className="ls-list-title"
+          value={draft.title}
+          aria-label="Leader split title"
+          spellCheck={false}
+          onChange={(event) => onTitleChange(event.target.value)}
+        />
         <ol className="ls-rows">
           {rows.map((row, index) => {
             const logo = row.teamId

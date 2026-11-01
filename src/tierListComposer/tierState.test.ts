@@ -527,6 +527,12 @@ describe("tier layout", () => {
     );
     const allEmpty = tierBoardLayout([0, 0, 0, 0, 0, 0]);
     expect(allEmpty.lanes.every((lane) => lane === 1)).toBe(true);
+    expect(allEmpty.cols).toBe(8);
+    expect(addChipPlacement(0, allEmpty.cols, true)).toEqual({
+      kind: "slot",
+      col: 0,
+      wrapRow: 0,
+    });
   });
 
   it("packs preview from filled cells only so an editor + cannot wrap a new lane", () => {

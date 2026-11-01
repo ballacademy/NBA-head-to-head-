@@ -293,6 +293,42 @@ describe("composer chrome", () => {
     expect(mockApp).toContain("add players yourself");
   });
 
+  it("ships P2 HUD polish: Simple default, F fills, quiet 401s, unclipped titles", () => {
+    const hudMode = readFileSync(
+      join(root, "instagramComposer/composerHudMode.ts"),
+      "utf8",
+    );
+    const hotkeys = readFileSync(
+      join(root, "instagramComposer/composerHotkeys.ts"),
+      "utf8",
+    );
+    const libraryRemote = readFileSync(
+      join(root, "lib/composerLibraryRemote.ts"),
+      "utf8",
+    );
+    expect(hudMode).toContain('value === "full" ? "full" : "simple"');
+    expect(hotkeys).toContain("Fill East");
+    expect(hotkeys).toContain("Fill range");
+    expect(hotkeys).toContain("Fill names");
+    expect(hotkeys).toContain("Auto-fill 7–10");
+    expect(hotkeys).toContain(".disabled");
+    expect(libraryRemote).toContain("peekCachedAccountLinked");
+    expect(lastGame).toContain("site.web.api.espn.com");
+    expect(lastGame).not.toMatch(
+      /ESPN_TEAM_SCHEDULE_URL[\s\S]*site\.api\.espn\.com/,
+    );
+    expect(sheet).toMatch(/\.sc-field--wide \{[^}]*max-width:\s*none/);
+    expect(sheet).toContain("text-overflow: clip");
+    const tierCss = readFileSync(
+      join(root, "tierListComposer/tierListComposer.css"),
+      "utf8",
+    );
+    expect(tierCss).toContain(".tl-cell--ghost");
+    expect(tierCss).not.toContain(
+      ".tl-row.is-empty .tl-cells {\n  grid-template-columns: none;",
+    );
+  });
+
   it("flips the Stat card columns without a CSS scale(-1)", () => {
     expect(statCardCss).toContain(".stc-board.is-stats-left");
     expect(statCardCss).not.toMatch(/scale\(\s*-1\s*\)/);
@@ -723,11 +759,11 @@ describe("composer chrome", () => {
     expect(quoteApp).toContain("QUOTE_PRESETS");
   });
 
-  it("shows photo tools on coarse pointers without waiting for hover", () => {
+  it("shows empty photo tools on coarse pointers without waiting for hover", () => {
     expect(photo).toContain("@media (hover: none), (pointer: coarse)");
     expect(photo).toContain("min-height: 44px");
     expect(photo).toMatch(
-      /@media \(hover: none\), \(pointer: coarse\)[\s\S]*?\.pod-photo__tools[\s\S]*?opacity:\s*1/,
+      /@media \(hover: none\), \(pointer: coarse\)[\s\S]*?\.pod-photo\.is-empty \.pod-photo__tools[\s\S]*?opacity:\s*1/,
     );
   });
 
@@ -742,7 +778,7 @@ describe("composer chrome", () => {
     expect(headlineCss).toContain("top: calc(108 * var(--u))");
   });
 
-  it("keeps compose-preview pick and zoom tools visible without HUD Edit", () => {
+  it("keeps empty pick chrome visible and hides filled zoom until hover or Edit", () => {
     const photoFrame = readFileSync(
       join(root, "playerOfTheDayComposer/PhotoFrame.tsx"),
       "utf8",
@@ -756,9 +792,11 @@ describe("composer chrome", () => {
     expect(photoCss).toMatch(
       /\.pod-photo__tools \{\n(?:[^\n]+\n){0,8}\s*opacity:\s*1;/,
     );
-    expect(photoCss).not.toMatch(
-      /\.pod-photo__tools \{\n(?:[^\n]+\n){0,8}\s*opacity:\s*0;/,
+    expect(photoCss).toContain(".pod-photo:not(.is-empty) .pod-photo__tools");
+    expect(photoCss).toMatch(
+      /\.pod-photo:not\(\.is-empty\) \.pod-photo__tools \{\s*opacity:\s*0;/,
     );
+    expect(photoCss).toContain(".sc-root.is-photo-edit .pod-photo__tools");
   });
 
   it("ships the extras pack: range, multi-highlight, 2–4 cover, 6–10 lineup, duo, HUD Simple", () => {
@@ -1085,6 +1123,7 @@ describe("composer chrome", () => {
     expect(picksApp).toContain("Record wins");
     expect(picksApp).toContain("Record losses");
     expect(picksApp).toContain("Record pushes");
+    expect(picksApp).toContain("0-0-0 until a lock is graded");
     expect(picksApp).toContain("setPicksRecordField");
     expect(picksApp).toContain("ungradedPicksDates");
     expect(picksApp).toContain("applyScoresToPicksLedger");

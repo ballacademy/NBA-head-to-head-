@@ -634,6 +634,8 @@ describe("last NBA game parsing", () => {
   it("reads the last completed team schedule game and running W-L", () => {
     expect(ESPN_TEAM_IDS.SAS).toBe(24);
     expect(ESPN_TEAM_SCHEDULE_URL(24, 2027, 1)).toContain("seasontype=1");
+    expect(ESPN_TEAM_SCHEDULE_URL(24, 2027, 1)).toContain("site.web.api.espn.com");
+    expect(ESPN_TEAM_SCHEDULE_URL(24, 2027, 1)).not.toContain("site.api.espn.com");
     const night = parseTeamScheduleLastNight(
       {
         events: [

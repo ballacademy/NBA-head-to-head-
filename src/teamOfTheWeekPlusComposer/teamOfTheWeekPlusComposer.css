@@ -276,7 +276,7 @@
 }
 
 @media (hover: none), (pointer: coarse) {
-  .twp-cell .pod-photo__tools {
+  .twp-cell .pod-photo.is-empty .pod-photo__tools {
     opacity: 1;
     pointer-events: auto;
   }

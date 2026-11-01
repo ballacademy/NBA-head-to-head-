@@ -207,6 +207,11 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
             onUpload={onUpload}
             onPick={onPick}
           />
+          {draft.photoSrc ? null : (
+            <p className="dr-empty-title">
+              {draft.leftHeader} · {draft.rightHeader}
+            </p>
+          )}
         </div>
         <div className="dr-cols">
           {cols.hideLeft ? null : (

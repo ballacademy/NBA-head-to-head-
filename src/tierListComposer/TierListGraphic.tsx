@@ -124,6 +124,7 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
       GRAPHIC_HEIGHT,
       labelW,
     );
+    const boardEmpty = rows.every((row) => row.teams.length === 0);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -223,7 +224,11 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
               resolvedTierColor(row.label, row.color, rowIndex),
             );
             const ink = inkOnTierColor(color);
-            const addChip = addChipPlacement(row.teams.length, layout.cols);
+            const addChip = addChipPlacement(
+              row.teams.length,
+              layout.cols,
+              boardEmpty,
+            );
             return (
               <div
                 key={row.id}
@@ -447,6 +452,23 @@ export const TierListGraphic = forwardRef<HTMLElement, TierListGraphicProps>(
                       +
                     </button>
                   )}
+                  {exporting || row.teams.length > 0
+                    ? null
+                    : Array.from(
+                        {
+                          length: Math.max(
+                            0,
+                            layout.cols - (addChip.kind === "slot" ? 1 : 0),
+                          ),
+                        },
+                        (_, ghost) => (
+                          <div
+                            key={`ghost-${rowIndex}-${ghost}`}
+                            className="tl-cell tl-cell--ghost"
+                            aria-hidden="true"
+                          />
+                        ),
+                      )}
                 </div>
                 {exporting || addChip.kind === "slot" ? null : (
                   <button

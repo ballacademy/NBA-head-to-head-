@@ -333,9 +333,16 @@
   right: calc(var(--pad-right, 4) * var(--u));
 }
 
-.tl-row.is-empty .tl-cells {
-  grid-template-columns: none;
-  grid-auto-rows: auto;
+.tl-cell--ghost {
+  background: rgba(255, 255, 255, 0.04);
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.18);
+  cursor: default;
+  pointer-events: none;
+}
+
+.tl-board.is-exporting .tl-cell--ghost {
+  display: none;
 }
 
 .tl-cell__hit {

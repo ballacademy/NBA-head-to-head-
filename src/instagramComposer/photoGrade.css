@@ -49,7 +49,14 @@
 }
 
 @media (hover: none), (pointer: coarse) {
-  .pod-photo__tools {
+  .pod-photo:not(.is-empty) .pod-photo__tools {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .pod-photo.is-empty .pod-photo__tools,
+  .pod-photo:focus-within .pod-photo__tools,
+  .sc-root.is-photo-edit .pod-photo__tools {
     opacity: 1;
     pointer-events: auto;
   }

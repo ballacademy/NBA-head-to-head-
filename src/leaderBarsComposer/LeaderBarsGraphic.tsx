@@ -15,6 +15,7 @@ import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import {
   barWidthPct,
   leaderRowName,
+  leaderRowOccupied,
   maxLeaderRaw,
   type LeaderRow,
 } from "../leaderboardComposer/leaderboardFill";
@@ -68,6 +69,7 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
     const rows = leaderBarsExportRows(draft, exporting, square);
     const max = maxLeaderRaw(rows);
     const lines = splitLeaderBarsTitle(draft.title);
+    const empty = !rows.some(leaderRowOccupied);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -103,6 +105,7 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
         ref={setRefs}
         className={[
           "lb-board",
+          empty ? "is-empty" : "",
           draft.namePlates !== false ? "is-plates" : "",
           draft.photoPos === "bottom" ? "is-bottom" : "",
           story ? "is-story" : "",

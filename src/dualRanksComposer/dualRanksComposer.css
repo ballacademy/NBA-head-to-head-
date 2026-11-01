@@ -33,6 +33,22 @@
   min-width: 0;
 }
 
+.dr-empty-title {
+  position: absolute;
+  left: calc(28 * var(--u));
+  right: calc(28 * var(--u));
+  bottom: calc(28 * var(--u));
+  z-index: 5;
+  margin: 0;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  font-size: calc(28 * var(--u));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  pointer-events: none;
+}
+
 .dr-board.is-top .dr-photo-wrap,
 .dr-board.is-story .dr-photo-wrap,
 .dr-board.is-square .dr-photo-wrap {
