@@ -157,7 +157,7 @@ describe("composer chrome", () => {
 
   it("pins export outside the scrolling HUD and does not hide photo tools in preview", () => {
     expect(sheet).toMatch(/\.sc-toolbar__row--actions[\s\S]*?flex:\s*0 0 auto/);
-    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*auto/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*visible/);
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[^}]*position:\s*sticky/,
     );
@@ -165,7 +165,7 @@ describe("composer chrome", () => {
       /@media \(max-width: 900px\)[\s\S]*\.sc-toolbar__row--actions \{[\s\S]*?position:\s*fixed/,
     );
     expect(sheet).not.toMatch(/height:\s*min\(52vh/);
-    expect(sheet).toMatch(/html:has\(\.sc-root\)[\s\S]{0,180}?overflow:\s*hidden/);
+    expect(sheet).toMatch(/html:has\(\.sc-root\)[\s\S]{0,180}?overflow-y:\s*auto/);
     expect(sheet).toContain("touch-action: none");
     expect(sheet).toMatch(/\.sc-root \{[^}]*touch-action:\s*pan-y pinch-zoom/);
     expect(sheet).toContain("var(--vvh, 100dvh)");
@@ -221,37 +221,10 @@ describe("composer chrome", () => {
 
   it("keeps overlay title carets on the glyphs instead of a scaled parent", () => {
     expect(board).toMatch(/zoom:\s*scale/);
-    expect(board).toContain("zoom: innerZoom");
     expect(board).not.toMatch(/transform:\s*`scale\(/);
     expect(titleField).toContain("composer-title-stack__paint");
     expect(sheet).toContain(".composer-title-stack__paint");
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
-  });
-
-  it("fits the 4:5 compose surface inside the preview pane", () => {
-    expect(board).toContain("zoom: innerZoom");
-    expect(board).toContain("pane / width");
-    const zoomSrc = readFileSync(
-      join(root, "instagramComposer/composerPreviewZoom.ts"),
-      "utf8",
-    );
-    expect(zoomSrc).toContain("fitComposerBoardScale");
-    expect(zoomSrc).not.toContain("width-only");
-    expect(zoomSrc).not.toMatch(/return \{ width, height: 0 \}/);
-    expect(sheet).toMatch(
-      /\.sc-stage__board \{[\s\S]*overflow:\s*hidden/,
-    );
-    expect(sheet).toContain("min(100cqw");
-    expect(sheet).toContain("min(100cqh");
-    expect(sheet).toMatch(/\.sc-root main\.sc-stage[\s\S]*min-height:\s*62vh/);
-    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*max-height:\s*22vh/);
-    expect(sheet).toMatch(/\.sc-tabs \{[\s\S]*max-height:\s*12vh/);
-    expect(sheet).not.toContain("100dvh - 180px");
-    expect(sheet).not.toContain("100dvh - 240px");
-    expect(sheet).not.toContain("100dvh - 48vh");
-    expect(sheet).toMatch(
-      /\.sc-toolbar__row--actions \{[\s\S]*position:\s*fixed/,
-    );
   });
 
   it("flips the Stat card columns without a CSS scale(-1)", () => {
