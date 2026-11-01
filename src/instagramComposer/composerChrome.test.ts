@@ -221,7 +221,7 @@ describe("composer chrome", () => {
 
   it("keeps overlay title carets on the glyphs instead of a scaled parent", () => {
     expect(board).toMatch(/zoom:\s*scale/);
-    expect(board).toContain("fitComposerBoardScale");
+    expect(board).toContain("zoom: innerZoom");
     expect(board).not.toMatch(/transform:\s*`scale\(/);
     expect(titleField).toContain("composer-title-stack__paint");
     expect(sheet).toContain(".composer-title-stack__paint");
@@ -229,21 +229,23 @@ describe("composer chrome", () => {
   });
 
   it("fits the 4:5 compose surface inside the preview pane", () => {
-    expect(board).toContain("fitComposerBoardScale");
-    expect(board).toContain("readComposerStageBox");
-    expect(board).toContain("width * fitScale");
-    expect(board).toContain("height * fitScale");
+    expect(board).toContain("zoom: innerZoom");
+    expect(board).toContain("pane / width");
     const zoomSrc = readFileSync(
       join(root, "instagramComposer/composerPreviewZoom.ts"),
       "utf8",
     );
-    expect(zoomSrc).toContain("min(pane width, pane height)");
+    expect(zoomSrc).toContain("fitComposerBoardScale");
     expect(zoomSrc).not.toContain("width-only");
     expect(zoomSrc).not.toMatch(/return \{ width, height: 0 \}/);
-    expect(sheet).toMatch(/\.sc-stage__frame \{[\s\S]*min-width:\s*0/);
-    expect(sheet).toMatch(/\.sc-stage__board \{[\s\S]*overflow:\s*hidden/);
-    expect(sheet).toMatch(/\.sc-composer \{[\s\S]*flex:\s*1 1 auto/);
-    expect(sheet).toMatch(/\.sc-root main\.sc-stage[\s\S]*min-height:\s*42vh/);
+    expect(sheet).toMatch(
+      /\.sc-stage__board \{[\s\S]*overflow:\s*hidden/,
+    );
+    expect(sheet).toContain("min(100cqw");
+    expect(sheet).toContain("min(100cqh");
+    expect(sheet).toMatch(/\.sc-root main\.sc-stage[\s\S]*min-height:\s*62vh/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*max-height:\s*22vh/);
+    expect(sheet).toMatch(/\.sc-tabs \{[\s\S]*max-height:\s*12vh/);
     expect(sheet).not.toContain("100dvh - 180px");
     expect(sheet).not.toContain("100dvh - 240px");
     expect(sheet).not.toContain("100dvh - 48vh");

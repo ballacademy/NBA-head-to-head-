@@ -62,19 +62,9 @@ const paddingBox = (node: HTMLElement) => {
   };
 };
 
-const outerHeight = (node: HTMLElement) => {
-  const style = getComputedStyle(node);
-  return (
-    node.offsetHeight +
-    (Number.parseFloat(style.marginTop) || 0) +
-    (Number.parseFloat(style.marginBottom) || 0)
-  );
-};
-
 /**
- * Fit uses min(pane width, pane height) so the whole 4:5 / 9:16 / 1:1
- * graphic is visible at once. Measure the stage frame, not the unzoomed
- * 1200×1500 wrap (that locks scale at 1 and clips titles).
+ * Pane box for contain-fit. Prefer the stage frame (the preview pane),
+ * never the unzoomed 1200×1500 wrap min-content.
  */
 export const readComposerStageBox = (board: HTMLElement) => {
   const frame = board.closest(".sc-stage__frame");
@@ -86,16 +76,10 @@ export const readComposerStageBox = (board: HTMLElement) => {
         ? stage
         : board;
   const pad = paddingBox(box);
-  let width = Math.max(0, box.clientWidth - pad.x);
-  let height = Math.max(0, box.clientHeight - pad.y);
-  for (const extra of box.querySelectorAll(
-    ":scope > .sc-hint, :scope > .sc-status",
-  )) {
-    if (extra instanceof HTMLElement) {
-      height -= outerHeight(extra);
-    }
-  }
-  return { width, height: Math.max(0, height) };
+  return {
+    width: Math.max(0, box.clientWidth - pad.x),
+    height: Math.max(0, box.clientHeight - pad.y),
+  };
 };
 
 export const readComposerPreviewZoom = () =>

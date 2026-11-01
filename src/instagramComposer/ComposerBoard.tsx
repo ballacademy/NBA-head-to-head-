@@ -7,9 +7,7 @@ import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
 import {
-  fitComposerBoardScale,
   previewZoomFactor,
-  readComposerStageBox,
   useComposerPreviewZoom,
 } from "./composerPreviewZoom";
 
@@ -19,9 +17,9 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit contain-scales to min(pane width, pane height) so the whole
- * 4:5 / 9:16 / 1:1 graphic is visible — overflow hidden, no inner
- * scrollbars. 75 / 100 pan inside that same pane.
+ * Fit is object-fit: contain inside the preview pane (CSS sizes the wrap).
+ * Inner zoom follows the wrap width so the whole 4:5 / 9:16 / 1:1 graphic
+ * paints with overflow:hidden. 75 / 100 pan inside that same pane.
  */
 export function ComposerBoard({
   children,
@@ -42,13 +40,12 @@ export function ComposerBoard({
       return;
     }
     const frame = node.closest(".sc-stage__frame");
-    const stage = node.closest(".sc-stage");
     const sync = () => {
-      const box = readComposerStageBox(node);
-      if (box.width <= 1 && box.height <= 1) {
+      const pane = node.clientWidth;
+      if (pane <= 1) {
         return;
       }
-      setScale(fitComposerBoardScale(box.width, box.height, width, height));
+      setScale(pane / width);
     };
     sync();
     const viewport = window.visualViewport;
@@ -61,11 +58,9 @@ export function ComposerBoard({
       };
     }
     const observer = new ResizeObserver(sync);
+    observer.observe(node);
     if (frame) {
       observer.observe(frame);
-    }
-    if (stage && stage !== frame) {
-      observer.observe(stage);
     }
     return () => {
       observer.disconnect();
@@ -86,24 +81,11 @@ export function ComposerBoard({
       ref={wrapRef}
       className={`sc-stage__board${previewZoom === "fit" ? "" : " is-zoomed"}`}
       data-fit-scale={fitted ? String(fitScale) : undefined}
-      style={
-        {
-          ["--board-w" as string]: String(width),
-          ["--board-h" as string]: String(height),
-          aspectRatio: `${width} / ${height}`,
-          maxWidth: "100%",
-          maxHeight: "100%",
-          ...(fitted
-            ? {
-                width: width * fitScale,
-                height: height * fitScale,
-              }
-            : {
-                width: "min(100%, calc(100cqh * var(--board-w) / var(--board-h)))",
-                height: "auto",
-              }),
-        }
-      }
+      style={{
+        ["--board-w" as string]: String(width),
+        ["--board-h" as string]: String(height),
+        aspectRatio: `${width} / ${height}`,
+      }}
     >
       <div
         className="sc-stage__board-inner"
