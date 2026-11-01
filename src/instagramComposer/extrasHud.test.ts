@@ -94,6 +94,8 @@ describe("extras 17–32 HUD helpers", () => {
     expect(fitComposerBoardScale(800, 500, 1200, 1500)).toBeCloseTo(500 / 1500);
     expect(fitComposerBoardScale(400, 0, 1200, 1500)).toBeCloseTo(400 / 1200);
     expect(fitComposerBoardScale(2400, 3000, 1200, 1500)).toBe(1);
+    expect(fitComposerBoardScale(0, 0, 1200, 1500)).toBe(0);
+    expect(fitComposerBoardScale(900, 400, 1080, 1920)).toBeCloseTo(400 / 1920);
   });
 
   it("parses BA corners and names files with player + date", () => {

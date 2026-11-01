@@ -19,9 +19,9 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit sizes this wrap from the preview-column width so the 4:5/9:16
- * poster is fully painted — never leftover-HUD leftover height, never a
- * 1200×1500 inner scroll crop.
+ * Fit contain-scales to min(pane width, pane height) so the whole
+ * 4:5 / 9:16 / 1:1 graphic is visible — overflow hidden, no inner
+ * scrollbars. 75 / 100 pan inside that same pane.
  */
 export function ComposerBoard({
   children,
@@ -41,8 +41,13 @@ export function ComposerBoard({
     if (!node) {
       return;
     }
+    const frame = node.closest(".sc-stage__frame");
+    const stage = node.closest(".sc-stage");
     const sync = () => {
       const box = readComposerStageBox(node);
+      if (box.width <= 1 && box.height <= 1) {
+        return;
+      }
       setScale(fitComposerBoardScale(box.width, box.height, width, height));
     };
     sync();
@@ -56,9 +61,10 @@ export function ComposerBoard({
       };
     }
     const observer = new ResizeObserver(sync);
-    observer.observe(node);
-    const stage = node.closest(".sc-stage");
-    if (stage) {
+    if (frame) {
+      observer.observe(frame);
+    }
+    if (stage && stage !== frame) {
       observer.observe(stage);
     }
     return () => {
@@ -68,10 +74,12 @@ export function ComposerBoard({
     };
   }, [width, height]);
 
-  const fitScale = scale > 0 ? scale : 1;
-  const innerZoom =
-    previewZoom === "fit" ? fitScale : previewZoomFactor(fitScale, previewZoom);
   const fitted = scale > 0;
+  const fitScale = fitted ? scale : 0;
+  const innerZoom =
+    previewZoom === "fit"
+      ? fitScale
+      : previewZoomFactor(fitScale || 1, previewZoom);
 
   return (
     <div
@@ -79,13 +87,22 @@ export function ComposerBoard({
       className={`sc-stage__board${previewZoom === "fit" ? "" : " is-zoomed"}`}
       data-fit-scale={fitted ? String(fitScale) : undefined}
       style={
-        fitted
-          ? {
-              width: width * fitScale,
-              height: height * fitScale,
-              aspectRatio: `${width} / ${height}`,
-            }
-          : { width: "100%", aspectRatio: `${width} / ${height}` }
+        {
+          ["--board-w" as string]: String(width),
+          ["--board-h" as string]: String(height),
+          aspectRatio: `${width} / ${height}`,
+          maxWidth: "100%",
+          maxHeight: "100%",
+          ...(fitted
+            ? {
+                width: width * fitScale,
+                height: height * fitScale,
+              }
+            : {
+                width: "min(100%, calc(100cqh * var(--board-w) / var(--board-h)))",
+                height: "auto",
+              }),
+        }
       }
     >
       <div
@@ -94,7 +111,7 @@ export function ComposerBoard({
           width,
           height,
           // zoom: scale keeps the caret on glyphs; 75/100 override Fit.
-          zoom: innerZoom,
+          ...(innerZoom > 0 ? { zoom: innerZoom } : {}),
         }}
       >
         {children}

@@ -157,7 +157,7 @@ describe("composer chrome", () => {
 
   it("pins export outside the scrolling HUD and does not hide photo tools in preview", () => {
     expect(sheet).toMatch(/\.sc-toolbar__row--actions[\s\S]*?flex:\s*0 0 auto/);
-    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*visible/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*auto/);
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[^}]*position:\s*sticky/,
     );
@@ -165,7 +165,7 @@ describe("composer chrome", () => {
       /@media \(max-width: 900px\)[\s\S]*\.sc-toolbar__row--actions \{[\s\S]*?position:\s*fixed/,
     );
     expect(sheet).not.toMatch(/height:\s*min\(52vh/);
-    expect(sheet).toMatch(/html:has\(\.sc-root\)[\s\S]{0,180}?overflow-y:\s*auto/);
+    expect(sheet).toMatch(/html:has\(\.sc-root\)[\s\S]{0,180}?overflow:\s*hidden/);
     expect(sheet).toContain("touch-action: none");
     expect(sheet).toMatch(/\.sc-root \{[^}]*touch-action:\s*pan-y pinch-zoom/);
     expect(sheet).toContain("var(--vvh, 100dvh)");
@@ -228,23 +228,25 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
   });
 
-  it("fits the 4:5 compose surface as a width-scaled poster", () => {
+  it("fits the 4:5 compose surface inside the preview pane", () => {
     expect(board).toContain("fitComposerBoardScale");
     expect(board).toContain("readComposerStageBox");
     expect(board).toContain("width * fitScale");
+    expect(board).toContain("height * fitScale");
     const zoomSrc = readFileSync(
       join(root, "instagramComposer/composerPreviewZoom.ts"),
       "utf8",
     );
-    expect(zoomSrc).toContain("height: 0");
-    expect(zoomSrc).toContain("width-only");
+    expect(zoomSrc).toContain("min(pane width, pane height)");
+    expect(zoomSrc).not.toContain("width-only");
+    expect(zoomSrc).not.toMatch(/return \{ width, height: 0 \}/);
     expect(sheet).toMatch(/\.sc-stage__frame \{[\s\S]*min-width:\s*0/);
-    expect(sheet).not.toMatch(
-      /@media \(min-width: 901px\)[\s\S]*\.sc-root \{[\s\S]*overflow:\s*hidden/,
-    );
-    expect(sheet).toMatch(
-      /@media \(max-width: 900px\)[\s\S]*100dvh - 48vh/,
-    );
+    expect(sheet).toMatch(/\.sc-stage__board \{[\s\S]*overflow:\s*hidden/);
+    expect(sheet).toMatch(/\.sc-composer \{[\s\S]*flex:\s*1 1 auto/);
+    expect(sheet).toMatch(/\.sc-root main\.sc-stage[\s\S]*min-height:\s*42vh/);
+    expect(sheet).not.toContain("100dvh - 180px");
+    expect(sheet).not.toContain("100dvh - 240px");
+    expect(sheet).not.toContain("100dvh - 48vh");
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[\s\S]*position:\s*fixed/,
     );

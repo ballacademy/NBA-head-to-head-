@@ -28,7 +28,7 @@ export const previewZoomFactor = (
   return fit;
 };
 
-/** Largest zoom that keeps the design board inside the wrap. */
+/** Largest zoom that keeps the design board inside the preview pane. */
 export const fitComposerBoardScale = (
   clientWidth: number,
   clientHeight: number,
@@ -36,12 +36,18 @@ export const fitComposerBoardScale = (
   height: number,
 ) => {
   if (width <= 0 || height <= 0) {
-    return 1;
+    return 0;
   }
   const byWidth = clientWidth > 0 ? clientWidth / width : 0;
   const byHeight = clientHeight > 0 ? clientHeight / height : 0;
-  const next = Math.min(byWidth || Number.POSITIVE_INFINITY, byHeight || Number.POSITIVE_INFINITY);
-  return Number.isFinite(next) && next > 0 ? Math.min(1, next) : 1;
+  if (!byWidth && !byHeight) {
+    return 0;
+  }
+  const next = Math.min(
+    byWidth || Number.POSITIVE_INFINITY,
+    byHeight || Number.POSITIVE_INFINITY,
+  );
+  return Number.isFinite(next) && next > 0 ? Math.min(1, next) : 0;
 };
 
 const paddingBox = (node: HTMLElement) => {
@@ -56,18 +62,40 @@ const paddingBox = (node: HTMLElement) => {
   };
 };
 
+const outerHeight = (node: HTMLElement) => {
+  const style = getComputedStyle(node);
+  return (
+    node.offsetHeight +
+    (Number.parseFloat(style.marginTop) || 0) +
+    (Number.parseFloat(style.marginBottom) || 0)
+  );
+};
+
 /**
- * Fit is width-only: a 4:5 / 9:16 poster sized from the preview column.
- * Height 0 makes scale follow width so the whole graphic is in the wrap;
- * the page can scroll. Do not pass the unzoomed 1200×1500 wrap min-content
- * or scale stays 1 and titles clip.
+ * Fit uses min(pane width, pane height) so the whole 4:5 / 9:16 / 1:1
+ * graphic is visible at once. Measure the stage frame, not the unzoomed
+ * 1200×1500 wrap (that locks scale at 1 and clips titles).
  */
 export const readComposerStageBox = (board: HTMLElement) => {
   const frame = board.closest(".sc-stage__frame");
-  const box = frame instanceof HTMLElement ? frame : board;
+  const stage = board.closest(".sc-stage");
+  const box =
+    frame instanceof HTMLElement
+      ? frame
+      : stage instanceof HTMLElement
+        ? stage
+        : board;
   const pad = paddingBox(box);
-  const width = Math.max(0, box.clientWidth - pad.x);
-  return { width, height: 0 };
+  let width = Math.max(0, box.clientWidth - pad.x);
+  let height = Math.max(0, box.clientHeight - pad.y);
+  for (const extra of box.querySelectorAll(
+    ":scope > .sc-hint, :scope > .sc-status",
+  )) {
+    if (extra instanceof HTMLElement) {
+      height -= outerHeight(extra);
+    }
+  }
+  return { width, height: Math.max(0, height) };
 };
 
 export const readComposerPreviewZoom = () =>
