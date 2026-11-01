@@ -229,10 +229,10 @@ describe("composer chrome", () => {
   });
 
   it("fits the 4:5 compose surface in the remaining stage on desktop", () => {
+    expect(board).toContain("fitComposerBoardScale");
     expect(sheet).toMatch(
-      /@media \(min-width: 901px\)[\s\S]*container-type:\s*size/,
+      /@media \(min-width: 901px\)[\s\S]*max-height:\s*calc\(100dvh - 160px\)/,
     );
-    expect(sheet).toContain("100cqh");
     expect(sheet).toMatch(
       /@media \(max-width: 900px\)[\s\S]*100dvh - 48vh/,
     );
