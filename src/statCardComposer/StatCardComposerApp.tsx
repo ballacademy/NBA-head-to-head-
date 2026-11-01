@@ -569,6 +569,17 @@ export function StatCardComposerApp() {
     void fillStats(next);
   };
 
+  const fillLastNight = async () => {
+    setStatus("Loading this night’s box scores…");
+    const rows = completedNightRows(await night.ensureStandouts());
+    const top = rows[0];
+    if (!top) {
+      setStatus("No box scores for that night yet — pick a player.");
+      return;
+    }
+    commitPick(top.athleteId, false, "standouts");
+  };
+
   const handlePick = (
     playerId: string,
     recs?: "standouts" | "rough-night",
@@ -697,6 +708,13 @@ export function StatCardComposerApp() {
               </div>
             ))}
           </div>
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => void fillLastNight()}
+        >
+          Fill last night
+        </button>
         <div className="sc-look" role="group" aria-label="Stat source">
           <span className="sc-look__label">Stats</span>
           <button

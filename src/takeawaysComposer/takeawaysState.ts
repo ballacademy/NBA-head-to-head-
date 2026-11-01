@@ -520,12 +520,16 @@ export const landCarriedTakeawaysPlayer = (
   });
 };
 
-/** Names only — never writes takeaway copy. Fills empty slots from TOTW week names. */
+/** Names only — never writes takeaway copy. TOTW pack first, then ranked night names. */
 export const fillTakeawaysNames = (
   draft: TakeawaysDraft,
   rows: NightStandout[],
 ): TakeawaysDraft => {
-  const ranked = selectPlusStarters(rows);
+  const packed = selectPlusStarters(rows);
+  const ranked =
+    packed.length > 0
+      ? packed
+      : [...rows].sort((left, right) => right.score - left.score);
   const used = usedTakeawaysPlayerIds(draft.cards);
   const leftover = ranked.filter((row) => !used.has(row.athleteId));
   let cursor = 0;

@@ -421,7 +421,10 @@ export function EveryTeamComposerApp() {
 
   const handleNightFill = async (metric: EveryTeamNightMetric) => {
     setStatus("Loading last night’s box scores…");
-    const rows = await night.ensureStandouts();
+    let rows = await night.ensureStandouts();
+    if (!rows.length && night.date === night.todayIso) {
+      rows = await night.ensureStandouts(night.yesterdayIso);
+    }
     const result = fillEveryTeamFromNight(slots, rows, metric);
     if (result.filled === 0) {
       setStatus("No last-night lines for this date.");

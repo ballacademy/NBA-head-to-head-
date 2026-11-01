@@ -112,7 +112,8 @@ export const shotChartPlayerLabel = (
   draft: ShotChartDraft,
   style?: ComposerNameStyle,
 ) =>
-  formatComposerName(draft.firstName, draft.lastName, style) || "PLAYER";
+  formatComposerName(draft.firstName, draft.lastName, style) ||
+  (draft.playerId ? "PLAYER" : "PICK PLAYER");
 
 export const formatZoneLockup = (
   label: string,
@@ -305,7 +306,17 @@ export const applyShotChartPlayer = (
 export const shotLine = (makes: number, attempts: number) =>
   `${makes}-${attempts}`;
 
+export const shotChartEmptyCourtLabel = (draft: Pick<ShotChartDraft, "playerId" | "shots">) =>
+  draft.playerId && draft.shots.length === 0
+    ? "No shot location data"
+    : draft.playerId
+      ? ""
+      : "Pick a player, then Fill shots";
+
 export const shotChartNotchMeta = (draft: ShotChartDraft) => {
+  if (!draft.playerId) {
+    return "FILL LAST GAME";
+  }
   const fg = shotLine(draft.makes, draft.attempts);
   const raw = (draft.gameLabel || "LAST GAME").trim();
   const date = raw.replace(/\s*·\s*\d+[–-]\d+\s*$/u, "").trim() || "LAST GAME";

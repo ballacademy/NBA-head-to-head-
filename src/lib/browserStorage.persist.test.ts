@@ -35,6 +35,43 @@ describe("composer photo persist", () => {
     mockStorage();
   });
 
+  it("does not mark a composer unsaved on the first hydrate write", () => {
+    const writes: string[] = [];
+    const listeners = new Map<string, Array<(event: Event) => void>>();
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        addEventListener: (type: string, fn: (event: Event) => void) => {
+          const list = listeners.get(type) ?? [];
+          list.push(fn);
+          listeners.set(type, list);
+        },
+        removeEventListener: (type: string, fn: (event: Event) => void) => {
+          listeners.set(
+            type,
+            (listeners.get(type) ?? []).filter((item) => item !== fn),
+          );
+        },
+        dispatchEvent: (event: Event) => {
+          (listeners.get(event.type) ?? []).forEach((fn) => fn(event));
+          return true;
+        },
+      },
+    });
+    const onWrite = (event: Event) => {
+      writes.push((event as CustomEvent<string>).detail);
+    };
+    window.addEventListener("ddgm:composer-draft-write", onWrite);
+    const key = "ddgm:standings-composer";
+    writeJson(key, { title: "PROJECTED NBA STANDINGS" });
+    expect(writes).toEqual([]);
+    writeJson(key, { title: "EASTERN CONFERENCE" });
+    expect(writes).toEqual([key]);
+    writeJson(key, { title: "EASTERN CONFERENCE" });
+    expect(writes).toEqual([key]);
+    window.removeEventListener("ddgm:composer-draft-write", onWrite);
+  });
+
   it("reopens the same graphic with its photo, pan, and slot after a new-tab hydrate", async () => {
     const coverKey = "ddgm:stat-card-cover-composer";
     const headlineKey = "ddgm:headline-composer";

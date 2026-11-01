@@ -253,7 +253,16 @@ export function PlayerOfTheDayComposerApp() {
   const loadNightBest = useCallback(async (iso = night.date) => {
     setNightBestLoading(true);
     try {
-      const rows = rankPotdNightBest(await fetchNightBoxAppearances(iso));
+      let rows = rankPotdNightBest(await fetchNightBoxAppearances(iso));
+      if (!rows.length && iso === night.todayIso) {
+        const prior = rankPotdNightBest(
+          await fetchNightBoxAppearances(night.yesterdayIso),
+        );
+        if (prior.length) {
+          night.setDate(night.yesterdayIso);
+          rows = prior;
+        }
+      }
       setNightBest(rows);
       return rows;
     } catch (error) {
@@ -262,7 +271,7 @@ export function PlayerOfTheDayComposerApp() {
     } finally {
       setNightBestLoading(false);
     }
-  }, [night.date]);
+  }, [night.date, night.todayIso, night.yesterdayIso, night.setDate]);
 
   useEffect(() => {
     if (!hydrated) {

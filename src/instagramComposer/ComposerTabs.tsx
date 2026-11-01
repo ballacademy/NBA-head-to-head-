@@ -143,7 +143,7 @@ export function ComposerTabs({
           <input
             type="search"
             value={query}
-            placeholder="Find a graphic (head → Headline)"
+            placeholder="Find a graphic"
             aria-label="Search composers"
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => {

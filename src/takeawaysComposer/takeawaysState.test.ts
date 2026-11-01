@@ -151,6 +151,11 @@ describe("takeaways state", () => {
     );
     expect(filled.cards[0]?.line1).toBe("Keep this");
     expect(filled.cards.every((card) => card.line1 !== "30 PTS")).toBe(true);
+    const oneGame = fillTakeawaysNames(defaultTakeawaysDraft(), [
+      { ...row("3975", "Stephen Curry"), games: 1 },
+    ]);
+    expect(oneGame.cards[0]?.playerId).toBe("3975");
+    expect(oneGame.cards[0]?.line1).toBe("");
   });
 
   it("hides empty cards on export and builds a caption without invented lines", () => {

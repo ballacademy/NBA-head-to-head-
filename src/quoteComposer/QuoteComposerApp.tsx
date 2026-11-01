@@ -35,6 +35,7 @@ import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialo
 import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
+import { useComposerNight } from "../instagramComposer/composerNight";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -92,6 +93,7 @@ export function QuoteComposerApp() {
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [statsSample] = useComposerStatsSample();
+  const night = useComposerNight();
   const [storyCrop, setStoryCrop] = useState(false);
   const [gamePresets, setGamePresets] = useState<string[]>([]);
   const [keepPrompt, setKeepPrompt] = useState<{
@@ -193,6 +195,19 @@ export function QuoteComposerApp() {
     void fetchLastGame(player.id, statsSample).then((game) => {
       setGamePresets(lastGameQuotePresets(game));
     });
+  };
+
+  const fillLastNight = async () => {
+    setStatus("Loading this night’s box scores…");
+    const rows = (await night.ensureStandouts()).filter(
+      (row) => row.live !== true && row.final !== false,
+    );
+    const top = rows[0];
+    if (!top) {
+      setStatus("No box scores for that night yet — pick a player.");
+      return;
+    }
+    commitPick(top.athleteId, false, false);
   };
 
   useEffect(() => {
@@ -303,6 +318,13 @@ export function QuoteComposerApp() {
               ))}
             </div>
           ) : null}
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void fillLastNight()}
+          >
+            Fill last night
+          </button>
           <ComposerPhotoHud
             onPick={() => setPickerOpen(true)}
             onUpload={(dataUrl) => {

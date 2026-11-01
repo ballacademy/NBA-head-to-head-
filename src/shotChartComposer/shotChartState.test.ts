@@ -17,6 +17,7 @@ import {
   formatZoneLockup,
   gamesForShotWindow,
   parseShotChartPlays,
+  shotChartEmptyCourtLabel,
   shotChartFilter,
   shotChartNotchMeta,
   shotGameOptionLabel,
@@ -159,6 +160,7 @@ describe("shot chart", () => {
     expect(
       shotChartNotchMeta({
         ...draft,
+        playerId: "4066648",
         window: "last-game",
         gameLabel: "10/24",
         matchup: "vs OKC",
@@ -169,6 +171,7 @@ describe("shot chart", () => {
     expect(
       shotChartNotchMeta({
         ...draft,
+        playerId: "4066648",
         window: "last-game",
         eventId: "401",
         gameLabel: "10/24",
@@ -178,6 +181,11 @@ describe("shot chart", () => {
         attempts: 20,
       }),
     ).toBe("10/24 · vs OKC · 9-20");
+    expect(shotChartNotchMeta(draft)).toBe("FILL LAST GAME");
+    expect(shotChartEmptyCourtLabel(draft)).toBe("Pick a player, then Fill shots");
+    expect(
+      shotChartEmptyCourtLabel({ ...draft, playerId: "4066648" }),
+    ).toBe("No shot location data");
   });
 
   it("picks a night or a specific game without inventing an opponent on a range", () => {

@@ -114,14 +114,28 @@ export function useComposerNight() {
   }, []);
 
   const ensureStandouts = useCallback(async (iso?: string) => {
+    const today = nbaTodayIso();
+    const yesterday = shiftIsoDate(today, -1);
     const target = isoDateOnly(iso ?? dateRef.current) || dateRef.current;
     const id = requestRef.current + 1;
     requestRef.current = id;
     setLoading(true);
     try {
-      const rows = await fetchNightStandouts(target);
+      let rows = await fetchNightStandouts(target);
+      let used = target;
+      if (!rows.length && target === today) {
+        const prior = await fetchNightStandouts(yesterday);
+        if (prior.length) {
+          rows = prior;
+          used = yesterday;
+        }
+      }
       if (id !== requestRef.current) {
         return rows;
+      }
+      if (used !== dateRef.current) {
+        writeComposerNightDate(used);
+        setDateState(used);
       }
       setStandouts(rows);
       return rows;

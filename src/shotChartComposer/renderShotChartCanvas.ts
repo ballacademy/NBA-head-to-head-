@@ -38,6 +38,7 @@ import {
   shotToPx,
 } from "./shotChartLayout";
 import {
+  shotChartEmptyCourtLabel,
   shotChartNotchMeta,
   shotChartPlayerLabel,
   shotZoneSplits,
@@ -290,7 +291,7 @@ export const renderShotChartCanvas = async (
     context.font = `900 ${22 * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.fillText(
-      "NO SHOT LOCATION DATA",
+      shotChartEmptyCourtLabel(input).toUpperCase() || "NO SHOT LOCATION DATA",
       court.x + court.w / 2,
       court.y + court.h / 2,
     );

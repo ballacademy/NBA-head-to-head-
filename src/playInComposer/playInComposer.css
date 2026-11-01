@@ -216,6 +216,27 @@
   opacity: 0.5;
 }
 
+.pi-empty-board {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 6%;
+  z-index: 6;
+  margin: 0;
+  padding: calc(10 * var(--u)) calc(14 * var(--u));
+  border: calc(2 * var(--u)) solid rgba(255, 255, 255, 0.28);
+  background: rgba(10, 10, 12, 0.82);
+  color: #fafafa;
+  font-family: var(--ig-poster);
+  font-size: calc(22 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
 .pi-bar {
   position: absolute;
   z-index: 2;

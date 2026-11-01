@@ -260,6 +260,39 @@ describe("composer chrome", () => {
     expect(injury).toContain("site.web.api.espn.com");
   });
 
+  it("keeps Simple HUD composer tabs and 9:16 / 1:1, and adds last-night Fill", () => {
+    expect(sheet).toMatch(
+      /\.sc-root\.is-hud-simple \.sc-toolbar__row--actions \.sc-hud-full-only \{\s*display:\s*inline-block/,
+    );
+    const tabsSource = readFileSync(
+      join(root, "instagramComposer/ComposerTabs.tsx"),
+      "utf8",
+    );
+    expect(tabsSource).toContain('placeholder="Find a graphic"');
+    expect(sheet).toContain("min-height: 180px");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__identity");
+    expect(browserStorage).toContain("previous != null");
+    expect(statCardApp).toContain("Fill last night");
+    expect(quoteApp).toContain("Fill last night");
+    const compareApp = readFileSync(
+      join(root, "compareComposer/CompareComposerApp.tsx"),
+      "utf8",
+    );
+    const posterApp = readFileSync(
+      join(root, "posterNewsComposer/PosterNewsComposerApp.tsx"),
+      "utf8",
+    );
+    const mockApp = readFileSync(
+      join(root, "mockTradeComposer/MockTradeComposerApp.tsx"),
+      "utf8",
+    );
+    expect(compareApp).toContain("Fill last night");
+    expect(posterApp).toContain("Fill last night");
+    expect(mockApp).toContain("Fill last night");
+    expect(quoteApp).toContain("commitPick(top.athleteId, false, false)");
+    expect(mockApp).toContain("add players yourself");
+  });
+
   it("flips the Stat card columns without a CSS scale(-1)", () => {
     expect(statCardCss).toContain(".stc-board.is-stats-left");
     expect(statCardCss).not.toMatch(/scale\(\s*-1\s*\)/);
@@ -793,10 +826,13 @@ describe("composer chrome", () => {
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__board");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__persist");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-stat-slots");
-    expect(sheet).toContain(
-      ".sc-root.is-hud-simple .sc-tabs__group:not(.sc-tabs__group--recents)",
+    expect(sheet).not.toMatch(
+      /\.sc-root\.is-hud-simple \.sc-tabs__group:not\(\.sc-tabs__group--recents\) \{\s*display:\s*none/,
     );
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-hud-full-only");
+    expect(sheet).toMatch(
+      /\.sc-root\.is-hud-simple \.sc-toolbar__row--actions \.sc-hud-full-only \{\s*display:\s*inline-block/,
+    );
     expect(totwApp).toContain('simpleSet="week"');
     expect(coverApp).toContain('simpleSet="night"');
     expect(coverApp).toContain("onJumpLastNight");
@@ -1339,7 +1375,7 @@ describe("composer chrome", () => {
     expect(shotState).not.toContain("Math.random");
     expect(shotState).toContain("formatShotMatchup");
     expect(shotState).toContain("showOpponent: false");
-    expect(shotGraphic).toContain("No shot location data");
+    expect(shotGraphic).toContain("shotChartEmptyCourtLabel");
     expect(shotGraphic).toContain("shotChartBoardRects");
     expect(shotGraphic).toContain("shc-title-plate");
     expect(shotGraphic).toContain("shc-notch");

@@ -12,6 +12,7 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 import { rememberComposerPlayer } from "../instagramComposer/composerCarry";
+import { useComposerNight } from "../instagramComposer/composerNight";
 import { useComposerLook, usePurpleFlair } from "../instagramComposer/composerLook";
 import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
@@ -64,6 +65,7 @@ export function PosterNewsComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(LOOK_KEY);
+  const night = useComposerNight();
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] =
     usePhotoGrade();
@@ -101,6 +103,19 @@ export function PosterNewsComposerApp() {
     setKeepPrompt(null);
     setPickerOpen(false);
     setStatus("Photo set — headline left alone.");
+  };
+
+  const fillLastNight = async () => {
+    setStatus("Loading this night’s box scores…");
+    const rows = (await night.ensureStandouts()).filter(
+      (row) => row.live !== true && row.final !== false,
+    );
+    const top = rows[0];
+    if (!top) {
+      setStatus("No box scores for that night yet — pick a player.");
+      return;
+    }
+    commitPick(top.athleteId, false);
   };
 
   const renderInput = () => ({ ...draft, look, purpleFlair, photoGrade });
@@ -170,6 +185,13 @@ export function PosterNewsComposerApp() {
         }
         data={
           <>
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => void fillLastNight()}
+            >
+              Fill last night
+            </button>
             <button type="button" className="sc-chip" onClick={() => setPickerOpen(true)}>
               Pick photo
             </button>

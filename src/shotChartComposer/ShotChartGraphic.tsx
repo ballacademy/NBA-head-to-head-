@@ -24,6 +24,7 @@ import {
   shotToPx,
 } from "./shotChartLayout";
 import {
+  shotChartEmptyCourtLabel,
   shotChartNotchMeta,
   shotChartPlayerLabel,
   shotZoneSplits,
@@ -244,7 +245,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             })}
           </svg>
           {empty ? (
-            <p className="shc-empty">No shot location data</p>
+            <p className="shc-empty">{shotChartEmptyCourtLabel(draft)}</p>
           ) : null}
         </div>
         {empty || !showZones ? null : (

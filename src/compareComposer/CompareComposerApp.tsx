@@ -225,6 +225,37 @@ export function CompareComposerApp() {
     void fillStats(next, side, player.id);
   };
 
+  const fillLastNight = async () => {
+    setStatus("Loading this night’s box scores…");
+    const rows = (await night.ensureStandouts()).filter(
+      (row) => row.live !== true && row.final !== false,
+    );
+    if (!rows[0]) {
+      setStatus("No box scores for that night yet — pick players.");
+      return;
+    }
+    const first = getPlayer(rows[0].athleteId);
+    const second = rows[1] ? getPlayer(rows[1].athleteId) : null;
+    if (!first) {
+      setStatus("No box scores for that night yet — pick players.");
+      return;
+    }
+    push(draft);
+    const nextSides = [...draft.sides] as CompareDraft["sides"];
+    nextSides[0] = fillCompareSide(first, draft.sides[0]!, false);
+    if (second) {
+      nextSides[1] = fillCompareSide(second, draft.sides[1]!, false);
+    }
+    const next = { ...draft, sides: nextSides, statsMode: "game" as const };
+    setDraft(next);
+    setStatus(
+      second
+        ? `Filled ${first.name} and ${second.name} from last night.`
+        : `Filled ${first.name} from last night.`,
+    );
+    void fillStats(next);
+  };
+
   useEffect(() => {
     if (picker == null) {
       return;
@@ -392,6 +423,13 @@ export function CompareComposerApp() {
         }
         data={
           <>
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => void fillLastNight()}
+        >
+          Fill last night
+        </button>
         <button
           type="button"
           className="sc-chip"

@@ -209,6 +209,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   />
                 ) : null}
               </div>
+              {card.playerId ? (
               <div className="pod-stats">
                 {team ? (
                   <div className="pod-stats__logo">
@@ -234,6 +235,8 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   ))}
                 </div>
               </div>
+              ) : null}
+              {card.playerId ? (
               <div className="pod-result">
                 {wlColor && potdResultOutcome(card.result) ? (
                   <span
@@ -264,6 +267,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   }
                 />
               </div>
+              ) : null}
               <button
                 type="button"
                 className="pod-name"

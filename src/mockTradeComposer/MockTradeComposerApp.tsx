@@ -21,6 +21,7 @@ import {
 import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
 import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
 import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { useComposerNight } from "../instagramComposer/composerNight";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import {
   MOCK_TRADE_TITLE_PRESETS,
@@ -95,6 +96,7 @@ export function MockTradeComposerApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(MOCK_TRADE_LOOK_KEY);
+  const night = useComposerNight();
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] =
     usePhotoGrade();
@@ -118,6 +120,29 @@ export function MockTradeComposerApp() {
       writeJson(STORAGE_KEY, draft);
     }
   }, [draft, hydrated]);
+
+  const fillLastNight = async () => {
+    setStatus("Loading this night’s box scores…");
+    const rows = (await night.ensureStandouts()).filter(
+      (row) => row.live !== true && row.final !== false,
+    );
+    const game = rows[0]?.game;
+    if (!game?.teamId || !game.opponentId) {
+      setStatus("No box scores for that night yet — pick teams.");
+      return;
+    }
+    push(draft);
+    setDraft((current) =>
+      setMockTradeSideTeam(
+        setMockTradeSideTeam(current, 0, game.teamId),
+        1,
+        game.opponentId,
+      ),
+    );
+    setStatus(
+      `Filled ${game.teamId} and ${game.opponentId} from last night — add players yourself.`,
+    );
+  };
 
   const commitPick = (side: number, player: number, playerId: string, keep: boolean) => {
     const person = getPlayer(playerId);
@@ -293,6 +318,13 @@ export function MockTradeComposerApp() {
         data={
           <>
             {draft.sides.map((_, index) => teamSelect(index))}
+            <button
+              type="button"
+              className="sc-chip"
+              onClick={() => void fillLastNight()}
+            >
+              Fill last night
+            </button>
             <button
               type="button"
               className="sc-chip"

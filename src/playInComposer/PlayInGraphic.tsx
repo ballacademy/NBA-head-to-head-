@@ -24,6 +24,7 @@ import {
 } from "./playInLayout";
 import {
   nineTenWinnerId,
+  playInBoardEmpty,
   slotScore,
   type PlayInDraft,
 } from "./playInState";
@@ -152,7 +153,9 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
               {record ? <span className="pi-wl">{record}</span> : null}
             </>
           ) : (
-            <span className="pi-empty">PICK</span>
+            <span className="pi-empty">
+              {playInBoardEmpty(draft) ? "" : "PICK"}
+            </span>
           )}
           {score ? <span className="pi-score">{score}</span> : null}
         </button>
@@ -262,6 +265,9 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
           </div>
         ))}
         <p className="pi-legend">{PI_LEGEND}</p>
+        {playInBoardEmpty(draft) ? (
+          <p className="pi-empty-board">Auto-fill 7–10 from standings</p>
+        ) : null}
       </article>
     );
   },
