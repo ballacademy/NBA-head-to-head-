@@ -28,6 +28,22 @@ export const previewZoomFactor = (
   return fit;
 };
 
+/** Largest zoom that keeps the design board inside the wrap. */
+export const fitComposerBoardScale = (
+  clientWidth: number,
+  clientHeight: number,
+  width: number,
+  height: number,
+) => {
+  if (width <= 0 || height <= 0) {
+    return 1;
+  }
+  const byWidth = clientWidth > 0 ? clientWidth / width : 0;
+  const byHeight = clientHeight > 0 ? clientHeight / height : 0;
+  const next = Math.min(byWidth || Number.POSITIVE_INFINITY, byHeight || Number.POSITIVE_INFINITY);
+  return Number.isFinite(next) && next > 0 ? next : 1;
+};
+
 export const readComposerPreviewZoom = () =>
   parseComposerPreviewZoom(readJson(COMPOSER_PREVIEW_ZOOM_KEY));
 

@@ -7,6 +7,7 @@ import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
 import {
+  fitComposerBoardScale,
   previewZoomFactor,
   useComposerPreviewZoom,
 } from "./composerPreviewZoom";
@@ -36,10 +37,14 @@ export function ComposerBoard({
       return;
     }
     const sync = () => {
-      const next = node.clientWidth;
-      if (next > 0) {
-        setScale(next / width);
-      }
+      setScale(
+        fitComposerBoardScale(
+          node.clientWidth,
+          node.clientHeight,
+          width,
+          height,
+        ),
+      );
     };
     sync();
     if (typeof ResizeObserver === "undefined") {
@@ -47,8 +52,12 @@ export function ComposerBoard({
     }
     const observer = new ResizeObserver(sync);
     observer.observe(node);
+    const stage = node.closest(".sc-stage");
+    if (stage) {
+      observer.observe(stage);
+    }
     return () => observer.disconnect();
-  }, [width]);
+  }, [width, height]);
 
   return (
     <div

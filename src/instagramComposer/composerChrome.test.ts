@@ -221,10 +221,24 @@ describe("composer chrome", () => {
 
   it("keeps overlay title carets on the glyphs instead of a scaled parent", () => {
     expect(board).toMatch(/zoom:\s*scale/);
+    expect(board).toContain("fitComposerBoardScale");
     expect(board).not.toMatch(/transform:\s*`scale\(/);
     expect(titleField).toContain("composer-title-stack__paint");
     expect(sheet).toContain(".composer-title-stack__paint");
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
+  });
+
+  it("fits the 4:5 compose surface in the remaining stage on desktop", () => {
+    expect(sheet).toMatch(
+      /@media \(min-width: 901px\)[\s\S]*container-type:\s*size/,
+    );
+    expect(sheet).toContain("100cqh");
+    expect(sheet).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*100dvh - 48vh/,
+    );
+    expect(sheet).toMatch(
+      /\.sc-toolbar__row--actions \{[\s\S]*position:\s*fixed/,
+    );
   });
 
   it("flips the Stat card columns without a CSS scale(-1)", () => {

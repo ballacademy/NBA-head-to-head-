@@ -1,3 +1,4 @@
+import { isComposerNameSuffix } from "../instagramComposer/composerNameStyle";
 import { measureTitleAdvance } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { NBA_ACTIVE_PLAYERS } from "../tierListComposer/nbaActivePlayers";
@@ -182,6 +183,14 @@ export const fitLeaderboardName = (
   };
 };
 
+const coreNameTokens = (key: string) => {
+  const tokens = key.split(" ").filter(Boolean);
+  while (tokens.length >= 2 && isComposerNameSuffix(tokens.at(-1)!)) {
+    tokens.pop();
+  }
+  return tokens;
+};
+
 export const playerForLeaderboardName = (name: string) => {
   const key = normalizePlayerNameKey(name);
   if (!key) {
@@ -193,15 +202,17 @@ export const playerForLeaderboardName = (name: string) => {
   if (exact) {
     return exact;
   }
-  const last = key.split(" ").at(-1);
-  if (!last) {
+  const queryCore = coreNameTokens(key).join(" ");
+  if (!queryCore) {
     return null;
   }
-  const lastHits = NBA_ACTIVE_PLAYERS.filter((player) => {
-    const playerKey = normalizePlayerNameKey(player.name);
-    return playerKey === last || playerKey.endsWith(` ${last}`);
+  const coreHits = NBA_ACTIVE_PLAYERS.filter((player) => {
+    const playerCore = coreNameTokens(
+      normalizePlayerNameKey(player.name),
+    ).join(" ");
+    return playerCore === queryCore || playerCore.endsWith(` ${queryCore}`);
   });
-  return lastHits.length === 1 ? lastHits[0]! : null;
+  return coreHits.length === 1 ? coreHits[0]! : null;
 };
 
 export const teamForLeaderboardName = (name: string): string | null =>

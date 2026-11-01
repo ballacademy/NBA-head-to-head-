@@ -136,6 +136,23 @@ describe("POTD leaderboard ranks", () => {
     expect(isPotdPairName("LeBron James", ["LUKA DONCIC"])).toBe(false);
   });
 
+  it("resolves a team pip for last names with Jr/Sr and unique clubs", () => {
+    expect(teamForLeaderboardName("Acuff")).toBe("SAC");
+    expect(teamForLeaderboardName("Darius Acuff")).toBe("SAC");
+    expect(teamForLeaderboardName("Darius Acuff Jr.")).toBe("SAC");
+    expect(teamForLeaderboardName("Darius Acuff Jr")).toBe("SAC");
+    expect(teamForLeaderboardName("Acuff Jr")).toBe("SAC");
+    const acuff = rankLeaderboard([entry("Acuff", 3)]);
+    expect(acuff[0]!.teamId).toBe("SAC");
+    expect(acuff[0]!.headshotUrl).toContain("5142620");
+    expect(teamForLeaderboardName("Gilgeous-Alexander")).toBe("OKC");
+    expect(teamForLeaderboardName("Jalen Williams")).toBe("OKC");
+    expect(teamForLeaderboardName("Williams")).toBeNull();
+    expect(teamForLeaderboardName("Payton")).toBeNull();
+    expect(teamForLeaderboardName("Gary Payton II")).toBe("GSW");
+    expect(teamForLeaderboardName("Tim Hardaway Jr.")).toBe("MIA");
+  });
+
   it("keeps real names and at most two blank hairlines, never a dummy spreadsheet", () => {
     const five = rankLeaderboard([
       entry("Luka Doncic", 12),

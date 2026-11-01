@@ -9,7 +9,7 @@ import {
 } from "./composerHotkeys";
 import { fillQualityMessage } from "./composerFillToast";
 import { nextEmptySlotIndex, slotMissingPlayer } from "./nextEmptySlot";
-import { previewZoomFactor } from "./composerPreviewZoom";
+import { fitComposerBoardScale, previewZoomFactor } from "./composerPreviewZoom";
 import { parseComposerBaCorner } from "./composerBaCorner";
 import { exportFilenameFromTitle } from "./composerPresets";
 import { BLANK_POST_CONFIRM } from "./confirmBlankPost";
@@ -90,6 +90,9 @@ describe("extras 17–32 HUD helpers", () => {
     expect(previewZoomFactor(0.4, "fit")).toBe(0.4);
     expect(previewZoomFactor(0.4, "75")).toBe(0.75);
     expect(previewZoomFactor(0.4, "100")).toBe(1);
+    expect(fitComposerBoardScale(400, 500, 1200, 1500)).toBeCloseTo(1 / 3);
+    expect(fitComposerBoardScale(800, 500, 1200, 1500)).toBeCloseTo(500 / 1500);
+    expect(fitComposerBoardScale(400, 0, 1200, 1500)).toBeCloseTo(400 / 1200);
   });
 
   it("parses BA corners and names files with player + date", () => {
