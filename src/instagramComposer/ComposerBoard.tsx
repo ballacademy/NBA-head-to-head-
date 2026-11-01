@@ -9,6 +9,7 @@ import { readComposerMode } from "./composerMode";
 import {
   fitComposerBoardScale,
   previewZoomFactor,
+  readComposerStageBox,
   useComposerPreviewZoom,
 } from "./composerPreviewZoom";
 
@@ -17,6 +18,9 @@ import {
  * Use CSS `zoom` rather than `transform: scale()` — Chromium paints the
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
+ *
+ * Fit sizes this wrap to the visible stage (or mobile frame width) so the
+ * 4:5/9:16 surface is fully on-screen — never a 1200×1500 scroll crop.
  */
 export function ComposerBoard({
   children,
@@ -28,7 +32,7 @@ export function ComposerBoard({
   height?: number;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(0);
   const [previewZoom] = useComposerPreviewZoom();
 
   useLayoutEffect(() => {
@@ -37,18 +41,18 @@ export function ComposerBoard({
       return;
     }
     const sync = () => {
-      setScale(
-        fitComposerBoardScale(
-          node.clientWidth,
-          node.clientHeight,
-          width,
-          height,
-        ),
-      );
+      const box = readComposerStageBox(node);
+      setScale(fitComposerBoardScale(box.width, box.height, width, height));
     };
     sync();
+    const viewport = window.visualViewport;
+    viewport?.addEventListener("resize", sync);
+    window.addEventListener("resize", sync);
     if (typeof ResizeObserver === "undefined") {
-      return;
+      return () => {
+        viewport?.removeEventListener("resize", sync);
+        window.removeEventListener("resize", sync);
+      };
     }
     const observer = new ResizeObserver(sync);
     observer.observe(node);
@@ -56,14 +60,32 @@ export function ComposerBoard({
     if (stage) {
       observer.observe(stage);
     }
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      viewport?.removeEventListener("resize", sync);
+      window.removeEventListener("resize", sync);
+    };
   }, [width, height]);
+
+  const fitScale = scale > 0 ? scale : 1;
+  const innerZoom =
+    previewZoom === "fit" ? fitScale : previewZoomFactor(fitScale, previewZoom);
+  const fitted = scale > 0;
 
   return (
     <div
       ref={wrapRef}
       className={`sc-stage__board${previewZoom === "fit" ? "" : " is-zoomed"}`}
-      style={{ aspectRatio: `${width} / ${height}` }}
+      data-fit-scale={fitted ? String(fitScale) : undefined}
+      style={
+        fitted
+          ? {
+              width: width * fitScale,
+              height: height * fitScale,
+              aspectRatio: `${width} / ${height}`,
+            }
+          : { width: "100%", aspectRatio: `${width} / ${height}` }
+      }
     >
       <div
         className="sc-stage__board-inner"
@@ -71,8 +93,7 @@ export function ComposerBoard({
           width,
           height,
           // zoom: scale keeps the caret on glyphs; 75/100 override Fit.
-          zoom:
-            previewZoom === "fit" ? scale : previewZoomFactor(scale, previewZoom),
+          zoom: innerZoom,
         }}
       >
         {children}
