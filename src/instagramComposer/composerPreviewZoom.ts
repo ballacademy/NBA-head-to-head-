@@ -57,31 +57,17 @@ const paddingBox = (node: HTMLElement) => {
 };
 
 /**
- * Desktop Fit uses the visible stage leftover, not the board wrap — wrap
- * min-content can be the unzoomed 1200×1500 design and then scale stays 1.
- * Mobile uses width only so the 4:5 can page-scroll under pinned Export.
+ * Fit is width-only: a 4:5 / 9:16 poster sized from the preview column.
+ * Height 0 makes scale follow width so the whole graphic is in the wrap;
+ * the page can scroll. Do not pass the unzoomed 1200×1500 wrap min-content
+ * or scale stays 1 and titles clip.
  */
 export const readComposerStageBox = (board: HTMLElement) => {
-  const stage = board.closest(".sc-stage");
-  const desktop =
-    typeof window !== "undefined" &&
-    window.matchMedia("(min-width: 901px)").matches;
-  if (stage instanceof HTMLElement && desktop) {
-    const pad = paddingBox(stage);
-    const hint = 52;
-    const width = Math.max(0, stage.clientWidth - pad.x);
-    const rect = stage.getBoundingClientRect();
-    const leftover = window.innerHeight - rect.top - pad.y - hint;
-    const bounded = Math.max(0, stage.clientHeight - pad.y - hint);
-    const height = Math.max(
-      0,
-      leftover > 0 ? Math.min(bounded || leftover, leftover) : bounded,
-    );
-    return { width, height };
-  }
   const frame = board.closest(".sc-stage__frame");
   const box = frame instanceof HTMLElement ? frame : board;
-  return { width: Math.max(0, box.clientWidth), height: 0 };
+  const pad = paddingBox(box);
+  const width = Math.max(0, box.clientWidth - pad.x);
+  return { width, height: 0 };
 };
 
 export const readComposerPreviewZoom = () =>

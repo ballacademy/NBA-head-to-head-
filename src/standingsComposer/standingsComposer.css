@@ -2236,62 +2236,6 @@ label.sc-chip {
   }
 }
 
-@media (min-width: 901px) {
-  .sc-root {
-    height: 100dvh;
-    max-height: 100dvh;
-    overflow: hidden;
-  }
-
-  .sc-tabs {
-    flex: 0 1 auto;
-    max-height: 18vh;
-    overflow: auto;
-  }
-
-  .sc-composer {
-    flex: 1 1 auto;
-    min-height: 0;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .sc-toolbar {
-    flex: 0 1 auto;
-    max-height: 24vh;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
-  .sc-root main.sc-stage,
-  main.sc-stage {
-    flex: 1 1 auto;
-    min-height: 0;
-    min-width: 0;
-    overflow: hidden;
-    padding-bottom: 12px;
-  }
-
-  .sc-stage__frame {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: auto;
-    max-width: 100%;
-    max-height: 100%;
-  }
-
-  .sc-stage__frame.is-story {
-    max-width: 100%;
-  }
-
-  .sc-stage__board {
-    max-width: 100%;
-    height: auto;
-  }
-}
-
 @media (max-width: 900px) {
   .sc-root {
     padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));

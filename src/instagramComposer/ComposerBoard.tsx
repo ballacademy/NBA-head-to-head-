@@ -19,8 +19,9 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit sizes this wrap to the visible stage (or mobile frame width) so the
- * 4:5/9:16 surface is fully on-screen — never a 1200×1500 scroll crop.
+ * Fit sizes this wrap from the preview-column width so the 4:5/9:16
+ * poster is fully painted — never leftover-HUD leftover height, never a
+ * 1200×1500 inner scroll crop.
  */
 export function ComposerBoard({
   children,

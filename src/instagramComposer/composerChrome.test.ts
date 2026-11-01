@@ -228,13 +228,19 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
   });
 
-  it("fits the 4:5 compose surface in the remaining stage on desktop", () => {
+  it("fits the 4:5 compose surface as a width-scaled poster", () => {
     expect(board).toContain("fitComposerBoardScale");
     expect(board).toContain("readComposerStageBox");
     expect(board).toContain("width * fitScale");
+    const zoomSrc = readFileSync(
+      join(root, "instagramComposer/composerPreviewZoom.ts"),
+      "utf8",
+    );
+    expect(zoomSrc).toContain("height: 0");
+    expect(zoomSrc).toContain("width-only");
     expect(sheet).toMatch(/\.sc-stage__frame \{[\s\S]*min-width:\s*0/);
-    expect(sheet).toMatch(
-      /@media \(min-width: 901px\)[\s\S]*overflow:\s*hidden/,
+    expect(sheet).not.toMatch(
+      /@media \(min-width: 901px\)[\s\S]*\.sc-root \{[\s\S]*overflow:\s*hidden/,
     );
     expect(sheet).toMatch(
       /@media \(max-width: 900px\)[\s\S]*100dvh - 48vh/,
