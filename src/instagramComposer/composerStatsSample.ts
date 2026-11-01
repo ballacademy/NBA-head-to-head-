@@ -7,13 +7,13 @@ export const COMPOSER_STATS_SAMPLE_KEY = "ddgm:composer-stats-sample";
 
 export const parseComposerStatsSample = (
   value: unknown,
-): ComposerStatsSample => (value === "regular" ? "regular" : "preseason");
+): ComposerStatsSample => (value === "preseason" ? "preseason" : "regular");
 
 export const composerStatsSampleLabel = (sample: ComposerStatsSample) =>
   sample === "preseason" ? "Preseason" : "Regular season";
 
 export const useComposerStatsSample = () => {
-  const [sample, setSample] = useState<ComposerStatsSample>("preseason");
+  const [sample, setSample] = useState<ComposerStatsSample>("regular");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {

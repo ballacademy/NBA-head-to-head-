@@ -11,8 +11,9 @@ import { NBA_TEAMS, getTeam } from "../standingsComposer/teams";
 
 export { DEFAULT_BRAND };
 
+/** `site.web.api` sends CORS; `site.api` does not from the composer origin. */
 export const ESPN_INJURIES_URL =
-  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
+  "https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
 
 export const DEFAULT_INJURY_TITLE = "INJURY REPORT";
 export const INJURY_TITLE_TRACK = 0.02;
@@ -184,8 +185,11 @@ export const parseInjuryPayload = (payload: unknown): InjuryPlayer[] => {
       const status =
         normalizeInjuryKicker(textOf(item?.status)) ??
         normalizeInjuryKicker(textOf(rec(item?.type)?.description));
-      const id = textOf(athlete?.id);
       const name = textOf(athlete?.displayName) || textOf(athlete?.fullName);
+      const id =
+        textOf(athlete?.id) ||
+        textOf(athlete?.uid) ||
+        (team && name ? `${team}:${name}` : "");
       if (!id || !name || !team || !status) {
         return;
       }

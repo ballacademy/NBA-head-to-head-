@@ -43,6 +43,7 @@ import {
   type ComposerMode,
 } from "./composerMode";
 import { useComposerHudMode } from "./composerHudMode";
+import { useComposerPreviewZoom } from "./composerPreviewZoom";
 import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
@@ -80,6 +81,7 @@ export function ComposerHub() {
   const [mode, setMode] = useState<ComposerMode>(() => readComposerMode());
   const [photoEdit, setPhotoEdit] = useComposerPhotoEdit();
   const [hudMode] = useComposerHudMode();
+  const [previewZoom] = useComposerPreviewZoom();
   const [focusMode, setFocusMode] = useComposerFocusMode();
   const [baCorner] = useComposerBaCorner();
   const [persistReady, setPersistReady] = useState(false);
@@ -171,6 +173,7 @@ export function ComposerHub() {
         photoEdit ? "is-photo-edit" : "",
         hudMode === "simple" ? "is-hud-simple" : "",
         focusMode ? "is-hud-focus" : "",
+        previewZoom === "fit" ? "" : "is-preview-zoomed",
       ]
         .filter(Boolean)
         .join(" ")}

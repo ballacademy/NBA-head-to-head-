@@ -24,8 +24,9 @@ export const SCHEDULE_LIST_BOTTOM = 28;
 export const SCHEDULE_DAY_GAP = 10;
 export const SCHEDULE_LABEL_H = 22;
 
+/** `site.web.api` sends CORS; `site.api` does not from the composer origin. */
 export const ESPN_SCOREBOARD_URL = (iso: string) =>
-  `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
 
 export const DEFAULT_SCHEDULE_TITLE = "THIS WEEK";
 export const SCHEDULE_TITLE_TRACK = 0.04;

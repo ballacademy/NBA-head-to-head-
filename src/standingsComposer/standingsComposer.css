@@ -1,13 +1,14 @@
 /* Instagram standings composer — isolated from hub chrome. */
 
 .sc-root {
-  min-height: 100vh;
-  min-height: 100dvh;
-  min-height: 100svh;
+  height: 100vh;
+  height: 100dvh;
+  height: 100svh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-x: clip;
-  overflow-y: visible;
+  overflow-y: hidden;
   touch-action: pan-y pinch-zoom;
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(255, 255, 255, 0.05), transparent 55%),
@@ -23,6 +24,17 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.sc-root.is-preview-zoomed {
+  height: auto;
+  max-height: none;
+  overflow-y: auto;
+}
+
+.sc-root.is-preview-zoomed .sc-composer {
   flex: 0 0 auto;
   overflow: visible;
 }
@@ -31,18 +43,20 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 8px 10px;
-  padding: 8px 16px 6px;
+  gap: 4px 8px;
+  padding: 4px 12px 4px;
   background: rgba(12, 13, 16, 0.92);
-  overflow: visible;
+  flex: 0 0 auto;
+  max-height: 11vh;
+  overflow: auto;
   scrollbar-width: thin;
 }
 
 .sc-tabs__bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 8px 12px;
+  align-items: center;
+  gap: 6px 10px;
   flex: 0 0 100%;
   width: 100%;
   min-width: 0;
@@ -56,10 +70,10 @@
 }
 
 .sc-tabs__group {
-  flex: 1 1 200px;
-  min-width: min(100%, 200px);
-  padding: 6px 8px 8px;
-  border-radius: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 2px 6px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -88,8 +102,10 @@
 
 .sc-tabs__pills {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .sc-tabs__edit {
@@ -98,7 +114,7 @@
   flex-wrap: wrap;
   margin-left: auto;
   flex: 1 1 auto;
-  align-items: flex-end;
+  align-items: center;
   justify-content: flex-end;
   padding: 0;
   gap: 6px 10px;
@@ -129,7 +145,8 @@
 
 .sc-tabs__search {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 6px;
   flex: 0 1 180px;
   min-width: 140px;
@@ -137,7 +154,7 @@
 }
 
 .sc-tabs__search input {
-  height: 32px;
+  height: 26px;
   padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
@@ -148,8 +165,9 @@
 }
 
 .sc-tabs button {
-  height: 32px;
-  padding: 0 12px;
+  height: 26px;
+  padding: 0 8px;
+  flex: 0 0 auto;
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
@@ -209,21 +227,24 @@
 .sc-toolbar {
   display: flex;
   flex-direction: column;
-  gap: 10px 18px;
-  padding: 14px 18px 12px;
+  gap: 6px 12px;
+  padding: 6px 14px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(12, 13, 16, 0.92);
   backdrop-filter: blur(12px);
-  overflow: visible;
+  flex: 0 1 auto;
+  max-height: 26vh;
+  overflow: auto;
   min-width: 0;
+  min-height: 0;
+  scrollbar-width: thin;
 }
 
 .sc-toolbar__body,
-.sc-toolbar__pinned,
-.sc-toolbar__scroll {
+.sc-toolbar__pinned {
   display: flex;
   flex-direction: column;
-  gap: 10px 18px;
+  gap: 8px 14px;
   min-width: 0;
   min-height: 0;
   overflow: visible;
@@ -236,6 +257,16 @@
 
 .sc-toolbar__pinned {
   flex: 0 0 auto;
+}
+
+.sc-toolbar__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 14px;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
 }
 
 .sc-toolbar__row {
@@ -347,7 +378,7 @@
 .sc-toolbar__title {
   margin: 0;
   font-family: Archivo, Montserrat, sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -408,8 +439,8 @@
 
 .sc-stat-slots__add {
   flex: 0 0 auto;
-  height: 38px;
-  min-height: 38px;
+  height: 32px;
+  min-height: 32px;
   font-weight: 800;
 }
 
@@ -439,8 +470,8 @@
 
 .sc-stat-slot__remove {
   flex: 0 0 auto;
-  height: 38px;
-  min-height: 38px;
+  height: 32px;
+  min-height: 32px;
   padding: 0 10px;
   white-space: nowrap;
   letter-spacing: 0.08em;
@@ -458,7 +489,7 @@
 .sc-field input,
 .sc-field select {
   width: 100%;
-  height: 38px;
+  height: 32px;
   padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
@@ -504,7 +535,7 @@
   flex: 0 0 auto;
   width: 100%;
   margin-left: 0;
-  padding: 8px 0 4px;
+  padding: 6px 16px 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   background: #101114;
   position: sticky;
@@ -550,7 +581,7 @@
 }
 
 .sc-btn {
-  height: 38px;
+  height: 32px;
   padding: 0 14px;
   border-radius: 8px;
   border: 1px solid transparent;
@@ -584,8 +615,18 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-html:has(.sc-root),
-body:has(.sc-root) {
+html:has(.sc-root:not(.is-preview-zoomed)),
+body:has(.sc-root:not(.is-preview-zoomed)) {
+  background: #101114;
+  overflow-x: clip;
+  overflow-y: hidden;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+html:has(.sc-root.is-preview-zoomed),
+body:has(.sc-root.is-preview-zoomed) {
   background: #101114;
   overflow-x: clip;
   overflow-y: auto;
@@ -599,36 +640,75 @@ body:has(.sc-root) {
 main.sc-stage {
   display: grid;
   place-items: center;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   width: 100%;
   max-width: none;
   margin: 0;
-  padding: 20px 16px 28px;
-  overflow: visible;
+  padding: 8px 16px 10px;
+  overflow: hidden;
   min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+
+.sc-root.is-preview-zoomed main.sc-stage {
+  flex: 0 0 auto;
+  overflow: visible;
+  height: auto;
 }
 
 .sc-stage__frame {
-  width: min(100%, calc((100dvh - 180px) * 0.8));
-  max-width: 520px;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  justify-items: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  container-type: size;
 }
 
 .sc-stage__frame.is-story {
-  width: min(100%, calc((100dvh - 180px) * 9 / 16));
-  max-width: 360px;
   /* box-shadow keeps type vector-sharp; filter: drop-shadow rasterizes the board. */
   box-shadow: 0 28px 48px rgba(0, 0, 0, 0.55);
 }
 
+.sc-root.is-preview-zoomed .sc-stage__frame {
+  height: auto;
+  width: auto;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  container-type: normal;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+}
+
 .sc-stage__board {
-  width: 100%;
-  aspect-ratio: 4 / 5;
+  grid-column: 2;
+  grid-row: 1;
+  width: min(100cqw, calc(100cqh * var(--board-w, 1200) / var(--board-h, 1500)));
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: var(--board-w, 1200) / var(--board-h, 1500);
   position: relative;
   overflow: hidden;
 }
 
 .sc-stage__board.is-zoomed {
-  overflow: auto;
+  grid-column: 1;
+  overflow: hidden;
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
 }
 
 .sc-stage__board-inner {
@@ -642,17 +722,40 @@ main.sc-stage {
   height: 100%;
 }
 
-.sc-hint {
-  margin: 12px 0 0;
+.sc-stage__frame > .sc-hint,
+.sc-stage__frame > .sc-status {
+  grid-row: 1;
+  position: static;
+  align-self: end;
+  justify-self: stretch;
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 11px;
+  max-width: none;
+}
+
+.sc-stage__frame > .sc-hint {
+  grid-column: 1;
+  text-align: left;
+}
+
+.sc-stage__frame > .sc-status {
+  grid-column: 3;
+  text-align: right;
+}
+
+.sc-root.is-preview-zoomed .sc-stage__frame > .sc-hint,
+.sc-root.is-preview-zoomed .sc-stage__frame > .sc-status {
+  grid-column: 1;
+  grid-row: 2;
   text-align: center;
-  font-size: 12px;
+}
+
+.sc-hint {
   color: #a1a1aa;
 }
 
 .sc-status {
-  margin: 8px 0 0;
-  text-align: center;
-  font-size: 12px;
   font-weight: 600;
   color: #d4d4d8;
 }
@@ -2164,15 +2267,17 @@ label.sc-chip {
 @media (max-width: 1400px) {
   .sc-tabs {
     flex-wrap: wrap;
-    overflow: visible;
+    overflow: auto;
+    max-height: 11vh;
   }
 
   .sc-tabs__group {
-    flex: 1 1 220px;
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .sc-tabs__pills {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .sc-tabs button {
@@ -2186,21 +2291,21 @@ label.sc-chip {
 
   .sc-toolbar {
     height: auto;
-    max-height: none;
-    overflow: visible;
-    gap: 8px 14px;
-    padding: 10px 16px 10px;
+    max-height: 26vh;
+    overflow: auto;
+    gap: 6px 12px;
+    padding: 6px 14px 6px;
   }
 
   .sc-toolbar__body,
-  .sc-toolbar__pinned,
-  .sc-toolbar__scroll {
+  .sc-toolbar__pinned {
     gap: 6px 14px;
     overflow: visible;
   }
 
   .sc-toolbar__scroll {
-    overflow: visible;
+    overflow: auto;
+    max-height: none;
     flex: 0 0 auto;
     min-height: 0;
   }
@@ -2226,8 +2331,9 @@ label.sc-chip {
   }
 
   .sc-stage__frame {
-    width: min(100%, calc((100dvh - 240px) * 0.8));
-    max-width: 560px;
+    width: 100%;
+    height: 100%;
+    max-width: none;
   }
 }
 
@@ -2242,13 +2348,15 @@ label.sc-chip {
 
   .sc-tabs {
     flex-wrap: wrap;
-    overflow: visible;
-    gap: 8px 12px;
-    padding: max(8px, env(safe-area-inset-top, 0px)) 12px 0;
+    overflow: auto;
+    max-height: 11vh;
+    gap: 6px 10px;
+    padding: max(6px, env(safe-area-inset-top, 0px)) 12px 0;
   }
 
   .sc-tabs__group {
-    flex: 1 1 220px;
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .sc-tabs__group + .sc-tabs__group {
@@ -2256,13 +2364,13 @@ label.sc-chip {
   }
 
   .sc-tabs__pills {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .sc-tabs button {
-    height: 44px;
-    padding: 0 12px;
-    font-size: 14px;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
     white-space: nowrap;
   }
 
@@ -2272,11 +2380,11 @@ label.sc-chip {
   }
 
   .sc-toolbar {
-    padding: 8px 12px 8px;
+    padding: 6px 12px 6px;
     height: auto;
-    max-height: none;
-    overflow: visible;
-    gap: 8px 12px;
+    max-height: 26vh;
+    overflow: auto;
+    gap: 6px 12px;
     backdrop-filter: none;
   }
 
@@ -2331,7 +2439,8 @@ label.sc-chip {
 
   .sc-toolbar__scroll {
     flex: 0 0 auto;
-    overflow: visible;
+    max-height: none;
+    overflow: auto;
   }
 
   .sc-toolbar__brand {
@@ -2365,12 +2474,16 @@ label.sc-chip {
   }
 
   .sc-stage {
-    padding: 8px 10px 12px;
-    align-content: start;
+    padding: 8px 10px 36px;
+    align-content: center;
+    overflow: hidden;
+    min-height: 0;
   }
 
   .sc-stage__frame {
-    width: min(100%, 100dvw - 20px, calc((100dvh - 48vh) * 0.8));
+    width: 100%;
+    height: 100%;
+    max-width: none;
   }
 
   .sc-picker-scrim {

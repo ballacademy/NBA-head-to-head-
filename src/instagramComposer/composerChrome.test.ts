@@ -157,7 +157,7 @@ describe("composer chrome", () => {
 
   it("pins export outside the scrolling HUD and does not hide photo tools in preview", () => {
     expect(sheet).toMatch(/\.sc-toolbar__row--actions[\s\S]*?flex:\s*0 0 auto/);
-    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*visible/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*auto/);
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[^}]*position:\s*sticky/,
     );
@@ -165,7 +165,9 @@ describe("composer chrome", () => {
       /@media \(max-width: 900px\)[\s\S]*\.sc-toolbar__row--actions \{[\s\S]*?position:\s*fixed/,
     );
     expect(sheet).not.toMatch(/height:\s*min\(52vh/);
-    expect(sheet).toMatch(/html:has\(\.sc-root\)[\s\S]{0,180}?overflow-y:\s*auto/);
+    expect(sheet).toMatch(
+      /html:has\(\.sc-root:not\(\.is-preview-zoomed\)\)[\s\S]{0,180}?overflow-y:\s*hidden/,
+    );
     expect(sheet).toContain("touch-action: none");
     expect(sheet).toMatch(/\.sc-root \{[^}]*touch-action:\s*pan-y pinch-zoom/);
     expect(sheet).toContain("var(--vvh, 100dvh)");
@@ -225,6 +227,37 @@ describe("composer chrome", () => {
     expect(titleField).toContain("composer-title-stack__paint");
     expect(sheet).toContain(".composer-title-stack__paint");
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
+  });
+
+  it("contain-Fits the whole poster and does not inner-scroll 75/100", () => {
+    expect(sheet).toMatch(/\.sc-root \{[^}]*overflow-y:\s*hidden/);
+    expect(sheet).toMatch(/\.sc-tabs \{[^}]*max-height:\s*11vh/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*max-height:\s*26vh/);
+    expect(sheet).toMatch(/main\.sc-stage \{[\s\S]*?overflow:\s*hidden/);
+    expect(sheet).toContain("100cqh * var(--board-w, 1200) / var(--board-h, 1500)");
+    expect(sheet).toMatch(
+      /\.sc-stage__board \{[\s\S]*?height:\s*auto;[\s\S]*?aspect-ratio:/,
+    );
+    expect(sheet).toMatch(/\.sc-stage__board\.is-zoomed \{[^}]*overflow:\s*hidden/);
+    expect(sheet).not.toMatch(/\.sc-stage__board\.is-zoomed \{[^}]*overflow:\s*auto/);
+    expect(sheet).not.toContain("calc((100dvh - 180px) * 0.8)");
+    expect(board).toContain("width: width * factor");
+    expect(board).toContain('data-preview-zoom={previewZoom}');
+    const hub = readFileSync(
+      join(root, "instagramComposer/ComposerHub.tsx"),
+      "utf8",
+    );
+    expect(hub).toContain("is-preview-zoomed");
+    const standings = readFileSync(
+      join(root, "standingsComposer/nbaStandings.ts"),
+      "utf8",
+    );
+    const injury = readFileSync(
+      join(root, "injuryComposer/injuryState.ts"),
+      "utf8",
+    );
+    expect(standings).toContain("site.web.api.espn.com");
+    expect(injury).toContain("site.web.api.espn.com");
   });
 
   it("flips the Stat card columns without a CSS scale(-1)", () => {

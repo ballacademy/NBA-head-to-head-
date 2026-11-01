@@ -16,6 +16,11 @@ import {
  * Use CSS `zoom` rather than `transform: scale()` — Chromium paints the
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
+ *
+ * Fit: wrap is contain-sized by CSS; zoom follows wrap width so the
+ * whole 4:5 / 9:16 / 1:1 paints with overflow hidden (no inner scroll).
+ * 75 / 100: wrap is the full zoomed graphic so titles are not cropped
+ * inside a 520px pane.
  */
 export function ComposerBoard({
   children,
@@ -29,12 +34,15 @@ export function ComposerBoard({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [previewZoom] = useComposerPreviewZoom();
+  const zoomed = previewZoom !== "fit";
+  const factor = previewZoomFactor(1, previewZoom);
 
   useLayoutEffect(() => {
     const node = wrapRef.current;
     if (!node) {
       return;
     }
+    const frame = node.closest(".sc-stage__frame");
     const sync = () => {
       const next = node.clientWidth;
       if (next > 0) {
@@ -47,23 +55,35 @@ export function ComposerBoard({
     }
     const observer = new ResizeObserver(sync);
     observer.observe(node);
+    if (frame instanceof Element) {
+      observer.observe(frame);
+    }
     return () => observer.disconnect();
-  }, [width]);
+  }, [width, previewZoom]);
 
   return (
     <div
       ref={wrapRef}
-      className={`sc-stage__board${previewZoom === "fit" ? "" : " is-zoomed"}`}
-      style={{ aspectRatio: `${width} / ${height}` }}
+      className={`sc-stage__board${zoomed ? " is-zoomed" : ""}`}
+      data-preview-zoom={previewZoom}
+      style={{
+        aspectRatio: `${width} / ${height}`,
+        ["--board-w" as string]: String(width),
+        ["--board-h" as string]: String(height),
+        ...(zoomed
+          ? {
+              width: width * factor,
+              height: height * factor,
+            }
+          : {}),
+      }}
     >
       <div
         className="sc-stage__board-inner"
         style={{
           width,
           height,
-          // zoom: scale keeps the caret on glyphs; 75/100 override Fit.
-          zoom:
-            previewZoom === "fit" ? scale : previewZoomFactor(scale, previewZoom),
+          zoom: scale,
         }}
       >
         {children}

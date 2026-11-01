@@ -3,8 +3,9 @@ import { NBA_TEAMS_BY_ID, type Conference } from "./teams";
 import type { RankingSlots, StandingRecord } from "./rankingState";
 import { SLOT_COUNT, createEmptySlots } from "./rankingState";
 
+/** `site.web.api` sends CORS; `site.api` does not from the composer origin. */
 export const ESPN_STANDINGS_URL =
-  "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings";
+  "https://site.web.api.espn.com/apis/v2/sports/basketball/nba/standings";
 
 interface EspnStandingTeam {
   abbreviation?: string;

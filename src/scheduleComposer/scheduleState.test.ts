@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
+  ESPN_SCOREBOARD_URL,
   parseScoreboardGames,
   scheduleBackToBackEventIds,
   scheduleFillLayout,
@@ -8,6 +9,11 @@ import {
 } from "./scheduleState";
 
 describe("schedule poster", () => {
+  it("loads the scoreboard from the CORS-safe ESPN host", () => {
+    expect(ESPN_SCOREBOARD_URL("2026-11-01")).toContain("site.web.api.espn.com");
+    expect(ESPN_SCOREBOARD_URL("2026-11-01")).not.toContain("site.api.espn.com");
+  });
+
   it("reads logos and tip times from an ESPN scoreboard night", () => {
     const games = parseScoreboardGames(
       {

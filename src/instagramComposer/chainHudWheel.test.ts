@@ -45,7 +45,8 @@ describe("chainHudWheel", () => {
     expect(sheet).not.toMatch(
       /\.sc-toolbar__body \{[^}]*overscroll-behavior:\s*contain/,
     );
-    expect(sheet).toMatch(/\.sc-tabs \{[^}]*overflow:\s*visible/);
+    expect(sheet).toMatch(/\.sc-tabs \{[^}]*overflow:\s*auto/);
+    expect(sheet).toMatch(/\.sc-toolbar__scroll \{[^}]*overflow:\s*auto/);
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[^}]*position:\s*sticky/,
     );

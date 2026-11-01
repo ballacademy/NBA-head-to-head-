@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ESPN_STANDINGS_URL,
   parseConferenceStandingRows,
   parseConferenceStandings,
   recordsFromStandingRows,
@@ -56,6 +57,11 @@ const payload = (): EspnStandingsPayload => ({
 });
 
 describe("NBA standings auto-fill", () => {
+  it("loads standings from the CORS-safe ESPN host", () => {
+    expect(ESPN_STANDINGS_URL).toContain("site.web.api.espn.com");
+    expect(ESPN_STANDINGS_URL).not.toContain("site.api.espn.com");
+  });
+
   it("reads East and West order from ESPN standings", () => {
     expect(parseConferenceStandings(payload(), "East")).toEqual([
       "BOS",
