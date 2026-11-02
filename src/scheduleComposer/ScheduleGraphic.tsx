@@ -148,7 +148,17 @@ export const ScheduleGraphic = forwardRef<HTMLElement, ScheduleGraphicProps>(
         <div className="sch-list">
           {groups.length ? (
             groups.map((group) => (
-              <section key={group.date} className="sch-day">
+              <section
+                key={group.date}
+                className="sch-day"
+                style={
+                  {
+                    ["--sch-day-flex" as string]: String(
+                      Math.max(1, group.games.length),
+                    ),
+                  } as CSSProperties
+                }
+              >
                 <h2 className="sch-day__label">{group.label}</h2>
                 <div className="sch-day__games">
                 {group.games.map((game) => {

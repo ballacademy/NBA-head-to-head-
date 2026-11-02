@@ -23,6 +23,8 @@ export const SCHEDULE_LIST_TOP = 236;
 export const SCHEDULE_LIST_BOTTOM = 28;
 export const SCHEDULE_DAY_GAP = 10;
 export const SCHEDULE_LABEL_H = 22;
+export const SCHEDULE_POST_GAME_MAX = 16;
+export const SCHEDULE_POST_COLS = 2;
 
 /** `site.web.api` sends CORS; `site.api` does not from the composer origin. */
 export const ESPN_SCOREBOARD_URL = (iso: string) =>
@@ -300,27 +302,67 @@ export const scheduleGroups = (games: ScheduleGame[]) => {
   return groups;
 };
 
+export const capScheduleGames = (
+  games: ScheduleGame[],
+  max = SCHEDULE_POST_GAME_MAX,
+): ScheduleGame[] => {
+  const limit = Math.max(1, Math.round(max));
+  return [...games]
+    .sort(
+      (left, right) =>
+        left.date.localeCompare(right.date) ||
+        left.timeLabel.localeCompare(right.timeLabel) ||
+        left.awayId.localeCompare(right.awayId),
+    )
+    .slice(0, limit);
+};
+
 export const scheduleFillLayout = (
   groups: Array<{ games: unknown[] }>,
   boardH = GRAPHIC_HEIGHT,
 ) => {
   const days = Math.max(1, groups.length);
+  const gameCount = Math.max(
+    1,
+    groups.reduce((count, group) => count + group.games.length, 0),
+  );
   const listH = boardH - SCHEDULE_LIST_TOP - SCHEDULE_LIST_BOTTOM;
-  const dayH =
-    (listH - SCHEDULE_DAY_GAP * Math.max(0, days - 1)) / days;
-  const gamesH = Math.max(36, dayH - SCHEDULE_LABEL_H);
+  const labelSpace =
+    SCHEDULE_LABEL_H * days + SCHEDULE_DAY_GAP * Math.max(0, days - 1);
+  const gamesH = Math.max(36, listH - labelSpace);
+  const rows = Math.max(1, Math.ceil(gameCount / SCHEDULE_POST_COLS));
+  const gameRowH = gamesH / rows;
+  const dayH = (listH - SCHEDULE_DAY_GAP * Math.max(0, days - 1)) / days;
+  let top = SCHEDULE_LIST_TOP;
+  const dayLayouts = groups.map((group) => {
+    const dayRows = Math.max(
+      1,
+      Math.ceil(Math.max(group.games.length, 1) / SCHEDULE_POST_COLS),
+    );
+    const layout = {
+      top,
+      rows: dayRows,
+      gamesH: gameRowH * dayRows,
+      dayH: SCHEDULE_LABEL_H + gameRowH * dayRows,
+    };
+    top += layout.dayH + SCHEDULE_DAY_GAP;
+    return layout;
+  });
   return {
     listTop: SCHEDULE_LIST_TOP,
     listBottom: SCHEDULE_LIST_BOTTOM,
     listH,
     days,
     dayH,
+    dayLayouts,
     labelH: SCHEDULE_LABEL_H,
     dayGap: SCHEDULE_DAY_GAP,
-    gamesH,
-    logo: Math.round(Math.min(52, Math.max(32, gamesH * 0.42))),
-    type: Math.round(Math.min(22, Math.max(14, gamesH * 0.16))),
-    time: Math.round(Math.min(16, Math.max(12, gamesH * 0.12))),
+    gamesH: gameRowH,
+    gameRowH,
+    cols: SCHEDULE_POST_COLS,
+    logo: Math.round(Math.min(52, Math.max(36, gameRowH * 0.55))),
+    type: Math.round(Math.min(22, Math.max(16, gameRowH * 0.28))),
+    time: Math.round(Math.min(16, Math.max(12, gameRowH * 0.2))),
   };
 };
 

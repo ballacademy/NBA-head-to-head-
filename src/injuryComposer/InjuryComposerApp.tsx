@@ -31,10 +31,10 @@ import { renderInjuryCanvas } from "./renderInjuryCanvas";
 import {
   defaultInjuryDraft,
   fetchNbaInjuries,
-  groupInjuriesByTeam,
   injuryDateLine,
   isInjuryDraft,
   normalizeInjuryDraft,
+  selectInjuryPost,
   setInjuryPlayerStatus,
   type InjuryDraft,
 } from "./injuryState";
@@ -82,17 +82,19 @@ export function InjuryComposerApp() {
     setStatus("Loading injury report…");
     try {
       const players = await fetchNbaInjuries();
-      const teams = groupInjuriesByTeam(players);
+      const teams = selectInjuryPost(players);
+      const names = teams.reduce((count, block) => count + block.players.length, 0);
       push(draft);
       setDraft((current) => ({
         ...current,
         teams,
+        kicker: "OUT",
         dateLine: current.dateLine || injuryDateLine(nbaTodayIso()),
       }));
       setStatus(
         teams.length
-          ? `Loaded ${players.length} OUT / GTD names across ${teams.length} teams.`
-          : "No injuries returned.",
+          ? `Loaded ${names} OUT names across ${teams.length} teams.`
+          : "No OUT names returned.",
       );
     } finally {
       setFilling(false);

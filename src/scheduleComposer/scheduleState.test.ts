@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
   ESPN_SCOREBOARD_URL,
+  SCHEDULE_POST_GAME_MAX,
+  capScheduleGames,
   parseScoreboardGames,
   scheduleBackToBackEventIds,
   scheduleFillLayout,
@@ -90,5 +92,27 @@ describe("schedule poster", () => {
     expect(fill.dayH * fill.days + fill.dayGap * (fill.days - 1)).toBeCloseTo(
       fill.listH,
     );
+    expect(fill.logo).toBeGreaterThanOrEqual(36);
+    expect(fill.type).toBeGreaterThanOrEqual(16);
+  });
+
+  it("caps This week so the 4:5 is not 51 packed games", () => {
+    const games = Array.from({ length: 51 }, (_, index) => ({
+      eventId: `g-${index}`,
+      date: `2026-11-${String((index % 7) + 1).padStart(2, "0")}`,
+      timeLabel: "7:00 PM ET",
+      dateLabel: "NOV",
+      homeId: "BOS",
+      awayId: "NYK",
+      homeScore: "",
+      awayScore: "",
+      status: "STATUS_SCHEDULED",
+    }));
+    const capped = capScheduleGames(games);
+    expect(capped).toHaveLength(SCHEDULE_POST_GAME_MAX);
+    expect(capped[0]?.date <= capped[capped.length - 1]!.date).toBe(true);
+    const fill = scheduleFillLayout(scheduleGroups(capped));
+    expect(fill.dayLayouts.length).toBeGreaterThan(0);
+    expect(fill.type).toBeGreaterThanOrEqual(16);
   });
 });

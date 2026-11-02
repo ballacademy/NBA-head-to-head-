@@ -14,6 +14,7 @@ import { fillQualityMessage } from "./composerFillToast";
 import { nextEmptySlotIndex, slotMissingPlayer } from "./nextEmptySlot";
 import {
   PREVIEW_ZOOM_NATURAL_SCALE,
+  PREVIEW_ZOOM_SEVENTY_FIVE,
   previewZoomFactor,
 } from "./composerPreviewZoom";
 import { parseComposerBaCorner } from "./composerBaCorner";
@@ -122,9 +123,14 @@ describe("extras 17–32 HUD helpers", () => {
 
   it("zooms Fit vs 75% vs 100%", () => {
     expect(PREVIEW_ZOOM_NATURAL_SCALE).toBe(0.5);
+    expect(PREVIEW_ZOOM_SEVENTY_FIVE).toBeCloseTo(0.41);
     expect(previewZoomFactor(0.4, "fit")).toBe(0.4);
-    expect(previewZoomFactor(0.4, "75")).toBe(0.375);
-    expect(previewZoomFactor(0.4, "100")).toBe(0.5);
+    expect(previewZoomFactor(0.4, "75")).toBe(0.4);
+    expect(previewZoomFactor(0.4, "100")).toBe(0.4);
+    expect(previewZoomFactor(0.6, "75")).toBeCloseTo(PREVIEW_ZOOM_SEVENTY_FIVE);
+    expect(previewZoomFactor(0.6, "100")).toBe(0.5);
+    expect(previewZoomFactor(0.6, "75")).toBeLessThan(previewZoomFactor(0.6, "100"));
+    expect(previewZoomFactor(0.36, "100")).toBeLessThanOrEqual(0.36);
   });
 
   it("parses BA corners and names files with player + date", () => {

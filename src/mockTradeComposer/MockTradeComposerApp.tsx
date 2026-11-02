@@ -436,12 +436,17 @@ export function MockTradeComposerApp() {
                 >
                   Remove pick
                 </button>
-                {side.picks.map((pick, pickIndex) => (
+              </div>
+            ))}
+            <div className="sc-toolbar__picks sc-hud-full-only" role="group" aria-label="Picks">
+            {draft.sides.map((side, sideIndex) =>
+              side.picks.map((pick, pickIndex) => (
                   <label
                     key={`mt-pick-${sideIndex}-${pickIndex}`}
-                    className="sc-field"
+                    className="sc-field sc-field--pick"
                   >
-                    {`Pick ${pickIndex + 1}`}
+                    {`Team ${sideIndex + 1} pick ${pickIndex + 1}`}
+                    <span className="sc-field__row">
                     <select
                       value={pick.year}
                       aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} year`}
@@ -503,9 +508,10 @@ export function MockTradeComposerApp() {
                         </option>
                       ))}
                     </select>
+                    </span>
                     <button
                       type="button"
-                      className={pick.swap ? "sc-chip is-on" : "sc-chip"}
+                      className={`${pick.swap ? "sc-chip is-on" : "sc-chip"} sc-hud-full-only`}
                       aria-pressed={pick.swap}
                       aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} swap`}
                       onClick={() =>
@@ -525,7 +531,7 @@ export function MockTradeComposerApp() {
                     </button>
                     <button
                       type="button"
-                      className={pick.top4 ? "sc-chip is-on" : "sc-chip"}
+                      className={`${pick.top4 ? "sc-chip is-on" : "sc-chip"} sc-hud-full-only`}
                       aria-pressed={pick.top4 === true}
                       aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} top-4`}
                       onClick={() =>
@@ -545,7 +551,7 @@ export function MockTradeComposerApp() {
                     </button>
                     <button
                       type="button"
-                      className={pick.twoWay ? "sc-chip is-on" : "sc-chip"}
+                      className={`${pick.twoWay ? "sc-chip is-on" : "sc-chip"} sc-hud-full-only`}
                       aria-pressed={pick.twoWay === true}
                       aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} two-way`}
                       onClick={() =>
@@ -565,7 +571,7 @@ export function MockTradeComposerApp() {
                     </button>
                     <button
                       type="button"
-                      className={pick.cash ? "sc-chip is-on" : "sc-chip"}
+                      className={`${pick.cash ? "sc-chip is-on" : "sc-chip"} sc-hud-full-only`}
                       aria-pressed={pick.cash === true}
                       aria-label={`Team ${sideIndex + 1} pick ${pickIndex + 1} cash`}
                       onClick={() =>
@@ -587,9 +593,9 @@ export function MockTradeComposerApp() {
                       {mockTradePickLabel(pick)}
                     </span>
                   </label>
-                ))}
-              </div>
-            ))}
+              )),
+            )}
+            </div>
           </>
         }
         board={

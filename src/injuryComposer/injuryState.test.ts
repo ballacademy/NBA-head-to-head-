@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
   ESPN_INJURIES_URL,
+  INJURY_POST_PLAYER_MAX,
+  INJURY_POST_TEAM_MAX,
   cycleInjuryKicker,
   groupInjuriesByTeam,
   injuryFillLayout,
   normalizeInjuryKicker,
   parseInjuryPayload,
+  selectInjuryPost,
 } from "./injuryState";
 
 describe("injury report", () => {
@@ -76,5 +79,30 @@ describe("injury report", () => {
     const sparse = injuryFillLayout(4);
     expect(sparse.rowH).toBeGreaterThan(fill.rowH);
     expect(sparse.logo).toBeGreaterThanOrEqual(fill.logo);
+  });
+
+  it("caps Fill to OUT names that still read as an IG post", () => {
+    const players = Array.from({ length: 28 }, (_, index) => ({
+      id: `p-${index}`,
+      name: `Player ${index}`,
+      shortName: `P${index}`,
+      teamId: ["ATL", "BOS", "BKN", "CHA", "CHI", "CLE", "DAL", "DEN", "DET", "GSW", "HOU", "IND", "LAC", "LAL"][
+        index % 14
+      ]!,
+      status: index % 3 === 0 ? ("GTD" as const) : ("OUT" as const),
+      detail: "",
+    }));
+    const post = selectInjuryPost(players);
+    expect(post.length).toBeLessThanOrEqual(INJURY_POST_TEAM_MAX);
+    expect(post.every((block) => block.players.every((row) => row.status === "OUT"))).toBe(
+      true,
+    );
+    expect(
+      post.every((block) => block.players.length <= INJURY_POST_PLAYER_MAX),
+    ).toBe(true);
+    const withGtd = selectInjuryPost(players, true);
+    expect(withGtd.some((block) => block.players.some((row) => row.status === "GTD"))).toBe(
+      true,
+    );
   });
 });

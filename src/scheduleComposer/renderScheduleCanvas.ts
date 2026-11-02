@@ -96,13 +96,13 @@ export const renderScheduleCanvas = async (
   const logo = fill.logo * s;
   const b2b = scheduleBackToBackEventIds(input.games);
   groups.forEach((group, dayIndex) => {
-    const dayTop = (fill.listTop + dayIndex * (fill.dayH + fill.dayGap)) * s;
+    const day = fill.dayLayouts[dayIndex];
+    const dayTop = (day?.top ?? fill.listTop) * s;
     context.textAlign = "left";
     context.fillStyle = "#facc15";
     context.font = `900 ${16 * s}px ${POSTER_FONT}`;
     context.fillText(group.label, listLeft, dayTop + 12 * s);
-    const rows = Math.max(1, Math.ceil(group.games.length / 2));
-    const rowH = (fill.gamesH * s) / rows;
+    const rowH = fill.gameRowH * s;
     group.games.forEach((game, gameIndex) => {
       const col = gameIndex % 2;
       const row = Math.floor(gameIndex / 2);

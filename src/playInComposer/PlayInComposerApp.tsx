@@ -281,7 +281,7 @@ export function PlayInComposerApp() {
         >
           Live scores
         </button>
-        <label className="sc-field">
+        <label className="sc-field sc-hud-full-only">
           <span className="sc-toolbar__eyebrow">W–L</span>
           <button
             type="button"
@@ -307,7 +307,7 @@ export function PlayInComposerApp() {
             emptyPlayInScores();
           const pair = scores[game];
           return (
-            <label key={label} className="sc-field">
+            <label key={label} className="sc-field sc-hud-full-only">
               {label}
               <span className="sc-field__row">
                 <input

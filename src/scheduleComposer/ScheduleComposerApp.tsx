@@ -34,6 +34,7 @@ import { ScheduleGraphic } from "./ScheduleGraphic";
 import { exportSchedulePng } from "./exportSchedulePng";
 import { renderScheduleCanvas } from "./renderScheduleCanvas";
 import {
+  capScheduleGames,
   defaultScheduleDraft,
   fetchScheduleRange,
   isScheduleDraft,
@@ -94,20 +95,25 @@ export function ScheduleComposerApp() {
     setFilling(true);
     setStatus("Loading schedule…");
     try {
-      const games = await fetchScheduleRange({ from, to });
+      const fetched = await fetchScheduleRange({ from, to });
+      const games = capScheduleGames(fetched);
+      const shownFrom = games[0]?.date || from;
+      const shownTo = games[games.length - 1]?.date || to;
       push(draft);
       setDraft((current) => ({
         ...current,
         from,
         to,
         weekLine: isAutoWeekLine(current.weekLine, current.from, current.to)
-          ? rangeWeekLine(from, to)
+          ? rangeWeekLine(shownFrom, shownTo)
           : current.weekLine,
         games,
       }));
       setStatus(
         games.length
-          ? `Loaded ${games.length} games.`
+          ? fetched.length > games.length
+            ? `Showing ${games.length} of ${fetched.length} games.`
+            : `Loaded ${games.length} games.`
           : "No games in that range.",
       );
     } finally {
@@ -189,6 +195,7 @@ export function ScheduleComposerApp() {
               to={draft.to}
               filling={filling}
               fillLabel="Fill schedule"
+              simpleSet="night"
               onChange={(range) => applyRange(range.from, range.to)}
               onFill={() => void fillRange()}
             />

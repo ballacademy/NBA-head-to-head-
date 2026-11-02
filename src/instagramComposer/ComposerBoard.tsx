@@ -7,6 +7,7 @@ import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
 import {
+  PREVIEW_ZOOM_NATURAL_SCALE,
   previewZoomFactor,
   useComposerPreviewZoom,
 } from "./composerPreviewZoom";
@@ -20,7 +21,8 @@ import {
  * Fit: wrap is contain-sized by CSS; zoom follows wrap width so the
  * whole 4:5 / 9:16 / 1:1 paints with overflow hidden (no inner scroll).
  * 75 / 100: wrap is the zoomed graphic at PREVIEW_ZOOM_NATURAL_SCALE
- * (100% = half the 1200×1500 design, today’s 50%).
+ * (100% = half the 1200×1500 design), capped to leftover so 100% never
+ * forces page scroll or overflows a phone.
  */
 export function ComposerBoard({
   children,
@@ -33,9 +35,10 @@ export function ComposerBoard({
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [fit, setFit] = useState(PREVIEW_ZOOM_NATURAL_SCALE);
   const [previewZoom] = useComposerPreviewZoom();
   const zoomed = previewZoom !== "fit";
-  const factor = previewZoomFactor(1, previewZoom);
+  const factor = previewZoomFactor(fit, previewZoom);
 
   useLayoutEffect(() => {
     const node = wrapRef.current;
@@ -48,6 +51,16 @@ export function ComposerBoard({
       if (next > 0) {
         setScale(next / width);
       }
+      if (frame instanceof HTMLElement) {
+        const frameW = frame.clientWidth;
+        const frameH = frame.clientHeight;
+        if (frameW > 0 && frameH > 0) {
+          const nextFit = Math.min(frameW / width, frameH / height);
+          if (nextFit > 0) {
+            setFit(nextFit);
+          }
+        }
+      }
     };
     sync();
     if (typeof ResizeObserver === "undefined") {
@@ -59,7 +72,7 @@ export function ComposerBoard({
       observer.observe(frame);
     }
     return () => observer.disconnect();
-  }, [width, previewZoom]);
+  }, [width, height, previewZoom]);
 
   return (
     <div
@@ -74,6 +87,8 @@ export function ComposerBoard({
           ? {
               width: width * factor,
               height: height * factor,
+              maxWidth: "100%",
+              maxHeight: "100%",
             }
           : {}),
       }}

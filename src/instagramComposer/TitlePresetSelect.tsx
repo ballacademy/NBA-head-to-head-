@@ -9,12 +9,14 @@ export function TitlePresetSelect({
   presets,
   onChange,
 }: TitlePresetSelectProps) {
+  const selected = presets.includes(value) ? value : "";
   return (
-    <label className="sc-field">
+    <label className="sc-field sc-field--preset">
       Preset
       <select
-        value={presets.includes(value) ? value : ""}
+        value={selected}
         aria-label="Title preset"
+        title={selected || "Custom"}
         onChange={(event) => {
           if (event.target.value) {
             onChange(event.target.value);
@@ -23,7 +25,7 @@ export function TitlePresetSelect({
       >
         <option value="">Custom</option>
         {presets.map((preset) => (
-          <option key={preset} value={preset}>
+          <option key={preset} value={preset} title={preset}>
             {preset}
           </option>
         ))}

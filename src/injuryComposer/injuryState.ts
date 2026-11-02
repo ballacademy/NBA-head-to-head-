@@ -20,6 +20,8 @@ export const INJURY_TITLE_TRACK = 0.02;
 export const INJURY_COLS = 2;
 export const INJURY_LIST_TOP = 268;
 export const INJURY_LIST_BOTTOM = 28;
+export const INJURY_POST_TEAM_MAX = 10;
+export const INJURY_POST_PLAYER_MAX = 3;
 
 export const injuryFillLayout = (
   teamCount: number,
@@ -38,7 +40,7 @@ export const injuryFillLayout = (
     rowH,
     gap,
     logo: Math.round(Math.min(96, Math.max(52, rowH * 0.5))),
-    name: Math.round(Math.min(26, Math.max(16, rowH * 0.18))),
+    name: Math.round(Math.min(28, Math.max(20, rowH * 0.18))),
     pipH: Math.round(Math.min(28, Math.max(18, rowH * 0.2))),
     pipSize: Math.round(Math.min(14, Math.max(11, rowH * 0.1))),
   };
@@ -241,6 +243,32 @@ export const groupInjuriesByTeam = (
           left.name.localeCompare(right.name),
       ),
     }));
+};
+
+const outCount = (block: InjuryTeamBlock) =>
+  block.players.filter((player) => player.status === "OUT").length;
+
+/** OUT-first team pages, capped so type reads at IG size. */
+export const selectInjuryPost = (
+  players: InjuryPlayer[],
+  includeGtd = false,
+): InjuryTeamBlock[] => {
+  const allowed = new Set<InjuryKicker>(
+    includeGtd ? ["OUT", "GTD"] : ["OUT"],
+  );
+  const filtered = players.filter((player) => allowed.has(player.status));
+  return groupInjuriesByTeam(filtered)
+    .map((block) => ({
+      ...block,
+      players: block.players.slice(0, INJURY_POST_PLAYER_MAX),
+    }))
+    .sort(
+      (left, right) =>
+        outCount(right) - outCount(left) ||
+        right.players.length - left.players.length ||
+        left.teamId.localeCompare(right.teamId),
+    )
+    .slice(0, INJURY_POST_TEAM_MAX);
 };
 
 export const defaultInjuryDraft = (): InjuryDraft => ({

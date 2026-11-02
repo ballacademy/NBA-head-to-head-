@@ -249,7 +249,21 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
-    expect(previewZoom).toContain("0.75 * PREVIEW_ZOOM_NATURAL_SCALE");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE");
+    expect(previewZoom).toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
+    expect(board).toContain('maxWidth: "100%"');
+    expect(sheet).toMatch(
+      /\.sc-stage__frame > \.sc-hint[\s\S]*?position:\s*absolute/,
+    );
+    expect(sheet).toContain(".sc-field--preset");
+    expect(sheet).toContain("max-width: min(100%, 520px)");
+    expect(sheet).toMatch(
+      /html:has\(\.sc-root\.is-preview-zoomed\)[\s\S]{0,220}?overflow-y:\s*hidden/,
+    );
+    expect(sheet).toMatch(/\.sc-root\.is-preview-zoomed \{[^}]*overflow-y:\s*hidden/);
+    expect(sheet).toMatch(
+      /\.sc-stage__board\.is-zoomed \{[\s\S]*?max-width:\s*100%/,
+    );
     const hub = readFileSync(
       join(root, "instagramComposer/ComposerHub.tsx"),
       "utf8",
@@ -878,6 +892,39 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(
       /\.sc-root\.is-hud-simple \.sc-toolbar__row--actions \.sc-hud-full-only \{\s*display:\s*inline-block/,
     );
+    const standingsHud = readFileSync(
+      join(root, "standingsComposer/StandingsComposerApp.tsx"),
+      "utf8",
+    );
+    const playInHud = readFileSync(
+      join(root, "playInComposer/PlayInComposerApp.tsx"),
+      "utf8",
+    );
+    const mockTradeHud = readFileSync(
+      join(root, "mockTradeComposer/MockTradeComposerApp.tsx"),
+      "utf8",
+    );
+    const scheduleHud = readFileSync(
+      join(root, "scheduleComposer/ScheduleComposerApp.tsx"),
+      "utf8",
+    );
+    const presetSelect = readFileSync(
+      join(root, "instagramComposer/TitlePresetSelect.tsx"),
+      "utf8",
+    );
+    expect(standingsHud).toMatch(
+      /className="sc-field sc-hud-full-only"[\s\S]*Last week East/,
+    );
+    expect(standingsHud).toMatch(
+      /className="sc-field sc-hud-full-only"[\s\S]*Last week West/,
+    );
+    expect(playInHud).toContain('className="sc-field sc-hud-full-only"');
+    expect(playInHud).toContain("East 7v8");
+    expect(mockTradeHud).toContain("sc-toolbar__picks");
+    expect(mockTradeHud).toContain("sc-hud-full-only");
+    expect(mockTradeHud).toContain("sc-field--pick");
+    expect(scheduleHud).toContain('simpleSet="night"');
+    expect(presetSelect).toContain("sc-field--preset");
     expect(totwApp).toContain('simpleSet="week"');
     expect(coverApp).toContain('simpleSet="night"');
     expect(coverApp).toContain("onJumpLastNight");

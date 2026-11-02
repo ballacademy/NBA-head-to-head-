@@ -376,7 +376,7 @@ export function StandingsComposerApp() {
           >
             Fill West
           </button>
-          <label className="sc-field">
+          <label className="sc-field sc-hud-full-only">
             <span className="sc-toolbar__eyebrow">Last week East</span>
             <button
               type="button"
@@ -396,7 +396,7 @@ export function StandingsComposerApp() {
               Save last week East
             </button>
           </label>
-          <label className="sc-field">
+          <label className="sc-field sc-hud-full-only">
             <span className="sc-toolbar__eyebrow">Last week West</span>
             <button
               type="button"
