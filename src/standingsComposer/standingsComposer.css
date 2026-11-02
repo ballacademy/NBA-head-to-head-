@@ -2583,7 +2583,13 @@ label.sc-chip {
     max-height: 100%;
   }
 
-  .sc-root.is-preview-zoomed .sc-stage__frame,
+  .sc-root.is-preview-zoomed .sc-stage__frame {
+    width: auto;
+    height: auto;
+    inset: 8px 10px;
+    max-width: none;
+  }
+
   .sc-root.is-preview-zoomed .sc-stage__board,
   .sc-root.is-preview-zoomed .sc-stage__board.is-zoomed {
     max-width: 100%;
