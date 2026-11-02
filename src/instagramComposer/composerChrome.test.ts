@@ -882,9 +882,27 @@ describe("composer chrome", () => {
     expect(hub).toContain("is-hud-simple");
     expect(hub).toContain("InjuryComposerApp");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__filters");
-    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__board");
-    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__persist");
+    expect(sheet).not.toMatch(
+      /\.sc-root\.is-hud-simple \.sc-toolbar__board \{\s*display:\s*none/,
+    );
+    expect(sheet).not.toMatch(
+      /\.sc-root\.is-hud-simple \.sc-toolbar__persist \{\s*display:\s*none/,
+    );
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__scroll");
+    expect(sheet).toContain(
+      ".sc-root.is-hud-simple .sc-toolbar__board > :not(.sc-look--select)",
+    );
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-field--inline");
+    expect(sheet).not.toMatch(
+      /\.sc-root\.is-hud-simple \.sc-toolbar__identity \{\s*display:\s*none/,
+    );
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-stat-slots");
+    expect(composerSaves).toContain("Save as template");
+    expect(composerSaves).toContain("sc-field--inline");
+    expect(composerSaves).toContain("sc-hud-full-only");
+    expect(composerSaves).not.toMatch(
+      /Save as template[\s\S]{0,80}sc-hud-full-only/,
+    );
     expect(sheet).not.toMatch(
       /\.sc-root\.is-hud-simple \.sc-tabs__group:not\(\.sc-tabs__group--recents\) \{\s*display:\s*none/,
     );

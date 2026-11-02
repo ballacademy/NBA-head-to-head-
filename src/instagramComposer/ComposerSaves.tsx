@@ -59,7 +59,7 @@ export function ComposerSaves<T>({
 
   return (
     <div className="sc-saves" role="group" aria-label="Named graphics">
-      <label className="sc-field">
+      <label className="sc-field sc-hud-full-only">
         Save as
         <input
           value={name}
@@ -71,7 +71,7 @@ export function ComposerSaves<T>({
       </label>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost"
+        className="sc-btn sc-btn--ghost sc-hud-full-only"
         onClick={() => {
           const { saves: next, saved } = upsertNamedGraphic(
             storageKey,
@@ -100,7 +100,7 @@ export function ComposerSaves<T>({
       </button>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost"
+        className="sc-btn sc-btn--ghost sc-hud-full-only"
         onClick={() => {
           const copyName = `${(name.trim() || "Graphic").slice(0, 32)} copy`;
           const { saves: next, saved } = upsertNamedGraphic(
@@ -134,7 +134,7 @@ export function ComposerSaves<T>({
       >
         Save as template
       </button>
-      <label className="sc-field">
+      <label className="sc-field sc-field--inline">
         Load
         <select
           value={selected}
@@ -166,7 +166,7 @@ export function ComposerSaves<T>({
       </button>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost"
+        className="sc-btn sc-btn--ghost sc-hud-full-only"
         disabled={!selected}
         onClick={() => {
           const next = deleteNamedGraphic<T>(storageKey, selected);
@@ -179,7 +179,7 @@ export function ComposerSaves<T>({
       </button>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost"
+        className="sc-btn sc-btn--ghost sc-hud-full-only"
         onClick={() => {
           downloadComposerLibrary();
           setStatus("Downloaded all named graphics.");
@@ -189,7 +189,7 @@ export function ComposerSaves<T>({
       </button>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost"
+        className="sc-btn sc-btn--ghost sc-hud-full-only"
         onClick={() => fileRef.current?.click()}
       >
         Import
