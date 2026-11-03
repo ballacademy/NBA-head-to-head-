@@ -9,7 +9,7 @@ export type ComposerPreviewZoom = "fit" | "75" | "100";
 /** Native 1200×1500 at 1 is oversized; 100% is half that (today’s 50%). */
 export const PREVIEW_ZOOM_NATURAL_SCALE = 0.5;
 
-/** 75% sits between Fit and 100% (82% of natural, then capped to leftover). */
+/** 75% sits between Fit and 100% (82% of natural). */
 export const PREVIEW_ZOOM_SEVENTY_FIVE = 0.82 * PREVIEW_ZOOM_NATURAL_SCALE;
 
 export const parseComposerPreviewZoom = (

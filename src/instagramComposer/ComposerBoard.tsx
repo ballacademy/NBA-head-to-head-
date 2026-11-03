@@ -18,10 +18,9 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit: wrap is contain-sized by CSS so the whole 4:5 / 9:16 / 1:1
- * shows in the leftover stage. 75 / 100: wrap is the zoomed graphic at
- * PREVIEW_ZOOM_NATURAL_SCALE (100% = half the 1200×1500 design). If that
- * is taller than the stage, the canvas pans vertically — not the HUD.
+ * Fit sizes to the viewport (width × window height), not leftover HUD
+ * space, so the page can scroll and the whole post stays on the document.
+ * 75 / 100 use PREVIEW_ZOOM_NATURAL_SCALE (100% = half the 1200×1500 design).
  */
 export function ComposerBoard({
   children,
@@ -36,7 +35,6 @@ export function ComposerBoard({
   const [scale, setScale] = useState(1);
   const [fit, setFit] = useState(PREVIEW_ZOOM_NATURAL_SCALE);
   const [previewZoom] = useComposerPreviewZoom();
-  const zoomed = previewZoom !== "fit";
   const factor = previewZoomFactor(fit, previewZoom);
 
   useLayoutEffect(() => {
@@ -50,44 +48,50 @@ export function ComposerBoard({
       if (next > 0) {
         setScale(next / width);
       }
-      if (frame instanceof HTMLElement) {
-        const frameW = frame.clientWidth;
-        const frameH = frame.clientHeight;
-        if (frameW > 0 && frameH > 0) {
-          const nextFit = Math.min(frameW / width, frameH / height);
-          if (nextFit > 0) {
-            setFit(nextFit);
-          }
+      const frameW =
+        frame instanceof HTMLElement && frame.clientWidth > 0
+          ? frame.clientWidth
+          : 0;
+      const viewH = window.visualViewport?.height ?? window.innerHeight;
+      if (frameW > 0 && viewH > 0) {
+        const nextFit = Math.min(frameW / width, viewH / height);
+        if (nextFit > 0) {
+          setFit(nextFit);
         }
       }
     };
     sync();
+    window.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("resize", sync);
     if (typeof ResizeObserver === "undefined") {
-      return;
+      return () => {
+        window.removeEventListener("resize", sync);
+        window.visualViewport?.removeEventListener("resize", sync);
+      };
     }
     const observer = new ResizeObserver(sync);
     observer.observe(node);
     if (frame instanceof Element) {
       observer.observe(frame);
     }
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("resize", sync);
+    };
   }, [width, height, previewZoom]);
 
   return (
     <div
       ref={wrapRef}
-      className={`sc-stage__board${zoomed ? " is-zoomed" : ""}`}
+      className="sc-stage__board is-zoomed"
       data-preview-zoom={previewZoom}
       style={{
         aspectRatio: `${width} / ${height}`,
         ["--board-w" as string]: String(width),
         ["--board-h" as string]: String(height),
-        ...(zoomed
-          ? {
-              width: width * factor,
-              height: height * factor,
-            }
-          : {}),
+        width: width * factor,
+        height: height * factor,
       }}
     >
       <div

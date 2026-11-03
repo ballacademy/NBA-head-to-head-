@@ -1,14 +1,15 @@
 /* Instagram standings composer — isolated from hub chrome. */
 
 .sc-root {
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
-  max-height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: 100svh;
+  height: auto;
+  max-height: none;
   display: flex;
   flex-direction: column;
   overflow-x: clip;
-  overflow-y: hidden;
+  overflow-y: visible;
   touch-action: pan-y pinch-zoom;
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(255, 255, 255, 0.05), transparent 55%),
@@ -24,23 +25,21 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
-  overflow: hidden;
+  flex: 0 0 auto;
+  overflow: visible;
 }
 
 .sc-root.is-preview-zoomed {
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
-  max-height: 100dvh;
+  height: auto;
+  max-height: none;
   overflow-x: clip;
-  overflow-y: hidden;
+  overflow-y: visible;
 }
 
 .sc-root.is-preview-zoomed .sc-composer {
   min-height: 0;
-  flex: 1 1 auto;
-  overflow: hidden;
+  flex: 0 0 auto;
+  overflow: visible;
 }
 
 .sc-root.is-preview-zoomed .sc-tabs {
@@ -93,12 +92,51 @@
 }
 
 .sc-tabs__group--recents {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   max-width: none;
   padding: 0;
   background: transparent;
   border: 0;
+}
+
+.sc-tabs__group--recents[open] {
+  flex: 1 1 100%;
+}
+
+.sc-tabs__recents-toggle {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  margin: 0;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.sc-tabs__recents-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.sc-tabs__recents-toggle::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.75;
+}
+
+.sc-tabs__group--recents[open] > .sc-tabs__recents-toggle::after {
+  transform: rotate(180deg);
 }
 
 .sc-tabs__group + .sc-tabs__group {
@@ -689,46 +727,35 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-html:has(.sc-root:not(.is-preview-zoomed)),
-body:has(.sc-root:not(.is-preview-zoomed)) {
+html:has(.sc-root),
+body:has(.sc-root) {
   background: #101114;
   overflow-x: clip;
-  overflow-y: hidden;
+  overflow-y: auto;
   overscroll-behavior-x: none;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-html:has(.sc-root.is-preview-zoomed),
-body:has(.sc-root.is-preview-zoomed) {
-  background: #101114;
-  overflow-x: clip;
-  overflow-y: hidden;
-  overscroll-behavior-x: none;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .sc-root main.sc-stage,
 main.sc-stage {
   display: grid;
-  place-items: center;
-  flex: 1 1 auto;
+  place-items: start center;
+  flex: 0 0 auto;
   width: 100%;
   max-width: none;
   margin: 0;
-  padding: 8px 16px 10px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  padding: 8px 16px 24px;
+  overflow: visible;
   min-height: 0;
   min-width: 0;
+  height: auto;
   position: relative;
 }
 
 .sc-root.is-preview-zoomed main.sc-stage {
-  flex: 1 1 auto;
-  overflow-x: hidden;
-  overflow-y: auto;
+  flex: 0 0 auto;
+  overflow: visible;
   height: auto;
   min-height: 0;
   place-items: start center;
@@ -736,19 +763,19 @@ main.sc-stage {
 
 .sc-stage__frame {
   width: 100%;
-  height: 100%;
+  height: auto;
   max-width: 100%;
-  max-height: 100%;
+  max-height: none;
   min-width: 0;
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, max-content);
   justify-items: center;
-  align-items: center;
-  overflow: hidden;
+  align-items: start;
+  overflow: visible;
   position: relative;
-  container-type: size;
+  container-type: inline-size;
 }
 
 .sc-stage__frame.is-story {
@@ -758,12 +785,12 @@ main.sc-stage {
 
 .sc-root.is-preview-zoomed .sc-stage__frame {
   height: auto;
-  min-height: 100%;
+  min-height: 0;
   width: 100%;
   max-width: 100%;
   max-height: none;
   overflow: visible;
-  container-type: size;
+  container-type: inline-size;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, max-content);
   align-items: start;
@@ -772,10 +799,10 @@ main.sc-stage {
 .sc-stage__board {
   grid-column: 1;
   grid-row: 1;
-  width: min(100cqw, calc(100cqh * var(--board-w, 1200) / var(--board-h, 1500)));
+  width: min(100%, calc(100dvh * var(--board-w, 1200) / var(--board-h, 1500)));
   height: auto;
   max-width: 100%;
-  max-height: 100%;
+  max-height: none;
   aspect-ratio: var(--board-w, 1200) / var(--board-h, 1500);
   position: relative;
   overflow: hidden;
@@ -2413,8 +2440,9 @@ label.sc-chip {
 
   .sc-stage__frame {
     width: 100%;
-    height: 100%;
+    height: auto;
     max-width: none;
+    max-height: none;
   }
 }
 
@@ -2568,24 +2596,25 @@ label.sc-chip {
   .sc-root main.sc-stage,
   main.sc-stage {
     position: relative;
-    flex: 1 1 auto;
-    min-height: 180px;
-    padding: 8px 10px;
-    align-content: stretch;
-    overflow-x: hidden;
-    overflow-y: auto;
+    flex: 0 0 auto;
+    min-height: 0;
+    height: auto;
+    padding: 8px 10px 24px;
+    align-content: start;
+    overflow: visible;
   }
 
   .sc-stage__frame {
-    position: absolute;
-    inset: 8px 10px;
+    position: relative;
+    inset: auto;
     width: auto;
     height: auto;
     max-width: none;
+    max-height: none;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    container-type: size;
+    grid-template-rows: minmax(0, max-content);
+    container-type: inline-size;
   }
 
   .sc-stage__frame > .sc-hint,
@@ -2595,10 +2624,10 @@ label.sc-chip {
 
   .sc-stage__board {
     grid-column: 1;
-    width: min(100cqw, calc(100cqh * var(--board-w, 1200) / var(--board-h, 1500)));
+    width: min(100%, calc(100dvh * var(--board-w, 1200) / var(--board-h, 1500)));
     height: auto;
     max-width: 100%;
-    max-height: 100%;
+    max-height: none;
   }
 
   .sc-root.is-preview-zoomed .sc-stage__frame {

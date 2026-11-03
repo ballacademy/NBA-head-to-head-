@@ -159,12 +159,8 @@ export function ComposerTabs({
           />
         </label>
         {exports.length ? (
-          <div
-            className="sc-tabs__group sc-tabs__group--recents"
-            role="group"
-            aria-label="Recents"
-          >
-            <span className="sc-tabs__label">Recents</span>
+          <details className="sc-tabs__group sc-tabs__group--recents">
+            <summary className="sc-tabs__recents-toggle">Recents</summary>
             <div className="sc-tabs__pills">
               {exports.map((item) => (
                 <button
@@ -184,14 +180,10 @@ export function ComposerTabs({
                 </button>
               ))}
             </div>
-          </div>
+          </details>
         ) : recents.length ? (
-          <div
-            className="sc-tabs__group sc-tabs__group--recents"
-            role="group"
-            aria-label="Recents"
-          >
-            <span className="sc-tabs__label">Recents</span>
+          <details className="sc-tabs__group sc-tabs__group--recents">
+            <summary className="sc-tabs__recents-toggle">Recents</summary>
             <div className="sc-tabs__pills">
               {recents.map((recent) => (
                 <button
@@ -206,7 +198,7 @@ export function ComposerTabs({
                 </button>
               ))}
             </div>
-          </div>
+          </details>
         ) : null}
         <div className="sc-tabs__edit">
           <span className="sc-tabs__label">HUD</span>

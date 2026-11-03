@@ -111,7 +111,7 @@ export const chainHudWheel = (root: HTMLElement) => {
       stage.scrollBy({ top: event.deltaY, left: event.deltaX });
       return;
     }
-    event.preventDefault();
+    // Let the document scroll so the whole post is on the page.
   };
 
   root.addEventListener("wheel", onWheel, { passive: false });

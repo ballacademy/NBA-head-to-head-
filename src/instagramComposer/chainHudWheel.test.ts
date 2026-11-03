@@ -16,6 +16,7 @@ describe("chainHudWheel", () => {
     );
     expect(source).toContain('root.querySelector(".sc-stage")');
     expect(source).toContain("stage.scrollBy");
+    expect(source).toContain("Let the document scroll so the whole post is on the page.");
     expect(source).toContain(".sc-picker, dialog, .sc-modal, .sc-hud-select__menu");
     expect(source).toContain("syncComposerVisualViewport");
     expect(source).toContain("visualViewport");
@@ -55,6 +56,8 @@ describe("chainHudWheel", () => {
     expect(sheet).toMatch(/\.sc-range \{[^}]*overflow:\s*clip/);
     expect(tabs).toContain("sc-tabs__bar");
     expect(tabs).toContain("sc-tabs__group--recents");
+    expect(tabs).toContain("<details");
+    expect(tabs).toContain("sc-tabs__recents-toggle");
     expect(grade).toContain("sc-grade__mix");
     expect(grade).toMatch(/overflow:\s*clip/);
     expect(grade).toMatch(/\.sc-grade__mix \.sc-toolbar__eyebrow \{[^}]*white-space:\s*nowrap/);

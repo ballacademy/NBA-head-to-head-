@@ -167,7 +167,7 @@ describe("composer chrome", () => {
     );
     expect(sheet).not.toMatch(/height:\s*min\(52vh/);
     expect(sheet).toMatch(
-      /html:has\(\.sc-root:not\(\.is-preview-zoomed\)\)[\s\S]{0,180}?overflow-y:\s*hidden/,
+      /html:has\(\.sc-root\)[\s\S]{0,180}?overflow-y:\s*auto/,
     );
     expect(sheet).toContain("touch-action: none");
     expect(sheet).toMatch(/\.sc-root \{[^}]*touch-action:\s*pan-y pinch-zoom/);
@@ -230,19 +230,22 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
   });
 
-  it("contain-Fits the whole poster and pans the canvas at 75/100", () => {
-    expect(sheet).toMatch(/\.sc-root \{[^}]*overflow-y:\s*hidden/);
+  it("scrolls the compose page so the whole poster is visible", () => {
+    expect(sheet).toMatch(/\.sc-root \{[^}]*overflow-y:\s*visible/);
+    expect(sheet).toMatch(/\.sc-root \{[^}]*height:\s*auto/);
     expect(sheet).toMatch(/\.sc-tabs \{[^}]*max-height:\s*none/);
     expect(sheet).toMatch(/\.sc-tabs__pills \{[\s\S]*?flex-wrap:\s*wrap/);
     expect(sheet).toMatch(/\.sc-toolbar \{[^}]*max-height:\s*none/);
-    expect(sheet).toMatch(/main\.sc-stage \{[\s\S]*?overflow-y:\s*auto/);
-    expect(sheet).toContain("100cqh * var(--board-w, 1200) / var(--board-h, 1500)");
+    expect(sheet).toMatch(/main\.sc-stage \{[\s\S]*?overflow:\s*visible/);
+    expect(sheet).toContain("100dvh * var(--board-w, 1200) / var(--board-h, 1500)");
+    expect(sheet).not.toContain("100cqh * var(--board-w, 1200) / var(--board-h, 1500)");
     expect(sheet).toMatch(
       /\.sc-stage__board \{[\s\S]*?height:\s*auto;[\s\S]*?aspect-ratio:/,
     );
     expect(sheet).toMatch(/\.sc-stage__board\.is-zoomed \{[^}]*overflow:\s*visible/);
     expect(sheet).not.toContain("calc((100dvh - 180px) * 0.8)");
     expect(board).toContain("width: width * factor");
+    expect(board).toContain("visualViewport");
     expect(board).toContain('data-preview-zoom={previewZoom}');
     expect(board).toContain("PREVIEW_ZOOM_NATURAL_SCALE");
     const previewZoom = readFileSync(
@@ -259,9 +262,9 @@ describe("composer chrome", () => {
     expect(sheet).toContain(".sc-field--preset");
     expect(sheet).toContain("max-width: min(100%, 520px)");
     expect(sheet).toMatch(
-      /html:has\(\.sc-root\.is-preview-zoomed\)[\s\S]{0,220}?overflow-y:\s*hidden/,
+      /html:has\(\.sc-root\)[\s\S]{0,220}?overflow-y:\s*auto/,
     );
-    expect(sheet).toMatch(/\.sc-root\.is-preview-zoomed \{[^}]*overflow-y:\s*hidden/);
+    expect(sheet).toMatch(/\.sc-root\.is-preview-zoomed \{[^}]*overflow-y:\s*visible/);
     expect(sheet).toMatch(
       /\.sc-stage__board\.is-zoomed \{[\s\S]*?max-height:\s*none/,
     );
@@ -291,7 +294,7 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(tabsSource).toContain('placeholder="Find a graphic"');
-    expect(sheet).toContain("min-height: 180px");
+    expect(sheet).toContain("sc-tabs__recents-toggle");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__identity");
     expect(browserStorage).toContain("previous != null");
     expect(statCardApp).toContain("Fill last night");
@@ -687,6 +690,9 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(tabs).toContain("Recents");
+    expect(tabs).toContain("<details");
+    expect(tabs).toContain("sc-tabs__recents-toggle");
+    expect(tabs).not.toMatch(/<details[^>]*\sopen/);
     expect(tabs).toContain("Search composers");
     expect(tabs).toContain("ComposerNameStyleToggle");
     expect(compareExport).not.toContain("toStoryCanvas");
