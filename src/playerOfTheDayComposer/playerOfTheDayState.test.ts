@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EXPORT_HEIGHT, EXPORT_WIDTH } from "../standingsComposer/rankingState";
-import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import { getPlayer, NBA_ACTIVE_PLAYERS } from "../tierListComposer/nbaActivePlayers";
 import { emptyStats, parseLastGamePayload } from "./lastGame";
 import type { NightStandout } from "./nightStandouts";
 import { rankNightStandouts } from "./nightStandouts";
@@ -360,6 +360,56 @@ describe("player of the day state", () => {
     expect(potdPickerSuggestions([liveBest, jokic]).map((row) => row.id)).not.toContain(
       "1966",
     );
+  });
+
+  it("lists last-night high scorers past a tiny ~8-name recs cap", () => {
+    const jeromeId = "4065733";
+    expect(getPlayer(jeromeId)?.name).toBe("Ty Jerome");
+    const others = NBA_ACTIVE_PLAYERS.filter((player) => player.id !== jeromeId).slice(
+      0,
+      12,
+    );
+    expect(others).toHaveLength(12);
+    const jerome = nightRow(
+      jeromeId,
+      "Ty Jerome",
+      {
+        pts: "40",
+        reb: "5",
+        ast: "6",
+        fg: "15-22",
+        three: "6-8",
+        ft: "4-4",
+        tov: "2",
+        min: "34",
+      },
+      90,
+      ["40+ PTS"],
+    );
+    const quieter = others.map((player) =>
+      nightRow(
+        player.id,
+        player.name,
+        {
+          pts: "16",
+          reb: "4",
+          ast: "3",
+          fg: "6-12",
+          three: "2-5",
+          ft: "2-2",
+          tov: "2",
+          min: "28",
+        },
+        10,
+      ),
+    );
+    const recs = potdPickerSuggestions([jerome, ...quieter]);
+    expect(recs.length).toBeGreaterThan(8);
+    expect(recs).toHaveLength(13);
+    expect(recs.map((row) => row.id)).toContain(jeromeId);
+    expect(recs[0]?.id).toBe(jeromeId);
+    expect(recs[0]?.meta).toMatch(/40/);
+    expect(potdPickerSuggestions([jerome, ...quieter], 8)).toHaveLength(8);
   });
 
   it("clears a player if they are already on the other card", () => {

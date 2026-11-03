@@ -1902,9 +1902,9 @@ label.sc-chip {
 }
 
 .sc-picker__suggested {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   min-height: 0;
-  max-height: min(30dvh, 240px);
+  max-height: min(48dvh, 520px);
   display: flex;
   flex-direction: column;
   padding: 8px 16px 12px;
@@ -1914,7 +1914,7 @@ label.sc-chip {
 }
 
 .sc-picker--players.is-filters-open .sc-picker__suggested {
-  max-height: min(20dvh, 160px);
+  max-height: min(36dvh, 380px);
 }
 
 .sc-picker__suggested-head {
@@ -2672,14 +2672,14 @@ label.sc-chip {
   }
 
   .sc-picker__suggested {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
     min-height: 0;
-    max-height: min(28dvh, 220px);
+    max-height: min(46dvh, 480px);
     overflow: hidden;
   }
 
   .sc-picker--players.is-filters-open .sc-picker__suggested {
-    max-height: min(18dvh, 140px);
+    max-height: min(32dvh, 320px);
   }
 
   .sc-picker__grid,

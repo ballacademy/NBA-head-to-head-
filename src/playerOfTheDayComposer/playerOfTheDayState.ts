@@ -31,7 +31,6 @@ export { DEFAULT_BRAND };
 export const DEFAULT_POTD_TITLE = "PLAYER OF THE DAY?";
 export const POTD_TITLE_TRACK = 0.02;
 export const POTD_CARD_COUNT = 2;
-export const POTD_PICKER_LIMIT = 8;
 export const POTD_SLOT_LABELS_2 = ["Left card", "Right card"] as const;
 export const POTD_SLOT_LABELS_3 = ["Left card", "Middle card", "Right card"] as const;
 /** Dark mint/coral chip fills — white letter, readable on team-color bars. */
@@ -166,19 +165,24 @@ const recBadge = (row: NightStandout, index: number) => {
   return flag ?? `#${index + 1}`;
 };
 
-/** Best-of-night names for the existing picker recs. Used slots stay listed. */
+/**
+ * Best-of-night names for Change-player recs. The full ranked night is listed
+ * so a 40-point line is not dropped by a tiny ~8-name cap. Used slots stay listed.
+ */
 export const potdPickerSuggestions = (
   rows: NightStandout[],
-  limit = POTD_PICKER_LIMIT,
-) =>
-  rankPotdNightBest(rows)
-    .slice(0, limit)
-    .map((row, index) => ({
-      id: row.athleteId,
-      badge: row.live ? "LIVE / IN GAME" : recBadge(row, index),
-      meta: row.line,
-      live: Boolean(row.live),
-    }));
+  limit?: number,
+) => {
+  const ranked = rankPotdNightBest(rows);
+  const picked =
+    limit == null ? ranked : ranked.slice(0, Math.max(0, limit));
+  return picked.map((row, index) => ({
+    id: row.athleteId,
+    badge: row.live ? "LIVE / IN GAME" : recBadge(row, index),
+    meta: row.line,
+    live: Boolean(row.live),
+  }));
+};
 
 export interface PhotoPan {
   x: number;

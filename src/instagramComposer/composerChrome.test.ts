@@ -118,7 +118,8 @@ describe("composer chrome", () => {
     expect(sheet).toContain("font-size: 16px");
     expect(sheet).toContain("min-height: 72px");
     expect(sheet).toContain("min-height: 44px");
-    expect(sheet).toContain("max-height: min(30dvh, 240px)");
+    expect(sheet).toContain("max-height: min(48dvh, 520px)");
+    expect(sheet).not.toContain("max-height: min(30dvh, 240px)");
     expect(sheet).toContain(".sc-picker__suggested");
     expect(sheet).toContain(".sc-picker__grid--suggested");
     expect(sheet).toMatch(
@@ -131,7 +132,7 @@ describe("composer chrome", () => {
       /\.sc-picker__suggested[\s\S]*?overflow:\s*hidden/,
     );
     expect(sheet).toMatch(
-      /\.sc-picker__suggested[\s\S]*?flex:\s*0 0 auto/,
+      /\.sc-picker__suggested \{[\s\S]*?flex:\s*0 1 auto/,
     );
     expect(sheet).not.toMatch(/flex:\s*1 1 52%/);
     expect(sheet).toContain(
@@ -587,7 +588,14 @@ describe("composer chrome", () => {
     expect(potdApp).toContain("fillPotdFromStandouts");
     expect(potdApp).toContain("rankPotdNightBest");
     expect(potdApp).toContain("potdPickerSuggestions");
+    expect(potdApp).toContain("potdPickerSuggestions(nightBest)");
     expect(potdApp).toContain("fetchNightBoxAppearances");
+    const potdState = readFileSync(
+      join(root, "playerOfTheDayComposer/playerOfTheDayState.ts"),
+      "utf8",
+    );
+    expect(potdState).not.toMatch(/POTD_PICKER_LIMIT\s*=\s*8/);
+    expect(potdState).not.toContain(".slice(0, limit)");
     expect(potdApp).not.toContain("nightStandoutPickerRows(night.standouts)");
     expect(potdApp).toContain("W/L color");
     expect(potdApp).toContain('aria-label="Color W/L on the score strip"');
