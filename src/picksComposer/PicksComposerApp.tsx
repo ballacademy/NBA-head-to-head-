@@ -385,7 +385,7 @@ export function PicksComposerApp() {
               {filling ? "Loading…" : "Fill"}
             </button>
             {hudRecord.wins || hudRecord.losses || hudRecord.pushes ? null : (
-              <p className="sc-hint pk-hud-ats__hint">
+              <p className="sc-hint pk-hud-ats__hint sc-hud-full-only">
                 0-0-0 until a lock is graded — Fill tonight doesn’t write this.
               </p>
             )}

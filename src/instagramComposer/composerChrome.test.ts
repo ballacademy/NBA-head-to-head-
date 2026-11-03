@@ -157,7 +157,7 @@ describe("composer chrome", () => {
 
   it("pins export outside the scrolling HUD and does not hide photo tools in preview", () => {
     expect(sheet).toMatch(/\.sc-toolbar__row--actions[\s\S]*?flex:\s*0 0 auto/);
-    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*auto/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*overflow:\s*visible/);
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[^}]*position:\s*sticky/,
     );
@@ -232,7 +232,7 @@ describe("composer chrome", () => {
   it("contain-Fits the whole poster and does not inner-scroll 75/100", () => {
     expect(sheet).toMatch(/\.sc-root \{[^}]*overflow-y:\s*hidden/);
     expect(sheet).toMatch(/\.sc-tabs \{[^}]*max-height:\s*11vh/);
-    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*max-height:\s*26vh/);
+    expect(sheet).toMatch(/\.sc-toolbar \{[^}]*max-height:\s*none/);
     expect(sheet).toMatch(/main\.sc-stage \{[\s\S]*?overflow:\s*hidden/);
     expect(sheet).toContain("100cqh * var(--board-w, 1200) / var(--board-h, 1500)");
     expect(sheet).toMatch(
@@ -888,9 +888,16 @@ describe("composer chrome", () => {
     expect(sheet).not.toMatch(
       /\.sc-root\.is-hud-simple \.sc-toolbar__persist \{\s*display:\s*none/,
     );
-    expect(sheet).toContain(".sc-root.is-hud-simple .sc-toolbar__scroll");
+    expect(sheet).toContain(".sc-toolbar .sc-toolbar__scroll");
     expect(sheet).toContain(
       ".sc-root.is-hud-simple .sc-toolbar__board > :not(.sc-look--select)",
+    );
+    expect(sheet).toMatch(
+      /\.sc-toolbar__slot\[data-slot\]::before[\s\S]*?display:\s*none/,
+    );
+    expect(sheet).toContain(".sc-toolbar__row--actions");
+    expect(sheet).toMatch(
+      /\.sc-toolbar \.sc-toolbar__row--actions \{\s*display:\s*contents/,
     );
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-field--inline");
     expect(sheet).not.toMatch(

@@ -48,7 +48,8 @@
 }
 
 .sc-root.is-preview-zoomed .sc-toolbar {
-  max-height: 14vh;
+  max-height: none;
+  overflow: visible;
 }
 
 .sc-tabs {
@@ -238,47 +239,38 @@
 
 .sc-toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 6px 12px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
   padding: 6px 14px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(12, 13, 16, 0.92);
   backdrop-filter: blur(12px);
   flex: 0 1 auto;
-  max-height: 26vh;
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
   min-width: 0;
   min-height: 0;
   scrollbar-width: thin;
 }
 
-.sc-toolbar__body,
-.sc-toolbar__pinned {
-  display: flex;
-  flex-direction: column;
-  gap: 8px 14px;
-  min-width: 0;
-  min-height: 0;
-  overflow: visible;
-}
-
-.sc-toolbar__body {
-  flex: 0 0 auto;
-  overflow: visible;
-}
-
-.sc-toolbar__pinned {
-  flex: 0 0 auto;
-}
-
-.sc-toolbar__scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 8px 14px;
-  min-width: 0;
-  min-height: 0;
-  max-height: none;
-  overflow: auto;
+.sc-toolbar .sc-toolbar__body,
+.sc-toolbar .sc-toolbar__pinned,
+.sc-toolbar .sc-toolbar__scroll,
+.sc-toolbar .sc-toolbar__row--primary,
+.sc-toolbar .sc-toolbar__row--data,
+.sc-toolbar .sc-toolbar__row--filters,
+.sc-toolbar .sc-toolbar__row--board,
+.sc-toolbar .sc-toolbar__row--persist,
+.sc-toolbar .sc-toolbar__identity,
+.sc-toolbar .sc-toolbar__data,
+.sc-toolbar .sc-toolbar__filters,
+.sc-toolbar .sc-toolbar__board,
+.sc-toolbar .sc-toolbar__persist,
+.sc-toolbar .sc-saves,
+.sc-toolbar .sc-toolbar__row--actions {
+  display: contents;
 }
 
 .sc-toolbar__row {
@@ -313,6 +305,7 @@
 .sc-toolbar__slot[data-slot]::before,
 .sc-toolbar__actions[data-slot]::before {
   content: attr(data-slot);
+  display: none;
   flex: 1 1 100%;
   margin: 0 0 -4px;
   font-size: 10px;
@@ -320,13 +313,6 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #a1a1aa;
-}
-
-@media (max-width: 720px) {
-  .sc-toolbar__slot[data-slot]::before,
-  .sc-toolbar__actions[data-slot]::before {
-    display: none;
-  }
 }
 
 .sc-toolbar__identity {
@@ -358,38 +344,6 @@
 .sc-root.is-hud-simple .sc-toolbar__filters,
 .sc-root.is-hud-simple .sc-stat-slots,
 .sc-root.is-hud-simple .sc-grade {
-  display: none;
-}
-
-.sc-root.is-hud-simple .sc-toolbar__scroll {
-  overflow: visible;
-}
-
-.sc-root.is-hud-simple .sc-toolbar__body,
-.sc-root.is-hud-simple .sc-toolbar__pinned,
-.sc-root.is-hud-simple .sc-toolbar__scroll,
-.sc-root.is-hud-simple .sc-toolbar__row--primary,
-.sc-root.is-hud-simple .sc-toolbar__row--data,
-.sc-root.is-hud-simple .sc-toolbar__row--board,
-.sc-root.is-hud-simple .sc-toolbar__row--persist,
-.sc-root.is-hud-simple .sc-toolbar__identity,
-.sc-root.is-hud-simple .sc-toolbar__data,
-.sc-root.is-hud-simple .sc-toolbar__board,
-.sc-root.is-hud-simple .sc-toolbar__persist,
-.sc-root.is-hud-simple .sc-saves {
-  display: contents;
-}
-
-.sc-root.is-hud-simple .sc-toolbar {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 8px 12px;
-}
-
-.sc-root.is-hud-simple .sc-toolbar__slot[data-slot]::before,
-.sc-root.is-hud-simple .sc-toolbar__actions[data-slot]::before {
   display: none;
 }
 
@@ -651,6 +605,7 @@
 }
 
 .sc-toolbar__row--actions {
+  display: contents;
   flex: 0 0 auto;
   width: 100%;
   margin-left: 0;
@@ -673,7 +628,7 @@
 }
 
 .sc-toolbar__actions .sc-btn--primary {
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .sc-toolbar__actions .sc-btn--aside {
@@ -682,13 +637,12 @@
 }
 
 .sc-saves {
-  display: flex;
+  display: contents;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 8px;
   flex: 1 1 auto;
   min-width: 0;
-  width: 100%;
 }
 
 .sc-saves__status {
@@ -2410,8 +2364,8 @@ label.sc-chip {
 
   .sc-toolbar {
     height: auto;
-    max-height: 26vh;
-    overflow: auto;
+    max-height: none;
+    overflow: visible;
     gap: 6px 12px;
     padding: 6px 14px 6px;
   }
@@ -2423,7 +2377,7 @@ label.sc-chip {
   }
 
   .sc-toolbar__scroll {
-    overflow: auto;
+    overflow: visible;
     max-height: none;
     flex: 0 0 auto;
     min-height: 0;
@@ -2434,6 +2388,7 @@ label.sc-chip {
   }
 
   .sc-toolbar__row--actions {
+    display: contents;
     flex: 0 0 auto;
     width: 100%;
     margin-left: 0;
@@ -2504,9 +2459,9 @@ label.sc-chip {
     flex: 0 1 auto;
     padding: 6px 12px 6px;
     height: auto;
-    max-height: 20vh;
+    max-height: none;
     min-height: 0;
-    overflow: auto;
+    overflow: visible;
     gap: 6px 12px;
     backdrop-filter: none;
   }
@@ -2517,7 +2472,8 @@ label.sc-chip {
     overflow: visible;
   }
 
-  .sc-toolbar__row--actions {
+  .sc-toolbar .sc-toolbar__row--actions {
+    display: flex;
     flex: 0 0 auto;
     flex-wrap: nowrap;
     align-items: center;
@@ -2568,7 +2524,7 @@ label.sc-chip {
   .sc-toolbar__scroll {
     flex: 0 0 auto;
     max-height: none;
-    overflow: auto;
+    overflow: visible;
   }
 
   .sc-field,
