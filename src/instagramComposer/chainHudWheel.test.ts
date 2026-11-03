@@ -14,8 +14,8 @@ describe("chainHudWheel", () => {
       join(root, "instagramComposer/chainHudWheel.ts"),
       "utf8",
     );
-    expect(source).toContain("document.scrollingElement");
-    expect(source).toContain("page.scrollBy");
+    expect(source).toContain('root.querySelector(".sc-stage")');
+    expect(source).toContain("stage.scrollBy");
     expect(source).toContain(".sc-picker, dialog, .sc-modal, .sc-hud-select__menu");
     expect(source).toContain("syncComposerVisualViewport");
     expect(source).toContain("visualViewport");
@@ -45,7 +45,7 @@ describe("chainHudWheel", () => {
     expect(sheet).not.toMatch(
       /\.sc-toolbar__body \{[^}]*overscroll-behavior:\s*contain/,
     );
-    expect(sheet).toMatch(/\.sc-tabs \{[^}]*overflow:\s*auto/);
+    expect(sheet).toMatch(/\.sc-tabs \{[^}]*overflow:\s*visible/);
     expect(sheet).toMatch(/\.sc-toolbar__scroll \{[\s\S]*?overflow:\s*visible/);
     expect(sheet).toMatch(
       /\.sc-toolbar__row--actions \{[^}]*position:\s*sticky/,

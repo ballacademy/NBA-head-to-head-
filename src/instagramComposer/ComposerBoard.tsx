@@ -18,11 +18,10 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit: wrap is contain-sized by CSS; zoom follows wrap width so the
- * whole 4:5 / 9:16 / 1:1 paints with overflow hidden (no inner scroll).
- * 75 / 100: wrap is the zoomed graphic at PREVIEW_ZOOM_NATURAL_SCALE
- * (100% = half the 1200×1500 design), capped to leftover so 100% never
- * forces page scroll or overflows a phone.
+ * Fit: wrap is contain-sized by CSS so the whole 4:5 / 9:16 / 1:1
+ * shows in the leftover stage. 75 / 100: wrap is the zoomed graphic at
+ * PREVIEW_ZOOM_NATURAL_SCALE (100% = half the 1200×1500 design). If that
+ * is taller than the stage, the canvas pans vertically — not the HUD.
  */
 export function ComposerBoard({
   children,
@@ -87,8 +86,6 @@ export function ComposerBoard({
           ? {
               width: width * factor,
               height: height * factor,
-              maxWidth: "100%",
-              maxHeight: "100%",
             }
           : {}),
       }}

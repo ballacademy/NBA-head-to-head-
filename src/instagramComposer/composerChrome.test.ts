@@ -229,17 +229,17 @@ describe("composer chrome", () => {
     expect(sheet).toMatch(/\.sc-stage__board-inner[\s\S]*?transform:\s*none/);
   });
 
-  it("contain-Fits the whole poster and does not inner-scroll 75/100", () => {
+  it("contain-Fits the whole poster and pans the canvas at 75/100", () => {
     expect(sheet).toMatch(/\.sc-root \{[^}]*overflow-y:\s*hidden/);
-    expect(sheet).toMatch(/\.sc-tabs \{[^}]*max-height:\s*11vh/);
+    expect(sheet).toMatch(/\.sc-tabs \{[^}]*max-height:\s*none/);
+    expect(sheet).toMatch(/\.sc-tabs__pills \{[\s\S]*?flex-wrap:\s*wrap/);
     expect(sheet).toMatch(/\.sc-toolbar \{[^}]*max-height:\s*none/);
-    expect(sheet).toMatch(/main\.sc-stage \{[\s\S]*?overflow:\s*hidden/);
+    expect(sheet).toMatch(/main\.sc-stage \{[\s\S]*?overflow-y:\s*auto/);
     expect(sheet).toContain("100cqh * var(--board-w, 1200) / var(--board-h, 1500)");
     expect(sheet).toMatch(
       /\.sc-stage__board \{[\s\S]*?height:\s*auto;[\s\S]*?aspect-ratio:/,
     );
-    expect(sheet).toMatch(/\.sc-stage__board\.is-zoomed \{[^}]*overflow:\s*hidden/);
-    expect(sheet).not.toMatch(/\.sc-stage__board\.is-zoomed \{[^}]*overflow:\s*auto/);
+    expect(sheet).toMatch(/\.sc-stage__board\.is-zoomed \{[^}]*overflow:\s*visible/);
     expect(sheet).not.toContain("calc((100dvh - 180px) * 0.8)");
     expect(board).toContain("width: width * factor");
     expect(board).toContain('data-preview-zoom={previewZoom}');
@@ -250,8 +250,8 @@ describe("composer chrome", () => {
     );
     expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
     expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE");
-    expect(previewZoom).toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
-    expect(board).toContain('maxWidth: "100%"');
+    expect(previewZoom).not.toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
+    expect(board).not.toContain('maxWidth: "100%"');
     expect(sheet).toMatch(
       /\.sc-stage__frame > \.sc-hint[\s\S]*?position:\s*absolute/,
     );
@@ -262,7 +262,7 @@ describe("composer chrome", () => {
     );
     expect(sheet).toMatch(/\.sc-root\.is-preview-zoomed \{[^}]*overflow-y:\s*hidden/);
     expect(sheet).toMatch(
-      /\.sc-stage__board\.is-zoomed \{[\s\S]*?max-width:\s*100%/,
+      /\.sc-stage__board\.is-zoomed \{[\s\S]*?max-height:\s*none/,
     );
     const hub = readFileSync(
       join(root, "instagramComposer/ComposerHub.tsx"),

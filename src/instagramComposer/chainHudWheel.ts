@@ -100,9 +100,18 @@ export const chainHudWheel = (root: HTMLElement) => {
     if (!target.closest(HUD_TRAP)) {
       return;
     }
+    const stage = root.querySelector(".sc-stage");
+    if (
+      stage instanceof HTMLElement &&
+      isScrollPort(stage, "y") &&
+      canScrollY(stage) &&
+      !atYEdge(stage, event.deltaY)
+    ) {
+      event.preventDefault();
+      stage.scrollBy({ top: event.deltaY, left: event.deltaX });
+      return;
+    }
     event.preventDefault();
-    const page = document.scrollingElement ?? document.documentElement;
-    page.scrollBy({ top: event.deltaY, left: event.deltaX });
   };
 
   root.addEventListener("wheel", onWheel, { passive: false });

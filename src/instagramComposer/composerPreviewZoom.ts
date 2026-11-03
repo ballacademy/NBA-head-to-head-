@@ -30,9 +30,9 @@ export const previewZoomFactor = (
     return leftover;
   }
   if (zoom === "100") {
-    return Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover);
+    return PREVIEW_ZOOM_NATURAL_SCALE;
   }
-  return Math.min(PREVIEW_ZOOM_SEVENTY_FIVE, leftover);
+  return PREVIEW_ZOOM_SEVENTY_FIVE;
 };
 
 export const readComposerPreviewZoom = () =>

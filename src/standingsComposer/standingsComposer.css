@@ -44,7 +44,8 @@
 }
 
 .sc-root.is-preview-zoomed .sc-tabs {
-  max-height: 7vh;
+  max-height: none;
+  overflow: visible;
 }
 
 .sc-root.is-preview-zoomed .sc-toolbar {
@@ -60,8 +61,8 @@
   padding: 4px 12px 4px;
   background: rgba(12, 13, 16, 0.92);
   flex: 0 0 auto;
-  max-height: 11vh;
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
   scrollbar-width: thin;
 }
 
@@ -83,8 +84,8 @@
 }
 
 .sc-tabs__group {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 1 220px;
+  min-width: min(100%, 200px);
   padding: 2px 6px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.035);
@@ -115,9 +116,9 @@
 
 .sc-tabs__pills {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 4px;
-  overflow-x: auto;
+  overflow: visible;
   scrollbar-width: thin;
 }
 
@@ -717,7 +718,8 @@ main.sc-stage {
   max-width: none;
   margin: 0;
   padding: 8px 16px 10px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 0;
   min-width: 0;
   position: relative;
@@ -725,9 +727,11 @@ main.sc-stage {
 
 .sc-root.is-preview-zoomed main.sc-stage {
   flex: 1 1 auto;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   height: auto;
   min-height: 0;
+  place-items: start center;
 }
 
 .sc-stage__frame {
@@ -753,14 +757,16 @@ main.sc-stage {
 }
 
 .sc-root.is-preview-zoomed .sc-stage__frame {
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   width: 100%;
   max-width: 100%;
-  max-height: 100%;
-  overflow: hidden;
+  max-height: none;
+  overflow: visible;
   container-type: size;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, max-content);
+  align-items: start;
 }
 
 .sc-stage__board {
@@ -777,9 +783,9 @@ main.sc-stage {
 
 .sc-stage__board.is-zoomed {
   grid-column: 1;
-  overflow: hidden;
-  max-width: 100%;
-  max-height: 100%;
+  overflow: visible;
+  max-width: none;
+  max-height: none;
   width: auto;
   height: auto;
 }
@@ -2340,17 +2346,18 @@ label.sc-chip {
 @media (max-width: 1400px) {
   .sc-tabs {
     flex-wrap: wrap;
-    overflow: auto;
-    max-height: 11vh;
+    overflow: visible;
+    max-height: none;
   }
 
   .sc-tabs__group {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1 1 220px;
+    min-width: min(100%, 200px);
   }
 
   .sc-tabs__pills {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 
   .sc-tabs button {
@@ -2421,18 +2428,18 @@ label.sc-chip {
   }
 
   .sc-tabs {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     flex-wrap: wrap;
-    overflow: auto;
-    max-height: 16vh;
+    overflow: visible;
+    max-height: none;
     min-height: 0;
     gap: 6px 10px;
     padding: max(6px, env(safe-area-inset-top, 0px)) 12px 0;
   }
 
   .sc-tabs__group {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1 1 220px;
+    min-width: min(100%, 200px);
   }
 
   .sc-tabs__group + .sc-tabs__group {
@@ -2440,7 +2447,8 @@ label.sc-chip {
   }
 
   .sc-tabs__pills {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 
   .sc-tabs button {
@@ -2564,7 +2572,8 @@ label.sc-chip {
     min-height: 180px;
     padding: 8px 10px;
     align-content: stretch;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .sc-stage__frame {
@@ -2593,16 +2602,19 @@ label.sc-chip {
   }
 
   .sc-root.is-preview-zoomed .sc-stage__frame {
+    position: relative;
     width: auto;
     height: auto;
-    inset: 8px 10px;
+    inset: auto;
     max-width: none;
+    max-height: none;
+    margin: 8px 10px;
   }
 
   .sc-root.is-preview-zoomed .sc-stage__board,
   .sc-root.is-preview-zoomed .sc-stage__board.is-zoomed {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: none;
+    max-height: none;
   }
 
   .sc-picker-scrim {
