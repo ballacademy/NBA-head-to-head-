@@ -18,6 +18,7 @@ import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters
 import {
   axisFromValues,
   placePlotPoints,
+  plotOutlierId,
   plotRectFor,
   formatPlotTick,
   shouldDrawHeadshot,
@@ -102,6 +103,13 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
         }),
       [points, yMetric, yMin, yMax],
     );
+    const hotIds = useMemo(() => {
+      if (highlightedIds.length) {
+        return highlightedIds;
+      }
+      const outlier = plotOutlierId(points);
+      return outlier ? [outlier] : [];
+    }, [highlightedIds, points]);
     const placed = useMemo(
       () =>
         placePlotPoints(
@@ -117,9 +125,9 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
           yAxis,
           boardH,
           showNames,
-          highlightedIds,
+          hotIds,
         ),
-      [points, xAxis, yAxis, boardH, showNames, highlightedIds, nameStyle],
+      [points, xAxis, yAxis, boardH, showNames, hotIds, nameStyle],
     );
 
     const setRefs = (node: HTMLElement | null) => {
@@ -269,7 +277,7 @@ export const PlotGraphic = forwardRef<HTMLElement, PlotGraphicProps>(
                   <span
                     className={[
                       "plt-mark",
-                      highlightedIds.includes(point.id) ? "is-hot" : "",
+                      hotIds.includes(point.id) ? "is-hot" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}

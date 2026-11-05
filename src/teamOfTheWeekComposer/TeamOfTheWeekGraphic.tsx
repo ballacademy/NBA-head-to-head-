@@ -189,7 +189,10 @@ export const TeamOfTheWeekGraphic = forwardRef<
               }
               aria-label={`Player strip ${index + 1}`}
               onPointerEnter={() => onHover?.(index)}
-              onPointerDown={(event) => slotSwap.startDrag(index, event)}
+              onPointerDown={(event) => {
+                onHover?.(index);
+                slotSwap.startDrag(index, event);
+              }}
             >
               <PhotoFrame
                 src={strip.photoSrc}
@@ -199,6 +202,7 @@ export const TeamOfTheWeekGraphic = forwardRef<
                 empty={empty}
                 vignette
                 slotSwapEnabled={!exporting && Boolean(onSwap)}
+                onActivate={() => onHover?.(index)}
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onUploadMany={(urls) =>

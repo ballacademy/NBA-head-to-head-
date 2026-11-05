@@ -42,6 +42,7 @@ interface PlayerOfTheDayGraphicProps {
   onTitleChange: (value: string) => void;
   onDateChange: (value: string) => void;
   onPick: (index: number) => void;
+  onHover?: (index: number) => void;
   onTotalChange: (index: number, value: string) => void;
   onStatsChange: (index: number, stats: LastGameStats) => void;
   onResultChange: (index: number, value: string) => void;
@@ -68,6 +69,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
     onTitleChange,
     onDateChange,
     onPick,
+    onHover,
     onTotalChange,
     onStatsChange,
     onResultChange,
@@ -181,6 +183,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
                 } as React.CSSProperties
               }
               aria-label={potdSlotLabel(index, cards.length)}
+              onPointerDown={() => onHover?.(index)}
             >
               <div className="pod-photo-stack">
                 <PhotoFrame
@@ -189,6 +192,7 @@ export const PlayerOfTheDayGraphic = forwardRef<
                   pan={card.pan}
                   custom={card.customPhoto}
                   empty={empty}
+                  onActivate={() => onHover?.(index)}
                   onPan={(pan) => onPan(index, pan)}
                   onUpload={(dataUrl) => onUpload(index, dataUrl)}
                   onUploadMany={(urls) =>

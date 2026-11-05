@@ -30,7 +30,7 @@ export const SCHEDULE_POST_COLS = 2;
 export const ESPN_SCOREBOARD_URL = (iso: string) =>
   `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${toEspnDateParam(iso)}&limit=100`;
 
-export const DEFAULT_SCHEDULE_TITLE = "THIS WEEK";
+export const DEFAULT_SCHEDULE_TITLE = "TONIGHT";
 export const SCHEDULE_TITLE_TRACK = 0.04;
 
 export interface ScheduleGame {
@@ -218,13 +218,13 @@ export const fetchScheduleRange = async (
 export const defaultScheduleDraft = (
   now = new Date(),
 ): ScheduleDraft => {
-  const range = nextNDaysRange(7, now);
+  const iso = nbaTodayIso(now);
   return {
     brand: DEFAULT_BRAND,
     title: DEFAULT_SCHEDULE_TITLE,
-    from: range.from,
-    to: range.to,
-    weekLine: rangeWeekLine(range.from, range.to),
+    from: iso,
+    to: iso,
+    weekLine: rangeWeekLine(iso, iso),
     games: [],
     showBa: false,
   };

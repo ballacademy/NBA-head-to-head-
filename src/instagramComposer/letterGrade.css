@@ -29,7 +29,7 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  padding: calc(8 * var(--u, 1px)) calc(10 * var(--u, 1px)) calc(7 * var(--u, 1px));
+  padding: calc(4 * var(--u, 1px)) calc(6 * var(--u, 1px)) calc(4 * var(--u, 1px));
   border: calc(2.2 * var(--u, 1px)) solid var(--lg-stroke);
   background:
     linear-gradient(
@@ -55,7 +55,7 @@
   background: transparent;
   color: inherit;
   font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
-  font-size: calc(46 * var(--u, 1px));
+  font-size: calc(28 * var(--u, 1px));
   font-weight: 900;
   font-style: italic;
   font-synthesis: none;

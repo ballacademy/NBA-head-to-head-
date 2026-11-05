@@ -94,23 +94,29 @@
 }
 
 .pi-conf {
-  font-size: calc(22 * var(--u));
-  letter-spacing: 0.28em;
-  line-height: calc(34 * var(--u));
+  min-width: 28%;
+  height: calc(36 * var(--u));
+  padding: 0 calc(22 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(20 * var(--u));
+  letter-spacing: 0.12em;
+  line-height: 1;
+  background: #fff;
+  color: #111;
+  clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
 }
 
-.pi-conf.is-east {
-  color: #7eb6ff;
-}
-
+.pi-conf.is-east,
 .pi-conf.is-west {
-  color: #ff8a7a;
+  color: #111;
 }
 
 .pi-match-label {
-  font-size: calc(16 * var(--u));
+  font-size: calc(12 * var(--u));
   letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .pi-slot {
@@ -125,8 +131,8 @@
 
 .pi-slot canvas,
 .pi-slot img {
-  width: 94%;
-  height: 94%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -240,7 +246,7 @@
 .pi-bar {
   position: absolute;
   z-index: 2;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.22);
   pointer-events: none;
 }
 

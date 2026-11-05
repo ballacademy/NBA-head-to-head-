@@ -76,6 +76,7 @@
   position: absolute;
   z-index: 1;
   pointer-events: none;
+  opacity: 0.22;
 }
 
 .mt-logo canvas,
@@ -138,9 +139,9 @@
 .mt-player .pod-photo {
   position: absolute;
   inset: 0;
-  border-radius: calc(10 * var(--u));
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+  box-shadow: none;
 }
 
 .mt-name,

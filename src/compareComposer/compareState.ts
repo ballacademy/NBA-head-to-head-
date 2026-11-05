@@ -54,6 +54,12 @@ export const isAutoCompareSubtitle = (value: string) =>
 export const COMPARE_STAT_COUNT = 5;
 export const COMPARE_STAT_MAX = 10;
 
+/** Ctrl+V uses the last clicked side; an open picker still wins. */
+export const comparePasteSlotIndex = (
+  lastClicked: 0 | 1,
+  picker: 0 | 1 | null = null,
+): 0 | 1 => (picker === 0 || picker === 1 ? picker : lastClicked);
+
 export type CompareStatsMode = "season" | "game" | "last-5" | "this-week";
 export type CompareStatKey =
   | "pts"

@@ -111,11 +111,15 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
             return (
               <li
                 key={`ls-row-${index}`}
-                className={["ls-row", draft.namePlates !== false ? "is-plate" : ""]
+                className={[
+                  "ls-row",
+                  draft.namePlates === true ? "is-plate" : "",
+                  index === 0 ? "is-gold" : index === 1 ? "is-silver" : index === 2 ? "is-bronze" : "",
+                ]
                   .filter(Boolean)
                   .join(" ")}
                 style={
-                  draft.namePlates !== false
+                  draft.namePlates === true
                     ? ({
                         ["--team-fill" as string]: leaderPlateFill(row.teamId),
                         ["--team-accent" as string]: leaderPlateAccent(row.teamId),
@@ -124,7 +128,7 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
                 }
                 onClick={() => onPickRow?.(index)}
               >
-                {draft.namePlates !== false && logo ? (
+                {draft.namePlates === true && logo ? (
                   <img className="ls-row__mark" src={logo} alt="" />
                 ) : null}
                 <span className="ls-rank">{index + 1}</span>
@@ -197,7 +201,7 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
         ref={setRefs}
         className={[
           "ls-board",
-          draft.namePlates !== false ? "is-plates" : "",
+          draft.namePlates === true ? "is-plates" : "",
           draft.mirror ? "is-mirror" : "",
           story ? "is-story" : "",
           square ? "is-square" : "",

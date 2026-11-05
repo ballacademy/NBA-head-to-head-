@@ -1667,4 +1667,29 @@ describe("composer chrome", () => {
     expect(plbCss).toContain("width: calc(62 * var(--u))");
     expect(plbCss).toContain("width: calc(56 * var(--u))");
   });
+
+  it("pastes Ctrl+V into the last clicked photo slot, not only the last dragged", () => {
+    const photoFrame = readFileSync(
+      join(root, "playerOfTheDayComposer/PhotoFrame.tsx"),
+      "utf8",
+    );
+    const compareApp = readFileSync(
+      join(root, "compareComposer/CompareComposerApp.tsx"),
+      "utf8",
+    );
+    const compareState = readFileSync(
+      join(root, "compareComposer/compareState.ts"),
+      "utf8",
+    );
+    const compareGraphic = readFileSync(
+      join(root, "compareComposer/CompareGraphic.tsx"),
+      "utf8",
+    );
+    expect(photoFrame).toContain("onActivate?: () => void");
+    expect(photoFrame).toContain("onActivate?.()");
+    expect(compareState).toContain("comparePasteSlotIndex");
+    expect(compareApp).toContain("comparePasteSlotIndex(photoTarget, picker)");
+    expect(compareApp).toContain("onActivate={setPhotoTarget}");
+    expect(compareGraphic).toContain("onActivate={() => onActivate?.(side)}");
+  });
 });

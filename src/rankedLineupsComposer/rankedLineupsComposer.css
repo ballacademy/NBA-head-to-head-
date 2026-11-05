@@ -7,13 +7,7 @@
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --pill-fill: #fff;
   --pill-ink: #111;
-  --rl-title-grad: linear-gradient(
-    90deg,
-    #2dd4bf 0%,
-    #67e8f9 28%,
-    #e879f9 72%,
-    #f472b6 100%
-  );
+  --rl-title-grad: none;
   --name-h: 76;
   --name-logo: 20;
   position: relative;
@@ -118,11 +112,8 @@
 
 .rl-title-line {
   display: block;
-  background-image: var(--rl-title-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
   font-size: calc(38 * var(--u));
@@ -196,31 +187,46 @@
 }
 
 .rl-pill {
-  margin-top: calc(8 * var(--u));
-  min-width: calc(148 * var(--u));
-  height: calc(34 * var(--u));
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-2 * var(--u));
+  min-width: 34%;
+  height: calc(36 * var(--u));
   padding: 0 calc(22 * var(--u));
-  border: calc(2 * var(--u)) solid #fff;
-  border-radius: calc(18 * var(--u));
+  border: 0;
+  border-radius: 0;
   background: #fff;
   color: #111;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(18 * var(--u));
+  font-size: calc(20 * var(--u));
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  box-shadow: calc(1.2 * var(--u)) calc(1.6 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+  clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+  box-shadow: none;
 }
 
 .rl-strips {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: calc(4 * var(--u));
+  gap: calc(2 * var(--u));
   min-height: 0;
   height: 100%;
   padding: 0 calc(12 * var(--u));
   box-sizing: border-box;
+}
+
+.rl-board.is-plus .rl-strips {
+  grid-template-rows: 1.22fr 1fr;
+}
+
+.rl-board.is-exporting .rl-strip:has(.pod-photo.is-empty) {
+  display: none;
+}
+
+.rl-board.is-exporting .rl-strips {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 }
 
 .rl-strip {

@@ -27,6 +27,7 @@ import {
   PLOT_TITLE_SIZE,
   PLOT_TITLE_Y,
   placePlotPoints,
+  plotOutlierId,
   plotRectFor,
   shouldDrawHeadshot,
 } from "./plotLayout";
@@ -142,7 +143,11 @@ export const renderPlotCanvas = async (
     yAxis,
     boardH,
     input.showNames === true,
-    input.highlightedIds ?? [],
+    (input.highlightedIds ?? []).length
+      ? (input.highlightedIds ?? [])
+      : plotOutlierId(input.points)
+        ? [plotOutlierId(input.points)!]
+        : [],
   );
   const xLabel = plotMetricLabel(input.xMetric);
   const yLabel = plotMetricLabel(input.yMetric);
@@ -324,7 +329,7 @@ export const renderPlotCanvas = async (
 
   const quads = input.quadrants;
   if (quads) {
-    context.font = `900 ${13 * s}px ${POSTER_FONT}`;
+    context.font = `900 ${22 * s}px ${POSTER_FONT}`;
     context.fillStyle = "rgba(250, 204, 21, 0.88)";
     context.textBaseline = "top";
     if (quads.tl) {

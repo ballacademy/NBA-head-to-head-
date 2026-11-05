@@ -39,8 +39,8 @@ export const SHOT_NOTCH_H = 54;
 export const SHOT_NOTCH_OVERLAP = 2;
 export const SHOT_NOTCH_LOGO = 32;
 export const SHOT_COURT_GAP = 16;
-export const SHOT_MAKE_R = 11;
-export const SHOT_MISS_R = 10;
+export const SHOT_MAKE_R = 15;
+export const SHOT_MISS_R = 13;
 export const SHOT_ZONES_H = 140;
 export const SHOT_ZONES_GAP = 14;
 export const SHOT_LEGEND_H = 32;
@@ -159,7 +159,7 @@ export const paintHalfCourt = (
   context.strokeStyle = line;
   context.lineJoin = "round";
   context.lineCap = "round";
-  context.lineWidth = Math.max(2, court.w / 180);
+  context.lineWidth = Math.max(4, court.w / 110);
   context.strokeRect(court.x, court.y, court.w, court.h);
 
   context.beginPath();

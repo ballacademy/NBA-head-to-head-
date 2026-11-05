@@ -82,13 +82,13 @@ export function InjuryComposerApp() {
     setStatus("Loading injury report…");
     try {
       const players = await fetchNbaInjuries();
-      const teams = selectInjuryPost(players);
+      const teams = selectInjuryPost(players, true);
       const names = teams.reduce((count, block) => count + block.players.length, 0);
       push(draft);
       setDraft((current) => ({
         ...current,
         teams,
-        kicker: "OUT",
+        kicker: "OUT / GTD",
         dateLine: current.dateLine || injuryDateLine(nbaTodayIso()),
       }));
       setStatus(

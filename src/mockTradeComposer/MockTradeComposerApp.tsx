@@ -850,6 +850,7 @@ export function MockTradeComposerApp() {
                   });
                 })
               }
+              onActivate={(side, player) => setFocus({ side, player })}
               onPickPlayer={(side, player) => {
                 setFocus({ side, player });
                 setPicker({ side, player });

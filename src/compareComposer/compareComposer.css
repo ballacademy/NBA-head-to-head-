@@ -115,12 +115,12 @@
 
 .cmp-mark {
   position: absolute;
-  left: 50%;
-  top: 38%;
-  z-index: 1;
-  width: calc(220 * var(--u));
-  height: calc(220 * var(--u));
-  transform: translate(-50%, -50%);
+  left: calc(12 * var(--u));
+  bottom: calc(18 * var(--u));
+  z-index: 4;
+  width: calc(36 * var(--u));
+  height: calc(36 * var(--u));
+  transform: none;
   pointer-events: none;
 }
 
@@ -145,7 +145,8 @@
   bottom: 0;
   z-index: 3;
   margin: 0;
-  padding: calc(48 * var(--u)) calc(10 * var(--u)) calc(16 * var(--u));
+  padding: calc(48 * var(--u)) calc(10 * var(--u)) calc(16 * var(--u))
+    calc(52 * var(--u));
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.92) 0%,
@@ -153,9 +154,9 @@
     rgba(0, 0, 0, 0) 100%
   );
   color: #fff;
-  text-align: center;
+  text-align: left;
   font-family: var(--ig-poster);
-  font-size: calc(18 * var(--u));
+  font-size: calc(28 * var(--u));
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -177,6 +178,14 @@
   padding: calc(8 * var(--u)) 0 calc(12 * var(--u));
 }
 
+.cmp-board:not(.is-ba-off) .cmp-stats__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
 .cmp-stats__label {
   flex: 0 0 auto;
   width: 100%;
@@ -187,7 +196,7 @@
   color: #fff;
   text-align: center;
   font-family: var(--ig-poster);
-  font-size: calc(18 * var(--u));
+  font-size: calc(14 * var(--u));
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -417,7 +426,18 @@
 }
 
 .cmp-photo.is-winner .pod-photo {
-  box-shadow: inset 0 0 calc(28 * var(--u)) rgba(255, 229, 102, 0.38);
+  box-shadow: none;
+}
+
+.cmp-stat__side.is-lead .cmp-stat__val::after {
+  content: "";
+  display: inline-block;
+  width: calc(10 * var(--u));
+  height: calc(10 * var(--u));
+  margin-left: calc(8 * var(--u));
+  border-radius: 50%;
+  background: #d4af37;
+  vertical-align: middle;
 }
 
 .cmp-winner {

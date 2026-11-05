@@ -144,6 +144,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+.dr-row.is-gold,
 .dr-row.is-feature {
   background: rgba(212, 175, 55, 0.18);
   box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--gold);

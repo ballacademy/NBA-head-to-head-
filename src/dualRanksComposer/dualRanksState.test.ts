@@ -49,10 +49,10 @@ describe("dual ranks", () => {
     ).not.toBe("SHAI GILGEOUS-ALEXANDER");
   });
 
-  it("defaults team-color name plates on and Off restores the stored false", () => {
-    expect(defaultDualRanksDraft().namePlates).toBe(true);
-    expect(normalizeDualRanksDraft({}).namePlates).toBe(true);
-    expect(normalizeDualRanksDraft({ namePlates: false }).namePlates).toBe(false);
+  it("defaults team-color name plates off so Fill stays charcoal hairline", () => {
+    expect(defaultDualRanksDraft().namePlates).toBe(false);
+    expect(normalizeDualRanksDraft({}).namePlates).toBe(false);
+    expect(normalizeDualRanksDraft({ namePlates: true }).namePlates).toBe(true);
   });
 
   it("does not invent a featured rank when the player is missing from the table", () => {

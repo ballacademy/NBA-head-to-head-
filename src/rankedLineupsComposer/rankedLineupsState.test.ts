@@ -91,18 +91,18 @@ describe("ranked lineups", () => {
     expect(RANK_PILL_PRESETS[1]).toBe("2ND");
     expect(RANK_PILL_PRESETS).toHaveLength(10);
     expect(splitRankedLineupTitle(DEFAULT_RANKED_LINEUP_TITLE)).toEqual([
-      "TOP 10 NBA PLAYERS",
-      "AT EACH POSITION",
+      "RANKED",
+      "LINEUP",
     ]);
     expect(RL_PAD_X).toBe(10);
-    expect(RL_STRIP_GAP).toBe(4);
+    expect(RL_STRIP_GAP).toBe(2);
     expect(TOTW_STRIP_GAP).toBeGreaterThan(RL_STRIP_GAP);
     expect(nextRankPill("BEST")).toBe("2ND");
     expect(swipeRankCue("BEST")).toBe("BEST → 2ND");
     expect(nextRankPill("2ND")).toBe("3RD");
     expect(nextRankPill("10TH")).toBe("11TH");
     expect(slidesFromDraft(draft)).toHaveLength(1);
-    expect(draft.showFade).toBe(false);
+    expect(draft.showFade).toBe(true);
     expect(draft.showStripStat).toBe(false);
     expect(draft.showTeamHairline).toBe(true);
     expect(draft.positionLabels).toEqual([...DEFAULT_POSITION_LABELS]);
@@ -292,6 +292,7 @@ describe("ranked lineups", () => {
     const first = rankedStripRect(0, 8);
     expect(sixth.y).toBeGreaterThan(first.y);
     expect(sixth.x).toBe(first.x);
+    expect(sixth.h).toBeLessThan(first.h);
     expect(rankedStripRect(4, 8).y).toBe(first.y);
     const eight = fillLineupByStatLeaders(
       resizeRankedStrips(createEmptyStrips(), 8),

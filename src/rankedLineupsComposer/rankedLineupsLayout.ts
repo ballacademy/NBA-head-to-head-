@@ -16,7 +16,9 @@ export {
 };
 
 export const RL_PAD_X = 10;
-export const RL_STRIP_GAP = 4;
+export const RL_STRIP_GAP = 2;
+export const RL_PLUS_TOP_SHARE = 1.22;
+export const RL_PLUS_BOT_SHARE = 1;
 export const RL_BRAND_H = 40;
 export const RL_BRAND_SIZE = 24;
 export const RL_TITLE_SIZE = 38;
@@ -102,11 +104,19 @@ export const rankedStripRect = (
   const footerRows = rows;
   const footer = rankedFooterH(showFade) * rows;
   const available = boardH - header - footer;
-  const stripH =
-    (available - RL_STRIP_GAP * (rows - 1)) / rows;
+  const usable = available - RL_STRIP_GAP * (rows - 1);
+  let stripH = usable / rows;
+  let y = header + row * (stripH + RL_STRIP_GAP);
+  if (rows > 1) {
+    const topH =
+      (usable * RL_PLUS_TOP_SHARE) / (RL_PLUS_TOP_SHARE + RL_PLUS_BOT_SHARE);
+    const botH = usable - topH;
+    stripH = row === 0 ? topH : botH;
+    y = row === 0 ? header : header + topH + RL_STRIP_GAP;
+  }
   return {
     x: RL_PAD_X + col * (RL_STRIP_W + RL_STRIP_GAP),
-    y: header + row * (stripH + RL_STRIP_GAP),
+    y,
     w: RL_STRIP_W,
     h: stripH,
     rows,

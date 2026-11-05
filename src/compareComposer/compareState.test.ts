@@ -12,6 +12,7 @@ import {
   COMPARE_STAT_COUNT,
   COMPARE_STAT_MAX,
   compareCaptionFor,
+  comparePasteSlotIndex,
   compareStatBarShares,
   defaultCompareDraft,
   defaultCompareStats,
@@ -76,6 +77,9 @@ describe("compare composer recs", () => {
       }).subtitle,
     ).toBe("");
     expect(compareCaptionFor(draft)).not.toContain("CAREER START");
+    expect(comparePasteSlotIndex(1, null)).toBe(1);
+    expect(comparePasteSlotIndex(0, 1)).toBe(1);
+    expect(comparePasteSlotIndex(1, 0)).toBe(0);
   });
 
   it("fills a side without a mugshot and highlights the leader", () => {
@@ -186,7 +190,7 @@ describe("compare composer recs", () => {
     expect(story.h).toBeGreaterThan(STORY_DESIGN_HEIGHT * 0.85);
     expect(withSub.h).toBeLessThan(feed.h);
     expect(comparePhotoFrame(false, false).h).toBe(feed.h);
-    expect(compareStatType(5).value).toBe(40);
+    expect(compareStatType(5).value).toBe(48);
     expect(compareStatType(10).value).toBeLessThan(compareStatType(5).value);
     expect(compareStatType(10).value).toBeGreaterThanOrEqual(24);
     let stats = defaultCompareStats();

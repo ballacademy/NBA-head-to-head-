@@ -201,6 +201,15 @@
   max-width: 100%;
 }
 
+.shc-notch__pip {
+  flex: 0 0 calc(28 * var(--u));
+  width: calc(28 * var(--u));
+  height: calc(28 * var(--u));
+  border-radius: 50%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
 .shc-notch__logo {
   flex: 0 0 calc(32 * var(--u));
   width: calc(32 * var(--u));
@@ -295,6 +304,10 @@
   text-align: center;
   text-transform: uppercase;
   line-height: 1.1;
+  min-height: calc(44 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border: calc(1.5 * var(--u)) solid rgba(255, 255, 255, 0.35);
+  background: rgba(28, 28, 28, 0.92);
 }
 
 .shc-zones li span {

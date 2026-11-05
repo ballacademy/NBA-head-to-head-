@@ -515,7 +515,8 @@ export const renderPyramidCanvas = async (
       const pip = 22 * s;
       const px = x + 8 * s;
       const py = y + 8 * s;
-      context.fillStyle = "rgba(0,0,0,0.72)";
+      const medal = index < 3;
+      context.fillStyle = medal ? "#d4af37" : "rgba(0,0,0,0.72)";
       if (typeof context.roundRect === "function") {
         context.beginPath();
         context.roundRect(px, py, pip, pip, pip / 2);
@@ -524,7 +525,7 @@ export const renderPyramidCanvas = async (
         context.fillRect(px, py, pip, pip);
       }
       context.font = `900 ${12 * s}px ${POSTER_FONT}`;
-      context.fillStyle = "#facc15";
+      context.fillStyle = medal ? "#111" : "#fff";
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.fillText(String(index + 1), px + pip / 2, py + pip / 2);
@@ -624,28 +625,37 @@ export const renderPyramidCanvas = async (
     setLetterSpacing(context, 0);
   });
 
-  context.font = `900 ${PYR_TITLE_SIZE * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  setLetterSpacing(context, PYR_TITLE_TRACK * PYR_TITLE_SIZE * s);
-  const paintTitle = () => {
-    withShadow(context, s, () => {
-      strokeFillText(
-        context,
-        title,
-        width / 2,
-        (PYR_TITLE_Y + 46) * s,
-        "#fff",
-        "#000",
-        3.2 * s,
-      );
-    });
-  };
-  if (input.purpleFlair) {
-    paintPurpleTitleGlow(context, s, paintTitle);
-  } else {
-    paintTitle();
-  }
+  const plateX = 48 * s;
+  const plateW = width - 96 * s;
+  const plateY = 14 * s;
+  const plateH = 72 * s;
+  context.fillStyle = "#1c1c1c";
+  context.fillRect(plateX, plateY, plateW, plateH);
+  context.strokeStyle = "#fff";
+  context.lineWidth = 4 * s;
+  context.strokeRect(plateX, plateY, plateW, plateH);
+  context.fillStyle = "#fff";
+  context.font = `900 ${36 * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, 0.18 * 36 * s);
+  context.fillText("PYRAMID", width / 2, plateY + plateH / 2);
+  const notchW = Math.max(220 * s, context.measureText(title).width + 48 * s);
+  const notchH = 36 * s;
+  const notchX = (width - notchW) / 2;
+  const notchY = plateY + plateH - 2 * s;
+  context.beginPath();
+  context.moveTo(notchX + notchW * 0.06, notchY);
+  context.lineTo(notchX + notchW * 0.94, notchY);
+  context.lineTo(notchX + notchW, notchY + notchH);
+  context.lineTo(notchX, notchY + notchH);
+  context.closePath();
+  context.fillStyle = "#fff";
+  context.fill();
+  context.fillStyle = "#111";
+  context.font = `900 ${20 * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, 0.04 * 20 * s);
+  context.fillText(title || "COY", width / 2, notchY + notchH / 2);
   setLetterSpacing(context, 0);
 
   if (input.showBa !== false) {

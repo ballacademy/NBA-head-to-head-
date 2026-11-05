@@ -58,6 +58,7 @@ interface CompareGraphicProps {
     patch: { label?: string; left?: string; right?: string },
   ) => void;
   onPick: (side: 0 | 1) => void;
+  onActivate?: (side: 0 | 1) => void;
   onPan: (side: 0 | 1, pan: PhotoPan) => void;
   onUpload: (side: 0 | 1, dataUrl: string) => void;
   onRemoveStat?: (index: number) => void;
@@ -84,6 +85,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
       onStatsLabelChange,
       onStatChange,
       onPick,
+      onActivate,
       onPan,
       onUpload,
       onRemoveStat,
@@ -298,7 +300,10 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                 data-composer-slot={side}
                 aria-label={side === 0 ? "Left photo" : "Right photo"}
                 style={{ gridColumn: side === 0 ? 1 : 3 }}
-                onPointerDown={(event) => slotSwap.startDrag(side, event)}
+                onPointerDown={(event) => {
+                  onActivate?.(side);
+                  slotSwap.startDrag(side, event);
+                }}
               >
                 {team && watermark !== "off" ? (
                   <div
@@ -317,6 +322,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                   empty={!person.photoSrc}
                   vignette
                   slotSwapEnabled={!exporting && Boolean(onSwap)}
+                  onActivate={() => onActivate?.(side)}
                   onPan={(pan) => onPan(side, pan)}
                   onUpload={(dataUrl) => onUpload(side, dataUrl)}
                   onPick={() => onPick(side)}

@@ -73,6 +73,7 @@ const Column = ({
             key={`${aria}-${index}`}
             className={[
               "dr-row",
+              index === 0 ? "is-gold" : "",
               featured ? "is-feature" : "",
               namePlates ? "is-plate" : "",
             ]
@@ -179,7 +180,7 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
         ref={setRefs}
         className={[
           "dr-board",
-          draft.namePlates !== false ? "is-plates" : "",
+          draft.namePlates === true ? "is-plates" : "",
           layoutClass,
           story ? "is-story" : "",
           square ? "is-square" : "",
@@ -224,7 +225,7 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
               onHeader={(value) => onHeaderChange("left", value)}
               onRow={(index, patch) => onRowChange("left", index, patch)}
               nameStyle={nameStyle}
-              namePlates={draft.namePlates !== false}
+              namePlates={draft.namePlates === true}
             />
           )}
           {cols.hideRight ? null : (
@@ -237,7 +238,7 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
               onHeader={(value) => onHeaderChange("right", value)}
               onRow={(index, patch) => onRowChange("right", index, patch)}
               nameStyle={nameStyle}
-              namePlates={draft.namePlates !== false}
+              namePlates={draft.namePlates === true}
             />
           )}
         </div>

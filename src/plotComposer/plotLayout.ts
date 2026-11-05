@@ -23,12 +23,12 @@ export const PLOT_TOP = 152;
 export const PLOT_BOTTOM = 96;
 export const PLOT_AXIS_SIZE = 13;
 export const PLOT_AXIS_TITLE = 16;
-export const PLOT_MARK_TEAM = 58;
-export const PLOT_MARK_PLAYER = 46;
-export const PLOT_MARK_DOT = 14;
+export const PLOT_MARK_TEAM = 68;
+export const PLOT_MARK_PLAYER = 58;
+export const PLOT_MARK_DOT = 22;
 export const PLOT_HEADSHOT_MAX = 36;
 export const PLOT_LABEL_MAX = 32;
-export const PLOT_LABEL_SIZE = 12;
+export const PLOT_LABEL_SIZE = 18;
 export const PLOT_PAD_RATIO = 0.1;
 
 export interface PlotRect {
@@ -269,6 +269,19 @@ export const sizeScaleFor = (values: Array<number | undefined>) => {
     }
     return 0.72 + ((value - min) / span) * 1.15;
   };
+};
+
+export const plotOutlierId = (
+  points: Array<{ id: string; y: number; size?: number }>,
+) => {
+  if (!points.length) {
+    return null;
+  }
+  return points.reduce((best, point) => {
+    const score = (point.size ?? 0) * 0.15 + point.y;
+    const bestScore = (best.size ?? 0) * 0.15 + best.y;
+    return score > bestScore ? point : best;
+  }).id;
 };
 
 export const placePlotPoints = (

@@ -29,7 +29,7 @@
 
 .lb-board .pod-photo {
   position: relative;
-  flex: 0 0 41.3%;
+  flex: 0 0 33%;
   z-index: 1;
   border-radius: 0;
   border: none;
@@ -147,10 +147,10 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  gap: calc(7 * var(--u));
+  justify-content: flex-end;
+  gap: calc(6 * var(--u));
   margin: 0;
-  padding: calc(16 * var(--u)) calc(48 * var(--u)) calc(28 * var(--u));
+  padding: calc(10 * var(--u)) calc(48 * var(--u)) calc(18 * var(--u));
   min-height: 0;
   list-style: none;
 }
@@ -273,6 +273,10 @@
   white-space: nowrap;
 }
 
+.lb-row.is-gold .lb-track {
+  height: calc(22 * var(--u));
+}
+
 .lb-track {
   height: calc(14 * var(--u));
   background: rgba(255, 255, 255, 0.08);
@@ -295,7 +299,7 @@
 }
 
 .lb-value {
-  font-size: calc(24 * var(--u));
+  font-size: calc(36 * var(--u));
   text-align: right;
 }
 

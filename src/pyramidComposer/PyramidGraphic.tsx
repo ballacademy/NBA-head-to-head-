@@ -144,12 +144,15 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
           />
         ) : null}
         <header className="pyr-header">
+          <div className="pyr-title-plate">
+            <span className="pyr-title-word">PYRAMID</span>
+          </div>
           <input
-            className="pyr-title"
+            className="pyr-award-notch"
             value={title}
             maxLength={48}
             spellCheck={false}
-            aria-label="Pyramid title"
+            aria-label="Pyramid award"
             onChange={(event) => onComposerTextChange(event, onTitleChange, 48)}
           />
         </header>
@@ -212,9 +215,10 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                       }
                       aria-label={`Pyramid slot ${index + 1}`}
                       onPointerEnter={() => onHover?.(index)}
-                      onPointerDown={(event) =>
-                        slotSwap.startDrag(index, event)
-                      }
+                      onPointerDown={(event) => {
+                        onHover?.(index);
+                        slotSwap.startDrag(index, event);
+                      }}
                     >
                       <PhotoFrame
                         src={slot.photoSrc}
@@ -224,6 +228,7 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                         empty={empty}
                         pop={pops}
                         slotSwapEnabled={!exporting && Boolean(onSwap)}
+                        onActivate={() => onHover?.(index)}
                         onPan={(pan) => onPan(index, pan)}
                         onUpload={(dataUrl) => onUpload(index, dataUrl)}
                         onUploadMany={(urls) =>
@@ -234,7 +239,15 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
                         onPick={() => onPick(index)}
                       />
                       {showRankPip ? (
-                        <span className="pyr-cell__pip" aria-hidden="true">
+                        <span
+                          className={[
+                            "pyr-cell__pip",
+                            index < 3 ? "is-medal" : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          aria-hidden="true"
+                        >
                           {index + 1}
                         </span>
                       ) : null}

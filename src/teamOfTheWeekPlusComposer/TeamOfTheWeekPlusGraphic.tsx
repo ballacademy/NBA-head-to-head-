@@ -116,7 +116,10 @@ const PortraitCell = ({
       data-composer-slot={index}
       aria-label={slotLabel(index)}
       onPointerEnter={() => onHover?.(index)}
-      onPointerDown={(event) => onSwapStart(index, event)}
+      onPointerDown={(event) => {
+        onHover?.(index);
+        onSwapStart(index, event);
+      }}
     >
       <PhotoFrame
         src={slot.photoSrc}
@@ -126,6 +129,7 @@ const PortraitCell = ({
         empty={empty}
         zoomStep={PLUS_ZOOM_STEP}
         slotSwapEnabled={slotSwapEnabled}
+        onActivate={() => onHover?.(index)}
         onPan={(pan) => onPan(index, pan)}
         onUpload={(dataUrl) => onUpload(index, dataUrl)}
         onUploadMany={(urls) =>

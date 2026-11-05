@@ -66,6 +66,7 @@ import {
   applySideStatValues,
   autoCompareStatsLabel,
   compareCaptionFor,
+  comparePasteSlotIndex,
   clearCompareSide,
   COMPARE_STAT_MAX,
   COMPARE_STAT_PRESETS,
@@ -110,6 +111,7 @@ export function CompareComposerApp() {
   const empty = defaultCompareDraft();
   const [draft, setDraft] = useState<CompareDraft>(empty);
   const [picker, setPicker] = useState<0 | 1 | null>(null);
+  const [photoTarget, setPhotoTarget] = useState<0 | 1>(0);
   const [exporting, setExporting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -365,12 +367,22 @@ export function CompareComposerApp() {
 
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      if (target instanceof Element && target.closest(".pod-photo")) {
+        return;
+      }
       void dataUrlFromClipboard(event).then((dataUrl) => {
         if (!dataUrl) {
           return;
         }
         event.preventDefault();
-        const side = picker ?? 0;
+        const side = comparePasteSlotIndex(photoTarget, picker);
         setDraft((current) => {
           const sides = [...current.sides] as CompareDraft["sides"];
           sides[side] = setComparePhoto(current.sides[side]!, dataUrl);
@@ -381,7 +393,7 @@ export function CompareComposerApp() {
     };
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [picker]);
+  }, [picker, photoTarget]);
 
   const closePicker = useCallback(() => setPicker(null), []);
   const used: Record<string, string> = {};
@@ -816,7 +828,11 @@ export function CompareComposerApp() {
                   stats: moveCompareStat(current.stats, fromIndex, toIndex),
                 }));
               }}
-              onPick={setPicker}
+              onActivate={setPhotoTarget}
+              onPick={(side) => {
+                setPhotoTarget(side);
+                setPicker(side);
+              }}
               onPan={(side, pan) =>
                 setDraft((current) => {
                   const sides = [...current.sides] as CompareDraft["sides"];

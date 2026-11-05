@@ -684,7 +684,8 @@ describe("picks composer", () => {
     expect(empty.showConfidence).toBe(false);
     expect(empty.resultMode).toBe("ats");
     expect(empty.plateOpacity).toBe(DEFAULT_PICKS_PLATE_OPACITY);
-    expect(empty.plateOpacity).toBeGreaterThanOrEqual(85);
+    expect(empty.plateOpacity).toBeGreaterThanOrEqual(20);
+    expect(empty.plateOpacity).toBeLessThan(50);
     expect(clampPicksPlateOpacity(-10)).toBe(0);
     expect(clampPicksPlateOpacity(140)).toBe(100);
     const games = setPicksLock(

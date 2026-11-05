@@ -70,10 +70,11 @@
   align-items: center;
   justify-content: center;
   min-height: calc(42 * var(--u));
-  padding: 0 calc(16 * var(--u));
-  border: calc(2 * var(--u)) solid var(--gold);
-  background: rgba(8, 8, 10, 0.55);
-  color: var(--gold);
+  padding: 0 calc(22 * var(--u));
+  border: calc(2 * var(--u)) solid #d4af37;
+  border-radius: calc(999 * var(--u));
+  background: #fff;
+  color: #111;
   font-family: var(--ig-poster);
   font-weight: 900;
   font-size: calc(22 * var(--u));

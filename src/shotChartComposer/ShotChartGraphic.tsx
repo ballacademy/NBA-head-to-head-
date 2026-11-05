@@ -170,6 +170,14 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
             onClick={onPick}
           >
             <span className="shc-notch__name">
+              {draft.photoSrc ? (
+                <img
+                  className="shc-notch__pip"
+                  src={draft.photoSrc}
+                  alt=""
+                  aria-hidden="true"
+                />
+              ) : null}
               {team ? (
                 <span className="shc-notch__logo">
                   <TeamLogo src={team.logoSrc} label="" shadow={1} />

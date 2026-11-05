@@ -71,7 +71,7 @@ export const picksListTop = (lineCount = 1) =>
 
 export const PICKS_PLATE_H = picksTitlePlateH(1);
 export const PICKS_LIST_TOP = picksListTop(1);
-export const DEFAULT_PICKS_PLATE_OPACITY = 92;
+export const DEFAULT_PICKS_PLATE_OPACITY = 28;
 export const PICKS_TITLE_SUFFIX = "NBA SPREAD PREDICTIONS";
 export const DEFAULT_PICKS_TITLE = PICKS_TITLE_SUFFIX;
 export const PICKS_TITLE_TRACK = 0.02;

@@ -46,7 +46,6 @@ import {
   RL_NAME_FAMILY_SIZE,
   RL_NAME_GIVEN_SIZE,
   RL_NAME_LOGO,
-  RL_PILL_GAP,
   RL_PILL_H,
   RL_PILL_SIZE,
   RL_POS_H,
@@ -54,7 +53,6 @@ import {
   RL_STRIP_W,
   RL_TITLE_BOX_H,
   RL_TITLE_BOX_X,
-  RL_TITLE_GRADIENT,
   RL_TITLE_LINE,
   RL_TITLE_PAD_X,
   RL_TITLE_PAD_Y,
@@ -130,18 +128,6 @@ const strokeFillText = (
   context.strokeText(text, x, y);
   context.fillStyle = fill;
   context.fillText(text, x, y);
-};
-
-const titleGradient = (
-  context: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-) => {
-  const width = Math.max(1, context.measureText(text).width);
-  const gradient = context.createLinearGradient(x - width / 2, y, x + width / 2, y);
-  RL_TITLE_GRADIENT.forEach(([stop, color]) => gradient.addColorStop(stop, color));
-  return gradient;
 };
 
 const roundRectPath = (
@@ -356,7 +342,7 @@ export const renderRankedLineupsCanvas = async (
         line,
         width / 2,
         titleY,
-        titleGradient(context, line, width / 2, titleY),
+        "#fff",
         "#050505",
         1.2 * s,
       );
@@ -384,13 +370,15 @@ export const renderRankedLineupsCanvas = async (
     );
     const pillH = RL_PILL_H * s;
     const pillX = (width - pillW) / 2;
-    const pillY = (RL_BRAND_H + RL_TITLE_BOX_H + RL_PILL_GAP) * s;
-    roundRectPath(context, pillX, pillY, pillW, pillH, pillH / 2);
+    const pillY = (RL_BRAND_H + RL_TITLE_BOX_H - 2) * s;
+    context.beginPath();
+    context.moveTo(pillX + pillW * 0.06, pillY);
+    context.lineTo(pillX + pillW * 0.94, pillY);
+    context.lineTo(pillX + pillW, pillY + pillH);
+    context.lineTo(pillX, pillY + pillH);
+    context.closePath();
     context.fillStyle = "#fff";
     context.fill();
-    context.lineWidth = 2 * s;
-    context.strokeStyle = "#fff";
-    context.stroke();
     context.fillStyle = "#111";
     context.textAlign = "center";
     context.textBaseline = "middle";
@@ -424,7 +412,7 @@ export const renderRankedLineupsCanvas = async (
       index,
       stripCount,
       rankDisplay,
-      input.showFade === true,
+      input.showFade !== false,
       boardH,
     );
     const strip = input.strips[index] ?? {
@@ -445,7 +433,7 @@ export const renderRankedLineupsCanvas = async (
       rect.h * s,
       s,
       input.look,
-      input.showFade === true,
+      input.showFade !== false,
       input.showTeamHairline !== false,
       input.photoGrade === true,
       input.stripStats?.[index] ?? "",
@@ -463,7 +451,7 @@ export const renderRankedLineupsCanvas = async (
     }
   }
 
-  const footerUnit = rankedFooterH(input.showFade === true);
+  const footerUnit = rankedFooterH(input.showFade !== false);
   const footerRows = Math.max(1, Math.ceil(stripCount / 5));
   const footerY = (boardH - footerUnit * footerRows) * s;
   const positionLabels = parsePositionLabels(input.positionLabels, stripCount);

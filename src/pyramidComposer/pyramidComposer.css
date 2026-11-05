@@ -42,10 +42,53 @@
   position: relative;
   z-index: 20;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 0;
+  padding: calc(14 * var(--u)) calc(48 * var(--u)) 0;
+}
+
+.pyr-title-plate {
+  box-sizing: border-box;
+  width: calc(100% - 48 * var(--u));
+  height: calc(72 * var(--u));
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 0;
-  padding: calc(22 * var(--u)) calc(48 * var(--u)) 0;
+  border: var(--frame-w) solid var(--frame-color);
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
+}
+
+.pyr-title-word {
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(36 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.pyr-award-notch {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-2 * var(--u));
+  min-width: 34%;
+  height: calc(36 * var(--u));
+  padding: 0 calc(16 * var(--u));
+  border: 0;
+  background: #fff;
+  color: #111;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(20 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
 }
 
 .pyr-title {
@@ -66,11 +109,6 @@
   text-transform: uppercase;
   line-height: 1;
   -webkit-font-smoothing: antialiased;
-  -webkit-text-stroke: calc(3.2 * var(--u)) #000;
-  paint-order: stroke fill;
-  text-shadow:
-    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82),
-    calc(2 * var(--u)) calc(2.4 * var(--u)) 0 rgba(0, 0, 0, 0.32);
 }
 
 .pyr-title:focus {
@@ -84,7 +122,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap: calc(var(--pyr-row-gap) * var(--u));
   padding: calc(var(--pyr-pad-top) * var(--u)) calc(var(--pyr-pad-x) * var(--u))
     calc(var(--pyr-pad-bottom) * var(--u));
@@ -221,7 +259,7 @@
   padding: 0 calc(6 * var(--u));
   border-radius: calc(11 * var(--u));
   background: rgba(0, 0, 0, 0.72);
-  color: #facc15;
+  color: #fff;
   font-family: var(--ig-poster);
   font-size: calc(12 * var(--u));
   font-weight: 900;
@@ -230,6 +268,11 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
+}
+
+.pyr-cell__pip.is-medal {
+  background: #d4af37;
+  color: #111;
 }
 
 .pyr-cell__name {

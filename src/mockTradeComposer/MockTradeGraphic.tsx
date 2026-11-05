@@ -52,6 +52,7 @@ interface MockTradeGraphicProps {
     lastName: string,
   ) => void;
   onPickPlayer: (side: number, player: number) => void;
+  onActivate?: (side: number, player: number) => void;
   onPan: (side: number, player: number, pan: PhotoPan) => void;
   onUpload: (side: number, player: number, dataUrl: string) => void;
   onSwap?: (from: number, to: number) => void;
@@ -81,6 +82,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
       onTitleChange,
       onPlayerNameChange,
       onPickPlayer,
+      onActivate,
       onPan,
       onUpload,
       onSwap,
@@ -214,9 +216,10 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                         .join(" ")}
                       data-composer-slot={slotIndex}
                       style={boxStyle(local(slot.photo))}
-                      onPointerDown={(event) =>
-                        slotSwap.startDrag(slotIndex, event)
-                      }
+                      onPointerDown={(event) => {
+                        onActivate?.(sideIndex, playerIndex);
+                        slotSwap.startDrag(slotIndex, event);
+                      }}
                     >
                       <PhotoFrame
                         src={person.photoSrc}
@@ -228,6 +231,9 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                         pickLabel="Pick player"
                         changeLabel="Change player"
                         slotSwapEnabled={!exporting && Boolean(onSwap)}
+                        onActivate={() =>
+                          onActivate?.(sideIndex, playerIndex)
+                        }
                         onPan={(pan) => onPan(sideIndex, playerIndex, pan)}
                         onUpload={(dataUrl) =>
                           onUpload(sideIndex, playerIndex, dataUrl)

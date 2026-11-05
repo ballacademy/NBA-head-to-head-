@@ -78,7 +78,7 @@ export const defaultDualRanksDraft = (season = "2026-27"): DualRanksDraft => ({
   to: "",
   season,
   layout: "side",
-  namePlates: true,
+  namePlates: false,
   featuredPlayerId: null,
   playerId: null,
   teamId: null,
@@ -107,7 +107,7 @@ export const normalizeDualRanksDraft = (
     rightRows: resizeLeaderRows(value.rightRows ?? fallback.rightRows, count),
     layout:
       value.layout === "top" || value.layout === "well" ? value.layout : "side",
-    namePlates: value.namePlates !== false,
+    namePlates: value.namePlates === true,
     customPhoto: value.customPhoto === true,
     pan: isPhotoPan(value.pan) ? value.pan : fallback.pan,
     photoSrc: isNullable(value.photoSrc) ? value.photoSrc : fallback.photoSrc,

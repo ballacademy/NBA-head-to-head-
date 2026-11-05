@@ -387,7 +387,7 @@ export function LeaderSplitComposerApp() {
             <ComposerHudSelect
               label="Name plates"
               ariaLabel="Team-color name plates"
-              value={draft.namePlates !== false ? "on" : "off"}
+              value={draft.namePlates === true ? "on" : "off"}
               options={[
                 { value: "on", label: "On" },
                 { value: "off", label: "Off" },

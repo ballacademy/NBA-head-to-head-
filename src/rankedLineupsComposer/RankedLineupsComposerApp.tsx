@@ -123,7 +123,7 @@ const loadDraft = (unranked: boolean): RankedLineupsDraft => {
         ...empty,
         ...stored,
         showBa: stored.showBa === true,
-        showFade: stored.showFade === true,
+        showFade: stored.showFade !== false,
         showTeamHairline: parseShowTeamHairline(stored.showTeamHairline),
         rankDisplay: parseRankDisplay(
           stored.rankDisplay,
@@ -151,7 +151,7 @@ const loadDraft = (unranked: boolean): RankedLineupsDraft => {
         ? DEFAULT_LINEUP_TITLE
         : empty.title,
     showBa: stored?.showBa === true,
-    showFade: stored?.showFade === true,
+    showFade: stored?.showFade !== false,
     showTeamHairline: parseShowTeamHairline(stored?.showTeamHairline),
     rankDisplay: parseRankDisplay(
       stored?.rankDisplay,
@@ -199,7 +199,7 @@ export function RankedLineupsComposerApp({
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
   const [showBa, setShowBa] = useState(false);
-  const [showFade, setShowFade] = useState(false);
+  const [showFade, setShowFade] = useState(true);
   const [showTeamHairline, setShowTeamHairline] = useState(true);
   const [storyCrop, setStoryCrop] = useState(false);
   const [rankDisplay, setRankDisplay] = useState(
@@ -253,7 +253,7 @@ export function RankedLineupsComposerApp({
     setSlides(slidesFromDraft(draft));
     setActiveSlide(draft.activeSlide ?? 0);
     setShowBa(draft.showBa === true);
-    setShowFade(draft.showFade === true);
+    setShowFade(draft.showFade !== false);
     setShowTeamHairline(parseShowTeamHairline(draft.showTeamHairline));
     setRankDisplay(
       parseRankDisplay(draft.rankDisplay, unranked ? "none" : "pill"),
@@ -314,7 +314,7 @@ export function RankedLineupsComposerApp({
     setSlides(slidesFromDraft(next));
     setActiveSlide(next.activeSlide ?? 0);
     setShowBa(next.showBa === true);
-    setShowFade(next.showFade === true);
+    setShowFade(next.showFade !== false);
     setShowStripStat(next.showStripStat === true);
     if (next.stripStatMetric) {
       setFillMetric(next.stripStatMetric);

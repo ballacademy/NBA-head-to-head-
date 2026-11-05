@@ -224,9 +224,9 @@ describe("plot composer", () => {
   });
 
   it("bumps face and circle size and still scales from that base", () => {
-    expect(PLOT_MARK_TEAM).toBe(58);
-    expect(PLOT_MARK_PLAYER).toBe(46);
-    expect(PLOT_MARK_DOT).toBe(14);
+    expect(PLOT_MARK_TEAM).toBe(68);
+    expect(PLOT_MARK_PLAYER).toBe(58);
+    expect(PLOT_MARK_DOT).toBe(22);
     expect(plotMarkSize("team", 30)).toBe(PLOT_MARK_TEAM);
     expect(plotMarkSize("player", 20)).toBe(PLOT_MARK_PLAYER);
     expect(plotMarkSize("player", 80)).toBe(PLOT_MARK_DOT);

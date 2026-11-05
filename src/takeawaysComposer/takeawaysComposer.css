@@ -20,12 +20,7 @@
 
 .tk-cover .scc-cell .pod-photo.is-empty {
   background-color: #0a0a0c;
-  background-image: radial-gradient(
-    ellipse 80% 58% at 50% 40%,
-    rgba(212, 175, 55, 0.34) 0%,
-    rgba(250, 204, 21, 0.08) 52%,
-    #070708 100%
-  );
+  background-image: none;
 }
 
 .tk-cover .scc-cell .pod-photo__pick {
@@ -63,10 +58,7 @@
   color: #fde68a;
   -webkit-text-stroke: calc(4 * var(--u)) #000;
   text-shadow:
-    0 0 calc(22 * var(--u)) rgba(250, 204, 21, 0.55),
-    0 0 calc(8 * var(--u)) rgba(250, 204, 21, 0.82),
-    calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78),
-    0 calc(10 * var(--u)) calc(22 * var(--u)) rgba(0, 0, 0, 0.55);
+    calc(1.4 * var(--u)) calc(1.8 * var(--u)) 0 rgba(0, 0, 0, 0.78);
 }
 
 .tk-cover.is-gold .scc-seam {
@@ -89,13 +81,18 @@
 }
 
 .tk-cover.is-gold .scc-pill {
-  background: #facc15;
+  background: #fff;
   color: #111;
-  border-color: #fde68a;
-  border-width: calc(2.5 * var(--u));
-  box-shadow:
-    0 0 calc(18 * var(--u)) rgba(250, 204, 21, 0.48),
-    calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+  border-color: #d4af37;
+  border-width: calc(2 * var(--u));
+  box-shadow: calc(1 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.35);
+}
+
+.tk-cover .scc-swipe {
+  right: calc(8 * var(--u));
+  top: 62%;
+  transform: scale(0.72);
+  transform-origin: right center;
 }
 
 .tk-cover.is-plate .scc-title-line {
@@ -326,9 +323,9 @@
 }
 
 .tk-line--1 {
-  font-size: calc(48 * var(--u));
-  line-height: 0.95;
-  min-height: calc(88 * var(--u));
+  font-size: calc(64 * var(--u));
+  line-height: 0.9;
+  min-height: calc(108 * var(--u));
 }
 
 .tk-line--2 {

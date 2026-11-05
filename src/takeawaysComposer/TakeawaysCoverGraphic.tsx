@@ -225,6 +225,7 @@ export const TakeawaysCoverGraphic = forwardRef<
               empty={empty}
               vignette
               slotSwapEnabled={!exporting && Boolean(onSwap)}
+              onActivate={() => onHover?.(index)}
               onPan={(pan) => onPan(index, pan)}
               onUpload={(dataUrl) => onUpload(index, dataUrl)}
               onUploadMany={(urls) =>

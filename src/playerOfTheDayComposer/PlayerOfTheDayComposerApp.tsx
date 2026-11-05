@@ -748,6 +748,7 @@ export function PlayerOfTheDayComposerApp() {
             onBrandChange={setBrand}
             onTitleChange={setTitle}
             onDateChange={setDate}
+            onHover={setPhotoTarget}
             onPick={(index) => {
               setPhotoTarget(index);
               setActiveIndex(index);

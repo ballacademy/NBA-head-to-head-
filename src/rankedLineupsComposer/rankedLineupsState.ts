@@ -60,8 +60,7 @@ export type LineupPosition = (typeof LINEUP_POSITIONS)[number];
 export const DEFAULT_POSITION_LABELS = [...LINEUP_POSITIONS];
 export const POSITION_LABEL_MAX = 8;
 
-export const DEFAULT_RANKED_LINEUP_TITLE =
-  "TOP 10 NBA PLAYERS AT EACH POSITION";
+export const DEFAULT_RANKED_LINEUP_TITLE = "RANKED LINEUP";
 export const DEFAULT_LINEUP_TITLE = "STARTING LINEUP";
 export const RANKED_LINEUP_TITLE_TRACK = 0.02;
 export const DEFAULT_RANK_PILL = "BEST";
@@ -318,7 +317,7 @@ export const defaultRankedLineupsDraft = (): RankedLineupsDraft => {
     slides: [slide],
     activeSlide: 0,
     showBa: false,
-    showFade: false,
+    showFade: true,
     showTeamHairline: true,
     rankDisplay: DEFAULT_RANK_DISPLAY,
     positionLabels: [...DEFAULT_POSITION_LABELS],

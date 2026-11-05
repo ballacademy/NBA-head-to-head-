@@ -13,7 +13,7 @@ export const PYR_PAD_X = 28;
 export const PYR_COL_GAP = 12;
 export const PYR_PAD_BOTTOM = 36;
 /** Extra metal between the title and the popped hair. Cell lip sits `pop` below that. */
-export const PYR_STACK_TOP = 16;
+export const PYR_STACK_TOP = 8;
 export const PYR_QUIET_FRAME = 2;
 export const PYR_TITLE_Y = 22;
 export const PYR_TITLE_H = 96;

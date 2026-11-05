@@ -158,7 +158,7 @@ export const RankedLineupsGraphic = forwardRef<
     purpleFlair = false,
     photoGrade = false,
     showBa = false,
-    showFade = false,
+    showFade = true,
     showTeamHairline = true,
     rankDisplay = "pill",
     positionLabels,
@@ -223,6 +223,7 @@ export const RankedLineupsGraphic = forwardRef<
         "rl-board",
         exporting ? "is-exporting" : "",
         showFade ? "is-fade" : "",
+        strips.length > 5 ? "is-plus" : "",
         showTeamHairline ? "is-hairline" : "",
         rankDisplay === "none"
           ? "is-plain"
@@ -324,7 +325,10 @@ export const RankedLineupsGraphic = forwardRef<
               }
               aria-label={`${labels[index] || position} strip`}
               onPointerEnter={() => onHover?.(index)}
-              onPointerDown={(event) => slotSwap.startDrag(index, event)}
+              onPointerDown={(event) => {
+                onHover?.(index);
+                slotSwap.startDrag(index, event);
+              }}
             >
               <PhotoFrame
                 src={strip.photoSrc}
@@ -334,6 +338,7 @@ export const RankedLineupsGraphic = forwardRef<
                 empty={empty}
                 vignette
                 slotSwapEnabled={!exporting && Boolean(onSwap)}
+                onActivate={() => onHover?.(index)}
                 onPan={(pan) => onPan(index, pan)}
                 onUpload={(dataUrl) => onUpload(index, dataUrl)}
                 onUploadMany={(urls) =>

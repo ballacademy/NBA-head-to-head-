@@ -42,6 +42,8 @@ interface PhotoFrameProps {
   onUploadMany?: (dataUrls: string[]) => void;
   onPick: () => void;
   slotSwapEnabled?: boolean;
+  /** Fires on click/pointer-down, empty or filled — paste uses this slot. */
+  onActivate?: () => void;
 }
 
 const PHOTO_CHROME_CLASSES = [
@@ -117,6 +119,7 @@ export function PhotoFrame({
   onUploadMany,
   onPick,
   slotSwapEnabled = false,
+  onActivate,
 }: PhotoFrameProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const panRef = useRef(pan);
@@ -304,10 +307,15 @@ export function PhotoFrame({
         });
       }}
       onPointerDown={(event) => {
+        if (event.pointerType === "mouse" && event.button !== 0) {
+          return;
+        }
+        if (!isPhotoChromeTarget(event.target)) {
+          onActivate?.();
+        }
         if (
           !filled ||
-          isPhotoChromeTarget(event.target) ||
-          (event.pointerType === "mouse" && event.button !== 0)
+          isPhotoChromeTarget(event.target)
         ) {
           return;
         }
@@ -427,7 +435,14 @@ export function PhotoFrame({
           ) : null}
         </>
       ) : (
-        <button type="button" className="pod-photo__pick" onClick={onPick}>
+        <button
+          type="button"
+          className="pod-photo__pick"
+          onClick={() => {
+            onActivate?.();
+            onPick();
+          }}
+        >
           {pickLabel}
         </button>
       )}
@@ -491,6 +506,7 @@ export function PhotoFrame({
             onPointerDown={stopChromePointer}
             onClick={(event) => {
               event.stopPropagation();
+              onActivate?.();
               onPick();
             }}
           >
