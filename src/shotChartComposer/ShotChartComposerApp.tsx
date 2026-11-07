@@ -12,7 +12,10 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
-import { useComposerDateRange } from "../instagramComposer/composerDateRange";
+import {
+  fullSeasonRange,
+  useComposerDateRange,
+} from "../instagramComposer/composerDateRange";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import {
   useComposerStatsSample,
@@ -344,30 +347,39 @@ export function ShotChartComposerApp() {
                 Date range
               </button>
             </div>
-            {draft.window === "range" ? (
-              <ComposerDateRange
-                from={draft.from || range.from}
-                to={draft.to || range.to}
-                simpleSet="week"
-                alwaysShowDates
-                includeFullSeason
-                filling={filling}
-                fillLabel="Fill shots"
-                onChange={(next) => {
-                  setRange(next);
-                  const updated = {
-                    ...draft,
-                    window: "range" as const,
-                    from: next.from,
-                    to: next.to,
-                    eventId: "",
-                  };
-                  setDraft(updated);
-                  void fillShots(updated);
-                }}
-                onFill={() => void fillShots()}
-              />
-            ) : (
+            <ComposerDateRange
+              from={draft.from || range.from}
+              to={draft.to || range.to}
+              simpleSet="week"
+              alwaysShowDates
+              includeFullSeason
+              seasonRange={fullSeasonRange()}
+              filling={filling}
+              fillLabel="Fill shots"
+              onChange={(next) => {
+                setRange(next);
+                const updated = {
+                  ...draft,
+                  window: "range" as const,
+                  from: next.from,
+                  to: next.to,
+                  eventId: "",
+                };
+                setDraft(updated);
+                void fillShots(updated);
+              }}
+              onFill={() => {
+                const updated = {
+                  ...draft,
+                  window: "range" as const,
+                  from: draft.from || range.from,
+                  to: draft.to || range.to,
+                };
+                setDraft(updated);
+                void fillShots(updated);
+              }}
+            />
+            {draft.window === "range" ? null : (
               <>
                 <ComposerNightDate
                   date={draft.nightDate || night.date}

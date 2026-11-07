@@ -1936,6 +1936,7 @@ label.sc-chip {
 
 .sc-picker__suggested {
   flex: 0 0 auto;
+  height: auto;
   min-height: 0;
   max-height: min(48dvh, 520px);
   display: flex;
@@ -1965,6 +1966,10 @@ label.sc-chip {
 
 .sc-picker__recs {
   margin: 0;
+}
+
+.sc-picker__rec-sort {
+  margin-left: auto;
 }
 
 .sc-picker__suggested--dud {
@@ -2022,8 +2027,9 @@ label.sc-chip {
 
 .sc-picker__grid--suggested {
   flex: 0 0 auto;
+  height: auto;
   min-height: 0;
-  max-height: min(40dvh, 460px);
+  max-height: min(36dvh, 360px);
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;

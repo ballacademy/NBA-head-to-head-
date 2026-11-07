@@ -34,13 +34,22 @@ describe("picker suggested recs", () => {
       row(EXAMPLE_PLAYER_IDS.luka, "18/9/7"),
     ];
     expect(
+      filterSuggestedPickerRows(recs, { query: "", sort: "night" }).map(
+        (item) => item.id,
+      ),
+    ).toEqual([
+      EXAMPLE_PLAYER_IDS.jokic,
+      EXAMPLE_PLAYER_IDS.curry,
+      EXAMPLE_PLAYER_IDS.luka,
+    ]);
+    expect(
       filterSuggestedPickerRows(recs, { query: "", sort: "name" }).map(
         (item) => item.id,
       ),
     ).toEqual([
+      EXAMPLE_PLAYER_IDS.curry,
       EXAMPLE_PLAYER_IDS.luka,
       EXAMPLE_PLAYER_IDS.jokic,
-      EXAMPLE_PLAYER_IDS.curry,
     ]);
     expect(
       filterSuggestedPickerRows(recs, { query: "curry", sort: "name" }).map(

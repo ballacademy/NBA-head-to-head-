@@ -10,6 +10,7 @@ import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSam
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
 import { useComposerNight } from "../instagramComposer/composerNight";
+import { useComposerHudMode } from "../instagramComposer/composerHudMode";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   copyGraphicCaption,
@@ -153,6 +154,7 @@ export function PlayerOfTheDayComposerApp() {
   } | null>(null);
   const { push, pop, canUndo } = useComposerUndo<PotdCard[]>();
   const night = useComposerNight();
+  const [hudMode] = useComposerHudMode();
   const [nightBest, setNightBest] = useState<NightStandout[]>([]);
   const [nightBestLoading, setNightBestLoading] = useState(false);
 
@@ -800,9 +802,10 @@ export function PlayerOfTheDayComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={potdPickerHeading(activeIndex, cards.length)}
-          hint="Gold cards are this night’s best lines. Name and Points sort that strip; search shrinks it. Already-used names of the set are marked. Search still lists everyone."
+          hint="Gold Last night’s / tonight’s best has its own Name and Points chips — they sort and shrink that strip. Search also shrinks it. Already-used names of the set are marked. Search still lists everyone."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
+          simple={hudMode === "simple"}
           suggested={potdPickerSuggestions(nightBest)}
           suggestedHeading={potdNightHeading(
             night.date,

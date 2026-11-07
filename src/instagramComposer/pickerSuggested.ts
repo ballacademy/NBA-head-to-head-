@@ -6,6 +6,8 @@ import {
   type TierPlayer,
 } from "../tierListComposer/nbaActivePlayers";
 
+export type SuggestedPickerSort = PlayerPickerSort | "night";
+
 export interface SuggestedPickerRow {
   id: string;
   badge?: string;
@@ -31,16 +33,21 @@ export const recLinePoints = (row: {
   return null;
 };
 
-/** Name search + board filters, then Name/Points/Depth sort, on gold recs. */
+const familyName = (name: string) => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return parts[parts.length - 1] || name;
+};
+
+/** Name search + board filters, then Name/Points sort, on gold recs. */
 export const filterSuggestedPickerRows = (
   rows: SuggestedPickerRow[],
   options: {
     query: string;
     filters?: PlayerSearchFilters;
-    sort?: PlayerPickerSort;
+    sort?: SuggestedPickerSort;
   },
 ): SuggestedPickerRow[] => {
-  const { query, filters = {}, sort = "name" } = options;
+  const { query, filters = {}, sort = "night" } = options;
   const allowed = new Set(
     searchPlayers(
       query,
@@ -54,7 +61,11 @@ export const filterSuggestedPickerRows = (
       const leftPts = recLinePoints(left) ?? left.player.ppg;
       const rightPts = recLinePoints(right) ?? right.player.ppg;
       return (
-        rightPts - leftPts || left.player.name.localeCompare(right.player.name)
+        rightPts - leftPts ||
+        familyName(left.player.name).localeCompare(
+          familyName(right.player.name),
+        ) ||
+        left.player.id.localeCompare(right.player.id)
       );
     });
   }
@@ -71,9 +82,15 @@ export const filterSuggestedPickerRows = (
         (left, right) => (order.get(left.id) ?? 0) - (order.get(right.id) ?? 0),
       );
   }
-  return matched.slice().sort(
-    (left, right) =>
-      left.player.name.localeCompare(right.player.name) ||
-      left.player.id.localeCompare(right.player.id),
-  );
+  if (sort === "name") {
+    return matched.slice().sort(
+      (left, right) =>
+        familyName(left.player.name).localeCompare(
+          familyName(right.player.name),
+        ) ||
+        left.player.name.localeCompare(right.player.name) ||
+        left.player.id.localeCompare(right.player.id),
+    );
+  }
+  return matched;
 };

@@ -4,7 +4,10 @@ import { pickerHighlightIndex } from "../instagramComposer/pickerKeyboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
-import { filterSuggestedPickerRows } from "../instagramComposer/pickerSuggested";
+import {
+  filterSuggestedPickerRows,
+  type SuggestedPickerSort,
+} from "../instagramComposer/pickerSuggested";
 import { withCoaches } from "../instagramComposer/nbaCoaches";
 import { readJson, writeJson } from "../lib/browserStorage";
 import {
@@ -123,6 +126,7 @@ export function PlayerPicker({
   const [recsStrip, setRecsStrip] = useState<"standouts" | "rough-night">(
     "standouts",
   );
+  const [recSort, setRecSort] = useState<SuggestedPickerSort>("night");
   const [sort, setSort] = useState<PlayerPickerSort>(() => {
     const storedRaw = readJson(sortStorageKey);
     if (storedRaw == null) {
@@ -210,7 +214,7 @@ export function PlayerPicker({
             ...boardFilters,
             team: lockedTeam ?? boardFilters.team,
           },
-          sort,
+          sort: recSort,
         },
       ),
     [
@@ -220,7 +224,7 @@ export function PlayerPicker({
       query,
       boardFilters,
       lockedTeam,
-      sort,
+      recSort,
     ],
   );
   const recLoading = showDudRecs ? extraSuggestedLoading : suggestedLoading;
@@ -233,9 +237,7 @@ export function PlayerPicker({
     suggestedLoading ||
     suggestedRows.length > 0 ||
     suggestedHeading != null;
-  const showRecsSection =
-    hasRecChrome &&
-    (recLoading || recRows.length > 0 || !query.trim());
+  const showRecsSection = hasRecChrome;
   const showSuggested = recRows.length > 0 && showRecsSection;
   const recIds = useMemo(
     () => new Set(showSuggested ? recRows.map((row) => row.id) : []),
@@ -463,15 +465,51 @@ export function PlayerPicker({
               ) : (
                 <p className="sc-picker__suggested-label">
                   {recHeading}
-                  {recRows.length ? ` · ${recRows.length}` : ""}
+                  {` · ${recRows.length}`}
                 </p>
               )}
+              <div
+                className="sc-look sc-picker__rec-sort"
+                role="group"
+                aria-label="Filter last night’s best"
+              >
+                <button
+                  type="button"
+                  className={recSort === "name" ? "sc-chip is-on" : "sc-chip"}
+                  aria-pressed={recSort === "name"}
+                  aria-label="Filter recs by name"
+                  onClick={() =>
+                    setRecSort((current) =>
+                      current === "name" ? "night" : "name",
+                    )
+                  }
+                >
+                  Name
+                </button>
+                <button
+                  type="button"
+                  className={recSort === "points" ? "sc-chip is-on" : "sc-chip"}
+                  aria-pressed={recSort === "points"}
+                  aria-label="Filter recs by points"
+                  onClick={() =>
+                    setRecSort((current) =>
+                      current === "points" ? "night" : "points",
+                    )
+                  }
+                >
+                  Points
+                </button>
+              </div>
             </div>
             {recLoading && recRows.length === 0 ? (
               <p className="sc-picker__suggested-status">Loading box scores…</p>
             ) : recRows.length === 0 ? (
               <div className="sc-picker__suggested-empty">
-                <p className="sc-picker__suggested-status">{recEmpty}</p>
+                <p className="sc-picker__suggested-status">
+                  {query.trim()
+                    ? "No last-night lines match that name."
+                    : recEmpty}
+                </p>
                 {onJumpLastNight && !showDudRecs ? (
                   <button
                     type="button"
@@ -494,7 +532,7 @@ export function PlayerPicker({
                     player={row.player}
                     currentId={currentId}
                     usedLabel={usedLabels[row.id]}
-                    showPpg={sort === "points"}
+                    showPpg={recSort === "points"}
                     showDepth={sort === "depth"}
                     badge={row.badge}
                     metaOverride={row.meta}

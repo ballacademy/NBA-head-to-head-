@@ -1018,8 +1018,12 @@ describe("composer chrome", () => {
     );
     expect(picker).toContain("onJumpLastNight");
     expect(picker).toContain("filterSuggestedPickerRows");
+    expect(picker).toContain("Filter recs by name");
+    expect(picker).toContain("Filter recs by points");
+    expect(picker).toContain("Filter last night");
+    expect(picker).toContain("const showRecsSection = hasRecChrome");
     expect(picker).not.toMatch(/showRecsSection =\s*!query\.trim\(\)/);
-    expect(picker).toContain("recRows.length ? ` · ${recRows.length}`");
+    expect(picker).toContain("` · ${recRows.length}`");
     const dateRangeHud = readFileSync(
       join(root, "instagramComposer/ComposerDateRange.tsx"),
       "utf8",
@@ -1522,6 +1526,8 @@ describe("composer chrome", () => {
     expect(shotHud).toContain('simpleSet="week"');
     expect(shotHud).toContain("alwaysShowDates");
     expect(shotHud).toContain("includeFullSeason");
+    expect(shotHud).toContain("seasonRange={fullSeasonRange()}");
+    expect(shotHud).toContain("window: \"range\" as const");
     expect(shotHud).toContain("applyFilledShotChart");
     expect(shotHud).toContain("ComposerNightDate");
     expect(shotHud).toContain("ComposerHudExtras");
