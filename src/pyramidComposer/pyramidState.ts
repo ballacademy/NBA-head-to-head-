@@ -297,7 +297,8 @@ export const pyramidAwardLadder = (
 
 export const coyCoachLadder = (count: number): TierPlayer[] => {
   const seeded = PYRAMID_COY_SEED_IDS.map((id) => getCoach(id)).filter(
-    (coach): coach is TierPlayer => Boolean(coach) && coachHasPortrait(coach),
+    (coach): coach is TierPlayer =>
+      coach != null && coachHasPortrait(coach),
   );
   const used = new Set(seeded.map((coach) => coach.id));
   const rest = NBA_COACHES.filter(
