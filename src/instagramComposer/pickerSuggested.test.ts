@@ -70,6 +70,18 @@ describe("picker suggested recs", () => {
       EXAMPLE_PLAYER_IDS.jokic,
       EXAMPLE_PLAYER_IDS.luka,
     ]);
+    const highPpgQuietNight = row(EXAMPLE_PLAYER_IDS.shai, "2 PTS · 1 REB · 1 AST");
+    expect(
+      filterSuggestedPickerRows(
+        [highPpgQuietNight, ...recs],
+        { query: "", sort: "points" },
+      ).map((item) => item.id),
+    ).toEqual([
+      EXAMPLE_PLAYER_IDS.curry,
+      EXAMPLE_PLAYER_IDS.jokic,
+      EXAMPLE_PLAYER_IDS.luka,
+      EXAMPLE_PLAYER_IDS.shai,
+    ]);
     expect(
       filterSuggestedPickerRows(recs, {
         query: "",

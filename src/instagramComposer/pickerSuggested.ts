@@ -58,8 +58,21 @@ export const filterSuggestedPickerRows = (
   const matched = rows.filter((row) => allowed.has(row.id));
   if (sort === "points") {
     return matched.slice().sort((left, right) => {
-      const leftPts = recLinePoints(left) ?? left.player.ppg;
-      const rightPts = recLinePoints(right) ?? right.player.ppg;
+      const leftPts = recLinePoints(left);
+      const rightPts = recLinePoints(right);
+      if (leftPts == null && rightPts == null) {
+        return (
+          familyName(left.player.name).localeCompare(
+            familyName(right.player.name),
+          ) || left.player.id.localeCompare(right.player.id)
+        );
+      }
+      if (leftPts == null) {
+        return 1;
+      }
+      if (rightPts == null) {
+        return -1;
+      }
       return (
         rightPts - leftPts ||
         familyName(left.player.name).localeCompare(

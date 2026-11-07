@@ -126,7 +126,6 @@ export function PlayerPicker({
   const [recsStrip, setRecsStrip] = useState<"standouts" | "rough-night">(
     "standouts",
   );
-  const [recSort, setRecSort] = useState<SuggestedPickerSort>("night");
   const [sort, setSort] = useState<PlayerPickerSort>(() => {
     const storedRaw = readJson(sortStorageKey);
     if (storedRaw == null) {
@@ -138,6 +137,14 @@ export function PlayerPicker({
     }
     return stored;
   });
+  const [recSort, setRecSort] = useState<SuggestedPickerSort>(() => {
+    const storedRaw = readJson(sortStorageKey);
+    if (storedRaw == null) {
+      return "night";
+    }
+    const stored = parsePlayerPickerSort(storedRaw);
+    return stored === "points" ? "points" : "night";
+  });
   const [localFilters, setLocalFilters] = useState<PlayerSearchFilters>({
     ...EMPTY_PLAYER_FILTERS,
     team: lockedTeam ?? ALL_PLAYER_FILTER,
@@ -146,6 +153,10 @@ export function PlayerPicker({
   const boardFilters = lockedFilters ?? localFilters;
   const filled = Boolean(currentId);
   const hideBoardFilters = Boolean(lockedFilters);
+  const applySort = (next: PlayerPickerSort) => {
+    setSort(next);
+    setRecSort(next);
+  };
 
   useDialogA11y({
     open: true,
@@ -381,7 +392,7 @@ export function PlayerPicker({
               type="button"
               className={sort === "name" ? "sc-chip is-on" : "sc-chip"}
               aria-pressed={sort === "name"}
-              onClick={() => setSort("name")}
+              onClick={() => applySort("name")}
             >
               Name
             </button>
@@ -389,7 +400,7 @@ export function PlayerPicker({
               type="button"
               className={sort === "points" ? "sc-chip is-on" : "sc-chip"}
               aria-pressed={sort === "points"}
-              onClick={() => setSort("points")}
+              onClick={() => applySort("points")}
             >
               Points
             </button>
@@ -398,7 +409,7 @@ export function PlayerPicker({
                 type="button"
                 className={sort === "depth" ? "sc-chip is-on" : "sc-chip"}
                 aria-pressed={sort === "depth"}
-                onClick={() => setSort("depth")}
+                onClick={() => applySort("depth")}
               >
                 Depth chart
               </button>
@@ -406,11 +417,15 @@ export function PlayerPicker({
             <span
               className="sc-picker__sort-source"
               title={
-                scoringLabel ??
-                `${PLAYER_SCORING_SOURCE} · ${PLAYER_SCORING_SEASON} regular-season PPG`
+                hasRecChrome
+                  ? "Gold recs sort by that night’s PTS. Catalog below stays season PPG."
+                  : scoringLabel ??
+                    `${PLAYER_SCORING_SOURCE} · ${PLAYER_SCORING_SEASON} regular-season PPG`
               }
             >
-              {scoringLabel ?? `${PLAYER_SCORING_SEASON} PPG`}
+              {hasRecChrome
+                ? "Night PTS"
+                : (scoringLabel ?? `${PLAYER_SCORING_SEASON} PPG`)}
             </span>
             {hideBoardFilters ? null : (
               <button
@@ -478,11 +493,7 @@ export function PlayerPicker({
                   className={recSort === "name" ? "sc-chip is-on" : "sc-chip"}
                   aria-pressed={recSort === "name"}
                   aria-label="Filter recs by name"
-                  onClick={() =>
-                    setRecSort((current) =>
-                      current === "name" ? "night" : "name",
-                    )
-                  }
+                  onClick={() => applySort("name")}
                 >
                   Name
                 </button>
@@ -491,11 +502,7 @@ export function PlayerPicker({
                   className={recSort === "points" ? "sc-chip is-on" : "sc-chip"}
                   aria-pressed={recSort === "points"}
                   aria-label="Filter recs by points"
-                  onClick={() =>
-                    setRecSort((current) =>
-                      current === "points" ? "night" : "points",
-                    )
-                  }
+                  onClick={() => applySort("points")}
                 >
                   Points
                 </button>

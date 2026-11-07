@@ -802,7 +802,7 @@ export function PlayerOfTheDayComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={potdPickerHeading(activeIndex, cards.length)}
-          hint="Gold Last night’s / tonight’s best has its own Name and Points chips — they sort and shrink that strip. Search also shrinks it. Already-used names of the set are marked. Search still lists everyone."
+          hint="Sort Points reorders Last night’s / tonight’s best by that night’s PTS. Season PPG stays in the dim catalog below. Search shrinks the gold strip."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
           simple={hudMode === "simple"}

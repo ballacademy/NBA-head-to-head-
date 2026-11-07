@@ -1020,6 +1020,9 @@ describe("composer chrome", () => {
     expect(picker).toContain("filterSuggestedPickerRows");
     expect(picker).toContain("Filter recs by name");
     expect(picker).toContain("Filter recs by points");
+    expect(picker).toContain('applySort("points")');
+    expect(picker).toContain("Night PTS");
+    expect(picker).toContain("Gold recs sort by that night’s PTS");
     expect(picker).toContain("Filter last night");
     expect(picker).toContain("const showRecsSection = hasRecChrome");
     expect(picker).not.toMatch(/showRecsSection =\s*!query\.trim\(\)/);
