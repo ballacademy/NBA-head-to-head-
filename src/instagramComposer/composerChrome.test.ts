@@ -519,6 +519,9 @@ describe("composer chrome", () => {
     expect(composerSaves).toContain("stripComposerPhotos");
     expect(composerSaves).toContain("Saved as template (no photos).");
     expect(composerLibrary).toContain("writeNamedGraphics");
+    expect(composerLibrary).toContain("namedGraphicUpdateId");
+    expect(composerLibrary).toContain("existing.name !== normalizeGraphicName(name)");
+    expect(composerSaves).toContain("selected || undefined");
     const hub = readFileSync(
       join(root, "instagramComposer/ComposerHub.tsx"),
       "utf8",

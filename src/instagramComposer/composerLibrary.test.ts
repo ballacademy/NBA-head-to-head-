@@ -51,6 +51,64 @@ describe("named composer graphics", () => {
     expect(gone).toHaveLength(0);
   });
 
+  it("stacks a new name instead of overwriting the previously selected save", () => {
+    const key = "ddgm:standings-composer:saves";
+    const first = upsertNamedGraphic(key, "East Power", { title: "EAST" });
+    const second = upsertNamedGraphic(
+      key,
+      "West Power",
+      { title: "WEST" },
+      first.saved.id,
+    );
+    expect(second.saves).toHaveLength(2);
+    expect(second.saved.id).not.toBe(first.saved.id);
+    const names = second.saves.map((save) => save.name).sort();
+    expect(names).toEqual(["East Power", "West Power"]);
+    expect(
+      listNamedGraphics<{ title: string }>(key).find(
+        (save) => save.name === "East Power",
+      )?.board,
+    ).toEqual({ title: "EAST" });
+    expect(
+      listNamedGraphics<{ title: string }>(key).find(
+        (save) => save.name === "West Power",
+      )?.board,
+    ).toEqual({ title: "WEST" });
+  });
+
+  it("updates the selected save when the name is unchanged", () => {
+    const key = "ddgm:standings-composer:saves";
+    const first = upsertNamedGraphic(key, "East Power", { title: "EAST" });
+    const updated = upsertNamedGraphic(
+      key,
+      "East Power",
+      { title: "EAST v2" },
+      first.saved.id,
+    );
+    expect(updated.saves).toHaveLength(1);
+    expect(updated.saved.id).toBe(first.saved.id);
+    expect(updated.saved.board).toEqual({ title: "EAST v2" });
+  });
+
+  it("keeps photos on Duplicate this post as a new slot", () => {
+    const key = "ddgm:standings-composer:saves";
+    const board = {
+      title: "EAST",
+      photoSrc: "data:image/png;base64,abc",
+      customPhoto: true,
+    };
+    const first = upsertNamedGraphic(key, "East Power", board);
+    const copy = upsertNamedGraphic(key, "East Power copy", board);
+    expect(copy.saves).toHaveLength(2);
+    expect(copy.saved.id).not.toBe(first.saved.id);
+    expect(copy.saved.board).toEqual(board);
+    expect(
+      listNamedGraphics<typeof board>(key).find(
+        (save) => save.id === first.saved.id,
+      )?.board,
+    ).toEqual(board);
+  });
+
   it("exports and imports the whole named-save library for other devices", () => {
     upsertNamedGraphic("ddgm:tier-list-composer:saves", "Gold S", {
       title: "S TIER",

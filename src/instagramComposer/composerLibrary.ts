@@ -82,18 +82,44 @@ export const writeNamedGraphics = <T>(key: string, saves: NamedGraphic<T>[]) => 
   notifyLibraryChange(key);
 };
 
+export const normalizeGraphicName = (name: string) =>
+  name.replace(/\s+/g, " ").trim() || "Untitled";
+
+const newGraphicId = (current: NamedGraphic<unknown>[]) => {
+  const taken = new Set(current.map((save) => save.id));
+  let id = "";
+  do {
+    id = `g-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  } while (taken.has(id));
+  return id;
+};
+
+/** Reuse a slot only when the user is updating that same named post. */
+export const namedGraphicUpdateId = <T>(
+  current: NamedGraphic<T>[],
+  name: string,
+  existingId?: string,
+): string | undefined => {
+  if (!existingId) {
+    return undefined;
+  }
+  const existing = current.find((save) => save.id === existingId);
+  if (!existing || existing.name !== normalizeGraphicName(name)) {
+    return undefined;
+  }
+  return existing.id;
+};
+
 export const upsertNamedGraphic = <T>(
   key: string,
   name: string,
   board: T,
   existingId?: string,
 ): { saves: NamedGraphic<T>[]; saved: NamedGraphic<T> } => {
-  const label = name.replace(/\s+/g, " ").trim() || "Untitled";
+  const label = normalizeGraphicName(name);
   const current = listNamedGraphics<T>(key);
   const id =
-    existingId && current.some((save) => save.id === existingId)
-      ? existingId
-      : `g-${Date.now().toString(36)}`;
+    namedGraphicUpdateId(current, label, existingId) ?? newGraphicId(current);
   const saved: NamedGraphic<T> = {
     id,
     name: label,
