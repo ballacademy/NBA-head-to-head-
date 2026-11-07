@@ -4,6 +4,7 @@ import { pickerHighlightIndex } from "../instagramComposer/pickerKeyboard";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { closeComposerScrim } from "../instagramComposer/closeComposerScrim";
 import { usedChipLabel } from "../instagramComposer/pickerUsed";
+import { filterSuggestedPickerRows } from "../instagramComposer/pickerSuggested";
 import { withCoaches } from "../instagramComposer/nbaCoaches";
 import { readJson, writeJson } from "../lib/browserStorage";
 import {
@@ -199,22 +200,46 @@ export function PlayerPicker({
     extraSuggested.length > 0 ||
     extraSuggestedLoading;
   const showDudRecs = hasRecToggle && recsStrip === "rough-night";
-  const recRows = showDudRecs ? extraSuggestedRows : suggestedRows;
+  const recRows = useMemo(
+    () =>
+      filterSuggestedPickerRows(
+        showDudRecs ? extraSuggestedRows : suggestedRows,
+        {
+          query,
+          filters: {
+            ...boardFilters,
+            team: lockedTeam ?? boardFilters.team,
+          },
+          sort,
+        },
+      ),
+    [
+      showDudRecs,
+      extraSuggestedRows,
+      suggestedRows,
+      query,
+      boardFilters,
+      lockedTeam,
+      sort,
+    ],
+  );
   const recLoading = showDudRecs ? extraSuggestedLoading : suggestedLoading;
   const recHeading = showDudRecs ? dudHeading : standoutHeading;
   const recEmpty = showDudRecs
     ? extraSuggestedEmpty ?? "No rough nights for this slate yet."
     : suggestedEmpty ?? "No standouts for this night yet.";
+  const hasRecChrome =
+    hasRecToggle ||
+    suggestedLoading ||
+    suggestedRows.length > 0 ||
+    suggestedHeading != null;
   const showRecsSection =
-    !query.trim() &&
-    (hasRecToggle ||
-      suggestedLoading ||
-      suggestedRows.length > 0 ||
-      suggestedHeading != null);
+    hasRecChrome &&
+    (recLoading || recRows.length > 0 || !query.trim());
   const showSuggested = recRows.length > 0 && showRecsSection;
   const recIds = useMemo(
-    () => new Set(showRecsSection ? recRows.map((row) => row.id) : []),
-    [showRecsSection, recRows],
+    () => new Set(showSuggested ? recRows.map((row) => row.id) : []),
+    [showSuggested, recRows],
   );
 
   const handlePick = (
@@ -251,10 +276,7 @@ export function PlayerPicker({
     depthReady,
   ]);
 
-  const searching = Boolean(query.trim());
-  const restPlayers = searching
-    ? players
-    : players.filter((player) => !recIds.has(player.id));
+  const restPlayers = players.filter((player) => !recIds.has(player.id));
   const visibleIds = useMemo(
     () => [
       ...(showSuggested ? recRows.map((row) => row.id) : []),
@@ -469,8 +491,8 @@ export function PlayerPicker({
                     player={row.player}
                     currentId={currentId}
                     usedLabel={usedLabels[row.id]}
-                    showPpg={false}
-                    showDepth={false}
+                    showPpg={sort === "points"}
+                    showDepth={sort === "depth"}
                     badge={row.badge}
                     metaOverride={row.meta}
                     live={row.live}
