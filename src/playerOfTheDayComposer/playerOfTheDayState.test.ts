@@ -20,11 +20,14 @@ import {
   DEFAULT_HEADSHOT_PAN,
   DEFAULT_PHOTO_ZOOM,
   DEFAULT_POTD_TITLE,
+  FILLED_POTD_TITLE,
   MAX_PHOTO_ZOOM,
   POTD_WL_LOSS,
   POTD_WL_WIN,
   applyPlayerPick,
   blankStats,
+  isEmptyPotdTitle,
+  landCarriedPotdPlayer,
   clampPan,
   clampZoom,
   createEmptyCards,
@@ -51,6 +54,14 @@ describe("player of the day state", () => {
   it("keeps the Instagram 4:5 PNG size", () => {
     expect(EXPORT_WIDTH).toBe(2400);
     expect(EXPORT_HEIGHT).toBe(3000);
+  });
+
+  it("lands a carried player on an empty POTD board and drops the empty-state title", () => {
+    expect(isEmptyPotdTitle(DEFAULT_POTD_TITLE)).toBe(true);
+    expect(isEmptyPotdTitle(FILLED_POTD_TITLE)).toBe(false);
+    const landed = landCarriedPotdPlayer(createEmptyCards(2), "3975");
+    expect(landed[0]?.playerId).toBe("3975");
+    expect(landCarriedPotdPlayer(landed, "1966")[0]?.playerId).toBe("3975");
   });
 
   it("splits names and the outlined title onto two lines", () => {

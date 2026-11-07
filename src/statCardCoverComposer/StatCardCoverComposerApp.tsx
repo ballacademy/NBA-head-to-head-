@@ -55,6 +55,10 @@ import { hydrateJsonStorage, readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  carriedPlayerId,
+  rememberComposerPlayer,
+} from "../instagramComposer/composerCarry";
 import { StatCardCoverGraphic } from "./StatCardCoverGraphic";
 import { exportStatCardCoverPng } from "./exportStatCardCoverPng";
 import { renderStatCardCoverCanvas } from "./renderStatCardCoverCanvas";
@@ -73,6 +77,7 @@ import {
   fillCoverFromStandouts,
   hasCustomPhoto,
   isStatCardCoverDraft,
+  landCarriedCoverPlayer,
   normalizeStatCardCoverDraft,
   patchCoverSlot,
   setCoverSlotPhotoAt,
@@ -95,10 +100,10 @@ const SAVES_KEY = "ddgm:stat-card-cover-composer:saves";
 
 const loadDraft = (): StatCardCoverDraft => {
   const stored = readJson<Partial<StatCardCoverDraft>>(STORAGE_KEY);
-  if (isStatCardCoverDraft(stored)) {
-    return normalizeStatCardCoverDraft(stored);
-  }
-  return defaultStatCardCoverDraft();
+  const base = isStatCardCoverDraft(stored)
+    ? normalizeStatCardCoverDraft(stored)
+    : defaultStatCardCoverDraft();
+  return landCarriedCoverPlayer(base, carriedPlayerId());
 };
 
 export function StatCardCoverComposerApp() {
@@ -282,6 +287,7 @@ export function StatCardCoverComposerApp() {
     if (!player) {
       return;
     }
+    rememberComposerPlayer(playerId);
     push(draft);
     setDraft((current) => {
       const slots = setCoverSlotPlayer(current.slots, index, player, keepCustomPhoto);

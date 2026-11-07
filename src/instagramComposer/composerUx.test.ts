@@ -11,7 +11,11 @@ import {
   parseComposerRecents,
   COMPOSER_RECENTS_MAX,
 } from "./composerRecents";
-import { composerShowsStamp, parseComposerStamp } from "./composerStamp";
+import {
+  composerShowsStamp,
+  defaultStampText,
+  parseComposerStamp,
+} from "./composerStamp";
 import { squareFilename } from "./exportPack";
 import { playerNicknameHaystack } from "./playerNicknames";
 
@@ -83,6 +87,9 @@ describe("composer UX extras", () => {
     expect(composerShowsStamp("headline")).toBe(true);
     expect(composerShowsStamp("stat-card")).toBe(false);
     expect(parseComposerStamp({ on: true, text: "oct 16" }).text).toBe("OCT 16");
+    expect(
+      defaultStampText(new Date("2026-11-07T04:00:00.000Z")),
+    ).toBe("NOV 6, 2026");
   });
 
   it("finds Ant, Wemby, and Bron from nicknames", () => {

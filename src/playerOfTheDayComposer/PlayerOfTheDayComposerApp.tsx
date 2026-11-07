@@ -61,8 +61,11 @@ import {
   applyLeaderboardTotals,
   applyPlayerPick,
   cardPlayerName,
+  FILLED_POTD_TITLE,
   fillPotdFromStandouts,
   hasCustomPhoto,
+  isEmptyPotdTitle,
+  landCarriedPotdPlayer,
   leaderboardTotalForName,
   clearCard,
   defaultPotdDraft,
@@ -79,6 +82,10 @@ import {
   type PotdCard,
   type PotdDraft,
 } from "./playerOfTheDayState";
+import {
+  carriedPlayerId,
+  rememberComposerPlayer,
+} from "../instagramComposer/composerCarry";
 import { subscribeLeaderboard } from "../potdLeaderboardComposer/potdLeaderboardState";
 
 import "@fontsource/montserrat/latin-900.css";
@@ -96,14 +103,17 @@ const SAVES_KEY = "ddgm:player-of-the-day-composer:saves";
 const loadDraft = (): PotdDraft => {
   const stored = readJson<Partial<PotdDraft>>(STORAGE_KEY);
   if (isPotdDraft(stored)) {
-    return stored;
+    return {
+      ...stored,
+      cards: landCarriedPotdPlayer(stored.cards, carriedPlayerId()),
+    };
   }
   const empty = defaultPotdDraft();
   return {
     brand: stored?.brand?.trim() ? stored.brand : empty.brand,
     title: stored?.title?.trim() ? stored.title : empty.title,
     date: stored?.date?.trim() ? stored.date : empty.date,
-    cards: empty.cards,
+    cards: landCarriedPotdPlayer(empty.cards, carriedPlayerId()),
     showBa: stored?.showBa === true,
     wlColor: stored?.wlColor === true,
   };
@@ -294,6 +304,9 @@ export function PlayerOfTheDayComposerApp() {
     const next = fillPotdFromStandouts(cards, rows);
     setCards(next);
     setDate(formatDateLabel(night.date));
+    if (isEmptyPotdTitle(title)) {
+      setTitle(FILLED_POTD_TITLE);
+    }
     const names = next.map(cardPlayerName).filter(Boolean);
     if (names.length >= 3) {
       setStatus(`Filled ${names.slice(0, -1).join(", ")}, and ${names.at(-1)}.`);
@@ -348,6 +361,7 @@ export function PlayerOfTheDayComposerApp() {
     if (!player) {
       return;
     }
+    rememberComposerPlayer(playerId);
     push(cards);
     setCards((current) => {
       const next = applyPlayerPick(current, index, player, game, total, keepCustomPhoto);

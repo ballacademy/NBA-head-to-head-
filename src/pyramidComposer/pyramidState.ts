@@ -19,7 +19,11 @@ import {
   usedPlayerIds,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import { NBA_COACHES, getCoach } from "../instagramComposer/nbaCoaches";
+import {
+  NBA_COACHES,
+  coachHasPortrait,
+  getCoach,
+} from "../instagramComposer/nbaCoaches";
 import type { StandingRecord } from "../standingsComposer/rankingState";
 import {
   NBA_ACTIVE_PLAYERS,
@@ -293,13 +297,13 @@ export const pyramidAwardLadder = (
 
 export const coyCoachLadder = (count: number): TierPlayer[] => {
   const seeded = PYRAMID_COY_SEED_IDS.map((id) => getCoach(id)).filter(
-    (coach): coach is TierPlayer => Boolean(coach),
+    (coach): coach is TierPlayer => Boolean(coach) && coachHasPortrait(coach),
   );
   const used = new Set(seeded.map((coach) => coach.id));
-  return [...seeded, ...NBA_COACHES.filter((coach) => !used.has(coach.id))].slice(
-    0,
-    count,
+  const rest = NBA_COACHES.filter(
+    (coach) => !used.has(coach.id) && coachHasPortrait(coach),
   );
+  return [...seeded, ...rest].slice(0, count);
 };
 
 export const mvpPlayerLadder = (count: number): TierPlayer[] =>
@@ -328,14 +332,21 @@ export const coachesFromStandings = (
   const coaches: TierPlayer[] = [];
   for (const id of ids) {
     const coach = getCoach(`coach-${id}`);
-    if (coach) {
+    if (coach && coachHasPortrait(coach)) {
       coaches.push(coach);
     }
     if (coaches.length >= count) {
       break;
     }
   }
-  return coaches.length ? coaches : coyCoachLadder(count);
+  if (coaches.length >= count) {
+    return coaches;
+  }
+  const used = new Set(coaches.map((coach) => coach.id));
+  return [
+    ...coaches,
+    ...coyCoachLadder(count).filter((coach) => !used.has(coach.id)),
+  ].slice(0, count);
 };
 
 export const fillPyramidFromPlayers = (
@@ -350,7 +361,10 @@ export const fillPyramidFromPlayers = (
     }
   }
   let next = createEmptyPyramidSlots(rowCount);
-  players.slice(0, pyramidSlotCount(rowCount)).forEach((player, index) => {
+  const faces = players.filter(
+    (player) => player.role !== "coach" || coachHasPortrait(player),
+  );
+  faces.slice(0, pyramidSlotCount(rowCount)).forEach((player, index) => {
     const keep = Boolean(
       previousById.get(player.id) && hasCustomPhoto(previousById.get(player.id)!),
     );

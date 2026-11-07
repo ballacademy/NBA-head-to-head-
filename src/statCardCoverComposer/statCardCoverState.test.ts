@@ -34,6 +34,7 @@ import {
   fillCoverFromStandouts,
   fillCoverSlotFromPlayer,
   hasCustomPhoto,
+  landCarriedCoverPlayer,
   isAutoCoverTitle,
   normalizeStatCardCoverDraft,
   setCoverSlotPhoto,
@@ -289,6 +290,14 @@ describe("stat card cover", () => {
 
   it("treats a restored board with photos as occupied and leaves a blank cover empty", () => {
     expect(coverDraftOccupied(defaultStatCardCoverDraft())).toBe(false);
+    const carried = landCarriedCoverPlayer(
+      defaultStatCardCoverDraft(),
+      "3975",
+    );
+    expect(carried.slots[0]?.playerId).toBe("3975");
+    expect(
+      landCarriedCoverPlayer(carried, "1966").slots[0]?.playerId,
+    ).toBe("3975");
     const jokic = getPlayer("3112335")!;
     const withPlayer = {
       ...defaultStatCardCoverDraft(),

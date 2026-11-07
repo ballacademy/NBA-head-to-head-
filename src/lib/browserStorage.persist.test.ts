@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { hydrateJsonStorage, readJson, writeJson } from "./browserStorage";
+import {
+  beginComposerHydrateWrites,
+  hydrateJsonStorage,
+  readJson,
+  writeJson,
+} from "./browserStorage";
 import {
   resetDurableJsonForTests,
   unloadDurableCacheForTests,
@@ -69,6 +74,11 @@ describe("composer photo persist", () => {
     expect(writes).toEqual([key]);
     writeJson(key, { title: "EASTERN CONFERENCE" });
     expect(writes).toEqual([key]);
+    beginComposerHydrateWrites();
+    writeJson(key, { title: "PROJECTED NBA STANDINGS" });
+    expect(writes).toEqual([key]);
+    writeJson(key, { title: "EASTERN CONFERENCE" });
+    expect(writes).toEqual([key, key]);
     window.removeEventListener("ddgm:composer-draft-write", onWrite);
   });
 

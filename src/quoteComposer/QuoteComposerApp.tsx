@@ -207,7 +207,7 @@ export function QuoteComposerApp() {
       setStatus("No box scores for that night yet — pick a player.");
       return;
     }
-    commitPick(top.athleteId, false, false);
+    commitPick(top.athleteId, false, true);
   };
 
   useEffect(() => {

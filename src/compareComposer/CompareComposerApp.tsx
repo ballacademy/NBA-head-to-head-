@@ -54,6 +54,10 @@ import {
 } from "../everyTeamComposer/historicalRosters";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  carriedPlayerId,
+  rememberComposerPlayer,
+} from "../instagramComposer/composerCarry";
 import { CompareGraphic } from "./CompareGraphic";
 import {
   GRAPHIC_HEIGHT,
@@ -76,6 +80,7 @@ import {
   fillCompareSide,
   hasCustomPhoto,
   isCompareDraft,
+  landCarriedComparePlayer,
   moveCompareStat,
   normalizeCompareDraft,
   parseCompareStatKey,
@@ -100,10 +105,10 @@ const SAVES_KEY = "ddgm:compare-composer:saves";
 
 const loadDraft = (): CompareDraft => {
   const stored = readJson<Partial<CompareDraft>>(STORAGE_KEY);
-  if (isCompareDraft(stored)) {
-    return normalizeCompareDraft(stored);
-  }
-  return defaultCompareDraft();
+  const base = isCompareDraft(stored)
+    ? normalizeCompareDraft(stored)
+    : defaultCompareDraft();
+  return landCarriedComparePlayer(base, carriedPlayerId());
 };
 
 export function CompareComposerApp() {
@@ -212,6 +217,7 @@ export function CompareComposerApp() {
     if (!player) {
       return;
     }
+    rememberComposerPlayer(playerId);
     push(draft);
     const nextSides = [...draft.sides] as CompareDraft["sides"];
     nextSides[side] = fillCompareSide(player, draft.sides[side]!, keep);

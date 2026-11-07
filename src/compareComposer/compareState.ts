@@ -32,7 +32,7 @@ import {
   splitPlayerName,
   type TotwStrip,
 } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
+import { getPlayer, type TierPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
   defaultLetterGradeFields,
   normalizeLetterGradeFields,
@@ -476,6 +476,31 @@ export const fillCompareSide = (
     photoSrc: keep ? previous.photoSrc : null,
     customPhoto: keep,
     pan: keep ? { ...previous.pan } : { ...DEFAULT_HEADSHOT_PAN },
+  };
+};
+
+export const landCarriedComparePlayer = (
+  draft: CompareDraft,
+  playerId: string | null | undefined,
+): CompareDraft => {
+  const id = playerId?.trim();
+  if (!id || draft.sides[0]?.playerId) {
+    return draft;
+  }
+  const player = getPlayer(id);
+  if (!player) {
+    return draft;
+  }
+  const side = fillCompareSide(player, draft.sides[0]!);
+  return {
+    ...draft,
+    sides: [
+      {
+        ...side,
+        photoSrc: player.headshotUrl || side.photoSrc,
+      },
+      draft.sides[1]!,
+    ],
   };
 };
 

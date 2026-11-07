@@ -29,6 +29,9 @@ export { POTD_CARD_MAX, parsePotdCardCount };
 export { DEFAULT_BRAND };
 
 export const DEFAULT_POTD_TITLE = "PLAYER OF THE DAY?";
+export const FILLED_POTD_TITLE = "PLAYER OF THE DAY";
+export const isEmptyPotdTitle = (title: string) =>
+  !title.trim() || title.trim() === DEFAULT_POTD_TITLE;
 export const POTD_TITLE_TRACK = 0.02;
 export const POTD_CARD_COUNT = 2;
 export const POTD_SLOT_LABELS_2 = ["Left card", "Right card"] as const;
@@ -422,6 +425,25 @@ export const applyPlayerPick = (
     }
     return card;
   });
+};
+
+export const landCarriedPotdPlayer = (
+  cards: PotdCard[],
+  playerId: string | null | undefined,
+): PotdCard[] => {
+  const id = playerId?.trim();
+  if (!id) {
+    return cards;
+  }
+  const index = cards.findIndex((card) => !card.playerId);
+  if (index < 0) {
+    return cards;
+  }
+  const player = getPlayer(id);
+  if (!player) {
+    return cards;
+  }
+  return applyPlayerPick(cards, index, player, null);
 };
 
 export const clearCard = (cards: PotdCard[], index: number): PotdCard[] => {

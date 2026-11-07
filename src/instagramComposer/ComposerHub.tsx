@@ -47,7 +47,10 @@ import { useComposerPreviewZoom } from "./composerPreviewZoom";
 import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
-import { hydrateJsonStorage } from "../lib/browserStorage";
+import {
+  beginComposerHydrateWrites,
+  hydrateJsonStorage,
+} from "../lib/browserStorage";
 import { chainHudWheel, syncComposerVisualViewport } from "./chainHudWheel";
 import "./composerSlotSwap.css";
 import "../standingsComposer/standingsComposer.css";
@@ -87,11 +90,18 @@ export function ComposerHub() {
   const [persistReady, setPersistReady] = useState(false);
 
   useEffect(() => {
-    void hydrateJsonStorage().finally(() => setPersistReady(true));
+    beginComposerHydrateWrites();
+    void hydrateJsonStorage().finally(() => {
+      beginComposerHydrateWrites();
+      setPersistReady(true);
+    });
   }, []);
 
   useEffect(() => {
-    const sync = () => setMode(readComposerMode());
+    const sync = () => {
+      beginComposerHydrateWrites();
+      setMode(readComposerMode());
+    };
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, []);
@@ -117,6 +127,7 @@ export function ComposerHub() {
   }, [persistReady, mode]);
 
   const select = useCallback((next: ComposerMode) => {
+    beginComposerHydrateWrites();
     const href = composerHref(next);
     if (`${window.location.pathname}${window.location.search}` !== href) {
       window.history.pushState({}, "", href);

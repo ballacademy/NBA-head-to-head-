@@ -296,6 +296,24 @@ export const setCoverSlotPlayer = (
       : slot,
   );
 
+export const landCarriedCoverPlayer = (
+  draft: StatCardCoverDraft,
+  playerId: string | null | undefined,
+): StatCardCoverDraft => {
+  const id = playerId?.trim();
+  if (!id || coverDraftOccupied(draft)) {
+    return draft;
+  }
+  const player = getPlayer(id);
+  if (!player) {
+    return draft;
+  }
+  return {
+    ...draft,
+    slots: setCoverSlotPlayer(draft.slots, 0, player),
+  };
+};
+
 export const swapCoverSlots = (
   slots: CoverSlot[],
   from: number,

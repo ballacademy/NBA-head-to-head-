@@ -13,6 +13,7 @@ import { parseComposerHudMode } from "./composerHudMode";
 import { fillQualityMessage } from "./composerFillToast";
 import { nextEmptySlotIndex, slotMissingPlayer } from "./nextEmptySlot";
 import {
+  leftoverContainFit,
   PREVIEW_ZOOM_NATURAL_SCALE,
   PREVIEW_ZOOM_SEVENTY_FIVE,
   previewZoomFactor,
@@ -98,6 +99,7 @@ describe("extras 17–32 HUD helpers", () => {
         "Fill report",
         "Auto-fill 7–10",
         "Populate matching",
+        "Sort into tiers",
       ]),
     );
     const east = { textContent: "Fill East", disabled: false, click: vi.fn() };
@@ -124,13 +126,51 @@ describe("extras 17–32 HUD helpers", () => {
   it("zooms Fit vs 75% vs 100%", () => {
     expect(PREVIEW_ZOOM_NATURAL_SCALE).toBe(0.5);
     expect(PREVIEW_ZOOM_SEVENTY_FIVE).toBeCloseTo(0.41);
-    expect(previewZoomFactor(0.4, "fit")).toBe(0.4);
-    expect(previewZoomFactor(0.4, "75")).toBeCloseTo(PREVIEW_ZOOM_SEVENTY_FIVE);
-    expect(previewZoomFactor(0.4, "100")).toBe(0.5);
-    expect(previewZoomFactor(0.6, "75")).toBeCloseTo(PREVIEW_ZOOM_SEVENTY_FIVE);
-    expect(previewZoomFactor(0.6, "100")).toBe(0.5);
-    expect(previewZoomFactor(0.6, "75")).toBeLessThan(previewZoomFactor(0.6, "100"));
+    expect(previewZoomFactor(0.36, "fit")).toBe(0.36);
+    expect(previewZoomFactor(0.36, "75")).toBeCloseTo(0.43);
     expect(previewZoomFactor(0.36, "100")).toBe(0.5);
+    expect(previewZoomFactor(0.36, "75")).toBeGreaterThan(
+      previewZoomFactor(0.36, "fit"),
+    );
+    expect(previewZoomFactor(0.36, "75")).toBeLessThan(
+      previewZoomFactor(0.36, "100"),
+    );
+    expect(previewZoomFactor(0.6, "100")).toBe(0.5);
+    expect(previewZoomFactor(0.6, "75")).toBeGreaterThan(
+      previewZoomFactor(0.6, "100"),
+    );
+    expect(previewZoomFactor(0.6, "75")).toBeLessThan(
+      previewZoomFactor(0.6, "fit"),
+    );
+    const laptopFit = leftoverContainFit({
+      frameW: 1440,
+      viewW: 1440,
+      viewH: 900,
+      hudH: 357,
+      width: 1200,
+      height: 1500,
+    });
+    expect(laptopFit).toBeCloseTo(543 / 1500);
+    expect(laptopFit * 1200).toBeCloseTo(434.4, 0);
+    const phoneFit = leftoverContainFit({
+      frameW: 390,
+      viewW: 390,
+      viewH: 844,
+      hudH: 1174,
+      width: 1200,
+      height: 1500,
+    });
+    expect(phoneFit).toBeCloseTo(390 / 1200);
+    const stampWell = leftoverContainFit({
+      frameW: 1440,
+      viewW: 1440,
+      viewH: 900,
+      hudH: 720,
+      width: 1200,
+      height: 1500,
+    });
+    expect(stampWell).toBeCloseTo(1440 / 1200);
+    expect(stampWell).toBeGreaterThan(0.4);
   });
 
   it("parses BA corners and names files with player + date", () => {

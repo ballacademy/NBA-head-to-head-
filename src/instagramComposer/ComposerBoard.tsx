@@ -7,6 +7,7 @@ import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
 import {
+  leftoverContainFit,
   PREVIEW_ZOOM_NATURAL_SCALE,
   previewZoomFactor,
   useComposerPreviewZoom,
@@ -18,9 +19,9 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit sizes to the viewport (width × window height), not leftover HUD
- * space, so the page can scroll and the whole post stays on the document.
- * 75 / 100 use PREVIEW_ZOOM_NATURAL_SCALE (100% = half the 1200×1500 design).
+ * Fit leftover-contains under the HUD (width-contain on a tiny leftover
+ * well so the 4:5 is never a postage stamp). 100% stays
+ * PREVIEW_ZOOM_NATURAL_SCALE (600×750). Page may still scroll at 75/100.
  */
 export function ComposerBoard({
   children,
@@ -43,6 +44,9 @@ export function ComposerBoard({
       return;
     }
     const frame = node.closest(".sc-stage__frame");
+    const root = node.closest(".sc-root");
+    const tabs = root?.querySelector(".sc-tabs");
+    const toolbar = root?.querySelector(".sc-toolbar");
     const sync = () => {
       const next = node.clientWidth;
       if (next > 0) {
@@ -52,9 +56,22 @@ export function ComposerBoard({
         frame instanceof HTMLElement && frame.clientWidth > 0
           ? frame.clientWidth
           : 0;
+      const viewW = window.visualViewport?.width ?? window.innerWidth;
       const viewH = window.visualViewport?.height ?? window.innerHeight;
-      if (frameW > 0 && viewH > 0) {
-        const nextFit = Math.min(frameW / width, viewH / height);
+      const hudH =
+        (tabs instanceof HTMLElement ? tabs.getBoundingClientRect().height : 0) +
+        (toolbar instanceof HTMLElement
+          ? toolbar.getBoundingClientRect().height
+          : 0);
+      if ((frameW > 0 || viewW > 0) && viewH > 0) {
+        const nextFit = leftoverContainFit({
+          frameW,
+          viewW,
+          viewH,
+          hudH,
+          width,
+          height,
+        });
         if (nextFit > 0) {
           setFit(nextFit);
         }
@@ -73,6 +90,12 @@ export function ComposerBoard({
     observer.observe(node);
     if (frame instanceof Element) {
       observer.observe(frame);
+    }
+    if (tabs instanceof Element) {
+      observer.observe(tabs);
+    }
+    if (toolbar instanceof Element) {
+      observer.observe(toolbar);
     }
     return () => {
       observer.disconnect();

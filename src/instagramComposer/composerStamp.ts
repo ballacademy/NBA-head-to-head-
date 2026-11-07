@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { readJson, writeJson } from "../lib/browserStorage";
+import { nbaTodayIso } from "../playerOfTheDayComposer/lastGame";
 import type { ComposerMode } from "./composerMode";
 
 export const COMPOSER_STAMP_KEY = "ddgm:composer-stamp";
@@ -28,14 +29,27 @@ export interface ComposerStamp {
   text: string;
 }
 
-export const defaultStampText = (now = new Date()) =>
-  now
-    .toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
-    .toUpperCase();
+const STAMP_MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+] as const;
+
+/** NBA slate date in America/New_York — not the machine’s UTC/local calendar. */
+export const defaultStampText = (now = new Date()) => {
+  const [year, month, day] = nbaTodayIso(now).split("-").map(Number);
+  const label = STAMP_MONTHS[(month ?? 1) - 1] ?? "JAN";
+  return `${label} ${day}, ${year}`;
+};
 
 export const parseComposerStamp = (value: unknown): ComposerStamp => {
   if (!value || typeof value !== "object") {

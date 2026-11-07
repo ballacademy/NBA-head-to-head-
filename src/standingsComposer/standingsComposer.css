@@ -485,15 +485,21 @@
 }
 
 .sc-field--preset {
-  flex: 1.6 1 260px;
+  flex: 1.6 1 280px;
   max-width: min(100%, 520px);
-  min-width: min(100%, 220px);
+  min-width: min(100%, 280px);
 }
 
 .sc-field--preset select {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-x: auto;
+  text-overflow: clip;
   white-space: nowrap;
+}
+
+.sc-field--subtitle {
+  flex: 1.4 1 260px;
+  max-width: min(100%, 420px);
+  min-width: min(100%, 240px);
 }
 
 .sc-field__row {

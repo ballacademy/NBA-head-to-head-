@@ -74,6 +74,7 @@ export const COMPOSER_HOTKEY_FILL_LABELS = [
   "Populate",
   "Auto-fill 7–10",
   "Auto-fill 7-10",
+  "Sort into tiers",
   "Fill",
   "Auto-fill",
 ] as const;

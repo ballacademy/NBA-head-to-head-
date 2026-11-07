@@ -4,7 +4,13 @@ import {
   getPlayer,
   searchPlayers,
 } from "../tierListComposer/nbaActivePlayers";
-import { NBA_COACHES, getCoach, isCoachId, withCoaches } from "./nbaCoaches";
+import {
+  NBA_COACHES,
+  coachHasPortrait,
+  getCoach,
+  isCoachId,
+  withCoaches,
+} from "./nbaCoaches";
 
 describe("nba coaches catalog", () => {
   it("lists 30 head coaches as picker rows", () => {
@@ -20,8 +26,11 @@ describe("nba coaches catalog", () => {
     expect(getPlayer(kerr!.id)?.role).toBe("coach");
     const finch = NBA_COACHES.find((coach) => coach.team === "MIN");
     expect(finch?.headshotUrl).toMatch(/nba-logos\/MIN/);
+    expect(coachHasPortrait(finch!)).toBe(false);
+    expect(coachHasPortrait(kerr!)).toBe(true);
     const snyder = NBA_COACHES.find((coach) => coach.team === "ATL");
     expect(snyder?.headshotUrl).toMatch(/coaches\/65\/52081/);
+    expect(coachHasPortrait(snyder!)).toBe(true);
     const mazzulla = NBA_COACHES.find((coach) => coach.team === "BOS");
     expect(mazzulla?.headshotUrl).toMatch(/coaches\/65\/2232684/);
     const brown = NBA_COACHES.find((coach) => coach.team === "NYK");

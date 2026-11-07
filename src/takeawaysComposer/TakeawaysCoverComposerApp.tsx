@@ -12,7 +12,10 @@ import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
-import { rememberComposerPlayer } from "../instagramComposer/composerCarry";
+import {
+  carriedPlayerId,
+  rememberComposerPlayer,
+} from "../instagramComposer/composerCarry";
 import { useComposerDateRange } from "../instagramComposer/composerDateRange";
 import {
   TAKEAWAYS_LOOK_KEY,
@@ -54,6 +57,7 @@ import {
   hasCustomTakeawaysPhoto,
   insertTakeawaysCards,
   isTakeawaysDraft,
+  landCarriedTakeawaysPlayer,
   normalizeTakeawaysDraft,
   patchTakeawaysCard,
   setTakeawaysCardCount,
@@ -106,7 +110,7 @@ export function TakeawaysCoverComposerApp() {
   useEffect(() => {
     document.title = "NBA takeaways cover";
     void hydrateJsonStorage().then(() => {
-      setDraft(loadDraft());
+      setDraft(landCarriedTakeawaysPlayer(loadDraft(), carriedPlayerId()));
       setHydrated(true);
     });
   }, []);
@@ -515,9 +519,9 @@ export function TakeawaysCoverComposerApp() {
           </>
         }
       />
-      {status ? <p className="sc-status">{status}</p> : null}
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          {status ? <p className="sc-status">{status}</p> : null}
           <div className="sc-board-wrap">
             <ComposerBoard
               height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}

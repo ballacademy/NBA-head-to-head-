@@ -348,7 +348,7 @@ export function StandingsComposerApp() {
           presets={STANDINGS_TITLE_PRESETS}
           onChange={setTitle}
         />
-        <label className="sc-field">
+        <label className="sc-field sc-field--subtitle">
           Subtitle
           <input
             value={subtitle}

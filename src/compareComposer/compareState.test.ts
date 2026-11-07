@@ -19,6 +19,7 @@ import {
   isAutoCompareSubtitle,
   normalizeCompareDraft,
   fillCompareSide,
+  landCarriedComparePlayer,
   leadingSide,
   nextCompareStat,
   numericStat,
@@ -95,6 +96,12 @@ describe("compare composer recs", () => {
     expect(leadingSide("24.2", "31.1")).toBe(1);
     expect(leadingSide("24.2", "24.2")).toBeNull();
     expect(numericStat("47.2%")).toBeCloseTo(47.2);
+    const landed = landCarriedComparePlayer(defaultCompareDraft(), luka.id);
+    expect(landed.sides[0]?.playerId).toBe(luka.id);
+    expect(landed.sides[0]?.photoSrc).toBe(luka.headshotUrl);
+    expect(
+      landCarriedComparePlayer(landed, "3112335").sides[0]?.playerId,
+    ).toBe(luka.id);
   });
 
   it("reads season averages through last-year fallback", () => {

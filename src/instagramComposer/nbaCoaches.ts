@@ -87,6 +87,11 @@ const toCoach = (seed: CoachSeed): TierPlayer => {
 
 export const NBA_COACHES: TierPlayer[] = COACH_SEEDS.map(toCoach);
 
+/** ESPN player/coach stamps — not the franchise mark fallback. */
+export const coachHasPortrait = (coach: Pick<TierPlayer, "headshotUrl">) =>
+  /\/players\/full\/\d+\.(?:png|jpg)/i.test(coach.headshotUrl) ||
+  /\/coaches\/65\/\d+\.(?:png|jpg)/i.test(coach.headshotUrl);
+
 export const NBA_COACHES_BY_ID: Record<string, TierPlayer> = Object.fromEntries(
   NBA_COACHES.map((coach) => [coach.id, coach]),
 );

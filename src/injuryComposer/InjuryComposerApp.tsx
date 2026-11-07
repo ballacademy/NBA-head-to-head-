@@ -32,6 +32,7 @@ import {
   defaultInjuryDraft,
   fetchNbaInjuries,
   injuryDateLine,
+  injuryFillStatus,
   isInjuryDraft,
   normalizeInjuryDraft,
   selectInjuryPost,
@@ -83,7 +84,6 @@ export function InjuryComposerApp() {
     try {
       const players = await fetchNbaInjuries();
       const teams = selectInjuryPost(players, true);
-      const names = teams.reduce((count, block) => count + block.players.length, 0);
       push(draft);
       setDraft((current) => ({
         ...current,
@@ -91,11 +91,7 @@ export function InjuryComposerApp() {
         kicker: "OUT / GTD",
         dateLine: current.dateLine || injuryDateLine(nbaTodayIso()),
       }));
-      setStatus(
-        teams.length
-          ? `Loaded ${names} OUT names across ${teams.length} teams.`
-          : "No OUT names returned.",
-      );
+      setStatus(injuryFillStatus(teams));
     } finally {
       setFilling(false);
     }

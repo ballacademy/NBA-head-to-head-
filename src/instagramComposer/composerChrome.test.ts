@@ -254,7 +254,9 @@ describe("composer chrome", () => {
     );
     expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
     expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE");
+    expect(previewZoom).toContain("leftoverContainFit");
     expect(previewZoom).not.toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
+    expect(board).toContain("leftoverContainFit");
     expect(board).not.toContain('maxWidth: "100%"');
     expect(sheet).toMatch(
       /\.sc-stage__frame > \.sc-hint[\s\S]*?position:\s*absolute/,
@@ -273,6 +275,7 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(hub).toContain("is-preview-zoomed");
+    expect(hub).toContain("beginComposerHydrateWrites");
     const standings = readFileSync(
       join(root, "standingsComposer/nbaStandings.ts"),
       "utf8",
@@ -314,7 +317,7 @@ describe("composer chrome", () => {
     expect(compareApp).toContain("Fill last night");
     expect(posterApp).toContain("Fill last night");
     expect(mockApp).toContain("Fill last night");
-    expect(quoteApp).toContain("commitPick(top.athleteId, false, false)");
+    expect(quoteApp).toContain("commitPick(top.athleteId, false, true)");
     expect(mockApp).toContain("add players yourself");
   });
 
@@ -960,8 +963,26 @@ describe("composer chrome", () => {
     expect(playInHud).toContain('className="sc-field sc-hud-full-only"');
     expect(playInHud).toContain("East 7v8");
     expect(mockTradeHud).toContain("sc-toolbar__picks");
+    expect(mockTradeHud).not.toMatch(/sc-toolbar__picks sc-hud-full-only/);
     expect(mockTradeHud).toContain("sc-hud-full-only");
     expect(mockTradeHud).toContain("sc-field--pick");
+    expect(standingsHud).toContain("sc-field--subtitle");
+    const takeawaysCoverHud = readFileSync(
+      join(root, "takeawaysComposer/TakeawaysCoverComposerApp.tsx"),
+      "utf8",
+    );
+    const takeawaysCardHud = readFileSync(
+      join(root, "takeawaysComposer/TakeawaysCardComposerApp.tsx"),
+      "utf8",
+    );
+    expect(takeawaysCoverHud).toMatch(
+      /sc-stage__frame[\s\S]*className="sc-status"/,
+    );
+    expect(takeawaysCardHud).toMatch(
+      /sc-stage__frame[\s\S]*className="sc-status"/,
+    );
+    expect(takeawaysCoverHud).toContain("landCarriedTakeawaysPlayer");
+    expect(coverApp).toContain("landCarriedCoverPlayer");
     expect(scheduleHud).toContain('simpleSet="night"');
     expect(presetSelect).toContain("sc-field--preset");
     expect(totwApp).toContain('simpleSet="week"');
@@ -981,6 +1002,13 @@ describe("composer chrome", () => {
     expect(potdApp).toContain("onJumpLastNight");
     expect(potdApp).toContain("Export PNG");
     expect(potdApp).toContain("sc-hud-full-only");
+    expect(potdApp).toContain("landCarriedPotdPlayer");
+    expect(potdApp).toContain("FILLED_POTD_TITLE");
+    const compareHud = readFileSync(
+      join(root, "compareComposer/CompareComposerApp.tsx"),
+      "utf8",
+    );
+    expect(compareHud).toContain("landCarriedComparePlayer");
     const picker = readFileSync(
       join(root, "tierListComposer/PlayerPicker.tsx"),
       "utf8",

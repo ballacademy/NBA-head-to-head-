@@ -189,6 +189,14 @@ describe("pyramid composer", () => {
     expect(filled.filter((slot) => slot.playerId).length).toBe(10);
     expect(filled[0]?.playerId).toBe("coach-BOS");
     expect(filled[0]?.photoSrc).toBeTruthy();
+    expect(
+      filled.every(
+        (slot) => slot.photoSrc && !slot.photoSrc.includes("nba-logos"),
+      ),
+    ).toBe(true);
+    expect(coaches.every((coach) => !coach.headshotUrl.includes("nba-logos"))).toBe(
+      true,
+    );
     const mvp = mvpPlayerLadder(10);
     expect(mvp).toHaveLength(10);
     expect(mvp[0]!.ppg).toBeGreaterThanOrEqual(mvp[9]!.ppg);
