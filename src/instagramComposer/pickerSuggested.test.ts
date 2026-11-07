@@ -38,9 +38,9 @@ describe("picker suggested recs", () => {
         (item) => item.id,
       ),
     ).toEqual([
+      EXAMPLE_PLAYER_IDS.luka,
       EXAMPLE_PLAYER_IDS.jokic,
       EXAMPLE_PLAYER_IDS.curry,
-      EXAMPLE_PLAYER_IDS.luka,
     ]);
     expect(
       filterSuggestedPickerRows(recs, { query: "curry", sort: "name" }).map(

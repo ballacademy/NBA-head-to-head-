@@ -5,6 +5,7 @@ import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import {
   EVERY_TEAM_STAT_METRICS,
+  everyTeamStatSupportsRate,
   getRosterPlayer,
   pickSeasonLeader,
   pickSeasonLeaders,
@@ -12,6 +13,7 @@ import {
   rosterStatValue,
   seasonForTeam,
   type EveryTeamStatMetric,
+  type EveryTeamStatRate,
 } from "./historicalRosters";
 
 export { DEFAULT_BRAND };
@@ -400,6 +402,7 @@ export const rankedMetricValues = (
   cellSeasons: Record<string, string> = {},
   metric: EveryTeamStatMetric,
   sample: ComposerStatsSample = "regular",
+  rate: EveryTeamStatRate = "per-game",
 ): Array<number | null> =>
   normalizeRankedOrder(rankedOrder).map((teamId) => {
     const player = getRosterPlayer(
@@ -408,7 +411,7 @@ export const rankedMetricValues = (
       slots[slotIndexForTeam(teamId)] ?? null,
       sample,
     );
-    return rosterStatValue(player, metric);
+    return rosterStatValue(player, metric, rate);
   });
 
 export const autoSortRankedOrder = (
@@ -434,14 +437,27 @@ export const autoSortRankedOrder = (
   };
 };
 
-export const autoSortMetricLabel = (metric: EveryTeamStatMetric) =>
-  EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.label ?? metric;
+export const autoSortMetricLabel = (
+  metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
+) => {
+  const base =
+    EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.label ?? metric;
+  if (rate === "totals" && everyTeamStatSupportsRate(metric, rate)) {
+    return `${base} total`;
+  }
+  if (rate === "per-minute" && everyTeamStatSupportsRate(metric, rate)) {
+    return `${base}/MIN`;
+  }
+  return base;
+};
 
 export const autoFillEveryTeamSlots = (
   boardSeason: string,
   cellSeasons: Record<string, string> = {},
   metric: EveryTeamStatMetric = "points",
   sample: ComposerStatsSample = "regular",
+  rate: EveryTeamStatRate = "per-game",
 ): EveryTeamSlots =>
   EVERY_TEAM_ORDER.map(
     (team) =>
@@ -450,6 +466,7 @@ export const autoFillEveryTeamSlots = (
         seasonForTeam(team.id, boardSeason, cellSeasons),
         metric,
         sample,
+        rate,
       )?.id ?? null,
   );
 
@@ -459,6 +476,7 @@ export const autoFillEveryTeamPartners = (
   cellSeasons: Record<string, string> = {},
   metric: EveryTeamStatMetric = "points",
   sample: ComposerStatsSample = "regular",
+  rate: EveryTeamStatRate = "per-game",
 ): EveryTeamSlots =>
   EVERY_TEAM_ORDER.map((team, index) => {
     const skip = occupied[index];
@@ -468,6 +486,7 @@ export const autoFillEveryTeamPartners = (
       metric,
       sample,
       2,
+      rate,
     );
     return leaders.find((player) => player.id !== skip)?.id ?? null;
   });
@@ -514,6 +533,188 @@ export const fillEveryTeamFromNight = (
     filled += 1;
   });
   return { slots: next, filled };
+};
+
+type RangeBoxStats = {
+  pts: string;
+  reb: string;
+  ast: string;
+  stl?: string;
+  blk?: string;
+  tov?: string;
+  min?: string;
+  fg?: string;
+  three?: string;
+  ft?: string;
+};
+
+type RangeBoxRow = {
+  athleteId: string;
+  teamId: string;
+  games?: number;
+  game: { stats: RangeBoxStats };
+};
+
+const boxNumber = (value: string | undefined) => {
+  const parsed = Number.parseFloat(value ?? "");
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const boxMakes = (value: string | undefined) => {
+  const made = Number.parseFloat(String(value ?? "0-0").split("-")[0] ?? "");
+  return Number.isFinite(made) ? made : 0;
+};
+
+const boxPct = (value: string | undefined) => {
+  const [madeRaw, attRaw] = String(value ?? "0-0").split("-");
+  const made = Number.parseFloat(madeRaw ?? "");
+  const att = Number.parseFloat(attRaw ?? "");
+  if (!Number.isFinite(made) || !Number.isFinite(att) || att <= 0) {
+    return null;
+  }
+  return made / att;
+};
+
+export const boxScoreMetricValue = (
+  stats: RangeBoxStats,
+  metric: EveryTeamStatMetric,
+  games = 1,
+): number | null => {
+  if (metric === "points") {
+    return boxNumber(stats.pts);
+  }
+  if (metric === "rebounds") {
+    return boxNumber(stats.reb);
+  }
+  if (metric === "assists") {
+    return boxNumber(stats.ast);
+  }
+  if (metric === "steals") {
+    return boxNumber(stats.stl);
+  }
+  if (metric === "blocks") {
+    return boxNumber(stats.blk);
+  }
+  if (metric === "turnovers") {
+    return boxNumber(stats.tov);
+  }
+  if (metric === "minutes") {
+    return boxNumber(stats.min);
+  }
+  if (metric === "games") {
+    return games;
+  }
+  if (metric === "threes") {
+    return boxMakes(stats.three);
+  }
+  if (metric === "pra") {
+    return boxNumber(stats.pts) + boxNumber(stats.reb) + boxNumber(stats.ast);
+  }
+  if (metric === "stocks") {
+    return boxNumber(stats.stl) + boxNumber(stats.blk);
+  }
+  if (metric === "fgPct") {
+    return boxPct(stats.fg);
+  }
+  if (metric === "fg3Pct") {
+    return boxPct(stats.three);
+  }
+  if (metric === "ftPct") {
+    return boxPct(stats.ft);
+  }
+  return null;
+};
+
+export const scaleBoxScoreStat = (
+  value: number | null,
+  stats: RangeBoxStats,
+  metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
+  games = 1,
+): number | null => {
+  if (
+    value == null ||
+    rate === "per-game" ||
+    !everyTeamStatSupportsRate(metric, rate)
+  ) {
+    return value;
+  }
+  if (rate === "totals") {
+    return metric === "games" ? value : value * games;
+  }
+  const minutes = boxNumber(stats.min);
+  if (minutes <= 0) {
+    return null;
+  }
+  return value / minutes;
+};
+
+export const fillEveryTeamFromRange = (
+  slots: EveryTeamSlots,
+  rows: RangeBoxRow[],
+  metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
+): { slots: EveryTeamSlots; filled: number } => {
+  const best = new Map<string, { id: string; score: number }>();
+  for (const row of rows) {
+    const raw = boxScoreMetricValue(
+      row.game.stats,
+      metric,
+      row.games ?? 1,
+    );
+    const score = scaleBoxScoreStat(
+      raw,
+      row.game.stats,
+      metric,
+      rate,
+      row.games ?? 1,
+    );
+    if (score == null) {
+      continue;
+    }
+    const prev = best.get(row.teamId);
+    if (!prev || score > prev.score) {
+      best.set(row.teamId, { id: row.athleteId, score });
+    }
+  }
+  let filled = 0;
+  const next = slots.slice();
+  EVERY_TEAM_ORDER.forEach((team, index) => {
+    const pick = best.get(team.id);
+    if (!pick) {
+      return;
+    }
+    next[index] = pick.id;
+    filled += 1;
+  });
+  return { slots: next, filled };
+};
+
+export const rankedRangeMetricValues = (
+  rankedOrder: string[],
+  slots: EveryTeamSlots,
+  rows: RangeBoxRow[],
+  metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
+): Array<number | null> => {
+  const byId = new Map(rows.map((row) => [row.athleteId, row]));
+  return normalizeRankedOrder(rankedOrder).map((teamId) => {
+    const playerId = slots[slotIndexForTeam(teamId)];
+    if (!playerId) {
+      return null;
+    }
+    const row = byId.get(playerId);
+    if (!row) {
+      return null;
+    }
+    return scaleBoxScoreStat(
+      boxScoreMetricValue(row.game.stats, metric, row.games ?? 1),
+      row.game.stats,
+      metric,
+      rate,
+      row.games ?? 1,
+    );
+  });
 };
 
 export const fillEveryTeamPartnersFromNight = (

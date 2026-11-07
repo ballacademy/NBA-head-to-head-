@@ -220,6 +220,40 @@
   white-space: nowrap;
 }
 
+.et-cell__stat {
+  display: block;
+  width: 100%;
+  margin-top: calc(3 * var(--u));
+  color: #facc15;
+  font-family: var(--ig-poster);
+  font-size: calc(11 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow:
+    calc(1 * var(--u)) calc(1.1 * var(--u)) 0 rgba(0, 0, 0, 0.88),
+    calc(1.8 * var(--u)) calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.48);
+}
+
+.et-cell__stat--solo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  margin: 0;
+  padding: 22% 6% 6%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.55) 55%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  text-align: center;
+}
+
 .et-cell__rank {
   position: absolute;
   top: calc(6 * var(--u));

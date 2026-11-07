@@ -71,12 +71,9 @@ export const filterSuggestedPickerRows = (
         (left, right) => (order.get(left.id) ?? 0) - (order.get(right.id) ?? 0),
       );
   }
-  if (sort === "name" && query.trim()) {
-    return matched.slice().sort(
-      (left, right) =>
-        left.player.name.localeCompare(right.player.name) ||
-        left.player.id.localeCompare(right.player.id),
-    );
-  }
-  return matched;
+  return matched.slice().sort(
+    (left, right) =>
+      left.player.name.localeCompare(right.player.name) ||
+      left.player.id.localeCompare(right.player.id),
+  );
 };

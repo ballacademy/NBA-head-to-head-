@@ -22,6 +22,7 @@ export interface EveryTeamRosterPlayer {
   gp?: number | null;
   min?: number | null;
   tov?: number | null;
+  fg3m?: number | null;
   fgPct?: number | null;
   fg3Pct?: number | null;
   ftPct?: number | null;
@@ -70,6 +71,7 @@ const EXTRA_KEYS: Array<keyof SeasonAverageExtras> = [
   "gp",
   "min",
   "tov",
+  "fg3m",
   "fgPct",
   "fg3Pct",
   "ftPct",
@@ -573,6 +575,7 @@ export type EveryTeamStatMetric =
   | "steals"
   | "blocks"
   | "turnovers"
+  | "threes"
   | "fgPct"
   | "fg3Pct"
   | "ftPct"
@@ -621,6 +624,7 @@ export const EVERY_TEAM_STAT_METRICS: Array<{
   { id: "steals", label: "STL" },
   { id: "blocks", label: "BLK" },
   { id: "turnovers", label: "TOV" },
+  { id: "threes", label: "3PM" },
   { id: "fgPct", label: "FG%", percent: true },
   { id: "fg3Pct", label: "3P%", percent: true },
   { id: "ftPct", label: "FT%", percent: true },
@@ -668,6 +672,7 @@ const METRIC_FIELDS: Partial<
   steals: "stl",
   blocks: "blk",
   turnovers: "tov",
+  threes: "fg3m",
   fgPct: "fgPct",
   fg3Pct: "fg3Pct",
   ftPct: "ftPct",
@@ -709,34 +714,117 @@ export const parseEveryTeamStatMetric = (value: unknown): EveryTeamStatMetric =>
     ? (value as EveryTeamStatMetric)
     : "points";
 
+export type EveryTeamStatRate = "per-game" | "totals" | "per-minute";
+
+export const EVERY_TEAM_STAT_RATES: Array<{
+  id: EveryTeamStatRate;
+  label: string;
+}> = [
+  { id: "per-game", label: "Per game" },
+  { id: "totals", label: "Totals" },
+  { id: "per-minute", label: "Per minute" },
+];
+
+export const parseEveryTeamStatRate = (value: unknown): EveryTeamStatRate =>
+  value === "totals" || value === "per-minute" ? value : "per-game";
+
+const COUNTING_STAT_METRICS = new Set<EveryTeamStatMetric>([
+  "points",
+  "rebounds",
+  "assists",
+  "steals",
+  "blocks",
+  "turnovers",
+  "threes",
+  "pra",
+  "stocks",
+  "minutes",
+  "chargesDrawn",
+  "deflections",
+  "looseBallsRecovered",
+  "screenAssists",
+  "contestedShots",
+  "contestedShots2pt",
+  "contestedShots3pt",
+  "boxOuts",
+  "offBoxOuts",
+  "defBoxOuts",
+  "screenAstPts",
+]);
+
+/** Percentages and advanced rates stay per-game; minutes has no per-minute form. */
+export const everyTeamStatSupportsRate = (
+  metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate,
+) => {
+  if (rate === "per-game") {
+    return true;
+  }
+  if (!COUNTING_STAT_METRICS.has(metric)) {
+    return false;
+  }
+  return !(rate === "per-minute" && metric === "minutes");
+};
+
 export const isPercentStatMetric = (metric: EveryTeamStatMetric) =>
   Boolean(EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.percent);
+
+export const scaleRosterStat = (
+  value: number | null,
+  player: EveryTeamRosterPlayer | null,
+  metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
+): number | null => {
+  if (
+    value == null ||
+    !player ||
+    rate === "per-game" ||
+    !everyTeamStatSupportsRate(metric, rate)
+  ) {
+    return value;
+  }
+  if (rate === "totals") {
+    const games = player.gp;
+    if (games == null || games <= 0) {
+      return null;
+    }
+    return value * games;
+  }
+  const minutes = player.min;
+  if (minutes == null || minutes <= 0) {
+    return null;
+  }
+  return value / minutes;
+};
 
 export const rosterStatValue = (
   player: EveryTeamRosterPlayer | null,
   metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
 ): number | null => {
   if (!player) {
     return null;
   }
+  let raw: number | null = null;
   if (metric === "pra") {
     if (player.pts == null || player.reb == null || player.ast == null) {
       return null;
     }
-    return roundStat(player.pts + player.reb + player.ast);
-  }
-  if (metric === "stocks") {
+    raw = roundStat(player.pts + player.reb + player.ast);
+  } else if (metric === "stocks") {
     if (player.stl == null || player.blk == null) {
       return null;
     }
-    return roundStat(player.stl + player.blk);
+    raw = roundStat(player.stl + player.blk);
+  } else {
+    const field = METRIC_FIELDS[metric];
+    if (!field) {
+      return null;
+    }
+    const value = player[field];
+    raw = typeof value === "number" ? value : null;
   }
-  const field = METRIC_FIELDS[metric];
-  if (!field) {
-    return null;
-  }
-  const value = player[field];
-  return typeof value === "number" ? value : null;
+  return scaleRosterStat(raw, player, metric, rate);
 };
 
 export const playerStatValue = (
@@ -824,11 +912,12 @@ export const pickSeasonLeaders = (
   metric: EveryTeamStatMetric,
   sample: ComposerStatsSample = "regular",
   count = 1,
+  rate: EveryTeamStatRate = "per-game",
 ): EveryTeamRosterPlayer[] => {
   const ranked = listRosterPlayers(teamId, season, sample)
     .map((player) => ({
       player,
-      value: rosterStatValue(player, metric),
+      value: rosterStatValue(player, metric, rate),
     }))
     .filter(
       (row): row is { player: EveryTeamRosterPlayer; value: number } =>
@@ -848,18 +937,33 @@ export const pickSeasonLeader = (
   season: string,
   metric: EveryTeamStatMetric,
   sample: ComposerStatsSample = "regular",
+  rate: EveryTeamStatRate = "per-game",
 ): EveryTeamRosterPlayer | null =>
-  pickSeasonLeaders(teamId, season, metric, sample, 1)[0] ?? null;
+  pickSeasonLeaders(teamId, season, metric, sample, 1, rate)[0] ?? null;
 
 export const roundStat = (value: number) => Math.round(value * 10) / 10;
 
 export const formatRosterStat = (
   player: EveryTeamRosterPlayer | null,
   metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
 ) => {
-  const value = rosterStatValue(player, metric);
-  if (value == null) {
+  const compact = formatEveryTeamCellStat(player, metric, rate);
+  if (!compact) {
     return "No stats";
+  }
+  return compact;
+};
+
+/** Short cell lockup: `27.7 PTS`, `2115 PTS`, `0.94 PTS/MIN`. Empty when the row has no number. */
+export const formatEveryTeamCellStat = (
+  player: EveryTeamRosterPlayer | null,
+  metric: EveryTeamStatMetric,
+  rate: EveryTeamStatRate = "per-game",
+) => {
+  const value = rosterStatValue(player, metric, rate);
+  if (value == null) {
+    return "";
   }
   const label =
     EVERY_TEAM_STAT_METRICS.find((item) => item.id === metric)?.label ?? metric;
@@ -868,6 +972,12 @@ export const formatRosterStat = (
   }
   if (metric === "games") {
     return `${Math.round(value)} ${label}`;
+  }
+  if (rate === "totals" && everyTeamStatSupportsRate(metric, rate)) {
+    return `${Math.round(value)} ${label}`;
+  }
+  if (rate === "per-minute" && everyTeamStatSupportsRate(metric, rate)) {
+    return `${value.toFixed(2)} ${label}/MIN`;
   }
   return `${value.toFixed(1)} ${label}`;
 };

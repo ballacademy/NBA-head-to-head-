@@ -155,6 +155,7 @@ describe("ranked lineups", () => {
       "STL",
       "BLK",
       "TOV",
+      "3PM",
       "FG%",
       "3P%",
       "FT%",

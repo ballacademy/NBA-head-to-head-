@@ -800,7 +800,7 @@ export function PlayerOfTheDayComposerApp() {
       {activeIndex != null ? (
         <PlayerPicker
           heading={potdPickerHeading(activeIndex, cards.length)}
-          hint="Gold cards are this night’s best lines — same ranking as Fill. Already-used names of the set are marked. Search still lists everyone."
+          hint="Gold cards are this night’s best lines. Name and Points sort that strip; search shrinks it. Already-used names of the set are marked. Search still lists everyone."
           currentId={currentId}
           usedLabels={usedPlayerIds(cards)}
           suggested={potdPickerSuggestions(nightBest)}

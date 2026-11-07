@@ -461,7 +461,10 @@ export function PlayerPicker({
                   </button>
                 </div>
               ) : (
-                <p className="sc-picker__suggested-label">{recHeading}</p>
+                <p className="sc-picker__suggested-label">
+                  {recHeading}
+                  {recRows.length ? ` · ${recRows.length}` : ""}
+                </p>
               )}
             </div>
             {recLoading && recRows.length === 0 ? (

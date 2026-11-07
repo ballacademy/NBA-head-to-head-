@@ -242,6 +242,13 @@ describe("shot chart", () => {
     expect(
       gamesForShotWindow(
         [home, third, away, outside],
+        "range",
+        { from: "2026-10-01", to: "2026-11-07" },
+      ).map((row) => row.eventId),
+    ).toEqual(["1", "3", "2", "9"]);
+    expect(
+      gamesForShotWindow(
+        [home, third, away, outside],
         "last-game",
         { from: "2026-10-22", to: "2026-10-24" },
       ).map((row) => row.eventId),

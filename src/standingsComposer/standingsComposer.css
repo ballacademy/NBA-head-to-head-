@@ -1935,7 +1935,7 @@ label.sc-chip {
 }
 
 .sc-picker__suggested {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   max-height: min(48dvh, 520px);
   display: flex;
@@ -2021,8 +2021,9 @@ label.sc-chip {
 }
 
 .sc-picker__grid--suggested {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
+  max-height: min(40dvh, 460px);
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -2707,7 +2708,7 @@ label.sc-chip {
   }
 
   .sc-picker__suggested {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
     max-height: min(46dvh, 480px);
     overflow: hidden;
@@ -2728,8 +2729,9 @@ label.sc-chip {
   }
 
   .sc-picker__grid--suggested {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
+    max-height: min(38dvh, 420px);
     overflow: auto;
     touch-action: pan-y;
   }

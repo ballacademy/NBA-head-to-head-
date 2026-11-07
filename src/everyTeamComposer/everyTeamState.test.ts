@@ -8,7 +8,10 @@ import {
   assignPlayer,
   assignPlayerToTeam,
   autoFillEveryTeamSlots,
+  autoSortMetricLabel,
   autoSortRankedOrder,
+  boxScoreMetricValue,
+  fillEveryTeamFromRange,
   rankedMetricValues,
   clearEveryTeamSlot,
   createDefaultRankedOrder,
@@ -31,6 +34,7 @@ import {
 import catalog from "../../data/every-team-historical-rosters.json";
 import {
   EVERY_TEAM_STAT_METRICS,
+  formatEveryTeamCellStat,
   formatRosterStat,
   hydrateEveryTeamRosters,
   listRosterPlayers,
@@ -441,6 +445,7 @@ describe("every-team order and slots", () => {
       "STL",
       "BLK",
       "TOV",
+      "3PM",
       "FG%",
       "3P%",
       "FT%",
@@ -483,6 +488,82 @@ describe("every-team order and slots", () => {
     );
     expect(rosterStatValue(durant ?? null, "fgPct")).toBeNull();
     expect(playerRowForSeason("4278073", "2026-27", "OKC")?.fgPct).toBe(0.557);
+    expect(rosterStatValue(playerRowForSeason("4278073", "2026-27", "OKC"), "threes")).toBe(
+      1.7,
+    );
+    expect(pickSeasonLeader("GSW", "2026-27", "threes")?.id).toBe("3975");
+  });
+
+  it("scales counting stats to totals or per-minute without touching FG%", () => {
+    const sga = listRosterPlayers("OKC", "2026-27").find(
+      (player) => player.id === "4278073",
+    );
+    expect(rosterStatValue(sga ?? null, "points")).toBe(31.1);
+    expect(rosterStatValue(sga ?? null, "points", "totals")).toBeCloseTo(2114.8);
+    expect(rosterStatValue(sga ?? null, "points", "per-minute")).toBeCloseTo(
+      31.1 / 33.2,
+    );
+    expect(rosterStatValue(sga ?? null, "threes", "totals")).toBeCloseTo(1.7 * 68);
+    expect(rosterStatValue(sga ?? null, "fgPct", "per-minute")).toBe(0.557);
+    expect(formatEveryTeamCellStat(sga ?? null, "points", "per-minute")).toBe(
+      "0.94 PTS/MIN",
+    );
+    expect(formatEveryTeamCellStat(sga ?? null, "points", "totals")).toBe(
+      "2115 PTS",
+    );
+    expect(autoSortMetricLabel("points", "per-minute")).toBe("PTS/MIN");
+    expect(autoSortMetricLabel("threes", "totals")).toBe("3PM total");
+    const perMin = autoFillEveryTeamSlots(
+      "2026-27",
+      {},
+      "points",
+      "regular",
+      "per-minute",
+    );
+    const perGame = autoFillEveryTeamSlots("2026-27", {}, "points");
+    expect(perMin.filter(Boolean).length).toBeGreaterThan(20);
+    expect(perMin).not.toEqual(perGame);
+    const threes = fillEveryTeamFromRange(
+      createEmptyEveryTeamSlots(),
+      [
+        {
+          athleteId: "low",
+          teamId: "GSW",
+          games: 2,
+          game: {
+            stats: {
+              pts: "10",
+              reb: "2",
+              ast: "1",
+              three: "1-4",
+              min: "30",
+            },
+          },
+        },
+        {
+          athleteId: "high",
+          teamId: "GSW",
+          games: 2,
+          game: {
+            stats: {
+              pts: "8",
+              reb: "1",
+              ast: "2",
+              three: "5-9",
+              min: "28",
+            },
+          },
+        },
+      ],
+      "threes",
+    );
+    expect(threes.slots[slotIndexForTeam("GSW")]).toBe("high");
+    expect(
+      boxScoreMetricValue(
+        { pts: "8", reb: "1", ast: "2", three: "5-9", min: "28" },
+        "threes",
+      ),
+    ).toBe(5);
   });
 
   it("auto-sorts 2026-27 leaders by FG% and minutes using last season extras", () => {

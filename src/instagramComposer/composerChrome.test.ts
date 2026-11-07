@@ -129,6 +129,9 @@ describe("composer chrome", () => {
       /\.sc-picker__grid--suggested[\s\S]*?min-height:\s*0/,
     );
     expect(sheet).toMatch(
+      /\.sc-picker__grid--suggested[\s\S]*?flex:\s*0 0 auto/,
+    );
+    expect(sheet).toMatch(
       /\.sc-picker__suggested[\s\S]*?overflow:\s*hidden/,
     );
     expect(sheet).toMatch(
@@ -1016,6 +1019,16 @@ describe("composer chrome", () => {
     expect(picker).toContain("onJumpLastNight");
     expect(picker).toContain("filterSuggestedPickerRows");
     expect(picker).not.toMatch(/showRecsSection =\s*!query\.trim\(\)/);
+    expect(picker).toContain("recRows.length ? ` · ${recRows.length}`");
+    const dateRangeHud = readFileSync(
+      join(root, "instagramComposer/ComposerDateRange.tsx"),
+      "utf8",
+    );
+    expect(dateRangeHud).toContain("alwaysShowDates");
+    expect(dateRangeHud).toContain("includeFullSeason");
+    expect(dateRangeHud).toContain('label: "Full season"');
+    expect(dateRangeHud).toContain("Range start");
+    expect(dateRangeHud).toContain("Range end");
     expect(picker.indexOf("sc-picker__suggested")).toBeLessThan(
       picker.indexOf("sc-picker__filters-slot"),
     );
@@ -1281,6 +1294,14 @@ describe("composer chrome", () => {
     expect(nameFadeCss).toContain("white-space: nowrap");
     expect(coverCss).toContain("white-space: nowrap");
     expect(etApp).toContain("Two players per team");
+    expect(etApp).toContain('aria-label="Per game, totals, or per minute"');
+    expect(etApp).toContain("EVERY_TEAM_STAT_RATES");
+    expect(etApp).toContain("ComposerDateRange");
+    expect(etApp).toContain("alwaysShowDates");
+    expect(etApp).toContain("includeFullSeason");
+    expect(etApp).toContain("On-cell stat");
+    expect(etApp).not.toContain("nightAuto");
+    expect(etApp).toContain("Show player names on cells");
     expect(compareApp).toContain("last-5");
     expect(compareApp).toContain("this-week");
     expect(mockTradeApp).toContain("showSalaries");
@@ -1499,6 +1520,8 @@ describe("composer chrome", () => {
     expect(shotHud).toContain("ComposerStatsSampleToggle");
     expect(shotHud).toContain("fetchRecentGames(next.playerId, sample)");
     expect(shotHud).toContain('simpleSet="week"');
+    expect(shotHud).toContain("alwaysShowDates");
+    expect(shotHud).toContain("includeFullSeason");
     expect(shotHud).toContain("applyFilledShotChart");
     expect(shotHud).toContain("ComposerNightDate");
     expect(shotHud).toContain("ComposerHudExtras");

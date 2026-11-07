@@ -6,6 +6,7 @@ interface ComposerNamesToggleProps {
   label?: string;
   ariaLabel?: string;
   remember?: boolean;
+  className?: string;
 }
 
 export function ComposerNamesToggle({
@@ -14,9 +15,10 @@ export function ComposerNamesToggle({
   label = "Names",
   ariaLabel = "Show names",
   remember = true,
+  className,
 }: ComposerNamesToggleProps) {
   return (
-    <label className="sc-field">
+    <label className={["sc-field", className].filter(Boolean).join(" ")}>
       <span className="sc-toolbar__eyebrow">{label}</span>
       <button
         type="button"

@@ -301,6 +301,7 @@ def main() -> None:
         set_num(payload, "gp", to_float(row.get("gamesPlayed")), 0)
         set_num(payload, "min", to_float(row.get("minutes")), 1)
         set_num(payload, "tov", to_float(row.get("turnovers")), 1)
+        set_num(payload, "fg3m", to_float(row.get("threePointersMade")), 1)
         set_num(payload, "fgPct", to_float(row.get("fieldGoalPct")), 3)
         set_num(payload, "fg3Pct", to_float(row.get("threePointPct")), 3)
         set_num(payload, "ftPct", to_float(row.get("freeThrowPct")), 3)

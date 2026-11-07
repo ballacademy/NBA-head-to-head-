@@ -40,13 +40,17 @@ import {
   type EveryTeamGridGroup,
   type EveryTeamSlots,
 } from "./everyTeamState";
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   everyTeamCurrentSeason,
+  formatEveryTeamCellStat,
   formatSeasonShort,
   getRosterPlayer,
   isMissingSeason,
   seasonForTeam,
   teamLogoSrc,
+  type EveryTeamStatMetric,
+  type EveryTeamStatRate,
 } from "./historicalRosters";
 
 interface EveryTeamGraphicProps {
@@ -62,6 +66,10 @@ interface EveryTeamGraphicProps {
   rankedOrder?: string[];
   gridGroup?: EveryTeamGridGroup;
   showNames?: boolean;
+  showCellStat?: boolean;
+  cellStatMetric?: EveryTeamStatMetric;
+  cellStatRate?: EveryTeamStatRate;
+  statsSample?: ComposerStatsSample;
   showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
@@ -113,6 +121,10 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
       rankedOrder,
       gridGroup = "none",
       showNames = false,
+      showCellStat = false,
+      cellStatMetric = "points",
+      cellStatRate = "per-game",
+      statsSample = "regular",
       showHistoricalLogos = false,
       season,
       cellSeasons,
@@ -353,8 +365,21 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
               cellSeasons,
             );
             const missing = isMissingSeason(team.id, cellSeason);
-            const shown = getRosterPlayer(team.id, cellSeason, stored);
-            const partner = getRosterPlayer(team.id, cellSeason, partnerId);
+            const shown = getRosterPlayer(
+              team.id,
+              cellSeason,
+              stored,
+              statsSample,
+            );
+            const partner = getRosterPlayer(
+              team.id,
+              cellSeason,
+              partnerId,
+              statsSample,
+            );
+            const cellStat = showCellStat
+              ? formatEveryTeamCellStat(shown, cellStatMetric, cellStatRate)
+              : "";
             const names = shown ? splitPlayerName(shown.name) : null;
             const partnerNames = partner ? splitPlayerName(partner.name) : null;
             const caption = shown && partner
@@ -506,6 +531,13 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
                       <span className="et-cell__given">{caption.firstName}</span>
                     ) : null}
                     <span className="et-cell__family">{caption.lastName}</span>
+                    {cellStat ? (
+                      <span className="et-cell__stat">{cellStat}</span>
+                    ) : null}
+                  </span>
+                ) : cellStat ? (
+                  <span className="et-cell__stat et-cell__stat--solo">
+                    {cellStat}
                   </span>
                 ) : null}
                 {exporting || !shown ? null : (

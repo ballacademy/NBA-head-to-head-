@@ -3,14 +3,18 @@ import {
   dateRangeChipsForHud,
   datesInInclusiveRange,
   isAutoWeekLine,
+  fullSeasonRange,
   last5DaysRange,
   lastWeekRange,
   nextNDaysRange,
   matchDateRangePreset,
   mondayOfIsoWeek,
+  nbaSeasonOpenIso,
   normalizeDateRange,
   parseComposerDateRange,
+  rangeForPreset,
   rangeWeekLine,
+  seasonDateRange,
   thisWeekRange,
   tonightRange,
 } from "./composerDateRange";
@@ -43,6 +47,28 @@ describe("composer date range", () => {
     expect(matchDateRangePreset("2026-10-17", "2026-10-17", now)).toBe(
       "tonight",
     );
+  });
+
+  it("sets Full season from the October opener through today", () => {
+    const now = new Date("2026-11-07T18:00:00-05:00");
+    expect(nbaSeasonOpenIso(now)).toBe("2026-10-01");
+    expect(fullSeasonRange(now)).toEqual({
+      from: "2026-10-01",
+      to: "2026-11-07",
+    });
+    expect(rangeForPreset("full-season", now)).toEqual(fullSeasonRange(now));
+    expect(matchDateRangePreset("2026-10-01", "2026-11-07", now)).toBe(
+      "full-season",
+    );
+    expect(fullSeasonRange(new Date("2026-08-02T12:00:00-04:00"))).toEqual({
+      from: "2025-10-01",
+      to: "2026-06-30",
+    });
+    expect(seasonDateRange("2026-27", now)).toEqual(fullSeasonRange(now));
+    expect(seasonDateRange("2012-13", now)).toEqual({
+      from: "2012-10-01",
+      to: "2013-06-30",
+    });
   });
 
   it("swaps inverted from/to and caps inclusive nights", () => {

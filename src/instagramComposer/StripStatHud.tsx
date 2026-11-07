@@ -9,6 +9,8 @@ interface StripStatHudProps {
   metric: EveryTeamStatMetric;
   onToggle: (on: boolean) => void;
   onMetric: (metric: EveryTeamStatMetric) => void;
+  label?: string;
+  className?: string;
 }
 
 export function StripStatHud({
@@ -16,15 +18,17 @@ export function StripStatHud({
   metric,
   onToggle,
   onMetric,
+  label = "Stat under name",
+  className,
 }: StripStatHudProps) {
   return (
-    <label className="sc-field">
-      <span className="sc-toolbar__eyebrow">Stat under name</span>
+    <label className={["sc-field", className].filter(Boolean).join(" ")}>
+      <span className="sc-toolbar__eyebrow">{label}</span>
       <button
         type="button"
         className={on ? "sc-chip is-on" : "sc-chip"}
         aria-pressed={on}
-        aria-label="Stat under name"
+        aria-label={label}
         onClick={() => onToggle(!on)}
       >
         {on ? "On" : "Off"}
@@ -32,7 +36,7 @@ export function StripStatHud({
       {on ? (
         <select
           value={metric}
-          aria-label="Stat under name metric"
+          aria-label={`${label} metric`}
           onChange={(event) =>
             onMetric(parseEveryTeamStatMetric(event.target.value))
           }

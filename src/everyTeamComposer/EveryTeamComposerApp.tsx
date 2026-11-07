@@ -7,9 +7,17 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { ComposerNamesToggle } from "../instagramComposer/ComposerNamesToggle";
+import { StripStatHud } from "../instagramComposer/StripStatHud";
+import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
 import { useComposerNight } from "../instagramComposer/composerNight";
+import {
+  rangesEqual,
+  seasonDateRange,
+  useComposerDateRange,
+} from "../instagramComposer/composerDateRange";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import { fetchRangeProduction } from "../playerOfTheDayComposer/nightStandouts";
 import {
   EVERY_TEAM_LOOK_KEY,
   useComposerLook,
@@ -53,7 +61,9 @@ import {
   DEFAULT_EVERY_TEAM_TITLE,
   everyTeamCaptionNames,
   fillEveryTeamFromNight,
+  fillEveryTeamFromRange,
   fillEveryTeamPartnersFromNight,
+  rankedRangeMetricValues,
   isEveryTeamDraft,
   isEveryTeamSlots,
   nextEmptyEveryTeamSlot,
@@ -72,6 +82,7 @@ import {
 import {
   EVERY_TEAM_SORT_KEY,
   EVERY_TEAM_STAT_METRICS,
+  EVERY_TEAM_STAT_RATES,
   everyTeamCurrentSeason,
   everyTeamSeasons,
   getRosterPlayer,
@@ -83,17 +94,20 @@ import {
   parseCellSeasons,
   parseEveryTeamSeason,
   parseEveryTeamStatMetric,
+  parseEveryTeamStatRate,
   rosterAsTierPlayers,
   rosterHasPlayer,
   seasonForTeam,
   setCellSeason,
   type EveryTeamStatMetric,
+  type EveryTeamStatRate,
 } from "./historicalRosters";
 import "@fontsource/montserrat/latin-900.css";
 import "./everyTeamComposer.css";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 
 const STORAGE_KEY = "ddgm:every-team-composer";
+const DATE_RANGE_KEY = "ddgm:every-team-date-range";
 
 interface EveryTeamBoardSnapshot {
   slots: EveryTeamSlots;
@@ -117,6 +131,9 @@ interface EveryTeamComposerDraft {
   duo?: boolean;
   partners?: EveryTeamSlots;
   gridGroup?: EveryTeamGridGroup;
+  showCellStat?: boolean;
+  cellStatMetric?: EveryTeamStatMetric;
+  statRate?: EveryTeamStatRate;
 }
 
 const loadDraft = (): EveryTeamComposerDraft => {
@@ -142,6 +159,9 @@ const loadDraft = (): EveryTeamComposerDraft => {
     partners: isEveryTeamSlots(stored?.partners)
       ? pruneSlotsToSeasons(stored.partners, season, cellSeasons)
       : createEmptyEveryTeamSlots(),
+    showCellStat: stored?.showCellStat === true,
+    cellStatMetric: parseEveryTeamStatMetric(stored?.cellStatMetric),
+    statRate: parseEveryTeamStatRate(stored?.statRate),
   };
 };
 
@@ -171,8 +191,22 @@ export function EveryTeamComposerApp() {
   const [duoSeat, setDuoSeat] = useState<EveryTeamSeat>("a");
   const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
   const [sortMetric, setSortMetric] = useState<EveryTeamStatMetric>("pra");
+  const [showCellStat, setShowCellStat] = useState(false);
+  const [cellStatMetric, setCellStatMetric] =
+    useState<EveryTeamStatMetric>("points");
+  const [statRate, setStatRate] = useState<EveryTeamStatRate>("per-game");
   const [nightMetric, setNightMetric] = useState<EveryTeamNightMetric>("pts");
+  const [rangeLoading, setRangeLoading] = useState(false);
   const night = useComposerNight();
+  const { range, setRange } = useComposerDateRange({
+    storageKey: DATE_RANGE_KEY,
+    eventName: DATE_RANGE_KEY,
+    fallback: () => seasonDateRange(everyTeamCurrentSeason()),
+  });
+  const boardSeasonRange = seasonDateRange(season);
+  const useSeasonTable =
+    season !== everyTeamCurrentSeason() ||
+    rangesEqual(range, boardSeasonRange);
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
   const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
@@ -193,6 +227,9 @@ export function EveryTeamComposerApp() {
         setRanked(draft.ranked === true);
         setRankedOrder(normalizeRankedOrder(draft.rankedOrder));
         setShowNames(draft.showNames === true);
+        setShowCellStat(draft.showCellStat === true);
+        setCellStatMetric(parseEveryTeamStatMetric(draft.cellStatMetric));
+        setStatRate(parseEveryTeamStatRate(draft.statRate));
         setShowHistoricalLogos(draft.showHistoricalLogos === true);
         setSeason(draft.season ?? everyTeamCurrentSeason());
         setCellSeasons(draft.cellSeasons ?? {});
@@ -224,6 +261,9 @@ export function EveryTeamComposerApp() {
       ranked,
       rankedOrder,
       showNames,
+      showCellStat,
+      cellStatMetric,
+      statRate,
       showHistoricalLogos,
       season,
       cellSeasons,
@@ -239,6 +279,9 @@ export function EveryTeamComposerApp() {
     ranked,
     rankedOrder,
     showNames,
+    showCellStat,
+    cellStatMetric,
+    statRate,
     showHistoricalLogos,
     season,
     cellSeasons,
@@ -285,6 +328,10 @@ export function EveryTeamComposerApp() {
           ranked,
           rankedOrder,
           showNames,
+          showCellStat,
+          cellStatMetric,
+          cellStatRate: statRate,
+          statsSample,
           showHistoricalLogos,
           season,
           cellSeasons,
@@ -350,29 +397,44 @@ export function EveryTeamComposerApp() {
     setCellSeasons(nextCells);
     setSlots((current) => pruneSlotsToSeasons(current, nextSeason, nextCells));
     setPartners((current) => pruneSlotsToSeasons(current, nextSeason, nextCells));
+    if (rangesEqual(range, seasonDateRange(season))) {
+      setRange(seasonDateRange(nextSeason));
+    }
     setStatus(`Board year ${nextSeason}. Cells without that roster cleared.`);
   };
 
-  const handleAutoSort = (metric: EveryTeamStatMetric) => {
+  const applyRankedMetric = (
+    metric: EveryTeamStatMetric,
+    nextSlots: EveryTeamSlots,
+    values: Array<number | null>,
+    filledLabel: string | null,
+  ) => {
     const teams = ranked
       ? normalizeRankedOrder(rankedOrder)
       : createDefaultRankedOrder();
-    const values = rankedMetricValues(
-      teams,
-      slots,
-      season,
-      cellSeasons,
-      metric,
-      statsSample,
-    );
     const result = autoSortRankedOrder(teams, values);
-    const label = autoSortMetricLabel(metric);
+    const label = autoSortMetricLabel(metric, statRate);
     push(snapshot());
+    if (nextSlots !== slots) {
+      setSlots(nextSlots);
+    }
     setRanked(true);
     setRankedOrder(result.order);
+    setCellStatMetric(metric);
+    setShowCellStat(true);
     if (result.ranked === 0) {
       setStatus(
-        `No ${label} yet — last season’s table is used when this year has none. Fill players first, then sort.`,
+        filledLabel
+          ? `No ${label} leaders for this window.`
+          : `No ${label} yet — last season’s table is used when this year has none. Fill players first, then sort.`,
+      );
+      return;
+    }
+    if (filledLabel) {
+      setStatus(
+        result.held
+          ? `Filled ${filledLabel} ${label} leaders and sorted ${result.ranked}. ${result.held} without stats stayed at the bottom.`
+          : `Filled ${filledLabel} teams with the ${label} leader and sorted 1–${result.ranked}.`,
       );
       return;
     }
@@ -383,40 +445,115 @@ export function EveryTeamComposerApp() {
     );
   };
 
-  const handleAutoFill = (metric: EveryTeamStatMetric) => {
-    const next = autoFillEveryTeamSlots(
-      season,
-      cellSeasons,
-      metric,
-      statsSample,
-    );
-    const filled = next.filter(Boolean).length;
-    const label = autoSortMetricLabel(metric);
-    if (filled === 0) {
-      setStatus(`No ${label} leaders for this board’s seasons.`);
-      return;
-    }
+  const handleAutoSort = async (metric: EveryTeamStatMetric) => {
     const teams = ranked
       ? normalizeRankedOrder(rankedOrder)
       : createDefaultRankedOrder();
-    const result = autoSortRankedOrder(
-      teams,
-      rankedMetricValues(teams, next, season, cellSeasons, metric, statsSample),
-    );
-    push(snapshot());
-    setSlots(next);
-    if (duo) {
-      setPartners(
-        autoFillEveryTeamPartners(next, season, cellSeasons, metric, statsSample),
+    if (useSeasonTable) {
+      applyRankedMetric(
+        metric,
+        slots,
+        rankedMetricValues(
+          teams,
+          slots,
+          season,
+          cellSeasons,
+          metric,
+          statsSample,
+          statRate,
+        ),
+        null,
       );
+      return;
     }
-    setRanked(true);
-    setRankedOrder(result.order);
-    setStatus(
-      result.held
-        ? `Filled ${filled} ${label} leaders and sorted ${result.ranked}. ${result.held} without stats stayed at the bottom.`
-        : `Filled ${filled} teams with the ${label} leader and sorted 1–${result.ranked}. Current year uses last season until this year’s table exists.`,
-    );
+    setRangeLoading(true);
+    setStatus("Loading box scores for that date range…");
+    try {
+      const rows = await fetchRangeProduction(range.from, range.to);
+      applyRankedMetric(
+        metric,
+        slots,
+        rankedRangeMetricValues(teams, slots, rows, metric, statRate),
+        null,
+      );
+    } catch (error: unknown) {
+      console.error(error);
+      setStatus("Could not load that date range.");
+    } finally {
+      setRangeLoading(false);
+    }
+  };
+
+  const handleAutoFill = async (metric: EveryTeamStatMetric) => {
+    const teams = ranked
+      ? normalizeRankedOrder(rankedOrder)
+      : createDefaultRankedOrder();
+    if (useSeasonTable) {
+      const next = autoFillEveryTeamSlots(
+        season,
+        cellSeasons,
+        metric,
+        statsSample,
+        statRate,
+      );
+      const filled = next.filter(Boolean).length;
+      if (filled === 0) {
+        setStatus(
+          `No ${autoSortMetricLabel(metric, statRate)} leaders for this board’s seasons.`,
+        );
+        return;
+      }
+      if (duo) {
+        setPartners(
+          autoFillEveryTeamPartners(
+            next,
+            season,
+            cellSeasons,
+            metric,
+            statsSample,
+            statRate,
+          ),
+        );
+      }
+      applyRankedMetric(
+        metric,
+        next,
+        rankedMetricValues(
+          teams,
+          next,
+          season,
+          cellSeasons,
+          metric,
+          statsSample,
+          statRate,
+        ),
+        String(filled),
+      );
+      return;
+    }
+    setRangeLoading(true);
+    setStatus("Loading box scores for that date range…");
+    try {
+      const rows = await fetchRangeProduction(range.from, range.to);
+      const result = fillEveryTeamFromRange(slots, rows, metric, statRate);
+      if (result.filled === 0) {
+        setStatus(
+          `No ${autoSortMetricLabel(metric, statRate)} lines in that date range.`,
+        );
+        return;
+      }
+      applyRankedMetric(
+        metric,
+        result.slots,
+        rankedRangeMetricValues(teams, result.slots, rows, metric, statRate),
+        String(result.filled),
+      );
+    } catch (error: unknown) {
+      console.error(error);
+      setStatus("Could not load that date range.");
+    } finally {
+      setRangeLoading(false);
+    }
   };
 
   const handleNightFill = async (metric: EveryTeamNightMetric) => {
@@ -445,19 +582,6 @@ export function EveryTeamComposerApp() {
       `Filled ${result.filled} teams with last night’s ${metric === "pra" ? "PRA" : "PTS"} leader.`,
     );
   };
-
-  const nightAuto = useRef(false);
-  useEffect(() => {
-    if (!hydrated || !rostersReady || nightAuto.current) {
-      return;
-    }
-    if (slots.some(Boolean)) {
-      nightAuto.current = true;
-      return;
-    }
-    nightAuto.current = true;
-    void handleNightFill(nightMetric);
-  }, [hydrated, rostersReady]);
 
   const activeTeam =
     activeIndex != null ? teamAtSlot(activeIndex, ranked, rankedOrder) : null;
@@ -525,6 +649,34 @@ export function EveryTeamComposerApp() {
           sample={statsSample}
           onChange={setStatsSample}
         />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Rate</span>
+          <select
+            value={statRate}
+            aria-label="Per game, totals, or per minute"
+            onChange={(event) =>
+              setStatRate(parseEveryTeamStatRate(event.target.value))
+            }
+          >
+            {EVERY_TEAM_STAT_RATES.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <ComposerNamesToggle
+          on={showNames}
+          onChange={setShowNames}
+          ariaLabel="Show player names on cells"
+        />
+        <StripStatHud
+          on={showCellStat}
+          metric={cellStatMetric}
+          onToggle={setShowCellStat}
+          onMetric={setCellStatMetric}
+          label="On-cell stat"
+        />
         <div className="sc-look" role="group" aria-label="Board order">
           <span className="sc-look__label">Order</span>
           <button
@@ -562,11 +714,22 @@ export function EveryTeamComposerApp() {
           <button
             type="button"
             className="sc-chip"
-            onClick={() => handleAutoFill(fillMetric)}
+            onClick={() => void handleAutoFill(fillMetric)}
+            disabled={rangeLoading}
           >
             Fill leaders
           </button>
         </div>
+        <ComposerDateRange
+          from={range.from}
+          to={range.to}
+          simpleSet="week"
+          alwaysShowDates
+          includeFullSeason
+          seasonRange={boardSeasonRange}
+          filling={rangeLoading}
+          onChange={setRange}
+        />
         <ComposerNightDate
           date={night.date}
           todayIso={night.todayIso}
@@ -613,7 +776,8 @@ export function EveryTeamComposerApp() {
           <button
             type="button"
             className="sc-chip"
-            onClick={() => handleAutoSort(sortMetric)}
+            onClick={() => void handleAutoSort(sortMetric)}
+            disabled={rangeLoading}
           >
             Sort 1–30
           </button>
@@ -663,11 +827,6 @@ export function EveryTeamComposerApp() {
         }
         board={
           <>
-        <ComposerNamesToggle
-          on={showNames}
-          onChange={setShowNames}
-          ariaLabel="Show player names on cells"
-        />
         <label className="sc-field">
           <span className="sc-toolbar__eyebrow">Row breaks</span>
           <select
@@ -745,6 +904,9 @@ export function EveryTeamComposerApp() {
             ranked,
             rankedOrder,
             showNames,
+            showCellStat,
+            cellStatMetric,
+            statRate,
             showHistoricalLogos,
             season,
             cellSeasons,
@@ -762,6 +924,9 @@ export function EveryTeamComposerApp() {
             setRanked(next.ranked === true);
             setRankedOrder(normalizeRankedOrder(next.rankedOrder));
             setShowNames(next.showNames === true);
+            setShowCellStat(next.showCellStat === true);
+            setCellStatMetric(parseEveryTeamStatMetric(next.cellStatMetric));
+            setStatRate(parseEveryTeamStatRate(next.statRate));
             setShowHistoricalLogos(next.showHistoricalLogos === true);
             setSeason(nextSeason);
             setCellSeasons(nextCells);
@@ -872,6 +1037,10 @@ export function EveryTeamComposerApp() {
             rankedOrder={rankedOrder}
             gridGroup={gridGroup}
             showNames={showNames}
+            showCellStat={showCellStat}
+            cellStatMetric={cellStatMetric}
+            cellStatRate={statRate}
+            statsSample={statsSample}
             showHistoricalLogos={showHistoricalLogos}
             season={season}
             cellSeasons={cellSeasons}

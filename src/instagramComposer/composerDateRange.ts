@@ -12,12 +12,20 @@ export const STAT_COVER_DATE_RANGE_KEY = "ddgm:stat-cover-date-range";
 export const STAT_COVER_DATE_RANGE_EVENT = "ddgm:stat-cover-date-range";
 export const DATE_RANGE_MAX_NIGHTS = 21;
 
-export type DateRangePreset = "this-week" | "last-week" | "last-5" | "tonight" | "last-night" | "custom";
+export type DateRangePreset =
+  | "this-week"
+  | "last-week"
+  | "last-5"
+  | "tonight"
+  | "last-night"
+  | "full-season"
+  | "custom";
 export type DateRangeChipSet = "night" | "week";
+export type DateRangeChipId = Exclude<DateRangePreset, "custom">;
 
 export const DATE_RANGE_CHIPS: Record<
   DateRangeChipSet,
-  Array<{ id: Exclude<DateRangePreset, "custom">; label: string }>
+  Array<{ id: DateRangeChipId; label: string }>
 > = {
   night: [
     { id: "tonight", label: "Tonight" },
@@ -37,7 +45,7 @@ export const DATE_RANGE_CHIPS: Record<
 
 export const SIMPLE_DATE_RANGE_CHIP_IDS: Record<
   DateRangeChipSet,
-  Array<Exclude<DateRangePreset, "custom">>
+  Array<DateRangeChipId>
 > = {
   night: ["tonight", "last-night"],
   week: ["this-week", "last-week"],
@@ -123,6 +131,44 @@ export const lastNightRange = (now = new Date()): ComposerDateRange => {
   const yesterday = shiftIsoDate(nbaTodayIso(now), -1);
   return { from: yesterday, to: yesterday };
 };
+
+/** Opening night floor for the current NBA campaign (Oct 1 of the start year). */
+export const nbaSeasonOpenIso = (now = new Date()) => {
+  const today = nbaTodayIso(now);
+  const year = Number(today.slice(0, 4));
+  const month = Number(today.slice(5, 7));
+  const startYear = month >= 10 ? year : year - 1;
+  return `${startYear}-10-01`;
+};
+
+/** Regular-season window: opener through today, or through June 30 once the year is over. */
+export const fullSeasonRange = (now = new Date()): ComposerDateRange => {
+  const today = nbaTodayIso(now);
+  const from = nbaSeasonOpenIso(now);
+  const startYear = Number(from.slice(0, 4));
+  const seasonEnd = `${startYear + 1}-06-30`;
+  return normalizeDateRange(from, today < seasonEnd ? today : seasonEnd, now);
+};
+
+/** Full-season window for a board year like `2012-13` or `2026-27`. */
+export const seasonDateRange = (
+  season: string,
+  now = new Date(),
+): ComposerDateRange => {
+  const startYear = Number.parseInt(String(season).slice(0, 4), 10);
+  if (!Number.isFinite(startYear)) {
+    return fullSeasonRange(now);
+  }
+  const from = `${startYear}-10-01`;
+  const end = `${startYear + 1}-06-30`;
+  const today = nbaTodayIso(now);
+  return normalizeDateRange(from, today < end ? today : end, now);
+};
+
+export const rangesEqual = (
+  left: ComposerDateRange,
+  right: ComposerDateRange,
+) => left.from === right.from && left.to === right.to;
 
 export const normalizeDateRange = (
   from: string,
@@ -217,11 +263,14 @@ export const matchDateRangePreset = (
   if (same(last5DaysRange(now))) {
     return "last-5";
   }
+  if (same(fullSeasonRange(now))) {
+    return "full-season";
+  }
   return "custom";
 };
 
 export const rangeForPreset = (
-  preset: Exclude<DateRangePreset, "custom">,
+  preset: DateRangeChipId,
   now = new Date(),
 ): ComposerDateRange => {
   if (preset === "tonight") {
@@ -235,6 +284,9 @@ export const rangeForPreset = (
   }
   if (preset === "last-5") {
     return last5DaysRange(now);
+  }
+  if (preset === "full-season") {
+    return fullSeasonRange(now);
   }
   return thisWeekRange(now);
 };

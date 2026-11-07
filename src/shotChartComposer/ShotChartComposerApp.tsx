@@ -349,6 +349,8 @@ export function ShotChartComposerApp() {
                 from={draft.from || range.from}
                 to={draft.to || range.to}
                 simpleSet="week"
+                alwaysShowDates
+                includeFullSeason
                 filling={filling}
                 fillLabel="Fill shots"
                 onChange={(next) => {

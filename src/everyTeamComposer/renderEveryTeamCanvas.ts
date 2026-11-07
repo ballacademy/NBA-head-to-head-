@@ -32,13 +32,17 @@ import {
 } from "../instagramComposer/composerNameStyle";
 import { paintNameFadeRect, drawNameStack } from "../instagramComposer/drawPlayerNameFade";
 import { splitPlayerName } from "../teamOfTheWeekComposer/teamOfTheWeekState";
+import type { ComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import {
   everyTeamCurrentSeason,
+  formatEveryTeamCellStat,
   formatSeasonShort,
   getRosterPlayer,
   isMissingSeason,
   seasonForTeam,
   teamLogoSrc,
+  type EveryTeamStatMetric,
+  type EveryTeamStatRate,
 } from "./historicalRosters";
 import {
   ET_RANK_BADGE_H,
@@ -149,6 +153,10 @@ export interface EveryTeamRenderInput {
   ranked?: boolean;
   rankedOrder?: string[];
   showNames?: boolean;
+  showCellStat?: boolean;
+  cellStatMetric?: EveryTeamStatMetric;
+  cellStatRate?: EveryTeamStatRate;
+  statsSample?: ComposerStatsSample;
   showHistoricalLogos?: boolean;
   season?: string;
   cellSeasons?: Record<string, string>;
@@ -273,6 +281,7 @@ export const renderEveryTeamCanvas = async (
         team.id,
         cellSeason,
         input.slots[slotIndexForTeam(team.id)] ?? null,
+        input.statsSample,
       );
       const partner =
         input.duo === true
@@ -280,8 +289,17 @@ export const renderEveryTeamCanvas = async (
               team.id,
               cellSeason,
               input.partners?.[slotIndexForTeam(team.id)] ?? null,
+              input.statsSample,
             )
           : null;
+      const cellStat =
+        input.showCellStat === true
+          ? formatEveryTeamCellStat(
+              shown,
+              input.cellStatMetric ?? "points",
+              input.cellStatRate ?? "per-game",
+            )
+          : "";
       const overridden = Boolean(input.cellSeasons?.[team.id]);
       const showYear =
         overridden || cellSeason !== everyTeamCurrentSeason();
@@ -303,6 +321,7 @@ export const renderEveryTeamCanvas = async (
         partnerShot,
         partner,
         shown,
+        cellStat,
         missing,
         cellSeason,
         showYear,
@@ -485,13 +504,26 @@ export const renderEveryTeamCanvas = async (
         given,
         family,
         x + size / 2,
-        y + size - size * 0.06,
+        y + size - (cell.cellStat ? size * 0.14 : size * 0.06),
         size * 0.84,
         14 * scale,
         11 * scale,
         scale,
         "center",
       );
+    }
+    if (cell.cellStat) {
+      context.save();
+      context.font = `900 ${11 * scale}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "bottom";
+      context.fillStyle = "#facc15";
+      if (!input.showNames) {
+        const fadeH = size * 0.28;
+        paintNameFadeRect(context, x, y + size - fadeH, size, fadeH);
+      }
+      context.fillText(cell.cellStat, x + size / 2, y + size - size * 0.04);
+      context.restore();
     }
   });
 
