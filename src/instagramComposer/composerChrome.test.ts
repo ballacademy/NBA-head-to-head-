@@ -1465,6 +1465,11 @@ describe("composer chrome", () => {
     expect(totwPlusHud).toContain("Export pack");
     expect(shotHud).toContain("story: true");
     expect(shotHud).toContain("{ letterbox: false }");
+    expect(shotHud).toContain("useComposerStatsSample");
+    expect(shotHud).toContain("ComposerStatsSampleToggle");
+    expect(shotHud).toContain("fetchRecentGames(next.playerId, sample)");
+    expect(shotHud).toContain('simpleSet="week"');
+    expect(shotHud).toContain("applyFilledShotChart");
     expect(shotHud).toContain("ComposerNightDate");
     expect(shotHud).toContain("ComposerHudExtras");
     expect(shotHud).toContain("ComposerNameStyleToggle");
@@ -1507,6 +1512,9 @@ describe("composer chrome", () => {
     expect(shotState).not.toContain("Math.random");
     expect(shotState).toContain("formatShotMatchup");
     expect(shotState).toContain("showOpponent: false");
+    expect(shotState).toContain("applyFilledShotChart");
+    expect(shotState).toContain("rangeWeekLine");
+    expect(shotState).toContain("gamesInInclusiveRange");
     expect(shotGraphic).toContain("shotChartEmptyCourtLabel");
     expect(shotGraphic).toContain("shotChartBoardRects");
     expect(shotGraphic).toContain("shc-title-plate");

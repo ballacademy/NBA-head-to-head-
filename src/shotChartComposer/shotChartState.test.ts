@@ -10,6 +10,7 @@ import {
   shotToPx,
 } from "./shotChartLayout";
 import {
+  applyFilledShotChart,
   applyShotChartFilter,
   courtPoint,
   defaultShotChartDraft,
@@ -181,7 +182,7 @@ describe("shot chart", () => {
         attempts: 20,
       }),
     ).toBe("10/24 · vs OKC · 9-20");
-    expect(shotChartNotchMeta(draft)).toBe("FILL LAST GAME");
+    expect(shotChartNotchMeta(draft)).toBe("FILL SHOTS");
     expect(shotChartEmptyCourtLabel(draft)).toBe("Pick a player, then Fill shots");
     expect(
       shotChartEmptyCourtLabel({ ...draft, playerId: "4066648" }),
@@ -221,5 +222,60 @@ describe("shot chart", () => {
         { eventId: "2" },
       ).map((row) => row.eventId),
     ).toEqual(["1", "2"]);
+    const third = game({
+      eventId: "3",
+      gameDate: "2026-10-23",
+      dateLabel: "10/23",
+      opponentAbbrev: "LAL",
+    });
+    const outside = game({
+      eventId: "9",
+      gameDate: "2026-10-10",
+      dateLabel: "10/10",
+    });
+    const rangeGames = gamesForShotWindow(
+      [home, third, away, outside],
+      "range",
+      { from: "2026-10-22", to: "2026-10-24" },
+    );
+    expect(rangeGames.map((row) => row.eventId)).toEqual(["1", "3", "2"]);
+    expect(
+      gamesForShotWindow(
+        [home, third, away, outside],
+        "last-game",
+        { from: "2026-10-22", to: "2026-10-24" },
+      ).map((row) => row.eventId),
+    ).toEqual(["1"]);
+    const rangeDraft = applyFilledShotChart(
+      {
+        ...defaultShotChartDraft(),
+        playerId: "3975",
+        window: "range",
+        eventId: "2",
+        matchup: "@ IND",
+        gameLabel: "10/22",
+      },
+      rangeGames,
+      [
+        { x: 25, y: 5, made: true, text: "1" },
+        { x: 10, y: 20, made: false, text: "2" },
+        { x: 30, y: 8, made: true, text: "3" },
+      ],
+      { from: "2026-10-22", to: "2026-10-24" },
+    );
+    expect(rangeDraft.eventId).toBe("");
+    expect(rangeDraft.matchup).toBe("");
+    expect(rangeDraft.makes).toBe(2);
+    expect(rangeDraft.attempts).toBe(3);
+    expect(rangeDraft.shots).toHaveLength(3);
+    expect(rangeDraft.gameLabel).toBe("OCT 22 – 24, 2026");
+    expect(
+      applyFilledShotChart(
+        { ...defaultShotChartDraft(), window: "last-game" },
+        [home],
+        [{ x: 25, y: 5, made: true, text: "1" }],
+        { from: "2026-10-22", to: "2026-10-24" },
+      ).eventId,
+    ).toBe("1");
   });
 });

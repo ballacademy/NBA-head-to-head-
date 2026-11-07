@@ -12,10 +12,12 @@ import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { useComposerDateRange } from "../instagramComposer/composerDateRange";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import {
-  rangeWeekLine,
-  useComposerDateRange,
-} from "../instagramComposer/composerDateRange";
+  useComposerStatsSample,
+  type ComposerStatsSample,
+} from "../instagramComposer/composerStatsSample";
 import { useComposerNight } from "../instagramComposer/composerNight";
 import {
   SHOT_CHART_LOOK_KEY,
@@ -42,6 +44,7 @@ import { exportShotChartPng } from "./exportShotChartPng";
 import { renderShotChartCanvas } from "./renderShotChartCanvas";
 import type { LastGame } from "../playerOfTheDayComposer/lastGame";
 import {
+  applyFilledShotChart,
   applyShotChartFilter,
   applyShotChartPlayer,
   defaultShotChartDraft,
@@ -88,6 +91,7 @@ export function ShotChartComposerApp() {
   const [look, setLook] = useComposerLook(SHOT_CHART_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const { range, setRange } = useComposerDateRange();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
   const night = useComposerNight();
   const { push, pop, canUndo } = useComposerUndo<ShotChartDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
@@ -112,7 +116,10 @@ export function ShotChartComposerApp() {
     }
   }, [draft, hydrated]);
 
-  const fillShots = async (next = draft) => {
+  const fillShots = async (
+    next = draft,
+    sample: ComposerStatsSample = statsSample,
+  ) => {
     if (!next.playerId) {
       setStatus("Pick a player first.");
       return;
@@ -121,17 +128,16 @@ export function ShotChartComposerApp() {
     setFilling(true);
     setStatus("Loading shots…");
     try {
-      const games = await fetchRecentGames(next.playerId);
+      const games = await fetchRecentGames(next.playerId, sample);
       setRecentGames(games);
-      const windowGames = gamesForShotWindow(
-        games,
-        next.window,
-        {
-          from: next.from || range.from,
-          to: next.to || range.to,
-        },
-        { eventId: next.eventId, nightDate: next.nightDate || night.date },
-      );
+      const fillRange = {
+        from: next.from || range.from,
+        to: next.to || range.to,
+      };
+      const windowGames = gamesForShotWindow(games, next.window, fillRange, {
+        eventId: next.eventId,
+        nightDate: next.nightDate || night.date,
+      });
       const batches = await Promise.all(
         windowGames.map((game) =>
           fetchShotChartForGame(game.eventId, next.playerId),
@@ -141,27 +147,24 @@ export function ShotChartComposerApp() {
         return;
       }
       const shots = batches.flat();
-      const makes = shots.filter((shot) => shot.made).length;
-      const single = windowGames.length === 1 ? windowGames[0] : undefined;
-      const label = single
-        ? single.dateLabel || "LAST GAME"
-        : next.window === "last-game"
-          ? windowGames[0]?.dateLabel || "LAST GAME"
-          : rangeWeekLine(next.from || range.from, next.to || range.to);
       push(draft);
       setDraft({
-        ...next,
+        ...applyFilledShotChart(next, windowGames, shots, fillRange),
         nightDate: next.nightDate || night.date,
-        eventId: single?.eventId || "",
-        matchup: single ? formatShotMatchup(single) : "",
-        shots,
-        makes,
-        attempts: shots.length,
-        gameLabel: label,
       });
+      const sampleLabel =
+        sample === "preseason" ? "preseason" : "regular season";
+      if (!windowGames.length) {
+        setStatus(
+          next.window === "range"
+            ? `No ${sampleLabel} games in that date range.`
+            : `No ${sampleLabel} game on the board yet.`,
+        );
+        return;
+      }
       setStatus(
         shots.length
-          ? `Plotted ${makes}-${shots.length} from ${windowGames.length || 0} game${windowGames.length === 1 ? "" : "s"}.`
+          ? `Plotted ${shots.filter((shot) => shot.made).length}-${shots.length} from ${windowGames.length} game${windowGames.length === 1 ? "" : "s"}.`
           : "No shot locations for that window.",
       );
     } finally {
@@ -186,7 +189,7 @@ export function ShotChartComposerApp() {
       return;
     }
     let cancelled = false;
-    void fetchRecentGames(draft.playerId).then((games) => {
+    void fetchRecentGames(draft.playerId, statsSample).then((games) => {
       if (!cancelled) {
         setRecentGames(games);
       }
@@ -194,7 +197,7 @@ export function ShotChartComposerApp() {
     return () => {
       cancelled = true;
     };
-  }, [hydrated, draft.playerId]);
+  }, [hydrated, draft.playerId, statsSample]);
 
   const pickPlayer = (playerId: string) => {
     const player = getPlayer(playerId);
@@ -313,6 +316,15 @@ export function ShotChartComposerApp() {
             >
               Pick player
             </button>
+            <ComposerStatsSampleToggle
+              sample={statsSample}
+              onChange={(sample) => {
+                setStatsSample(sample);
+                if (draft.playerId) {
+                  void fillShots(draft, sample);
+                }
+              }}
+            />
             <div className="sc-look" role="group" aria-label="Shot window">
               <span className="sc-look__label">Window</span>
               <button
@@ -336,6 +348,7 @@ export function ShotChartComposerApp() {
               <ComposerDateRange
                 from={draft.from || range.from}
                 to={draft.to || range.to}
+                simpleSet="week"
                 filling={filling}
                 fillLabel="Fill shots"
                 onChange={(next) => {

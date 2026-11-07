@@ -5,6 +5,7 @@ import {
 } from "../instagramComposer/composerNameStyle";
 import {
   datesInInclusiveRange,
+  rangeWeekLine,
   type ComposerDateRange,
 } from "../instagramComposer/composerDateRange";
 import {
@@ -246,6 +247,33 @@ export const gamesForShotWindow = (
   return gamesInInclusiveRange(games, range.from, range.to);
 };
 
+/** Stamp Fill onto the draft: every window game’s shots, not last-game-only. */
+export const applyFilledShotChart = (
+  draft: ShotChartDraft,
+  windowGames: LastGame[],
+  shots: ShotChartMake[],
+  range: ComposerDateRange,
+): ShotChartDraft => {
+  const makes = shots.filter((shot) => shot.made).length;
+  const single = windowGames.length === 1 ? windowGames[0] : undefined;
+  const label = single
+    ? single.dateLabel || "LAST GAME"
+    : draft.window === "last-game"
+      ? windowGames[0]?.dateLabel || "LAST GAME"
+      : rangeWeekLine(range.from, range.to);
+  return {
+    ...draft,
+    from: range.from || draft.from,
+    to: range.to || draft.to,
+    eventId: single?.eventId || "",
+    matchup: single ? formatShotMatchup(single) : "",
+    shots,
+    makes,
+    attempts: shots.length,
+    gameLabel: label,
+  };
+};
+
 export const defaultShotChartDraft = (): ShotChartDraft => ({
   brand: DEFAULT_BRAND,
   title: DEFAULT_SHOT_CHART_TITLE,
@@ -315,7 +343,7 @@ export const shotChartEmptyCourtLabel = (draft: Pick<ShotChartDraft, "playerId" 
 
 export const shotChartNotchMeta = (draft: ShotChartDraft) => {
   if (!draft.playerId) {
-    return "FILL LAST GAME";
+    return "FILL SHOTS";
   }
   const fg = shotLine(draft.makes, draft.attempts);
   const raw = (draft.gameLabel || "LAST GAME").trim();
