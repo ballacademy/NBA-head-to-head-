@@ -4,9 +4,7 @@ import {
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
   paintPurpleInnerHairline,
-  paintPurplePlateEdge,
   paintPurpleTitleGlow,
-  paintPurpleUnderline,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -197,21 +195,6 @@ export const renderTierListCanvas = async (
   };
   if (input.purpleFlair) {
     paintPurpleTitleGlow(context, scale, paintTitle);
-    paintPurpleUnderline(
-      context,
-      width / 2,
-      titleTop + (titleLines.length - 1) * lineH + lineH / 2 + 8 * scale,
-      width,
-      scale,
-    );
-    paintPurplePlateEdge(
-      context,
-      0,
-      TIER_HEADER_H * scale,
-      labelW * scale,
-      (boardH - TIER_HEADER_H - TIER_FOOTER) * scale,
-      scale,
-    );
   } else {
     paintTitle();
   }

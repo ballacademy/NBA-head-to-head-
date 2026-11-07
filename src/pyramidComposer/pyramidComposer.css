@@ -34,9 +34,6 @@
   --frame-color: #0a0a0a;
 }
 
-.pyr-board.is-purple {
-  --frame-w: calc(4 * var(--u));
-}
 
 .pyr-header {
   position: relative;

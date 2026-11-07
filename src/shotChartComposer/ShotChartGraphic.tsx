@@ -16,7 +16,6 @@ import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { getTeam } from "../standingsComposer/teams";
 import {
   COURT_FLOOR,
-  SHOT_HEADER_H,
   SHOT_MAKE_R,
   SHOT_MISS_R,
   halfCourtSvgPaths,
@@ -125,7 +124,7 @@ export const ShotChartGraphic = forwardRef<HTMLElement, ShotChartGraphicProps>(
           .join(" ")}
         style={{
           ["--u" as string]: `${unit}px`,
-          ["--header-h" as string]: `${SHOT_HEADER_H * unit}px`,
+          ["--header-h" as string]: `${rects.metalH * unit}px`,
           height: story ? STORY_DESIGN_HEIGHT : undefined,
         }}
         aria-label="Instagram shot chart graphic"

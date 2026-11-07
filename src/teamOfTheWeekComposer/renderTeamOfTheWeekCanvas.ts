@@ -299,16 +299,6 @@ export const renderTeamOfTheWeekCanvas = async (
       input.stripStats?.[index] ?? "",
       story,
     );
-    if (input.purpleFlair) {
-      paintPurplePlateEdge(
-        context,
-        rect.x * s,
-        rect.y * s,
-        rect.w * s,
-        rect.h * s,
-        s,
-      );
-    }
   }
 
   const plate = {

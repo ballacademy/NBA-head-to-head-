@@ -23,30 +23,31 @@ export const CORNER_3_Y_FT = 14;
 export const THREE_R_FT = 23.75;
 
 export const SHOT_HEADER_PAD = 8;
-export const SHOT_BRAND_H = 32;
+export const SHOT_BRAND_H = 28;
 export const SHOT_PLATE_Y = SHOT_HEADER_PAD + SHOT_BRAND_H;
 export const SHOT_PLATE_X = 48;
-export const SHOT_TITLE_SIZE = 38;
+export const SHOT_TITLE_SIZE = 44;
 export const SHOT_TITLE_LINE = 0.92;
-export const SHOT_TITLE_PAD = 12;
+export const SHOT_TITLE_PAD = 14;
 export const SHOT_TITLE_TRACK = 0.02;
 export const SHOT_TITLE_PLATE_H =
   8 +
   SHOT_TITLE_PAD * 2 +
   Math.ceil(SHOT_TITLE_SIZE * SHOT_TITLE_LINE) +
   6;
-export const SHOT_NOTCH_H = 54;
+export const SHOT_NOTCH_H = 72;
 export const SHOT_NOTCH_OVERLAP = 2;
-export const SHOT_NOTCH_LOGO = 32;
-export const SHOT_COURT_GAP = 16;
+export const SHOT_NOTCH_LOGO = 36;
+export const SHOT_COURT_GAP = 12;
 export const SHOT_MAKE_R = 15;
 export const SHOT_MISS_R = 13;
-export const SHOT_ZONES_H = 140;
-export const SHOT_ZONES_GAP = 14;
-export const SHOT_LEGEND_H = 32;
-export const SHOT_BOTTOM = 16;
+export const SHOT_ZONES_MIN_H = 120;
+export const SHOT_ZONES_GAP = 12;
+export const SHOT_LEGEND_H = 24;
+export const SHOT_BOTTOM = 14;
+export const SHOT_COURT_PAD_X = 22;
 
-/** Metal covers BA + title plate + name notch. Court sits below a charcoal gap. */
+/** Metal covers BA + title plate + name notch. Zones fill leftover above the court. */
 export const SHOT_HEADER_H =
   SHOT_PLATE_Y + SHOT_TITLE_PLATE_H + SHOT_NOTCH_H - SHOT_NOTCH_OVERLAP;
 
@@ -61,6 +62,7 @@ export interface ShotChartBoardRects {
   court: ShotChartRect;
   zones: ShotChartRect;
   legendY: number;
+  metalH: number;
 }
 
 export interface ShotChartBoardOpts {
@@ -90,39 +92,54 @@ export const shotChartBoardRects = (
   const showZones = opts.showZones !== false;
   const showLegend = opts.showLegend !== false;
   const legendH = showLegend ? SHOT_LEGEND_H : 0;
-  const padX = 36;
-  const availW = GRAPHIC_WIDTH - padX * 2;
-  const courtTop = SHOT_HEADER_H + SHOT_COURT_GAP;
-  const zonesGap = showZones ? SHOT_ZONES_GAP : 8;
-  const legendBlock = showLegend ? 14 + legendH : SHOT_BOTTOM;
-  const below =
-    zonesGap + (showZones ? SHOT_ZONES_H : 0) + legendBlock;
-  const availH = Math.max(240, boardH - courtTop - below);
+  const legendGap = showLegend ? 8 : 0;
+  const availW = GRAPHIC_WIDTH - SHOT_COURT_PAD_X * 2;
   const aspect = COURT_FT_W / COURT_VIEW_H_FT;
   let courtW = availW;
   let courtH = courtW / aspect;
-  if (courtH > availH) {
-    courtH = availH;
+  const courtBottom =
+    boardH - SHOT_BOTTOM - (showLegend ? legendH + legendGap : 0);
+  let courtY = courtBottom - courtH;
+  const headerBottom = SHOT_HEADER_H;
+  const zonesGap = showZones ? SHOT_ZONES_GAP : 0;
+  let zonesY = headerBottom + SHOT_COURT_GAP;
+  let zonesH = showZones
+    ? Math.max(SHOT_ZONES_MIN_H, courtY - zonesGap - zonesY)
+    : 0;
+  const zonesCap = showZones ? Math.round(boardH * 0.22) : 0;
+  if (showZones && zonesH > zonesCap) {
+    zonesH = zonesCap;
+    zonesY = courtY - zonesGap - zonesH;
+  }
+  const topNeed =
+    headerBottom + SHOT_COURT_GAP + (showZones ? zonesH + zonesGap : 0);
+  if (courtY < topNeed) {
+    courtH = Math.max(280, courtBottom - topNeed);
     courtW = courtH * aspect;
+    courtY = courtBottom - courtH;
+    if (showZones) {
+      zonesY = headerBottom + SHOT_COURT_GAP;
+      zonesH = Math.max(SHOT_ZONES_MIN_H, courtY - zonesGap - zonesY);
+    }
   }
   const court: ShotChartRect = {
     x: (GRAPHIC_WIDTH - courtW) / 2,
-    y: courtTop,
+    y: courtY,
     w: courtW,
     h: courtH,
   };
   const zones: ShotChartRect = {
     x: court.x,
-    y: court.y + court.h + zonesGap,
+    y: showZones ? zonesY : court.y,
     w: court.w,
-    h: showZones ? SHOT_ZONES_H : 0,
+    h: showZones ? zonesH : 0,
   };
+  const metalH = showZones ? zones.y + zones.h : Math.max(headerBottom, court.y);
   return {
     court,
     zones,
-    legendY: showZones
-      ? zones.y + zones.h + 16
-      : court.y + court.h + 16,
+    legendY: court.y + court.h + legendGap + (showLegend ? legendH / 2 : 0),
+    metalH,
   };
 };
 

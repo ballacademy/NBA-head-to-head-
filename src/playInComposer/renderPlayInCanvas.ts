@@ -2,7 +2,6 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import {
@@ -73,7 +72,7 @@ const paintSlot = async (
   slot: PlayInSlotRect,
   teamId: string | null | undefined,
   look: ComposerLook | undefined,
-  purpleFlair: boolean | undefined,
+  _purpleFlair: boolean | undefined,
   s: number,
   bye = false,
   record: string | null = null,
@@ -86,9 +85,6 @@ const paintSlot = async (
   context.fillStyle = "rgba(8,8,10,0.55)";
   context.fillRect(x, y, w, h);
   paintCellFrame(context, x, y, w, h, look, s);
-  if (purpleFlair) {
-    paintPurplePlateEdge(context, x, y, w, h, s);
-  }
   const team = getTeam(teamId);
   if (team) {
     const logo = await loadImage(team.logoSrc);
@@ -153,20 +149,15 @@ const paintPlate = (
   h: number,
   label: string,
   look: ComposerLook | undefined,
-  purpleFlair: boolean | undefined,
+  _purpleFlair: boolean | undefined,
   eight: boolean,
   s: number,
 ) => {
   context.fillStyle = eight
-    ? purpleFlair
-      ? "rgba(176,38,255,0.16)"
-      : "rgba(255,255,255,0.1)"
+    ? "rgba(255,255,255,0.1)"
     : "rgba(10,10,12,0.78)";
   context.fillRect(x, y, w, h);
   paintCellFrame(context, x, y, w, h, look, s);
-  if (purpleFlair) {
-    paintPurplePlateEdge(context, x, y, w, h, s);
-  }
   context.font = `900 ${(eight ? 15 : 18) * s}px ${POSTER_FONT}`;
   context.textAlign = "center";
   context.textBaseline = "middle";

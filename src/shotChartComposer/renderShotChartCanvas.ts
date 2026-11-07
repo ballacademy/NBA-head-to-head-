@@ -20,7 +20,6 @@ import {
 import { getTeam } from "../standingsComposer/teams";
 import {
   SHOT_BRAND_H,
-  SHOT_HEADER_H,
   SHOT_HEADER_PAD,
   SHOT_MAKE_R,
   SHOT_MISS_R,
@@ -118,6 +117,9 @@ export const renderShotChartCanvas = async (
     return canvas;
   }
   const s = scale;
+  const showZones = input.showZones !== false;
+  const showLegend = input.showLegend !== false;
+  const rects = shotChartBoardRects(boardH, { showZones, showLegend });
   await document.fonts?.load(`italic 900 ${SHOT_TITLE_SIZE * s}px ${POSTER_FONT}`);
   await document.fonts?.load(`900 ${22 * s}px ${POSTER_FONT}`);
   paintHeaderMetalField(
@@ -125,7 +127,7 @@ export const renderShotChartCanvas = async (
     await loadImage(FIELD_TEXTURE_SRC),
     width,
     height,
-    SHOT_HEADER_H * s,
+    rects.metalH * s,
     s,
   );
   paintCellFrame(context, 0, 0, width, height, input.look, s);
@@ -193,11 +195,11 @@ export const renderShotChartCanvas = async (
   const nameStyle = readComposerNameStyle();
   const playerLabel = shotChartPlayerLabel(input, nameStyle).toUpperCase();
   const meta = shotChartNotchMeta(input).toUpperCase();
-  context.font = `900 ${16 * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, 0.06 * 16 * s);
+  context.font = `900 ${20 * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, 0.06 * 20 * s);
   const nameW = context.measureText(playerLabel).width;
-  context.font = `900 ${12 * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, 0.08 * 12 * s);
+  context.font = `900 ${14 * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, 0.08 * 14 * s);
   const metaW = context.measureText(meta).width;
   setLetterSpacing(context, 0);
   const logoOn = Boolean(input.teamId && getTeam(input.teamId));
@@ -218,14 +220,9 @@ export const renderShotChartCanvas = async (
   context.lineTo(notchX, notchY + notchH);
   context.closePath();
   context.fill();
-  if (input.purpleFlair) {
-    context.strokeStyle = "#b026ff";
-    context.lineWidth = 2 * s;
-    context.stroke();
-  }
 
-  const nameY = notchY + 20 * s;
-  const metaY = notchY + 38 * s;
+  const nameY = notchY + 26 * s;
+  const metaY = notchY + 50 * s;
   const team = getTeam(input.teamId);
   const logo = team ? await loadImage(team.logoSrc) : null;
   const nameStart = width / 2 - nameRowW / 2;
@@ -238,23 +235,20 @@ export const renderShotChartCanvas = async (
   context.fillStyle = "#111";
   context.textAlign = "left";
   context.textBaseline = "middle";
-  context.font = `900 ${16 * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, 0.06 * 16 * s);
+  context.font = `900 ${20 * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, 0.06 * 20 * s);
   context.fillText(
     playerLabel,
     nameStart + (logo ? logoSize + 8 * s : 0),
     nameY,
   );
   context.textAlign = "center";
-  context.font = `900 ${12 * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, 0.08 * 12 * s);
+  context.font = `900 ${14 * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, 0.08 * 14 * s);
   context.fillStyle = "#222";
   context.fillText(meta, width / 2, metaY);
   setLetterSpacing(context, 0);
 
-  const showZones = input.showZones !== false;
-  const showLegend = input.showLegend !== false;
-  const rects = shotChartBoardRects(boardH, { showZones, showLegend });
   const court = {
     x: rects.court.x * s,
     y: rects.court.y * s,
@@ -307,7 +301,7 @@ export const renderShotChartCanvas = async (
       const split = `${zone.makes}–${zone.attempts}`;
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.font = `900 ${17 * s}px ${POSTER_FONT}`;
+      context.font = `900 ${22 * s}px ${POSTER_FONT}`;
       const gap = 8 * s;
       const splitW = context.measureText(split).width;
       const labelW = context.measureText(zone.label).width;

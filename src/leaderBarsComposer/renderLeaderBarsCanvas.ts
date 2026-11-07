@@ -89,6 +89,7 @@ export const renderLeaderBarsCanvas = async (
     title.w * scale,
     title.h * scale,
     scale,
+    input.purpleFlair,
   );
   const rows = visibleLeaderRows(
     squareLeaderRows(input.rows, Boolean(input.square)),

@@ -7,8 +7,10 @@ import {
   SHOT_HEADER_H,
   SHOT_MAKE_R,
   SHOT_MISS_R,
+  shotChartBoardRects,
   shotToPx,
 } from "./shotChartLayout";
+import { GRAPHIC_HEIGHT } from "../standingsComposer/rankingState";
 import {
   applyFilledShotChart,
   applyShotChartFilter,
@@ -132,13 +134,23 @@ describe("shot chart", () => {
   });
 
   it("keeps stacked metal in the header only and a flat court floor", () => {
-    expect(SHOT_HEADER_H).toBe(165);
-    expect(SHOT_COURT_GAP).toBe(16);
+    expect(SHOT_HEADER_H).toBeGreaterThan(170);
+    expect(SHOT_HEADER_H).toBeLessThan(210);
+    expect(SHOT_COURT_GAP).toBe(12);
     expect(COURT_VIEW_H_FT).toBe(40);
     expect(COURT_VIEW_H_FT).toBeLessThan(47);
     expect(COURT_FLOOR.toLowerCase()).toBe("#121212");
     expect(SHOT_MAKE_R).toBeGreaterThan(9);
     expect(SHOT_MISS_R).toBeGreaterThan(8);
+  });
+
+  it("pins the court near the bottom and fills leftover with zones", () => {
+    const rects = shotChartBoardRects(GRAPHIC_HEIGHT);
+    expect(rects.court.y + rects.court.h).toBeGreaterThan(GRAPHIC_HEIGHT - 50);
+    expect(rects.court.y).toBeGreaterThan(SHOT_HEADER_H);
+    expect(rects.zones.h).toBeGreaterThan(120);
+    expect(rects.zones.y + rects.zones.h).toBeLessThanOrEqual(rects.court.y);
+    expect(rects.metalH).toBeGreaterThan(SHOT_HEADER_H);
   });
 
   it("does not invent dots when ESPN has no shooting coordinates", () => {

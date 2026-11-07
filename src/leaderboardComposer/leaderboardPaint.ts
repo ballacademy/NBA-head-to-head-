@@ -2,6 +2,7 @@ import {
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
+  paintPurplePlateEdge,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { readComposerBaCorner } from "../instagramComposer/composerBaCorner";
@@ -491,12 +492,16 @@ export const paintTitlePlate = (
   w: number,
   h: number,
   scale: number,
+  purpleFlair = false,
 ) => {
   const s = scale;
   paintStuddedCharcoal(context, x, y, w, h, scale);
   context.strokeStyle = "#fff";
   context.lineWidth = Math.max(2, 3 * s);
   context.strokeRect(x + 1.5 * s, y + 1.5 * s, w - 3 * s, h - 3 * s);
+  if (purpleFlair) {
+    paintPurplePlateEdge(context, x, y, w, h, scale);
+  }
   const size = lines.length > 1 ? 36 * s : 42 * s;
   context.font = `900 ${size}px ${POSTER_FONT}`;
   context.textAlign = "center";

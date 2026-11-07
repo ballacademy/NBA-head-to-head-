@@ -42,9 +42,17 @@ export const FRAME_BLACK = "#0a0a0a";
 export const FRAME_WIDTH = 4;
 
 /** Lightsaber / kyber — electric violet, not pastel pink. */
-export const IDENTITY_PURPLE = "#b026ff";
+export const IDENTITY_PURPLE = "#7a00ff";
 export const IDENTITY_PURPLE_DEEP = "#6a00e6";
-export const IDENTITY_PURPLE_GLOW = "rgba(176, 38, 255, 0.55)";
+/** Ice-white blade core — not lilac / pastel. */
+export const IDENTITY_PURPLE_CORE = "#f4f7ff";
+export const IDENTITY_PURPLE_GLOW = "rgba(122, 0, 255, 0.38)";
+/** Design-px ice core on the title-plate ring. */
+export const PURPLE_CORE_LINE = 1.5;
+/** Design-px violet falloff outside the core. */
+export const PURPLE_VIOLET_LINE = 3;
+/** Almost no blur — a saber edge, not a neon tube. */
+export const PURPLE_FALLOFF_BLUR = 3;
 
 export const parseComposerLook = (value: unknown): ComposerLook => {
   if (value === "none" || value === "off") {
@@ -284,73 +292,48 @@ export const paintTeamHairline = (
   context.restore();
 };
 
+/** Corner LED wash — retired; Purple is title plate + BA only. */
 export const paintPurpleCornerBloom = (
-  context: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  scale: number,
+  _context: CanvasRenderingContext2D,
+  _width: number,
+  _height: number,
+  _scale: number,
 ) => {
-  const paint = (
-    cx: number,
-    cy: number,
-    radius: number,
-    color: string,
-  ) => {
-    const glow = context.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    glow.addColorStop(0, color);
-    glow.addColorStop(1, "rgba(176, 38, 255, 0)");
-    context.fillStyle = glow;
-    context.beginPath();
-    context.arc(cx, cy, radius, 0, Math.PI * 2);
-    context.fill();
-  };
-  context.save();
-  context.globalCompositeOperation = "screen";
-  paint(width * 0.05, height * 0.06, 220 * scale, "rgba(176, 38, 255, 0.22)");
-  paint(width * 0.95, height * 0.95, 250 * scale, "rgba(106, 0, 230, 0.18)");
-  context.restore();
+  /* option 3: no field blobs */
 };
 
-/** Kyber glow behind open titles (tier, TOTW Plus, pyramid) — type stays sharp. */
+/** Open titles stay white; Purple does not glow type. */
 export const paintPurpleTitleGlow = (
-  context: CanvasRenderingContext2D,
-  scale: number,
+  _context: CanvasRenderingContext2D,
+  _scale: number,
   paint: () => void,
 ) => {
-  context.save();
-  context.shadowColor = IDENTITY_PURPLE_GLOW;
-  context.shadowBlur = Math.round(16 * scale);
-  context.shadowOffsetX = 0;
-  context.shadowOffsetY = 0;
-  paint();
-  context.restore();
   paint();
 };
 
+/** Underline bar retired with the neon flood. */
 export const paintPurpleUnderline = (
-  context: CanvasRenderingContext2D,
-  cx: number,
-  y: number,
-  width: number,
-  scale: number,
+  _context: CanvasRenderingContext2D,
+  _cx: number,
+  _y: number,
+  _width: number,
+  _scale: number,
 ) => {
-  const w = Math.max(120 * scale, width * 0.42);
-  const line = Math.max(2, Math.round(2.5 * scale));
-  context.save();
-  context.strokeStyle = IDENTITY_PURPLE;
-  context.lineWidth = line;
-  context.shadowColor = IDENTITY_PURPLE_GLOW;
-  context.shadowBlur = Math.round(10 * scale);
-  context.beginPath();
-  context.moveTo(cx - w / 2, y);
-  context.lineTo(cx + w / 2, y);
-  context.stroke();
-  context.restore();
+  /* option 3: title-box ring only */
 };
 
-/** Matches CSS `box-shadow: 0 0 0 2.5u #b026ff` — fully outside the plate. */
+const purpleVioletLinePx = (scale: number) =>
+  Math.max(2, Math.round(PURPLE_VIOLET_LINE * scale));
+
+const purpleCoreLinePx = (scale: number) =>
+  Math.max(1, Math.round(PURPLE_CORE_LINE * scale));
+
+const purpleFalloffBlurPx = (scale: number) =>
+  Math.max(1, Math.round(PURPLE_FALLOFF_BLUR * scale));
+
+/** Matches CSS ice-core + violet ring — fully outside the plate. */
 export const purplePlateLinePx = (scale: number) =>
-  Math.max(2, Math.round(2.5 * scale));
+  purpleVioletLinePx(scale) + purpleCoreLinePx(scale);
 
 export const purplePlateOutsetRect = (
   x: number,
@@ -367,6 +350,45 @@ export const purplePlateOutsetRect = (
     h: h + line,
     line,
   };
+};
+
+const strokeLightsaberRectEdges = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  scale: number,
+  edges: FrameEdge[],
+) => {
+  const violet = purpleVioletLinePx(scale);
+  const core = purpleCoreLinePx(scale);
+  const outer = {
+    x: x - (violet + core) / 2,
+    y: y - (violet + core) / 2,
+    w: w + violet + core,
+    h: h + violet + core,
+  };
+  context.save();
+  context.strokeStyle = IDENTITY_PURPLE;
+  context.lineWidth = violet + core;
+  context.shadowColor = IDENTITY_PURPLE_GLOW;
+  context.shadowBlur = purpleFalloffBlurPx(scale);
+  paintRectEdges(context, outer.x, outer.y, outer.w, outer.h, violet + core, edges);
+  context.restore();
+  const inner = {
+    x: outer.x + violet / 2,
+    y: outer.y + violet / 2,
+    w: outer.w - violet,
+    h: outer.h - violet,
+  };
+  context.save();
+  context.strokeStyle = IDENTITY_PURPLE_CORE;
+  context.lineWidth = core;
+  context.shadowBlur = 0;
+  context.shadowColor = "transparent";
+  paintRectEdges(context, inner.x, inner.y, inner.w, inner.h, core, edges);
+  context.restore();
 };
 
 export const paintPurplePlateEdge = (
@@ -397,56 +419,44 @@ export const paintPurplePlateEdges = (
   if (edges.length === 0) {
     return;
   }
-  const outer = purplePlateOutsetRect(x, y, w, h, scale);
-  context.save();
-  context.strokeStyle = IDENTITY_PURPLE;
-  context.lineWidth = outer.line;
-  context.shadowColor = IDENTITY_PURPLE_GLOW;
-  context.shadowBlur = Math.round(18 * scale);
-  paintRectEdges(
-    context,
-    outer.x,
-    outer.y,
-    outer.w,
-    outer.h,
-    outer.line,
-    edges,
-  );
-  context.restore();
+  strokeLightsaberRectEdges(context, x, y, w, h, scale, edges);
 };
 
-/** Kyber halo around a custom banner path, sitting outside the white/black stroke. */
+/** Kyber saber around a custom banner path, sitting outside the white/black stroke. */
 export const paintPurplePathHalo = (
   context: CanvasRenderingContext2D,
   scale: number,
   buildPath: () => void,
   frameLine: number,
 ) => {
-  const outset = purplePlateLinePx(scale);
+  const violet = purpleVioletLinePx(scale);
+  const core = purpleCoreLinePx(scale);
   context.save();
   context.strokeStyle = IDENTITY_PURPLE;
-  context.lineWidth = Math.max(0, frameLine) + outset * 2;
+  context.lineWidth = Math.max(0, frameLine) + (violet + core) * 2;
   context.shadowColor = IDENTITY_PURPLE_GLOW;
-  context.shadowBlur = Math.round(14 * scale);
+  context.shadowBlur = purpleFalloffBlurPx(scale);
+  context.lineJoin = "miter";
+  buildPath();
+  context.stroke();
+  context.restore();
+  context.save();
+  context.strokeStyle = IDENTITY_PURPLE_CORE;
+  context.lineWidth = Math.max(0, frameLine) + core * 2;
+  context.shadowBlur = 0;
+  context.shadowColor = "transparent";
   context.lineJoin = "miter";
   buildPath();
   context.stroke();
   context.restore();
 };
 
-/** Stroke the current path with a kyber rim (week notches). */
+/** Week-notch rim retired with the neon flood. */
 export const paintPurplePathStroke = (
-  context: CanvasRenderingContext2D,
-  scale: number,
+  _context: CanvasRenderingContext2D,
+  _scale: number,
 ) => {
-  const line = Math.max(2, Math.round(2 * scale));
-  context.save();
-  context.strokeStyle = IDENTITY_PURPLE;
-  context.lineWidth = line;
-  context.shadowColor = IDENTITY_PURPLE_GLOW;
-  context.shadowBlur = Math.round(10 * scale);
-  context.stroke();
-  context.restore();
+  /* option 3: title box + BA only */
 };
 
 export const paintPurpleBaGlow = (
@@ -457,51 +467,40 @@ export const paintPurpleBaGlow = (
 ) => {
   const cx = x + size / 2;
   const cy = y + size / 2;
-  const radius = size * 0.95;
-  const glow = context.createRadialGradient(cx, cy, size * 0.16, cx, cy, radius);
-  glow.addColorStop(0, "rgba(176, 38, 255, 0.78)");
-  glow.addColorStop(0.38, "rgba(233, 213, 255, 0.28)");
-  glow.addColorStop(1, "rgba(176, 38, 255, 0)");
-  context.save();
-  context.globalCompositeOperation = "screen";
-  context.fillStyle = glow;
-  context.beginPath();
-  context.arc(cx, cy, radius, 0, Math.PI * 2);
-  context.fill();
-  context.restore();
+  const r = size * 0.5;
+  const violet = Math.max(2, Math.round(size * 0.045));
+  const core = Math.max(1, Math.round(size * 0.022));
   context.save();
   context.strokeStyle = IDENTITY_PURPLE;
-  context.lineWidth = Math.max(3, Math.round(size * 0.06));
+  context.lineWidth = violet + core;
   context.shadowColor = IDENTITY_PURPLE_GLOW;
-  context.shadowBlur = Math.round(size * 0.18);
+  context.shadowBlur = Math.max(1, Math.round(size * 0.04));
   context.beginPath();
-  context.arc(cx, cy, size * 0.5, 0, Math.PI * 2);
+  context.arc(cx, cy, r, 0, Math.PI * 2);
+  context.stroke();
+  context.restore();
+  context.save();
+  context.strokeStyle = IDENTITY_PURPLE_CORE;
+  context.lineWidth = core;
+  context.shadowBlur = 0;
+  context.shadowColor = "transparent";
+  context.beginPath();
+  context.arc(cx, cy, r - violet / 2, 0, Math.PI * 2);
   context.stroke();
   context.restore();
 };
 
+/** Cell hairlines retired — White/Black frames stay the cell language. */
 export const paintPurpleInnerHairline = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  scale: number,
-  look?: ComposerLook | null,
+  _context: CanvasRenderingContext2D,
+  _x: number,
+  _y: number,
+  _w: number,
+  _h: number,
+  _scale: number,
+  _look?: ComposerLook | null,
 ) => {
-  const inner = innerFrameRect(x, y, w, h, scale, look);
-  const line = Math.max(2, Math.round(1.5 * scale));
-  context.save();
-  context.strokeStyle = IDENTITY_PURPLE;
-  context.globalAlpha = 0.92;
-  context.lineWidth = line;
-  context.strokeRect(
-    inner.x + line / 2,
-    inner.y + line / 2,
-    Math.max(0, inner.w - line),
-    Math.max(0, inner.h - line),
-  );
-  context.restore();
+  /* option 3 */
 };
 
 export const headshotGlowPx = (size: number) =>

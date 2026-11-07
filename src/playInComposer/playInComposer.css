@@ -267,10 +267,6 @@
 .pi-plate.is-eight {
   font-size: calc(15 * var(--u));
   letter-spacing: 0.08em;
-  background: rgba(176, 38, 255, 0.16);
-}
-
-.pi-board:not(.is-purple) .pi-plate.is-eight {
   background: rgba(255, 255, 255, 0.1);
 }
 

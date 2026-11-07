@@ -392,9 +392,6 @@ export const renderCompareCanvas = async (
     context.fillStyle = "#1c1c1c";
     context.fillRect(titleX, subY, titleW, CMP_SUB_H * s);
     paintCellFrame(context, titleX, subY, titleW, CMP_SUB_H * s, input.look, s);
-    if (input.purpleFlair) {
-      paintPurplePlateEdge(context, titleX, subY, titleW, CMP_SUB_H * s, s);
-    }
     context.font = `900 ${CMP_SUB_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";

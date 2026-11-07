@@ -574,16 +574,6 @@ export const renderPicksCanvas = async (
       input.look,
       s,
     );
-    if (input.purpleFlair) {
-      paintPurplePlateEdge(
-        context,
-        lockup.x,
-        lockup.y,
-        lockup.w,
-        lockup.h,
-        s,
-      );
-    }
     const kicker = picksRecordKicker(mode);
     context.textAlign = "center";
     context.textBaseline = "middle";

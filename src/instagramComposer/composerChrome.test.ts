@@ -1763,4 +1763,27 @@ describe("composer chrome", () => {
     expect(compareApp).toContain("onActivate={setPhotoTarget}");
     expect(compareGraphic).toContain("onActivate={() => onActivate?.(side)}");
   });
+
+  it("keeps Purple 2+3 as a lightsaber title-plate and BA rim", () => {
+    const look = readFileSync(
+      join(root, "instagramComposer/composerLook.ts"),
+      "utf8",
+    );
+    expect(look).toContain('IDENTITY_PURPLE = "#7a00ff"');
+    expect(look).toContain('IDENTITY_PURPLE_CORE = "#f4f7ff"');
+    expect(look).toContain("PURPLE_FALLOFF_BLUR = 3");
+    expect(sheet).toContain("--ba-purple-core: #f4f7ff");
+    expect(sheet).toContain(".is-purple .pyr-title-plate");
+    expect(sheet).toContain(".is-purple .composer-ba");
+    expect(sheet).not.toContain(".is-purple .ig-slot");
+    expect(sheet).not.toContain(".is-purple .totw-strip");
+    expect(sheet).not.toContain(".is-purple .rl-strip");
+    expect(sheet).not.toMatch(/\.is-purple \.pyr-cell \.pod-photo\s*\{[^}]*box-shadow/);
+    const shotLayout = readFileSync(
+      join(root, "shotChartComposer/shotChartLayout.ts"),
+      "utf8",
+    );
+    expect(shotLayout).toContain("metalH");
+    expect(shotLayout).toContain("SHOT_COURT_PAD_X");
+  });
 });

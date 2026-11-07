@@ -942,134 +942,49 @@ main.sc-stage {
 }
 
 .is-purple {
-  --ba-purple: #b026ff;
+  --ba-purple: #7a00ff;
+  --ba-purple-core: #f4f7ff;
   position: relative;
 }
 
 .is-purple::before,
 .is-purple::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-  width: 48%;
-  height: 38%;
-}
-
-.is-purple::before {
-  top: -14%;
-  left: -16%;
-  background: radial-gradient(
-    circle at 42% 40%,
-    rgba(176, 38, 255, 0.28),
-    transparent 70%
-  );
-}
-
-.is-purple::after {
-  right: -14%;
-  bottom: -16%;
-  background: radial-gradient(
-    circle at 58% 62%,
-    rgba(106, 0, 230, 0.22),
-    transparent 72%
-  );
+  content: none;
+  display: none;
 }
 
 .is-purple .composer-ba,
 .is-purple .twp-ba {
-  filter:
-    drop-shadow(0 0 calc(14 * var(--u)) #b026ff)
-    drop-shadow(0 0 calc(4 * var(--u)) rgba(233, 213, 255, 0.9));
+  border-radius: 50%;
+  filter: none;
+  box-shadow:
+    0 0 0 calc(1.5 * var(--u)) var(--ba-purple-core),
+    0 0 0 calc(3.5 * var(--u)) var(--ba-purple),
+    0 0 calc(4 * var(--u)) rgba(122, 0, 255, 0.45);
 }
 
 .is-purple .ig-banner,
 .is-purple .et-banner {
-  filter: drop-shadow(0 0 calc(8 * var(--u)) #b026ff);
+  filter:
+    drop-shadow(0 0 calc(1.2 * var(--u)) var(--ba-purple-core))
+    drop-shadow(0 0 calc(3.5 * var(--u)) var(--ba-purple));
 }
 
 .is-purple .rl-title-plate,
 .is-purple .pod-title-plate,
 .is-purple .pk-title-plate,
-.is-purple .pk-ats-lockup,
 .is-purple .totw-title-plate,
 .is-purple .plb-title-plate,
 .is-purple .hl-headline-plate,
 .is-purple .cmp-title-plate,
 .is-purple .mt-title-plate,
-.is-purple .cmp-sub-plate,
 .is-purple .shc-title-plate,
-.is-purple .pi-slot,
-.is-purple .qt-board .pod-photo {
+.is-purple .pyr-title-plate,
+.is-purple .lb-title-box {
   box-shadow:
-    0 0 0 calc(2.5 * var(--u)) #b026ff,
-    0 0 calc(18 * var(--u)) rgba(176, 38, 255, 0.5);
-}
-
-.is-purple .tl-title-line,
-.is-purple .pyr-title,
-.is-purple .twp-title,
-.is-purple .twp-section-title,
-.is-purple .totw-brand {
-  text-shadow:
-    0 0 calc(14 * var(--u)) rgba(176, 38, 255, 0.78),
-    calc(1 * var(--u)) calc(1.2 * var(--u)) 0 rgba(0, 0, 0, 0.82);
-}
-
-.is-purple .tl-title-block::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: calc(2 * var(--u));
-  width: 42%;
-  height: calc(3.5 * var(--u));
-  transform: translateX(-50%);
-  background: #b026ff;
-  box-shadow: 0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.7);
-  pointer-events: none;
-}
-
-.is-purple .tl-label-stack {
-  box-shadow: inset 0 0 0 calc(2.5 * var(--u)) #b026ff;
-}
-
-.is-purple .totw-week-notch,
-.is-purple .twp-week,
-.is-purple .shc-notch {
-  box-shadow:
-    0 0 0 calc(2 * var(--u)) #b026ff,
-    0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.45);
-}
-
-.is-purple .totw-strip,
-.is-purple .twp-bar {
-  box-shadow:
-    0 0 0 calc(2 * var(--u)) #b026ff,
-    0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.35);
-}
-
-.is-purple .pyr-cell .pod-photo {
-  box-shadow:
-    0 0 0 calc(2 * var(--u)) #b026ff,
-    0 0 calc(10 * var(--u)) rgba(176, 38, 255, 0.35);
-}
-
-/* Outer kyber rim skips the top so it does not redraw across the neck. */
-.is-purple .pyr-cell .pod-photo.is-pop {
-  box-shadow:
-    calc(-2 * var(--u)) 0 0 #b026ff,
-    calc(2 * var(--u)) 0 0 #b026ff,
-    0 calc(2 * var(--u)) 0 #b026ff,
-    0 calc(8 * var(--u)) calc(10 * var(--u)) rgba(176, 38, 255, 0.28);
-}
-
-.is-purple .ig-slot,
-.is-purple .tl-cell--team,
-.is-purple .tl-cell--player,
-.is-purple .et-cell,
-.is-purple .rl-strip,
-.is-purple .pod-board .pod-photo {
-  box-shadow: inset 0 0 0 calc(1.5 * var(--u)) rgba(176, 38, 255, 0.92);
+    0 0 0 calc(1.5 * var(--u)) var(--ba-purple-core),
+    0 0 0 calc(4 * var(--u)) var(--ba-purple),
+    0 0 calc(5 * var(--u)) rgba(122, 0, 255, 0.45);
 }
 
 .hl-board.is-purple .pod-photo {

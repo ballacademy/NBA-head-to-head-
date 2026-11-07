@@ -1,15 +1,9 @@
 import {
-  IDENTITY_PURPLE,
-  IDENTITY_PURPLE_GLOW,
   frameColor,
-  frameLinePx,
   paintCellFrameEdges,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
-  paintPurplePlateEdges,
-  paintPurpleTitleGlow,
-  purplePlateLinePx,
-  purplePlateOutsetRect,
+  paintPurplePlateEdge,
   type ComposerLook,
   type FrameEdge,
 } from "../instagramComposer/composerLook";
@@ -62,7 +56,6 @@ import { pyramidSlotPops, pyramidTitle, type PyramidSlot } from "./pyramidState"
 export { canvasToPngBlob };
 
 const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
-const FRAME_TOP: FrameEdge[] = ["top"];
 const FRAME_FRONT: FrameEdge[] = ["right", "bottom", "left"];
 const FRAME_ALL: FrameEdge[] = ["top", "right", "bottom", "left"];
 
@@ -150,7 +143,6 @@ const paintGappedTopStroke = (
   line: number,
   color: string,
   gap: { left: number; right: number } | null,
-  glow = 0,
 ) => {
   if (line <= 0 || w <= 0) {
     return;
@@ -170,10 +162,6 @@ const paintGappedTopStroke = (
   context.lineJoin = "miter";
   context.shadowBlur = 0;
   context.shadowColor = "transparent";
-  if (glow > 0) {
-    context.shadowColor = IDENTITY_PURPLE_GLOW;
-    context.shadowBlur = glow;
-  }
   for (const [from, to] of segments) {
     if (to - from < line) {
       continue;
@@ -470,9 +458,7 @@ export const renderPyramidCanvas = async (
     const quietLine =
       input.look === "none"
         ? 0
-        : input.purpleFlair
-          ? frameLinePx(s, input.look)
-          : Math.max(1, Math.round(PYR_QUIET_FRAME * s));
+        : Math.max(1, Math.round(PYR_QUIET_FRAME * s));
     const team = getTeam(slot?.teamId);
     paintPyramidCellFill(
       context,
@@ -508,9 +494,6 @@ export const renderPyramidCanvas = async (
     }
     const rest = popping ? FRAME_FRONT : FRAME_ALL;
     paintCellFrameEdges(context, x, y, w, h, input.look, s, rest, quietLine);
-    if (input.purpleFlair) {
-      paintPurplePlateEdges(context, x, y, w, h, s, rest);
-    }
     if (input.showRankPip !== false) {
       const pip = 22 * s;
       const px = x + 8 * s;
@@ -531,10 +514,9 @@ export const renderPyramidCanvas = async (
       context.fillText(String(index + 1), px + pip / 2, py + pip / 2);
     }
     const line = quietLine;
-    const purpleLine = input.purpleFlair ? purplePlateLinePx(s) : 0;
     const gap =
       sprite && popping
-        ? headGapAtCellTop(sprite, pop, s, Math.max(line, purpleLine) + s)
+        ? headGapAtCellTop(sprite, pop, s, line + s)
         : null;
     if (popping) {
       paintGappedTopStroke(
@@ -546,27 +528,6 @@ export const renderPyramidCanvas = async (
         frameColor(input.look),
         gap,
       );
-      if (input.purpleFlair) {
-        const outer = purplePlateOutsetRect(x, y, w, h, s);
-        const purpleGap = gap
-          ? {
-              left: gap.left + (x - outer.x),
-              right: gap.right + (x - outer.x),
-            }
-          : null;
-        paintGappedTopStroke(
-          context,
-          outer.x,
-          outer.y,
-          outer.w,
-          outer.line,
-          IDENTITY_PURPLE,
-          purpleGap,
-          Math.round(8 * s),
-        );
-      }
-    } else if (input.purpleFlair) {
-      paintPurplePlateEdges(context, x, y, w, h, s, FRAME_TOP);
     }
   }
 
@@ -636,6 +597,9 @@ export const renderPyramidCanvas = async (
   context.strokeStyle = "#fff";
   context.lineWidth = 4 * s;
   context.strokeRect(plateX, plateY, plateW, plateH);
+  if (input.purpleFlair) {
+    paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
+  }
   context.fillStyle = "#fff";
   context.font = `900 ${36 * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.18 * 36 * s);

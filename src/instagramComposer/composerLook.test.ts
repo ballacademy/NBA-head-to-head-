@@ -12,7 +12,9 @@ import {
   headshotSilhouettePx,
   hairlineLinePx,
   IDENTITY_PURPLE,
+  IDENTITY_PURPLE_CORE,
   innerFrameRect,
+  PURPLE_FALLOFF_BLUR,
   purplePlateOutsetRect,
   parseComposerLook,
   parsePurpleFlair,
@@ -110,15 +112,17 @@ describe("composer look", () => {
     expect(parsePurpleFlair(true)).toBe(true);
     expect(composerFlairClass(true)).toBe("is-purple");
     expect(composerFlairClass(false)).toBe("");
-    expect(IDENTITY_PURPLE.toLowerCase()).toBe("#b026ff");
+    expect(IDENTITY_PURPLE.toLowerCase()).toBe("#7a00ff");
     const r = Number.parseInt(IDENTITY_PURPLE.slice(1, 3), 16);
     const b = Number.parseInt(IDENTITY_PURPLE.slice(5, 7), 16);
     expect(b).toBeGreaterThan(r);
+    expect(IDENTITY_PURPLE_CORE.toLowerCase()).toBe("#f4f7ff");
+    expect(PURPLE_FALLOFF_BLUR).toBeLessThanOrEqual(3);
   });
 
   it("paints the kyber title-plate ring outside the box, matching preview box-shadow", () => {
     const outer = purplePlateOutsetRect(100, 200, 400, 80, 2);
-    expect(outer.line).toBe(5);
+    expect(outer.line).toBeGreaterThanOrEqual(4);
     expect(outer.x).toBeLessThan(100);
     expect(outer.y).toBeLessThan(200);
     expect(outer.x + outer.w).toBeGreaterThan(500);

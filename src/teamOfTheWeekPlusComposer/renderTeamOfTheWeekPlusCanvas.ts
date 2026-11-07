@@ -5,7 +5,6 @@ import {
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
   paintPurplePathStroke,
-  paintPurplePlateEdge,
   paintPurpleTitleGlow,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
@@ -495,25 +494,6 @@ export const renderTeamOfTheWeekPlusCanvas = async (
     input.look,
     s,
   );
-
-  if (input.purpleFlair) {
-    paintPurplePlateEdge(
-      context,
-      starterBar.x * s,
-      starterBar.y * s,
-      starterBar.w * s,
-      starterBar.h * s,
-      s,
-    );
-    paintPurplePlateEdge(
-      context,
-      standoutBar.x * s,
-      standoutBar.y * s,
-      standoutBar.w * s,
-      standoutBar.h * s,
-      s,
-    );
-  }
 
   return canvas;
 };
