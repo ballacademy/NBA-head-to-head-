@@ -1,0 +1,35 @@
+[data-composer-slot] {
+  cursor: grab;
+}
+
+[data-composer-slot] input,
+[data-composer-slot] textarea {
+  cursor: text;
+}
+
+[data-composer-slot] button,
+[data-composer-slot] label,
+[data-composer-slot] .pod-photo__tool {
+  cursor: pointer;
+}
+
+[data-composer-slot].is-slot-dragging {
+  opacity: 0.78;
+  cursor: grabbing;
+  z-index: 3;
+}
+
+[data-composer-slot].is-slot-drop {
+  outline: 3px solid rgba(255, 229, 102, 0.95);
+  outline-offset: -3px;
+  z-index: 4;
+}
+
+.is-exporting [data-composer-slot],
+.is-exporting [data-composer-slot].is-slot-dragging,
+.is-exporting [data-composer-slot].is-slot-drop {
+  cursor: inherit;
+  opacity: 1;
+  outline: none;
+  z-index: auto;
+}

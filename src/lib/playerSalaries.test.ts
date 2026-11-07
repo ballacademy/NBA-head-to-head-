@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { players } from "./playerPool";
-import { getPlayerSalary, hasPlayerContractSalary, PLAYER_SALARY_SEASON } from "./playerSalaries";
+import {
+  formatCapSalary,
+  getPlayerSalary,
+  hasPlayerContractSalary,
+  PLAYER_SALARY_SEASON,
+  salaryLabelForPlayer,
+} from "./playerSalaries";
 
 describe("player salaries", () => {
   it("loads 2026-27 contract salaries for star players", () => {
@@ -16,6 +22,12 @@ describe("player salaries", () => {
   it("does not invent a minimum salary for players without contracts", () => {
     expect(hasPlayerContractSalary("curryst01")).toBe(true);
     expect(getPlayerSalary("not-a-real-player")).toBeUndefined();
+  });
+
+  it("maps ESPN ids onto cap numbers and formats millions", () => {
+    expect(formatCapSalary(59_033_114)).toBe("$59.0M");
+    expect(formatCapSalary(2_221_677)).toBe("$2.2M");
+    expect(salaryLabelForPlayer(undefined, "3112335")).toBe("$59.0M");
   });
 
   it("attaches salaries to the player pool", () => {
