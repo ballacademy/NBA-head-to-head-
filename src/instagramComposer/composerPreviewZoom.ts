@@ -23,7 +23,7 @@ export const PREVIEW_ZOOM_SCALE_MIN = 0.08;
 export const PREVIEW_ZOOM_SCALE_MAX = 1;
 
 /** Fit landing is leftover-contain × this. 100% stays PREVIEW_ZOOM_NATURAL_SCALE. */
-export const PREVIEW_ZOOM_FIT_BUMP = 1.25;
+export const PREVIEW_ZOOM_FIT_BUMP = 1.25 * 1.15;
 
 export const FILLED_PHOTO_SLOT_SELECTOR = ".pod-photo:not(.is-empty)";
 export const POST_ZOOM_BOARD_SELECTOR = ".sc-stage__board";
@@ -114,7 +114,7 @@ export const previewZoomFactor = (
   );
 };
 
-/** Fit is leftover-contain × 1.25, so the page may scroll at the default landing. */
+/** Fit is leftover-contain × 1.4375, so the page may scroll at the default landing. */
 export const composerPreviewAllowsPageScroll = (
   _zoom?: ComposerPreviewZoom,
   _bump = PREVIEW_ZOOM_BUMP_DEFAULT,
