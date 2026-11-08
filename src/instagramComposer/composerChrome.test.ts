@@ -251,16 +251,18 @@ describe("composer chrome", () => {
     expect(board).toContain("visualViewport");
     expect(board).toContain('data-preview-zoom={previewZoom}');
     expect(board).toContain("data-preview-zoom-bump={bump}");
-    expect(board).toContain("bumpFromWheelDelta");
     expect(board).toContain("PREVIEW_ZOOM_NATURAL_SCALE");
     const previewZoom = readFileSync(
       join(root, "instagramComposer/composerPreviewZoom.ts"),
       "utf8",
     );
     expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_FIT_BUMP = 1.5");
     expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE");
     expect(previewZoom).toContain("leftoverContainFit");
     expect(previewZoom).toContain("leftoverH > 0");
+    expect(previewZoom).toContain("wheelScalesPhoto");
+    expect(previewZoom).toContain("wheelScalesPost");
     expect(previewZoom).not.toContain("LEFTOVER_FIT_MIN_PX");
     expect(previewZoom).not.toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
     expect(board).toContain("leftoverContainFit");
@@ -283,6 +285,8 @@ describe("composer chrome", () => {
     );
     expect(hub).toContain("is-preview-zoomed");
     expect(hub).toContain("composerPreviewAllowsPageScroll");
+    expect(hub).toContain("wheelScalesPost");
+    expect(hub).toContain("bumpFromWheelDelta");
     expect(hub).toContain("beginComposerHydrateWrites");
     const standings = readFileSync(
       join(root, "standingsComposer/nbaStandings.ts"),
@@ -1489,7 +1493,7 @@ describe("composer chrome", () => {
     expect(picker).toContain("LIVE / IN GAME");
     expect(picker).toContain("sc-team__live");
     expect(photo).toContain("ArrowLeft");
-    expect(photo).toContain("event.ctrlKey || event.metaKey");
+    expect(photo).toContain("zoomFromWheelDelta");
     expect(ba).toContain("Top left");
     expect(ba).toContain("Bottom right");
     expect(ba).toContain("ComposerHudSelect");

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ComposerToast } from "./ComposerToast";
 import { useComposerBaCorner } from "./composerBaCorner";
 import { useComposerFocusMode } from "./composerFocusMode";
@@ -44,9 +44,12 @@ import {
 } from "./composerMode";
 import { useComposerHudMode } from "./composerHudMode";
 import {
+  bumpFromWheelDelta,
   composerPreviewAllowsPageScroll,
   useComposerPreviewZoom,
   useComposerPreviewZoomBump,
+  wheelScalesPost,
+  writeComposerPreviewZoomBump,
 } from "./composerPreviewZoom";
 import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
@@ -90,6 +93,8 @@ export function ComposerHub() {
   const [hudMode] = useComposerHudMode();
   const [previewZoom] = useComposerPreviewZoom();
   const [previewZoomBump] = useComposerPreviewZoomBump();
+  const previewZoomBumpRef = useRef(previewZoomBump);
+  previewZoomBumpRef.current = previewZoomBump;
   const [focusMode, setFocusMode] = useComposerFocusMode();
   const [baCorner] = useComposerBaCorner();
   const [persistReady, setPersistReady] = useState(false);
@@ -123,9 +128,20 @@ export function ComposerHub() {
     if (!(root instanceof HTMLElement)) {
       return;
     }
+    const onPostZoomWheel = (event: WheelEvent) => {
+      if (!wheelScalesPost(event)) {
+        return;
+      }
+      event.preventDefault();
+      writeComposerPreviewZoomBump(
+        bumpFromWheelDelta(previewZoomBumpRef.current, event.deltaY),
+      );
+    };
+    root.addEventListener("wheel", onPostZoomWheel, { passive: false });
     const stopWheel = chainHudWheel(root);
     const stopViewport = syncComposerVisualViewport();
     return () => {
+      root.removeEventListener("wheel", onPostZoomWheel);
       stopWheel();
       stopViewport();
     };

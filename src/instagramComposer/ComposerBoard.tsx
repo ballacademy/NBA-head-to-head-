@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -7,16 +7,12 @@ import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
 import {
-  bumpFromWheelDelta,
   leftoverContainFit,
   PREVIEW_ZOOM_NATURAL_SCALE,
   previewZoomFactor,
   useComposerPreviewZoom,
   useComposerPreviewZoomBump,
-  writeComposerPreviewZoomBump,
 } from "./composerPreviewZoom";
-
-const PHOTO_WHEEL_TARGET = ".pod-photo";
 
 /**
  * Design-px board, scaled as a unit so type/overlays match the PNG.
@@ -24,10 +20,10 @@ const PHOTO_WHEEL_TARGET = ".pod-photo";
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit leftover-contains the full 4:5 under the HUD. 100% stays
- * PREVIEW_ZOOM_NATURAL_SCALE (600×750). Page may still scroll at 75/100
- * or after whole-post zoom in. Wheel / +/− scale the whole post, not the
- * photo crop (plain wheel on a photo still crops).
+ * Fit landing is leftover-contain × PREVIEW_ZOOM_FIT_BUMP (page may scroll).
+ * 100% stays PREVIEW_ZOOM_NATURAL_SCALE (600×750). Wheel on a filled photo
+ * slot crops that image; wheel on board chrome / empty stage / HUD scales
+ * the whole post (see ComposerHub).
  */
 export function ComposerBoard({
   children,
@@ -39,12 +35,10 @@ export function ComposerBoard({
   height?: number;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const bumpRef = useRef(1);
   const [scale, setScale] = useState(1);
   const [fit, setFit] = useState(PREVIEW_ZOOM_NATURAL_SCALE);
   const [previewZoom] = useComposerPreviewZoom();
   const [bump] = useComposerPreviewZoomBump();
-  bumpRef.current = bump;
   const factor = previewZoomFactor(fit, previewZoom, bump);
 
   useLayoutEffect(() => {
@@ -124,27 +118,6 @@ export function ComposerBoard({
       window.visualViewport?.removeEventListener("resize", sync);
     };
   }, [width, height, previewZoom, bump]);
-
-  useEffect(() => {
-    const node = wrapRef.current;
-    if (!node) {
-      return;
-    }
-    const onWheel = (event: WheelEvent) => {
-      const target = event.target;
-      const onPhoto =
-        target instanceof Element && Boolean(target.closest(PHOTO_WHEEL_TARGET));
-      if (onPhoto && !event.ctrlKey && !event.metaKey) {
-        return;
-      }
-      event.preventDefault();
-      writeComposerPreviewZoomBump(
-        bumpFromWheelDelta(bumpRef.current, event.deltaY),
-      );
-    };
-    node.addEventListener("wheel", onWheel, { passive: false });
-    return () => node.removeEventListener("wheel", onWheel);
-  }, []);
 
   return (
     <div

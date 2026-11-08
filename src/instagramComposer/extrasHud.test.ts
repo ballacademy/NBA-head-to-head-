@@ -16,10 +16,13 @@ import {
   bumpFromWheelDelta,
   composerPreviewAllowsPageScroll,
   leftoverContainFit,
+  PREVIEW_ZOOM_FIT_BUMP,
   PREVIEW_ZOOM_NATURAL_SCALE,
   PREVIEW_ZOOM_SEVENTY_FIVE,
   previewZoomFactor,
   stepPreviewZoomBump,
+  wheelScalesPhoto,
+  wheelScalesPost,
 } from "./composerPreviewZoom";
 import { parseComposerBaCorner } from "./composerBaCorner";
 import { exportFilenameFromTitle } from "./composerPresets";
@@ -128,14 +131,15 @@ describe("extras 17–32 HUD helpers", () => {
 
   it("zooms Fit vs 75% vs 100%", () => {
     expect(PREVIEW_ZOOM_NATURAL_SCALE).toBe(0.5);
+    expect(PREVIEW_ZOOM_FIT_BUMP).toBe(1.5);
     expect(PREVIEW_ZOOM_SEVENTY_FIVE).toBeCloseTo(0.41);
-    expect(previewZoomFactor(0.36, "fit")).toBe(0.36);
+    expect(previewZoomFactor(0.36, "fit")).toBeCloseTo(0.36 * 1.5);
     expect(previewZoomFactor(0.36, "75")).toBeCloseTo(0.43);
     expect(previewZoomFactor(0.36, "100")).toBe(0.5);
-    expect(previewZoomFactor(0.36, "75")).toBeGreaterThan(
-      previewZoomFactor(0.36, "fit"),
-    );
     expect(previewZoomFactor(0.36, "75")).toBeLessThan(
+      previewZoomFactor(0.36, "100"),
+    );
+    expect(previewZoomFactor(0.36, "fit")).toBeGreaterThan(
       previewZoomFactor(0.36, "100"),
     );
     expect(previewZoomFactor(0.6, "100")).toBe(0.5);
@@ -192,16 +196,45 @@ describe("extras 17–32 HUD helpers", () => {
   it("scales the whole post with +/− and wheel without changing 100%", () => {
     expect(previewZoomFactor(0.36, "100")).toBe(0.5);
     expect(previewZoomFactor(0.36, "100", 1)).toBe(0.5);
-    expect(previewZoomFactor(0.36, "fit", 1)).toBe(0.36);
-    expect(previewZoomFactor(0.36, "fit", 1.12)).toBeCloseTo(0.4032);
+    expect(previewZoomFactor(0.36, "fit", 1)).toBeCloseTo(0.54);
+    expect(previewZoomFactor(0.36, "fit", 1.12)).toBeCloseTo(0.6048);
     expect(previewZoomFactor(0.36, "100", 2)).toBe(1);
     expect(stepPreviewZoomBump(1, 1)).toBeCloseTo(1.12);
     expect(stepPreviewZoomBump(1, -1)).toBeCloseTo(1 / 1.12);
     expect(bumpFromWheelDelta(1, -80)).toBeGreaterThan(1);
     expect(bumpFromWheelDelta(1, 80)).toBeLessThan(1);
-    expect(composerPreviewAllowsPageScroll("fit")).toBe(false);
+    expect(composerPreviewAllowsPageScroll("fit")).toBe(true);
     expect(composerPreviewAllowsPageScroll("100")).toBe(true);
-    expect(composerPreviewAllowsPageScroll("fit", 1.12)).toBe(true);
+  });
+
+  it("keeps photo-slot wheel on the crop and post-zooms HUD / empty stage", () => {
+    type Host = { closest: (sel: string) => Host | null };
+    const matching = (labels: string[]): Host => {
+      const node: Host = {
+        closest: (sel) => {
+          const parts = sel.split(",").map((part) => part.trim());
+          if (parts.some((part) => labels.includes(part))) {
+            return node;
+          }
+          return null;
+        },
+      };
+      return node;
+    };
+    const photo = matching([".pod-photo:not(.is-empty)"]);
+    const empty = matching([".pod-photo"]);
+    const hud = matching([".sc-root"]);
+    const picker = matching([".sc-picker", ".sc-root"]);
+    const wheel = (target: Host) =>
+      ({ target, clientX: 0, clientY: 0 }) as Pick<
+        WheelEvent,
+        "target" | "clientX" | "clientY"
+      >;
+    expect(wheelScalesPhoto(wheel(photo))).toBe(true);
+    expect(wheelScalesPost(wheel(photo))).toBe(false);
+    expect(wheelScalesPhoto(wheel(empty))).toBe(false);
+    expect(wheelScalesPost(wheel(hud))).toBe(true);
+    expect(wheelScalesPost(wheel(picker))).toBe(false);
   });
 
   it("parses BA corners and names files with player + date", () => {

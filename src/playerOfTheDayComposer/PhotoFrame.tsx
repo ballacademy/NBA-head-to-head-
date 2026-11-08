@@ -141,9 +141,6 @@ export function PhotoFrame({
       return;
     }
     const onWheel = (event: WheelEvent) => {
-      if (event.ctrlKey || event.metaKey) {
-        return;
-      }
       event.preventDefault();
       const current = panRef.current;
       onPanRef.current(

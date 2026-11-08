@@ -22,12 +22,26 @@ export const PREVIEW_ZOOM_BUMP_STEP = 1.12;
 export const PREVIEW_ZOOM_SCALE_MIN = 0.08;
 export const PREVIEW_ZOOM_SCALE_MAX = 1;
 
+/** Fit landing is leftover-contain × this. 100% stays PREVIEW_ZOOM_NATURAL_SCALE. */
+export const PREVIEW_ZOOM_FIT_BUMP = 1.5;
+
+export const FILLED_PHOTO_SLOT_SELECTOR = ".pod-photo:not(.is-empty)";
+const POST_ZOOM_SKIP_SELECTOR = [
+  FILLED_PHOTO_SLOT_SELECTOR,
+  ".sc-picker",
+  "dialog",
+  ".sc-modal",
+  ".sc-hud-select__menu",
+  "input",
+  "textarea",
+  "select",
+  ".sc-range",
+].join(", ");
+
 /**
- * Fit leftover-contains the full 4:5 under the HUD. Do not leftover-HUD shrink.
- * Positive leftover always height-and-width contains so the whole post stays on
- * screen (never width-blow past leftover — that cropped BALLACADEMY). When the
- * HUD is taller than the viewport, width-contain so the board is still there to
- * scroll to. 100% stays PREVIEW_ZOOM_NATURAL_SCALE (600×750).
+ * Leftover-contain scale for the 4:5 under the HUD. Do not leftover-HUD shrink.
+ * Fit landing multiplies this by PREVIEW_ZOOM_FIT_BUMP (page may scroll).
+ * 100% stays PREVIEW_ZOOM_NATURAL_SCALE (600×750).
  */
 export const leftoverContainFit = ({
   frameW,
@@ -86,7 +100,7 @@ export const previewZoomFactor = (
 ) => {
   const leftover =
     Number.isFinite(fit) && fit > 0 ? fit : PREVIEW_ZOOM_NATURAL_SCALE;
-  let base = leftover;
+  let base = leftover * PREVIEW_ZOOM_FIT_BUMP;
   if (zoom === "100") {
     base = PREVIEW_ZOOM_NATURAL_SCALE;
   } else if (zoom === "75") {
@@ -99,10 +113,68 @@ export const previewZoomFactor = (
   );
 };
 
+/** Fit is 1.5× leftover-contain, so the page may scroll at the default landing. */
 export const composerPreviewAllowsPageScroll = (
-  zoom: ComposerPreviewZoom,
-  bump = PREVIEW_ZOOM_BUMP_DEFAULT,
-) => zoom !== "fit" || parseComposerPreviewZoomBump(bump) !== PREVIEW_ZOOM_BUMP_DEFAULT;
+  _zoom?: ComposerPreviewZoom,
+  _bump = PREVIEW_ZOOM_BUMP_DEFAULT,
+) => true;
+
+const asClosestHost = (node: EventTarget | null) => {
+  if (!node || typeof node !== "object") {
+    return null;
+  }
+  const closest = (node as { closest?: unknown }).closest;
+  if (typeof closest !== "function") {
+    return null;
+  }
+  return node as Element;
+};
+
+export const isFilledPhotoSlot = (node: EventTarget | null) => {
+  const el = asClosestHost(node);
+  return Boolean(el?.closest(FILLED_PHOTO_SLOT_SELECTOR));
+};
+
+export const filledPhotoSlotAtPoint = (x: number, y: number) => {
+  if (typeof document === "undefined" || typeof document.elementFromPoint !== "function") {
+    return null;
+  }
+  const hit = document.elementFromPoint(x, y);
+  return hit instanceof Element ? hit.closest(FILLED_PHOTO_SLOT_SELECTOR) : null;
+};
+
+/** Hover/focus on a filled player image: wheel/pinch crop that photo, not the post. */
+export const wheelScalesPhoto = (
+  event: Pick<WheelEvent, "target" | "clientX" | "clientY">,
+) => {
+  if (isFilledPhotoSlot(event.target)) {
+    return true;
+  }
+  if (
+    typeof event.clientX !== "number" ||
+    typeof event.clientY !== "number"
+  ) {
+    return false;
+  }
+  return Boolean(filledPhotoSlotAtPoint(event.clientX, event.clientY));
+};
+
+/** HUD / empty stage / board chrome: wheel scales the whole post. */
+export const wheelScalesPost = (
+  event: Pick<WheelEvent, "target" | "clientX" | "clientY">,
+) => {
+  if (wheelScalesPhoto(event)) {
+    return false;
+  }
+  const target = asClosestHost(event.target);
+  if (!target) {
+    return false;
+  }
+  if (target.closest(POST_ZOOM_SKIP_SELECTOR)) {
+    return false;
+  }
+  return Boolean(target.closest(".sc-root"));
+};
 
 export const stepPreviewZoomBump = (bump: number, direction: 1 | -1) =>
   parseComposerPreviewZoomBump(
