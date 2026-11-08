@@ -248,6 +248,7 @@ export function CompareComposerApp() {
       setStatus("No box scores for that night yet — pick players.");
       return;
     }
+    rememberComposerPlayer(first.id);
     push(draft);
     const nextSides = [...draft.sides] as CompareDraft["sides"];
     nextSides[0] = fillCompareSide(first, draft.sides[0]!, false);

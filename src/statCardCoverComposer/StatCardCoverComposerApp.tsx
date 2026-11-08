@@ -25,6 +25,7 @@ import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
 import { nightStandoutPickerRows } from "../instagramComposer/composerNight";
 import {
   completedNightRows,
+  fetchCompletedStandoutsInRange,
   fetchStandoutsInRange,
 } from "../playerOfTheDayComposer/nightStandouts";
 import type { NightStandout } from "../playerOfTheDayComposer/nightStandouts";
@@ -161,24 +162,30 @@ export function StatCardCoverComposerApp() {
     const from = range.from;
     const to = range.to;
     setStandoutsLoading(true);
-    void fetchStandoutsInRange(from, to)
-      .then((rows) => {
+    void fetchCompletedStandoutsInRange(from, to)
+      .then((result) => {
         if (cancelled) {
           return;
         }
-        setRangeStandouts(rows);
+        if (result.fellBack) {
+          setRange({ from: result.from, to: result.to });
+        }
+        setRangeStandouts(result.rows);
         if (!autoFill.current) {
           return;
         }
-        const notable = completedNightRows(rows);
-        const key = `${from}:${to}:${notable.map((row) => row.athleteId).join(",")}`;
+        const notable = completedNightRows(result.rows);
+        const key = `${result.from}:${result.to}:${notable.map((row) => row.athleteId).join(",")}`;
         if (filledKey.current === key) {
           return;
         }
         filledKey.current = key;
+        if (notable[0]?.athleteId) {
+          rememberComposerPlayer(notable[0].athleteId);
+        }
         setDraft((current) =>
           fillCoverFromStandouts(
-            applyCoverRange(current, from, to),
+            applyCoverRange(current, result.from, result.to),
             notable,
           ),
         );
@@ -219,20 +226,28 @@ export function StatCardCoverComposerApp() {
 
   const fillFromNight = () => {
     autoFill.current = true;
-    void fetchStandoutsInRange(range.from, range.to).then((rows) => {
-      const notable = completedNightRows(rows);
-      const key = `${range.from}:${range.to}:${notable.map((row) => row.athleteId).join(",")}`;
+    void fetchCompletedStandoutsInRange(range.from, range.to).then((result) => {
+      const notable = completedNightRows(result.rows);
+      const key = `${result.from}:${result.to}:${notable.map((row) => row.athleteId).join(",")}`;
       filledKey.current = key;
-      setRangeStandouts(rows);
+      if (result.fellBack) {
+        setRange({ from: result.from, to: result.to });
+      }
+      setRangeStandouts(result.rows);
+      if (notable[0]?.athleteId) {
+        rememberComposerPlayer(notable[0].athleteId);
+      }
       setDraft((current) => {
         const next = fillCoverFromStandouts(
-          applyCoverRange(current, range.from, range.to),
+          applyCoverRange(current, result.from, result.to),
           notable,
         );
         const filled = next.slots.filter((slot) => slot.playerId).length;
         setStatus(
           filled
-            ? `Cover filled with ${filled} standout${filled === 1 ? "" : "s"}.`
+            ? result.fellBack
+              ? `Tonight has no finals yet — cover filled with ${filled} from last night.`
+              : `Cover filled with ${filled} standout${filled === 1 ? "" : "s"}.`
             : "No standouts for that range yet — pick players for the empty slots.",
         );
         return next;

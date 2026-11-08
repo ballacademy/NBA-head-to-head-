@@ -66,7 +66,10 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "./shotChartComposer.css";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
-import { carriedPlayerId } from "../instagramComposer/composerCarry";
+import {
+  carriedPlayerId,
+  rememberComposerPlayer,
+} from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = "ddgm:shot-chart-composer";
 const SAVES_KEY = "ddgm:shot-chart-composer:saves";
@@ -124,8 +127,24 @@ export function ShotChartComposerApp() {
     sample: ComposerStatsSample = statsSample,
   ) => {
     if (!next.playerId) {
-      setStatus("Pick a player first.");
-      return;
+      const carried = carriedPlayerId();
+      if (carried) {
+        next = applyShotChartPlayer(next, carried);
+        setDraft(next);
+      } else {
+        const rows = (await night.ensureStandouts()).filter(
+          (row) => row.live !== true && row.final !== false,
+        );
+        const top = rows[0];
+        if (!top) {
+          setPickerOpen(true);
+          setStatus("Pick a player first.");
+          return;
+        }
+        rememberComposerPlayer(top.athleteId);
+        next = applyShotChartPlayer(next, top.athleteId);
+        setDraft(next);
+      }
     }
     const seq = ++fillSeq.current;
     setFilling(true);
@@ -207,6 +226,7 @@ export function ShotChartComposerApp() {
     if (!player) {
       return;
     }
+    rememberComposerPlayer(playerId);
     push(draft);
     const next = applyShotChartPlayer(draft, playerId);
     setDraft(next);
@@ -347,6 +367,7 @@ export function ShotChartComposerApp() {
                 Date range
               </button>
             </div>
+            {draft.window === "range" ? (
             <ComposerDateRange
               from={draft.from || range.from}
               to={draft.to || range.to}
@@ -379,7 +400,7 @@ export function ShotChartComposerApp() {
                 void fillShots(updated);
               }}
             />
-            {draft.window === "range" ? null : (
+            ) : (
               <>
                 <ComposerNightDate
                   date={draft.nightDate || night.date}

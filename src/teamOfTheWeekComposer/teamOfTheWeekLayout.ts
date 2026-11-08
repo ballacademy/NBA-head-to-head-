@@ -16,7 +16,7 @@ export {
 
 export const TOTW_PAD_X = 10;
 export const TOTW_STRIP_GAP = 6;
-export const TOTW_BRAND_H = 40;
+export const TOTW_BRAND_H = 88;
 export const TOTW_BRAND_SIZE = 26;
 export const TOTW_TITLE_PLATE_H = 116;
 export const TOTW_TITLE_SIZE = 42;

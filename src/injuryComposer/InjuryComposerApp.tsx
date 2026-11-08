@@ -33,6 +33,7 @@ import {
   fetchNbaInjuries,
   injuryDateLine,
   injuryFillStatus,
+  injuryKickerForTeams,
   isInjuryDraft,
   normalizeInjuryDraft,
   selectInjuryPost,
@@ -88,7 +89,7 @@ export function InjuryComposerApp() {
       setDraft((current) => ({
         ...current,
         teams,
-        kicker: "OUT / GTD",
+        kicker: injuryKickerForTeams(teams),
         dateLine: current.dateLine || injuryDateLine(nbaTodayIso()),
       }));
       setStatus(injuryFillStatus(teams));

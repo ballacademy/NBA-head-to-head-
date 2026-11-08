@@ -89,7 +89,7 @@ import "@fontsource/montserrat/latin-900.css";
 import "@fontsource/montserrat/latin-900-italic.css";
 import "./headlineComposer.css";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
-import { carriedPlayerId } from "../instagramComposer/composerCarry";
+import { carriedPlayerId, rememberComposerPlayer } from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = "ddgm:headline-composer";
 const SAVES_KEY = "ddgm:headline-composer:saves";
@@ -276,6 +276,7 @@ export function HeadlineComposerApp() {
     if (!player) {
       return;
     }
+    rememberComposerPlayer(playerId);
     push(draft);
     let next = fillHeadlineFromPlayer(player, draft, keepCustomPhoto);
     const standout = night.standouts.find((row) => row.athleteId === playerId);

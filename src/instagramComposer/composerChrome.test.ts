@@ -265,7 +265,7 @@ describe("composer chrome", () => {
       /\.sc-stage__frame > \.sc-hint[\s\S]*?position:\s*absolute/,
     );
     expect(sheet).toContain(".sc-field--preset");
-    expect(sheet).toContain("max-width: min(100%, 520px)");
+    expect(sheet).toMatch(/\.sc-field--preset \{[^}]*max-width:\s*none/);
     expect(sheet).toMatch(
       /html:has\(\.sc-root\)[\s\S]{0,220}?overflow-y:\s*auto/,
     );
@@ -1788,5 +1788,67 @@ describe("composer chrome", () => {
     );
     expect(shotLayout).toContain("metalH");
     expect(shotLayout).toContain("SHOT_COURT_PAD_X");
+  });
+
+  it("fixes round-4 Cover fallback, carry, HUD clip, Save as, and status leak", () => {
+    expect(coverApp).toContain("fetchCompletedStandoutsInRange");
+    expect(coverApp).toContain("Tonight has no finals yet");
+    expect(statCardApp).toContain("rememberComposerPlayer(playerId)");
+    expect(quoteApp).toContain("rememberComposerPlayer(playerId)");
+    expect(headlineApp).toContain("rememberComposerPlayer(playerId)");
+    const night = readFileSync(
+      join(root, "instagramComposer/composerNight.ts"),
+      "utf8",
+    );
+    expect(night).toContain("completedNightRows(rows).length");
+    const totwCss = readFileSync(
+      join(root, "teamOfTheWeekComposer/teamOfTheWeekComposer.css"),
+      "utf8",
+    );
+    expect(totwCss).toContain("calc(88 * var(--u))");
+    const shotHud = readFileSync(
+      join(root, "shotChartComposer/ShotChartComposerApp.tsx"),
+      "utf8",
+    );
+    expect(shotHud).toContain('draft.window === "range"');
+    expect(shotHud).toContain("Pick a player first.");
+    expect(shotHud).toContain("rememberComposerPlayer");
+    expect(composerSaves).toMatch(/<label className="sc-field">\s*Save as/);
+    expect(composerSaves).not.toMatch(
+      /sc-field sc-hud-full-only">\s*Save as/,
+    );
+    const libraryRemote = readFileSync(
+      join(root, "lib/composerLibraryRemote.ts"),
+      "utf8",
+    );
+    expect(libraryRemote).toContain("composerLibraryPullAttempted");
+    expect(browserStorage).toContain("hydrateQuiet");
+    const leaderBars = readFileSync(
+      join(root, "leaderBarsComposer/LeaderBarsComposerApp.tsx"),
+      "utf8",
+    );
+    expect(leaderBars).toMatch(/sc-stage__frame[\s\S]*className="sc-status"/);
+    const mockTradeHud = readFileSync(
+      join(root, "mockTradeComposer/MockTradeComposerApp.tsx"),
+      "utf8",
+    );
+    expect(mockTradeHud).toContain("sc-toolbar__picks sc-hud-simple-keep");
+    const injuryApp = readFileSync(
+      join(root, "injuryComposer/InjuryComposerApp.tsx"),
+      "utf8",
+    );
+    expect(injuryApp).toContain("injuryKickerForTeams");
+    expect(sheet).toContain("minmax(220px, 1fr)");
+    expect(sheet).toContain("overflow-wrap: anywhere");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-tabs__label");
+    expect(sheet).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.sc-root\.is-hud-simple \.sc-tabs__label \{\s*display:\s*none/,
+    );
+    const presetSelect = readFileSync(
+      join(root, "instagramComposer/TitlePresetSelect.tsx"),
+      "utf8",
+    );
+    expect(presetSelect).toContain("ComposerHudSelect");
+    expect(presetSelect).toContain("sc-field--preset");
   });
 });

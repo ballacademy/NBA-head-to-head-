@@ -485,15 +485,26 @@
 }
 
 .sc-field--preset {
-  flex: 1.6 1 280px;
-  max-width: min(100%, 520px);
+  flex: 2 1 360px;
+  max-width: none;
   min-width: min(100%, 280px);
 }
 
-.sc-field--preset select {
-  overflow-x: auto;
+.sc-field--preset select,
+.sc-field--preset .sc-hud-select__trigger,
+.sc-field--preset .sc-hud-select__value {
+  overflow: visible;
   text-overflow: clip;
-  white-space: nowrap;
+  white-space: normal;
+}
+
+.sc-saves .sc-field,
+.sc-saves .sc-field input,
+.sc-saves .sc-field select {
+  min-width: min(100%, 16rem);
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .sc-field--subtitle {
@@ -1453,7 +1464,11 @@ main.sc-stage {
   align-items: center;
   gap: 8px;
   padding-right: 10px;
-  white-space: nowrap;
+  height: auto;
+  min-height: 32px;
+  max-width: min(100%, 36rem);
+  white-space: normal;
+  text-align: left;
 }
 
 .sc-hud-select__value {
@@ -1488,8 +1503,10 @@ main.sc-stage {
 .sc-hud-select__option {
   display: block;
   width: 100%;
-  height: 34px;
-  padding: 0 10px;
+  height: auto;
+  min-height: 34px;
+  padding: 8px 10px;
+  white-space: normal;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -1950,7 +1967,7 @@ label.sc-chip {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   padding: 0;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
 }
 
@@ -1961,7 +1978,7 @@ label.sc-chip {
 
 .sc-team {
   display: grid;
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 44px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   min-height: 64px;
@@ -2238,9 +2255,17 @@ label.sc-chip {
 
 .sc-team__name {
   display: block;
+  min-width: 0;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.2;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.sc-team > span:last-child {
+  min-width: 0;
 }
 
 .sc-team.is-used .sc-team__name {
@@ -2389,28 +2414,37 @@ label.sc-chip {
     overflow: visible;
     max-height: none;
     min-height: 0;
-    gap: 6px 10px;
+    gap: 4px 8px;
     padding: max(6px, env(safe-area-inset-top, 0px)) 12px 0;
   }
 
   .sc-tabs__group {
-    flex: 1 1 220px;
-    min-width: min(100%, 200px);
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .sc-tabs__pills {
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+
+  .sc-root.is-hud-simple .sc-tabs__label {
+    display: none;
+  }
+
+  .sc-toolbar__identity {
+    padding-bottom: 4px;
+    margin-bottom: 4px;
   }
 
   .sc-tabs__group + .sc-tabs__group {
     padding-left: 10px;
   }
 
-  .sc-tabs__pills {
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-
   .sc-tabs button {
-    height: 32px;
-    padding: 0 10px;
-    font-size: 13px;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
     white-space: nowrap;
   }
 

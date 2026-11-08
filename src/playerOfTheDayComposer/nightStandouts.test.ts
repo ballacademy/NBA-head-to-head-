@@ -3,6 +3,7 @@ import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { emptyStats } from "./lastGame";
 import {
   completedNightRows,
+  lastNightFallbackRange,
   espnEventIsFinal,
   espnEventIsLive,
   isFreakNonScoringNight,
@@ -663,6 +664,19 @@ describe("night standouts", () => {
         {},
       ]),
     ).toEqual([{ live: false, final: true }, {}]);
+  });
+
+  it("falls Tonight with no finals back to last night", () => {
+    const now = new Date("2026-11-07T23:30:00-05:00");
+    expect(
+      lastNightFallbackRange("2026-11-07", "2026-11-07", 0, 6, now),
+    ).toEqual({ from: "2026-11-06", to: "2026-11-06", fellBack: true });
+    expect(
+      lastNightFallbackRange("2026-11-07", "2026-11-07", 2, 6, now),
+    ).toEqual({ from: "2026-11-07", to: "2026-11-07", fellBack: false });
+    expect(
+      lastNightFallbackRange("2026-11-06", "2026-11-06", 0, 6, now),
+    ).toEqual({ from: "2026-11-06", to: "2026-11-06", fellBack: false });
   });
 
   it("ranks star stinkers and bricks, skips camp 2-point nights and live games", () => {

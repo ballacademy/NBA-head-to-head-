@@ -109,7 +109,7 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "./statCardComposer.css";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
-import { carriedPlayerId } from "../instagramComposer/composerCarry";
+import { carriedPlayerId, rememberComposerPlayer } from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = STAT_CARD_STORAGE_KEY;
 const SAVES_KEY = "ddgm:stat-card-composer:saves";
@@ -511,6 +511,7 @@ export function StatCardComposerApp() {
     if (!player) {
       return;
     }
+    rememberComposerPlayer(playerId);
     fillSeq.current += 1;
     push(draft);
     if (player.id !== draft.playerId) {

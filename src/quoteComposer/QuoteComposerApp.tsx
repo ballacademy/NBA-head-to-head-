@@ -61,7 +61,7 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "./quoteComposer.css";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
-import { carriedPlayerId } from "../instagramComposer/composerCarry";
+import { carriedPlayerId, rememberComposerPlayer } from "../instagramComposer/composerCarry";
 
 const STORAGE_KEY = "ddgm:quote-composer";
 const SAVES_KEY = "ddgm:quote-composer:saves";
@@ -179,6 +179,7 @@ export function QuoteComposerApp() {
       return;
     }
     const keepLine = keepQuote !== false;
+    rememberComposerPlayer(playerId);
     push(draft);
     setDraft((current) =>
       fillQuoteFromPlayer(player, current, keepCustomPhoto, keepLine),

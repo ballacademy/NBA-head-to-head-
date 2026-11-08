@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   beginComposerHydrateWrites,
+  endComposerHydrateWrites,
   hydrateJsonStorage,
   readJson,
   writeJson,
@@ -38,6 +39,11 @@ describe("composer photo persist", () => {
   beforeEach(() => {
     resetDurableJsonForTests();
     mockStorage();
+  });
+
+  afterEach(() => {
+    endComposerHydrateWrites();
+    vi.useRealTimers();
   });
 
   it("does not mark a composer unsaved on the first hydrate write", () => {
@@ -80,6 +86,37 @@ describe("composer photo persist", () => {
     writeJson(key, { title: "EASTERN CONFERENCE" });
     expect(writes).toEqual([key, key]);
     window.removeEventListener("ddgm:composer-draft-write", onWrite);
+  });
+
+  it("does not mark unsaved for the hop rewrite burst", () => {
+    vi.useFakeTimers();
+    const writes: string[] = [];
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: (event: Event) => {
+          if (event.type === "ddgm:composer-draft-write") {
+            writes.push((event as CustomEvent<string>).detail);
+          }
+          return true;
+        },
+        setTimeout,
+        clearTimeout,
+      },
+    });
+    const key = "ddgm:quote-composer";
+    writeJson(key, { title: "THE QUOTE" });
+    beginComposerHydrateWrites();
+    writeJson(key, { title: "THE QUOTE" });
+    writeJson(key, { title: "Hydrate rewrite" });
+    expect(writes).toEqual([]);
+    vi.advanceTimersByTime(400);
+    writeJson(key, { title: "Typed title" });
+    expect(writes).toEqual([key]);
+    endComposerHydrateWrites();
+    vi.useRealTimers();
   });
 
   it("reopens the same graphic with its photo, pan, and slot after a new-tab hydrate", async () => {

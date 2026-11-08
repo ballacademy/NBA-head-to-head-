@@ -10,6 +10,7 @@ import {
   formatDateLabel,
   formatResultLine,
   isoDateOnly,
+  nbaTodayIso,
   playerGameResult,
   resolveTeamId,
   shiftIsoDate,
@@ -137,6 +138,30 @@ export const isCompletedNightRow = (row: {
 export const completedNightRows = <T extends { live?: boolean; final?: boolean }>(
   rows: T[],
 ) => rows.filter(isCompletedNightRow);
+
+/** Tonight-only WINDOW with no ESPN finals yet should use last night. */
+export const isTonightIsoRange = (
+  from: string,
+  to: string,
+  now = new Date(),
+) => {
+  const today = nbaTodayIso(now);
+  return from === today && to === today;
+};
+
+export const lastNightFallbackRange = (
+  from: string,
+  to: string,
+  notableCount: number,
+  lastNightCount: number,
+  now = new Date(),
+) => {
+  if (notableCount > 0 || !isTonightIsoRange(from, to, now) || lastNightCount <= 0) {
+    return { from, to, fellBack: false };
+  }
+  const yesterday = shiftIsoDate(nbaTodayIso(now), -1);
+  return { from: yesterday, to: yesterday, fellBack: true };
+};
 
 export interface EspnScoreboardPayload {
   events?: EspnScoreboardEvent[];
@@ -843,6 +868,24 @@ export const fetchStandoutsInRange = async (
   toIso: string,
 ): Promise<NightStandout[]> =>
   mergeWeekStandouts(await fetchNightsInRange(fromIso, toIso, fetchNightStandouts));
+
+export const fetchCompletedStandoutsInRange = async (
+  fromIso: string,
+  toIso: string,
+  now = new Date(),
+) => {
+  const rows = await fetchStandoutsInRange(fromIso, toIso);
+  const notable = completedNightRows(rows);
+  if (notable.length > 0 || !isTonightIsoRange(fromIso, toIso, now)) {
+    return { from: fromIso, to: toIso, rows, fellBack: false };
+  }
+  const yesterday = shiftIsoDate(nbaTodayIso(now), -1);
+  const lastRows = await fetchStandoutsInRange(yesterday, yesterday);
+  if (!completedNightRows(lastRows).length) {
+    return { from: fromIso, to: toIso, rows, fellBack: false };
+  }
+  return { from: yesterday, to: yesterday, rows: lastRows, fellBack: true };
+};
 
 export const fetchRangeProduction = async (
   fromIso: string,

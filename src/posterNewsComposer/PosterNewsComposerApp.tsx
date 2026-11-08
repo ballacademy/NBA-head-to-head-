@@ -367,9 +367,9 @@ export function PosterNewsComposerApp() {
           </>
         }
       />
-      {status ? <p className="sc-status">{status}</p> : null}
       <main className="sc-stage">
         <div className="sc-stage__frame">
+          {status ? <p className="sc-status">{status}</p> : null}
           <div className="sc-board-wrap">
             <ComposerBoard height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}>
               <PosterNewsGraphic

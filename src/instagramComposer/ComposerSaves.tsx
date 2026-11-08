@@ -59,7 +59,7 @@ export function ComposerSaves<T>({
 
   return (
     <div className="sc-saves" role="group" aria-label="Named graphics">
-      <label className="sc-field sc-hud-full-only">
+      <label className="sc-field">
         Save as
         <input
           value={name}
@@ -71,7 +71,7 @@ export function ComposerSaves<T>({
       </label>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost sc-hud-full-only"
+        className="sc-btn sc-btn--ghost"
         onClick={() => {
           const { saves: next, saved } = upsertNamedGraphic(
             storageKey,
@@ -100,7 +100,7 @@ export function ComposerSaves<T>({
       </button>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost sc-hud-full-only"
+        className="sc-btn sc-btn--ghost"
         onClick={() => {
           const copyName = `${(name.trim() || "Graphic").slice(0, 32)} copy`;
           const { saves: next, saved } = upsertNamedGraphic(

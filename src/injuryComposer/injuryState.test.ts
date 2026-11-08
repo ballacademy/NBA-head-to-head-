@@ -8,6 +8,7 @@ import {
   groupInjuriesByTeam,
   injuryFillLayout,
   injuryFillStatus,
+  injuryKickerForTeams,
   normalizeInjuryKicker,
   parseInjuryPayload,
   selectInjuryPost,
@@ -105,6 +106,10 @@ describe("injury report", () => {
     expect(withGtd.some((block) => block.players.some((row) => row.status === "GTD"))).toBe(
       true,
     );
+    expect(injuryKickerForTeams(post)).toBe("OUT");
+    expect(injuryFillStatus(post)).toMatch(/OUT names/);
+    expect(injuryFillStatus(post)).not.toMatch(/GTD/);
+    expect(injuryKickerForTeams(withGtd)).toMatch(/OUT \/ GTD|GTD/);
     expect(injuryFillStatus(withGtd)).toMatch(/OUT \/ GTD|OUT and .* GTD/);
     expect(injuryFillStatus([])).toBe("No OUT / GTD names returned.");
   });

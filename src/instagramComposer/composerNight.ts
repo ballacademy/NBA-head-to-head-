@@ -6,6 +6,7 @@ import {
   shiftIsoDate,
 } from "../playerOfTheDayComposer/lastGame";
 import {
+  completedNightRows,
   fetchNightStandouts,
   type NightStandout,
 } from "../playerOfTheDayComposer/nightStandouts";
@@ -123,9 +124,9 @@ export function useComposerNight() {
     try {
       let rows = await fetchNightStandouts(target);
       let used = target;
-      if (!rows.length && target === today) {
+      if (!completedNightRows(rows).length && target === today) {
         const prior = await fetchNightStandouts(yesterday);
-        if (prior.length) {
+        if (completedNightRows(prior).length) {
           rows = prior;
           used = yesterday;
         }

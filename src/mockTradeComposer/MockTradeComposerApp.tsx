@@ -438,7 +438,7 @@ export function MockTradeComposerApp() {
                 </button>
               </div>
             ))}
-            <div className="sc-toolbar__picks" role="group" aria-label="Picks">
+            <div className="sc-toolbar__picks sc-hud-simple-keep" role="group" aria-label="Picks">
             {draft.sides.map((side, sideIndex) =>
               side.picks.map((pick, pickIndex) => (
                   <label

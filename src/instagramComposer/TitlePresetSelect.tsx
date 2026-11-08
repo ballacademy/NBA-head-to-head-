@@ -1,3 +1,5 @@
+import { ComposerHudSelect } from "./ComposerHudSelect";
+
 interface TitlePresetSelectProps {
   value: string;
   presets: readonly string[];
@@ -11,25 +13,21 @@ export function TitlePresetSelect({
 }: TitlePresetSelectProps) {
   const selected = presets.includes(value) ? value : "";
   return (
-    <label className="sc-field sc-field--preset">
-      Preset
-      <select
+    <div className="sc-field sc-field--preset">
+      <ComposerHudSelect
+        label="Preset"
+        ariaLabel="Title preset"
         value={selected}
-        aria-label="Title preset"
-        title={selected || "Custom"}
-        onChange={(event) => {
-          if (event.target.value) {
-            onChange(event.target.value);
+        options={[
+          { value: "", label: "Custom" },
+          ...presets.map((preset) => ({ value: preset, label: preset })),
+        ]}
+        onChange={(next) => {
+          if (next) {
+            onChange(next);
           }
         }}
-      >
-        <option value="">Custom</option>
-        {presets.map((preset) => (
-          <option key={preset} value={preset} title={preset}>
-            {preset}
-          </option>
-        ))}
-      </select>
-    </label>
+      />
+    </div>
   );
 }

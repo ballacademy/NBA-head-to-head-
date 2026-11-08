@@ -9,7 +9,7 @@
   aspect-ratio: 4 / 5;
   width: 100%;
   display: grid;
-  grid-template-rows: calc(40 * var(--u)) minmax(0, 1fr) calc(160 * var(--u));
+  grid-template-rows: calc(88 * var(--u)) minmax(0, 1fr) calc(160 * var(--u));
   background-color: #0b0b0b;
   background-image: url("/composer-background-texture.png");
   background-size: cover;
@@ -39,11 +39,21 @@
   z-index: 1;
 }
 
+.totw-board .composer-ba {
+  top: calc(12 * var(--u));
+  right: calc(18 * var(--u));
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+  z-index: 4;
+}
+
 .totw-header {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 4;
   min-height: 0;
+  overflow: visible;
   padding: 0 calc(48 * var(--u));
 }
 

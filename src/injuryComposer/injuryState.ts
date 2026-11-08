@@ -271,24 +271,38 @@ export const selectInjuryPost = (
     .slice(0, INJURY_POST_TEAM_MAX);
 };
 
+const countInjuryStatus = (teams: InjuryTeamBlock[], status: InjuryKicker) =>
+  teams.reduce(
+    (count, block) =>
+      count + block.players.filter((player) => player.status === status).length,
+    0,
+  );
+
+export const injuryKickerForTeams = (teams: InjuryTeamBlock[]) => {
+  const out = countInjuryStatus(teams, "OUT");
+  const gtd = countInjuryStatus(teams, "GTD");
+  if (out && gtd) {
+    return "OUT / GTD";
+  }
+  if (gtd) {
+    return "GTD";
+  }
+  return "OUT";
+};
+
 export const injuryFillStatus = (teams: InjuryTeamBlock[]) => {
   if (!teams.length) {
     return "No OUT / GTD names returned.";
   }
-  const out = teams.reduce(
-    (count, block) =>
-      count + block.players.filter((player) => player.status === "OUT").length,
-    0,
-  );
-  const gtd = teams.reduce(
-    (count, block) =>
-      count + block.players.filter((player) => player.status === "GTD").length,
-    0,
-  );
+  const out = countInjuryStatus(teams, "OUT");
+  const gtd = countInjuryStatus(teams, "GTD");
   if (out && gtd) {
     return `Loaded ${out} OUT and ${gtd} GTD names across ${teams.length} teams.`;
   }
-  return `Loaded ${out + gtd} OUT / GTD names across ${teams.length} teams.`;
+  if (gtd) {
+    return `Loaded ${gtd} GTD names across ${teams.length} teams.`;
+  }
+  return `Loaded ${out} OUT names across ${teams.length} teams.`;
 };
 
 export const defaultInjuryDraft = (): InjuryDraft => ({
