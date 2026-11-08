@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
@@ -7,11 +7,16 @@ import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
 import {
+  bumpFromWheelDelta,
   leftoverContainFit,
   PREVIEW_ZOOM_NATURAL_SCALE,
   previewZoomFactor,
   useComposerPreviewZoom,
+  useComposerPreviewZoomBump,
+  writeComposerPreviewZoomBump,
 } from "./composerPreviewZoom";
+
+const PHOTO_WHEEL_TARGET = ".pod-photo";
 
 /**
  * Design-px board, scaled as a unit so type/overlays match the PNG.
@@ -19,9 +24,10 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit leftover-contains under the HUD (width-contain on a tiny leftover
- * well so the 4:5 is never a postage stamp). 100% stays
- * PREVIEW_ZOOM_NATURAL_SCALE (600×750). Page may still scroll at 75/100.
+ * Fit leftover-contains the full 4:5 under the HUD. 100% stays
+ * PREVIEW_ZOOM_NATURAL_SCALE (600×750). Page may still scroll at 75/100
+ * or after whole-post zoom in. Wheel / +/− scale the whole post, not the
+ * photo crop (plain wheel on a photo still crops).
  */
 export function ComposerBoard({
   children,
@@ -33,10 +39,13 @@ export function ComposerBoard({
   height?: number;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const bumpRef = useRef(1);
   const [scale, setScale] = useState(1);
   const [fit, setFit] = useState(PREVIEW_ZOOM_NATURAL_SCALE);
   const [previewZoom] = useComposerPreviewZoom();
-  const factor = previewZoomFactor(fit, previewZoom);
+  const [bump] = useComposerPreviewZoomBump();
+  bumpRef.current = bump;
+  const factor = previewZoomFactor(fit, previewZoom, bump);
 
   useLayoutEffect(() => {
     const node = wrapRef.current;
@@ -47,6 +56,7 @@ export function ComposerBoard({
     const root = node.closest(".sc-root");
     const tabs = root?.querySelector(".sc-tabs");
     const toolbar = root?.querySelector(".sc-toolbar");
+    const stage = root?.querySelector(".sc-stage");
     const sync = () => {
       const next = node.clientWidth;
       if (next > 0) {
@@ -63,6 +73,13 @@ export function ComposerBoard({
         (toolbar instanceof HTMLElement
           ? toolbar.getBoundingClientRect().height
           : 0);
+      let padY = 0;
+      if (stage instanceof HTMLElement) {
+        const style = getComputedStyle(stage);
+        padY =
+          (Number.parseFloat(style.paddingTop) || 0) +
+          (Number.parseFloat(style.paddingBottom) || 0);
+      }
       if ((frameW > 0 || viewW > 0) && viewH > 0) {
         const nextFit = leftoverContainFit({
           frameW,
@@ -71,6 +88,7 @@ export function ComposerBoard({
           hudH,
           width,
           height,
+          padY,
         });
         if (nextFit > 0) {
           setFit(nextFit);
@@ -97,18 +115,43 @@ export function ComposerBoard({
     if (toolbar instanceof Element) {
       observer.observe(toolbar);
     }
+    if (stage instanceof Element) {
+      observer.observe(stage);
+    }
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", sync);
       window.visualViewport?.removeEventListener("resize", sync);
     };
-  }, [width, height, previewZoom]);
+  }, [width, height, previewZoom, bump]);
+
+  useEffect(() => {
+    const node = wrapRef.current;
+    if (!node) {
+      return;
+    }
+    const onWheel = (event: WheelEvent) => {
+      const target = event.target;
+      const onPhoto =
+        target instanceof Element && Boolean(target.closest(PHOTO_WHEEL_TARGET));
+      if (onPhoto && !event.ctrlKey && !event.metaKey) {
+        return;
+      }
+      event.preventDefault();
+      writeComposerPreviewZoomBump(
+        bumpFromWheelDelta(bumpRef.current, event.deltaY),
+      );
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, []);
 
   return (
     <div
       ref={wrapRef}
       className="sc-stage__board is-zoomed"
       data-preview-zoom={previewZoom}
+      data-preview-zoom-bump={bump}
       style={{
         aspectRatio: `${width} / ${height}`,
         ["--board-w" as string]: String(width),

@@ -250,6 +250,8 @@ describe("composer chrome", () => {
     expect(board).toContain("width: width * factor");
     expect(board).toContain("visualViewport");
     expect(board).toContain('data-preview-zoom={previewZoom}');
+    expect(board).toContain("data-preview-zoom-bump={bump}");
+    expect(board).toContain("bumpFromWheelDelta");
     expect(board).toContain("PREVIEW_ZOOM_NATURAL_SCALE");
     const previewZoom = readFileSync(
       join(root, "instagramComposer/composerPreviewZoom.ts"),
@@ -258,6 +260,8 @@ describe("composer chrome", () => {
     expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
     expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE");
     expect(previewZoom).toContain("leftoverContainFit");
+    expect(previewZoom).toContain("leftoverH > 0");
+    expect(previewZoom).not.toContain("LEFTOVER_FIT_MIN_PX");
     expect(previewZoom).not.toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
     expect(board).toContain("leftoverContainFit");
     expect(board).not.toContain('maxWidth: "100%"');
@@ -278,6 +282,7 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(hub).toContain("is-preview-zoomed");
+    expect(hub).toContain("composerPreviewAllowsPageScroll");
     expect(hub).toContain("beginComposerHydrateWrites");
     const standings = readFileSync(
       join(root, "standingsComposer/nbaStandings.ts"),
@@ -1464,6 +1469,8 @@ describe("composer chrome", () => {
     expect(tabs).toContain("Fit");
     expect(tabs).toContain("Preview zoom");
     expect(tabs).toContain('"75"');
+    expect(tabs).toContain("Zoom in post");
+    expect(tabs).toContain("Zoom out post");
     expect(tabs).toContain("sc-unsaved");
     expect(hub).toContain("is-hud-focus");
     expect(hub).toContain("composerHotkeyAction");
@@ -1482,6 +1489,7 @@ describe("composer chrome", () => {
     expect(picker).toContain("LIVE / IN GAME");
     expect(picker).toContain("sc-team__live");
     expect(photo).toContain("ArrowLeft");
+    expect(photo).toContain("event.ctrlKey || event.metaKey");
     expect(ba).toContain("Top left");
     expect(ba).toContain("Bottom right");
     expect(ba).toContain("ComposerHudSelect");

@@ -13,10 +13,13 @@ import { parseComposerHudMode } from "./composerHudMode";
 import { fillQualityMessage } from "./composerFillToast";
 import { nextEmptySlotIndex, slotMissingPlayer } from "./nextEmptySlot";
 import {
+  bumpFromWheelDelta,
+  composerPreviewAllowsPageScroll,
   leftoverContainFit,
   PREVIEW_ZOOM_NATURAL_SCALE,
   PREVIEW_ZOOM_SEVENTY_FIVE,
   previewZoomFactor,
+  stepPreviewZoomBump,
 } from "./composerPreviewZoom";
 import { parseComposerBaCorner } from "./composerBaCorner";
 import { exportFilenameFromTitle } from "./composerPresets";
@@ -169,8 +172,36 @@ describe("extras 17–32 HUD helpers", () => {
       width: 1200,
       height: 1500,
     });
-    expect(stampWell).toBeCloseTo(1440 / 1200);
-    expect(stampWell).toBeGreaterThan(0.4);
+    expect(stampWell).toBeCloseTo(180 / 1500);
+    expect(stampWell).toBeLessThan(PREVIEW_ZOOM_NATURAL_SCALE);
+    expect(stampWell * 1500).toBeCloseTo(180);
+    expect(stampWell * 1200).toBeCloseTo(144);
+    expect(
+      leftoverContainFit({
+        frameW: 1440,
+        viewW: 1440,
+        viewH: 900,
+        hudH: 357,
+        width: 1200,
+        height: 1500,
+        padY: 32,
+      }),
+    ).toBeCloseTo(511 / 1500);
+  });
+
+  it("scales the whole post with +/− and wheel without changing 100%", () => {
+    expect(previewZoomFactor(0.36, "100")).toBe(0.5);
+    expect(previewZoomFactor(0.36, "100", 1)).toBe(0.5);
+    expect(previewZoomFactor(0.36, "fit", 1)).toBe(0.36);
+    expect(previewZoomFactor(0.36, "fit", 1.12)).toBeCloseTo(0.4032);
+    expect(previewZoomFactor(0.36, "100", 2)).toBe(1);
+    expect(stepPreviewZoomBump(1, 1)).toBeCloseTo(1.12);
+    expect(stepPreviewZoomBump(1, -1)).toBeCloseTo(1 / 1.12);
+    expect(bumpFromWheelDelta(1, -80)).toBeGreaterThan(1);
+    expect(bumpFromWheelDelta(1, 80)).toBeLessThan(1);
+    expect(composerPreviewAllowsPageScroll("fit")).toBe(false);
+    expect(composerPreviewAllowsPageScroll("100")).toBe(true);
+    expect(composerPreviewAllowsPageScroll("fit", 1.12)).toBe(true);
   });
 
   it("parses BA corners and names files with player + date", () => {

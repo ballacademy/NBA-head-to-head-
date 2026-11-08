@@ -43,7 +43,11 @@ import {
   type ComposerMode,
 } from "./composerMode";
 import { useComposerHudMode } from "./composerHudMode";
-import { useComposerPreviewZoom } from "./composerPreviewZoom";
+import {
+  composerPreviewAllowsPageScroll,
+  useComposerPreviewZoom,
+  useComposerPreviewZoomBump,
+} from "./composerPreviewZoom";
 import { setComposerExportContext } from "./composerRecents";
 import { useComposerPhotoEdit } from "./composerPhotoEdit";
 import { ComposerTabs } from "./ComposerTabs";
@@ -85,6 +89,7 @@ export function ComposerHub() {
   const [photoEdit, setPhotoEdit] = useComposerPhotoEdit();
   const [hudMode] = useComposerHudMode();
   const [previewZoom] = useComposerPreviewZoom();
+  const [previewZoomBump] = useComposerPreviewZoomBump();
   const [focusMode, setFocusMode] = useComposerFocusMode();
   const [baCorner] = useComposerBaCorner();
   const [persistReady, setPersistReady] = useState(false);
@@ -184,7 +189,9 @@ export function ComposerHub() {
         photoEdit ? "is-photo-edit" : "",
         hudMode === "simple" ? "is-hud-simple" : "",
         focusMode ? "is-hud-focus" : "",
-        previewZoom === "fit" ? "" : "is-preview-zoomed",
+        composerPreviewAllowsPageScroll(previewZoom, previewZoomBump)
+          ? "is-preview-zoomed"
+          : "",
       ]
         .filter(Boolean)
         .join(" ")}

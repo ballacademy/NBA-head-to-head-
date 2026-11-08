@@ -10,7 +10,11 @@ import {
 import { useComposerHudMode } from "./composerHudMode";
 import { readComposerRecents } from "./composerRecents";
 import { jumpComposerMode, matchingComposerTabs } from "./composerJump";
-import { useComposerPreviewZoom } from "./composerPreviewZoom";
+import {
+  stepPreviewZoomBump,
+  useComposerPreviewZoom,
+  useComposerPreviewZoomBump,
+} from "./composerPreviewZoom";
 import { useComposerFocusMode } from "./composerFocusMode";
 import {
   COMPOSER_UNSAVED_EVENT,
@@ -114,6 +118,7 @@ export function ComposerTabs({
   const [query, setQuery] = useState("");
   const [hudMode, setHudMode] = useComposerHudMode();
   const [previewZoom, setPreviewZoom] = useComposerPreviewZoom();
+  const [previewZoomBump, setPreviewZoomBump] = useComposerPreviewZoomBump();
   const [focusMode, setFocusMode] = useComposerFocusMode();
   const [unsaved, setUnsaved] = useState(readComposerUnsaved);
   const exports = useComposerExportHistory();
@@ -252,6 +257,26 @@ export function ComposerTabs({
                 {zoom === "fit" ? "Fit" : `${zoom}%`}
               </button>
             ))}
+            <button
+              type="button"
+              aria-label="Zoom out post"
+              title="Zoom out post"
+              onClick={() =>
+                setPreviewZoomBump(stepPreviewZoomBump(previewZoomBump, -1))
+              }
+            >
+              −
+            </button>
+            <button
+              type="button"
+              aria-label="Zoom in post"
+              title="Zoom in post"
+              onClick={() =>
+                setPreviewZoomBump(stepPreviewZoomBump(previewZoomBump, 1))
+              }
+            >
+              +
+            </button>
           </div>
           <ComposerNameStyleToggle />
           <ComposerStampToggle />
