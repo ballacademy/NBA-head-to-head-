@@ -119,7 +119,7 @@ export const composerPreviewAllowsPageScroll = (
   _bump = PREVIEW_ZOOM_BUMP_DEFAULT,
 ) => true;
 
-const asClosestHost = (node: EventTarget | null) => {
+const asClosestHost = (node: unknown) => {
   if (!node || typeof node !== "object") {
     return null;
   }
@@ -130,9 +130,15 @@ const asClosestHost = (node: EventTarget | null) => {
   return node as Element;
 };
 
-export const isFilledPhotoSlot = (node: EventTarget | null) => {
+export const isFilledPhotoSlot = (node: unknown) => {
   const el = asClosestHost(node);
   return Boolean(el?.closest(FILLED_PHOTO_SLOT_SELECTOR));
+};
+
+export type PreviewWheelPoint = {
+  target?: unknown;
+  clientX?: number;
+  clientY?: number;
 };
 
 export const filledPhotoSlotAtPoint = (x: number, y: number) => {
@@ -144,9 +150,7 @@ export const filledPhotoSlotAtPoint = (x: number, y: number) => {
 };
 
 /** Hover/focus on a filled player image: wheel/pinch crop that photo, not the post. */
-export const wheelScalesPhoto = (
-  event: Pick<WheelEvent, "target" | "clientX" | "clientY">,
-) => {
+export const wheelScalesPhoto = (event: PreviewWheelPoint) => {
   if (isFilledPhotoSlot(event.target)) {
     return true;
   }
@@ -160,9 +164,7 @@ export const wheelScalesPhoto = (
 };
 
 /** HUD / empty stage / board chrome: wheel scales the whole post. */
-export const wheelScalesPost = (
-  event: Pick<WheelEvent, "target" | "clientX" | "clientY">,
-) => {
+export const wheelScalesPost = (event: PreviewWheelPoint) => {
   if (wheelScalesPhoto(event)) {
     return false;
   }

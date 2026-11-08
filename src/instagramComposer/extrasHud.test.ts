@@ -225,11 +225,11 @@ describe("extras 17–32 HUD helpers", () => {
     const empty = matching([".pod-photo"]);
     const hud = matching([".sc-root"]);
     const picker = matching([".sc-picker", ".sc-root"]);
-    const wheel = (target: Host) =>
-      ({ target, clientX: 0, clientY: 0 }) as Pick<
-        WheelEvent,
-        "target" | "clientX" | "clientY"
-      >;
+    const wheel = (target: Host) => ({
+      target,
+      clientX: 0,
+      clientY: 0,
+    });
     expect(wheelScalesPhoto(wheel(photo))).toBe(true);
     expect(wheelScalesPost(wheel(photo))).toBe(false);
     expect(wheelScalesPhoto(wheel(empty))).toBe(false);
