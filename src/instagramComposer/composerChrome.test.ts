@@ -257,7 +257,8 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
-    expect(previewZoom).toContain("PREVIEW_ZOOM_FIT_BUMP = 1.25 * 1.15");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_FIT_BUMP = 1.65");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_BUMP_STEP = 1.05");
     expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE");
     expect(previewZoom).toContain("leftoverContainFit");
     expect(previewZoom).toContain("leftoverH > 0");

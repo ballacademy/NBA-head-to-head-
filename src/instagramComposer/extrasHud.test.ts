@@ -131,16 +131,18 @@ describe("extras 17–32 HUD helpers", () => {
 
   it("zooms Fit vs 75% vs 100%", () => {
     expect(PREVIEW_ZOOM_NATURAL_SCALE).toBe(0.5);
-    expect(PREVIEW_ZOOM_FIT_BUMP).toBeCloseTo(1.4375);
+    expect(PREVIEW_ZOOM_FIT_BUMP).toBeCloseTo(1.65);
     expect(PREVIEW_ZOOM_SEVENTY_FIVE).toBeCloseTo(0.41);
-    expect(previewZoomFactor(0.36, "fit")).toBeCloseTo(0.36 * 1.4375);
+    expect(previewZoomFactor(0.36, "fit")).toBeCloseTo(0.36 * 1.65);
     expect(previewZoomFactor(0.36, "75")).toBeCloseTo(0.43);
     expect(previewZoomFactor(0.36, "100")).toBe(0.5);
     expect(previewZoomFactor(0.36, "75")).toBeLessThan(
       previewZoomFactor(0.36, "100"),
     );
     expect(previewZoomFactor(0.36, "fit")).toBeGreaterThan(0.36);
-    expect(previewZoomFactor(0.36, "fit")).toBeLessThan(0.36 * 1.5);
+    expect(previewZoomFactor(0.36, "fit")).toBeGreaterThan(
+      previewZoomFactor(0.36, "100") * 0.9,
+    );
     expect(previewZoomFactor(0.6, "100")).toBe(0.5);
     expect(previewZoomFactor(0.6, "75")).toBeGreaterThan(
       previewZoomFactor(0.6, "100"),
@@ -195,13 +197,22 @@ describe("extras 17–32 HUD helpers", () => {
   it("scales the whole post with +/− and wheel without changing 100%", () => {
     expect(previewZoomFactor(0.36, "100")).toBe(0.5);
     expect(previewZoomFactor(0.36, "100", 1)).toBe(0.5);
-    expect(previewZoomFactor(0.36, "fit", 1)).toBeCloseTo(0.5175);
-    expect(previewZoomFactor(0.36, "fit", 1.12)).toBeCloseTo(0.5796);
+    expect(previewZoomFactor(0.36, "fit", 1)).toBeCloseTo(0.594);
+    const plus = stepPreviewZoomBump(1, 1);
+    expect(plus).toBeCloseTo(1.05);
+    expect(stepPreviewZoomBump(1, -1)).toBeCloseTo(1 / 1.05);
+    expect(previewZoomFactor(0.36, "fit", plus)).toBeCloseTo(0.594 * 1.05);
+    expect(previewZoomFactor(0.36, "fit", plus)).not.toBe(
+      PREVIEW_ZOOM_NATURAL_SCALE,
+    );
     expect(previewZoomFactor(0.36, "100", 2)).toBe(1);
-    expect(stepPreviewZoomBump(1, 1)).toBeCloseTo(1.12);
-    expect(stepPreviewZoomBump(1, -1)).toBeCloseTo(1 / 1.12);
-    expect(bumpFromWheelDelta(1, -80)).toBeGreaterThan(1);
-    expect(bumpFromWheelDelta(1, 80)).toBeLessThan(1);
+    const wheelIn = bumpFromWheelDelta(1, -100);
+    expect(wheelIn).toBeCloseTo(1.05);
+    expect(bumpFromWheelDelta(1, 100)).toBeCloseTo(1 / 1.05);
+    const again = bumpFromWheelDelta(wheelIn, -100);
+    expect(again / wheelIn).toBeCloseTo(wheelIn / 1);
+    expect(bumpFromWheelDelta(1, -800)).toBeCloseTo(1.05);
+    expect(bumpFromWheelDelta(1, -800)).toBeLessThan(1.12);
     expect(composerPreviewAllowsPageScroll("fit")).toBe(true);
     expect(composerPreviewAllowsPageScroll("100")).toBe(true);
   });

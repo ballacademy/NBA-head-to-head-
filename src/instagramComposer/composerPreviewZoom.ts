@@ -18,12 +18,14 @@ export const PREVIEW_ZOOM_SEVENTY_FIVE = 0.82 * PREVIEW_ZOOM_NATURAL_SCALE;
 export const PREVIEW_ZOOM_BUMP_DEFAULT = 1;
 export const PREVIEW_ZOOM_BUMP_MIN = 0.5;
 export const PREVIEW_ZOOM_BUMP_MAX = 2.5;
-export const PREVIEW_ZOOM_BUMP_STEP = 1.12;
+/** ~5% per +/− click. Wheel is capped to the same size so a flick cannot jump. */
+export const PREVIEW_ZOOM_BUMP_STEP = 1.05;
+export const PREVIEW_ZOOM_WHEEL_DELTA = 100;
 export const PREVIEW_ZOOM_SCALE_MIN = 0.08;
 export const PREVIEW_ZOOM_SCALE_MAX = 1;
 
 /** Fit landing is leftover-contain × this. 100% stays PREVIEW_ZOOM_NATURAL_SCALE. */
-export const PREVIEW_ZOOM_FIT_BUMP = 1.25 * 1.15;
+export const PREVIEW_ZOOM_FIT_BUMP = 1.65;
 
 export const FILLED_PHOTO_SLOT_SELECTOR = ".pod-photo:not(.is-empty)";
 export const POST_ZOOM_BOARD_SELECTOR = ".sc-stage__board";
@@ -114,7 +116,7 @@ export const previewZoomFactor = (
   );
 };
 
-/** Fit is leftover-contain × 1.4375, so the page may scroll at the default landing. */
+/** Fit is leftover-contain × 1.65, so the page may scroll at the default landing. */
 export const composerPreviewAllowsPageScroll = (
   _zoom?: ComposerPreviewZoom,
   _bump = PREVIEW_ZOOM_BUMP_DEFAULT,
@@ -205,12 +207,18 @@ export const stepPreviewZoomBump = (bump: number, direction: 1 | -1) =>
   );
 
 export const bumpFromWheelDelta = (bump: number, deltaY: number) => {
+  const current = parseComposerPreviewZoomBump(bump);
   if (!Number.isFinite(deltaY) || deltaY === 0) {
-    return parseComposerPreviewZoomBump(bump);
+    return current;
   }
-  return parseComposerPreviewZoomBump(
-    parseComposerPreviewZoomBump(bump) * Math.exp(-deltaY * 0.0025),
+  const ticks = Math.max(
+    -1,
+    Math.min(1, -deltaY / PREVIEW_ZOOM_WHEEL_DELTA),
   );
+  const span = PREVIEW_ZOOM_BUMP_STEP - 1;
+  const factor =
+    ticks >= 0 ? 1 + ticks * span : 1 / (1 + -ticks * span);
+  return parseComposerPreviewZoomBump(current * factor);
 };
 
 export const readComposerPreviewZoom = () =>
