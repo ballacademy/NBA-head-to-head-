@@ -206,7 +206,7 @@ describe("extras 17–32 HUD helpers", () => {
     expect(composerPreviewAllowsPageScroll("100")).toBe(true);
   });
 
-  it("keeps photo-slot wheel on the crop and post-zooms HUD / empty stage", () => {
+  it("keeps photo-slot wheel on the crop and post-zooms only the 4:5 board", () => {
     type Host = { closest: (sel: string) => Host | null };
     const matching = (labels: string[]): Host => {
       const node: Host = {
@@ -220,9 +220,10 @@ describe("extras 17–32 HUD helpers", () => {
       };
       return node;
     };
-    const photo = matching([".pod-photo:not(.is-empty)"]);
-    const empty = matching([".pod-photo"]);
-    const hud = matching([".sc-root"]);
+    const photo = matching([".pod-photo:not(.is-empty)", ".sc-stage__board"]);
+    const empty = matching([".pod-photo", ".sc-stage__board"]);
+    const board = matching([".sc-stage__board"]);
+    const hud = matching([".sc-root", ".sc-toolbar"]);
     const picker = matching([".sc-picker", ".sc-root"]);
     const wheel = (target: Host) => ({
       target,
@@ -232,7 +233,9 @@ describe("extras 17–32 HUD helpers", () => {
     expect(wheelScalesPhoto(wheel(photo))).toBe(true);
     expect(wheelScalesPost(wheel(photo))).toBe(false);
     expect(wheelScalesPhoto(wheel(empty))).toBe(false);
-    expect(wheelScalesPost(wheel(hud))).toBe(true);
+    expect(wheelScalesPost(wheel(empty))).toBe(true);
+    expect(wheelScalesPost(wheel(board))).toBe(true);
+    expect(wheelScalesPost(wheel(hud))).toBe(false);
     expect(wheelScalesPost(wheel(picker))).toBe(false);
   });
 

@@ -22,8 +22,8 @@ import {
  *
  * Fit landing is leftover-contain × PREVIEW_ZOOM_FIT_BUMP (page may scroll).
  * 100% stays PREVIEW_ZOOM_NATURAL_SCALE (600×750). Wheel on a filled photo
- * slot crops that image; wheel on board chrome / empty stage / HUD scales
- * the whole post (see ComposerHub).
+ * slot crops that image; wheel on the 4:5 post (not a photo) scales the
+ * whole post; HUD / leftover chrome / empty page scroll (see ComposerHub).
  */
 export function ComposerBoard({
   children,

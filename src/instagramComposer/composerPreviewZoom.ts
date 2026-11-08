@@ -26,6 +26,7 @@ export const PREVIEW_ZOOM_SCALE_MAX = 1;
 export const PREVIEW_ZOOM_FIT_BUMP = 1.25;
 
 export const FILLED_PHOTO_SLOT_SELECTOR = ".pod-photo:not(.is-empty)";
+export const POST_ZOOM_BOARD_SELECTOR = ".sc-stage__board";
 const POST_ZOOM_SKIP_SELECTOR = [
   FILLED_PHOTO_SLOT_SELECTOR,
   ".sc-picker",
@@ -141,13 +142,19 @@ export type PreviewWheelPoint = {
   clientY?: number;
 };
 
-export const filledPhotoSlotAtPoint = (x: number, y: number) => {
+const hitAtPoint = (x: number, y: number) => {
   if (typeof document === "undefined" || typeof document.elementFromPoint !== "function") {
     return null;
   }
   const hit = document.elementFromPoint(x, y);
-  return hit instanceof Element ? hit.closest(FILLED_PHOTO_SLOT_SELECTOR) : null;
+  return hit instanceof Element ? hit : null;
 };
+
+export const filledPhotoSlotAtPoint = (x: number, y: number) =>
+  hitAtPoint(x, y)?.closest(FILLED_PHOTO_SLOT_SELECTOR) ?? null;
+
+export const postBoardAtPoint = (x: number, y: number) =>
+  hitAtPoint(x, y)?.closest(POST_ZOOM_BOARD_SELECTOR) ?? null;
 
 /** Hover/focus on a filled player image: wheel/pinch crop that photo, not the post. */
 export const wheelScalesPhoto = (event: PreviewWheelPoint) => {
@@ -163,19 +170,32 @@ export const wheelScalesPhoto = (event: PreviewWheelPoint) => {
   return Boolean(filledPhotoSlotAtPoint(event.clientX, event.clientY));
 };
 
-/** HUD / empty stage / board chrome: wheel scales the whole post. */
+/**
+ * Wheel over the 4:5 post (not a croppable photo) scales the whole post.
+ * HUD, leftover chrome, and empty page scroll instead.
+ */
 export const wheelScalesPost = (event: PreviewWheelPoint) => {
   if (wheelScalesPhoto(event)) {
     return false;
   }
   const target = asClosestHost(event.target);
-  if (!target) {
+  if (target?.closest(POST_ZOOM_SKIP_SELECTOR)) {
     return false;
   }
-  if (target.closest(POST_ZOOM_SKIP_SELECTOR)) {
+  if (target?.closest(POST_ZOOM_BOARD_SELECTOR)) {
+    return true;
+  }
+  if (
+    typeof event.clientX !== "number" ||
+    typeof event.clientY !== "number"
+  ) {
     return false;
   }
-  return Boolean(target.closest(".sc-root"));
+  const hit = hitAtPoint(event.clientX, event.clientY);
+  if (hit?.closest(POST_ZOOM_SKIP_SELECTOR)) {
+    return false;
+  }
+  return Boolean(hit?.closest(POST_ZOOM_BOARD_SELECTOR));
 };
 
 export const stepPreviewZoomBump = (bump: number, direction: 1 | -1) =>

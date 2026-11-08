@@ -263,6 +263,7 @@ describe("composer chrome", () => {
     expect(previewZoom).toContain("leftoverH > 0");
     expect(previewZoom).toContain("wheelScalesPhoto");
     expect(previewZoom).toContain("wheelScalesPost");
+    expect(previewZoom).toContain('POST_ZOOM_BOARD_SELECTOR = ".sc-stage__board"');
     expect(previewZoom).not.toContain("LEFTOVER_FIT_MIN_PX");
     expect(previewZoom).not.toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
     expect(board).toContain("leftoverContainFit");
