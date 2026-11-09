@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import { readJson, writeJson } from "../lib/browserStorage";
 
 export const COMPOSER_PREVIEW_ZOOM_KEY = "ddgm:composer-preview-zoom";
@@ -9,23 +10,32 @@ export const COMPOSER_PREVIEW_ZOOM_BUMP_EVENT =
 
 export type ComposerPreviewZoom = "fit" | "75" | "100";
 
-/** Native 1200×1500 at 1 is oversized; 100% is half that (today’s 50%). */
+/** Native 1200-wide board. 100% is half that (600×750 on 4:5). */
+export const PREVIEW_ZOOM_NATIVE_WIDTH = GRAPHIC_WIDTH;
 export const PREVIEW_ZOOM_NATURAL_SCALE = 0.5;
+export const PREVIEW_ZOOM_HUNDRED_WIDTH =
+  PREVIEW_ZOOM_NATIVE_WIDTH * PREVIEW_ZOOM_NATURAL_SCALE;
 
-/** 75% sits between leftover-contain Fit and 100% (82% of natural as a fallback span). */
-export const PREVIEW_ZOOM_SEVENTY_FIVE = 0.82 * PREVIEW_ZOOM_NATURAL_SCALE;
+/** Fit is a fixed 560-wide post on every composer, not leftover-contain. */
+export const PREVIEW_ZOOM_FIT_WIDTH = 560;
+export const PREVIEW_ZOOM_FIT_SCALE =
+  PREVIEW_ZOOM_FIT_WIDTH / PREVIEW_ZOOM_NATIVE_WIDTH;
 
-export const PREVIEW_ZOOM_BUMP_DEFAULT = 1;
-export const PREVIEW_ZOOM_BUMP_MIN = 0.5;
-export const PREVIEW_ZOOM_BUMP_MAX = 2.5;
-/** ~5% per +/− click. Wheel is capped to the same size so a flick cannot jump. */
-export const PREVIEW_ZOOM_BUMP_STEP = 1.05;
-export const PREVIEW_ZOOM_WHEEL_DELTA = 100;
+/** 75% of 100% = 450-wide, not leftover-based. */
+export const PREVIEW_ZOOM_SEVENTY_FIVE_WIDTH = 450;
+export const PREVIEW_ZOOM_SEVENTY_FIVE =
+  PREVIEW_ZOOM_SEVENTY_FIVE_WIDTH / PREVIEW_ZOOM_NATIVE_WIDTH;
+
+/** Extra +/−/wheel steps on top of Fit/75/100. Integer count; 0 is none. */
+export const PREVIEW_ZOOM_BUMP_DEFAULT = 0;
+export const PREVIEW_ZOOM_BUMP_MIN = -24;
+export const PREVIEW_ZOOM_BUMP_MAX = 24;
+/** 5% of 100% width — always 30px of display width, even on 9:16. */
+export const PREVIEW_ZOOM_STEP_PX = 30;
+export const PREVIEW_ZOOM_STEP_SCALE =
+  PREVIEW_ZOOM_STEP_PX / PREVIEW_ZOOM_NATIVE_WIDTH;
 export const PREVIEW_ZOOM_SCALE_MIN = 0.08;
 export const PREVIEW_ZOOM_SCALE_MAX = 1;
-
-/** Fit landing is leftover-contain × this. 100% stays PREVIEW_ZOOM_NATURAL_SCALE. */
-export const PREVIEW_ZOOM_FIT_BUMP = 1.65;
 
 export const FILLED_PHOTO_SLOT_SELECTOR = ".pod-photo:not(.is-empty)";
 export const POST_ZOOM_BOARD_SELECTOR = ".sc-stage__board";
@@ -41,44 +51,6 @@ const POST_ZOOM_SKIP_SELECTOR = [
   ".sc-range",
 ].join(", ");
 
-/**
- * Leftover-contain scale for the 4:5 under the HUD. Do not leftover-HUD shrink.
- * Fit landing multiplies this by PREVIEW_ZOOM_FIT_BUMP (page may scroll).
- * 100% stays PREVIEW_ZOOM_NATURAL_SCALE (600×750).
- */
-export const leftoverContainFit = ({
-  frameW,
-  viewW,
-  viewH,
-  hudH,
-  width,
-  height,
-  padY = 0,
-}: {
-  frameW: number;
-  viewW: number;
-  viewH: number;
-  hudH: number;
-  width: number;
-  height: number;
-  padY?: number;
-}) => {
-  if (!(width > 0) || !(height > 0)) {
-    return PREVIEW_ZOOM_NATURAL_SCALE;
-  }
-  const boxW = Math.min(
-    frameW > 0 ? frameW : viewW,
-    viewW > 0 ? viewW : frameW || width,
-  );
-  const widthFit = boxW > 0 ? boxW / width : PREVIEW_ZOOM_NATURAL_SCALE;
-  const leftoverH = viewH - Math.max(0, hudH) - Math.max(0, padY);
-  if (leftoverH > 0) {
-    const heightFit = leftoverH / height;
-    return widthFit > 0 ? Math.min(widthFit, heightFit) : heightFit;
-  }
-  return widthFit > 0 ? widthFit : PREVIEW_ZOOM_NATURAL_SCALE;
-};
-
 export const parseComposerPreviewZoom = (
   value: unknown,
 ): ComposerPreviewZoom => {
@@ -90,33 +62,49 @@ export const parseComposerPreviewZoom = (
 
 export const parseComposerPreviewZoomBump = (value: unknown) => {
   const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(n) || n <= 0) {
+  if (!Number.isFinite(n)) {
     return PREVIEW_ZOOM_BUMP_DEFAULT;
   }
-  return Math.min(PREVIEW_ZOOM_BUMP_MAX, Math.max(PREVIEW_ZOOM_BUMP_MIN, n));
+  return Math.min(
+    PREVIEW_ZOOM_BUMP_MAX,
+    Math.max(PREVIEW_ZOOM_BUMP_MIN, Math.round(n)),
+  );
+};
+
+export const previewZoomBaseScale = (zoom: ComposerPreviewZoom) => {
+  if (zoom === "100") {
+    return PREVIEW_ZOOM_NATURAL_SCALE;
+  }
+  if (zoom === "75") {
+    return PREVIEW_ZOOM_SEVENTY_FIVE;
+  }
+  return PREVIEW_ZOOM_FIT_SCALE;
 };
 
 export const previewZoomFactor = (
-  fit: number,
   zoom: ComposerPreviewZoom,
   bump = PREVIEW_ZOOM_BUMP_DEFAULT,
 ) => {
-  const leftover =
-    Number.isFinite(fit) && fit > 0 ? fit : PREVIEW_ZOOM_NATURAL_SCALE;
-  let base = leftover * PREVIEW_ZOOM_FIT_BUMP;
-  if (zoom === "100") {
-    base = PREVIEW_ZOOM_NATURAL_SCALE;
-  } else if (zoom === "75") {
-    base = leftover + (PREVIEW_ZOOM_NATURAL_SCALE - leftover) * 0.5;
-  }
-  const scale = base * parseComposerPreviewZoomBump(bump);
+  const scale =
+    previewZoomBaseScale(zoom) +
+    parseComposerPreviewZoomBump(bump) * PREVIEW_ZOOM_STEP_SCALE;
   return Math.min(
     PREVIEW_ZOOM_SCALE_MAX,
     Math.max(PREVIEW_ZOOM_SCALE_MIN, scale),
   );
 };
 
-/** Fit is leftover-contain × 1.65, so the page may scroll at the default landing. */
+export const previewZoomDisplaySize = (
+  boardW: number,
+  boardH: number,
+  zoom: ComposerPreviewZoom,
+  bump = PREVIEW_ZOOM_BUMP_DEFAULT,
+) => {
+  const factor = previewZoomFactor(zoom, bump);
+  return { width: boardW * factor, height: boardH * factor };
+};
+
+/** Page may always scroll so the full post is reachable under a tall HUD. */
 export const composerPreviewAllowsPageScroll = (
   _zoom?: ComposerPreviewZoom,
   _bump = PREVIEW_ZOOM_BUMP_DEFAULT,
@@ -201,24 +189,14 @@ export const wheelScalesPost = (event: PreviewWheelPoint) => {
 };
 
 export const stepPreviewZoomBump = (bump: number, direction: 1 | -1) =>
-  parseComposerPreviewZoomBump(
-    parseComposerPreviewZoomBump(bump) *
-      (direction > 0 ? PREVIEW_ZOOM_BUMP_STEP : 1 / PREVIEW_ZOOM_BUMP_STEP),
-  );
+  parseComposerPreviewZoomBump(parseComposerPreviewZoomBump(bump) + direction);
 
 export const bumpFromWheelDelta = (bump: number, deltaY: number) => {
   const current = parseComposerPreviewZoomBump(bump);
   if (!Number.isFinite(deltaY) || deltaY === 0) {
     return current;
   }
-  const ticks = Math.max(
-    -1,
-    Math.min(1, -deltaY / PREVIEW_ZOOM_WHEEL_DELTA),
-  );
-  const span = PREVIEW_ZOOM_BUMP_STEP - 1;
-  const factor =
-    ticks >= 0 ? 1 + ticks * span : 1 / (1 + -ticks * span);
-  return parseComposerPreviewZoomBump(current * factor);
+  return stepPreviewZoomBump(current, deltaY < 0 ? 1 : -1);
 };
 
 export const readComposerPreviewZoom = () =>

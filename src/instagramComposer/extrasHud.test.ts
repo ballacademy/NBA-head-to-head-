@@ -13,12 +13,20 @@ import { parseComposerHudMode } from "./composerHudMode";
 import { fillQualityMessage } from "./composerFillToast";
 import { nextEmptySlotIndex, slotMissingPlayer } from "./nextEmptySlot";
 import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import {
   bumpFromWheelDelta,
   composerPreviewAllowsPageScroll,
-  leftoverContainFit,
-  PREVIEW_ZOOM_FIT_BUMP,
+  PREVIEW_ZOOM_FIT_SCALE,
+  PREVIEW_ZOOM_FIT_WIDTH,
   PREVIEW_ZOOM_NATURAL_SCALE,
   PREVIEW_ZOOM_SEVENTY_FIVE,
+  PREVIEW_ZOOM_SEVENTY_FIVE_WIDTH,
+  PREVIEW_ZOOM_STEP_PX,
+  previewZoomDisplaySize,
   previewZoomFactor,
   stepPreviewZoomBump,
   wheelScalesPhoto,
@@ -131,88 +139,61 @@ describe("extras 17–32 HUD helpers", () => {
 
   it("zooms Fit vs 75% vs 100%", () => {
     expect(PREVIEW_ZOOM_NATURAL_SCALE).toBe(0.5);
-    expect(PREVIEW_ZOOM_FIT_BUMP).toBeCloseTo(1.65);
-    expect(PREVIEW_ZOOM_SEVENTY_FIVE).toBeCloseTo(0.41);
-    expect(previewZoomFactor(0.36, "fit")).toBeCloseTo(0.36 * 1.65);
-    expect(previewZoomFactor(0.36, "75")).toBeCloseTo(0.43);
-    expect(previewZoomFactor(0.36, "100")).toBe(0.5);
-    expect(previewZoomFactor(0.36, "75")).toBeLessThan(
-      previewZoomFactor(0.36, "100"),
+    expect(PREVIEW_ZOOM_FIT_WIDTH).toBe(560);
+    expect(PREVIEW_ZOOM_SEVENTY_FIVE_WIDTH).toBe(450);
+    expect(PREVIEW_ZOOM_FIT_SCALE).toBeCloseTo(560 / 1200);
+    expect(PREVIEW_ZOOM_SEVENTY_FIVE).toBeCloseTo(450 / 1200);
+    expect(previewZoomFactor("fit")).toBeCloseTo(560 / 1200);
+    expect(previewZoomFactor("75")).toBeCloseTo(450 / 1200);
+    expect(previewZoomFactor("100")).toBe(0.5);
+    expect(previewZoomFactor("75")).toBeLessThan(previewZoomFactor("fit"));
+    expect(previewZoomFactor("fit")).toBeLessThan(previewZoomFactor("100"));
+    const totw = previewZoomDisplaySize(GRAPHIC_WIDTH, GRAPHIC_HEIGHT, "fit");
+    const potd = previewZoomDisplaySize(GRAPHIC_WIDTH, GRAPHIC_HEIGHT, "fit");
+    const story = previewZoomDisplaySize(
+      GRAPHIC_WIDTH,
+      STORY_DESIGN_HEIGHT,
+      "fit",
     );
-    expect(previewZoomFactor(0.36, "fit")).toBeGreaterThan(0.36);
-    expect(previewZoomFactor(0.36, "fit")).toBeGreaterThan(
-      previewZoomFactor(0.36, "100") * 0.9,
+    expect(totw.width).toBe(560);
+    expect(totw.height).toBe(700);
+    expect(potd.width).toBe(totw.width);
+    expect(potd.height).toBe(totw.height);
+    expect(story.width).toBe(560);
+    expect(story.height).toBeCloseTo((560 / GRAPHIC_WIDTH) * STORY_DESIGN_HEIGHT);
+    expect(Math.round(story.height)).toBe(995);
+    const hundred = previewZoomDisplaySize(GRAPHIC_WIDTH, GRAPHIC_HEIGHT, "100");
+    expect(hundred.width).toBe(600);
+    expect(hundred.height).toBe(750);
+    const seventyFive = previewZoomDisplaySize(
+      GRAPHIC_WIDTH,
+      GRAPHIC_HEIGHT,
+      "75",
     );
-    expect(previewZoomFactor(0.6, "100")).toBe(0.5);
-    expect(previewZoomFactor(0.6, "75")).toBeGreaterThan(
-      previewZoomFactor(0.6, "100"),
-    );
-    expect(previewZoomFactor(0.6, "75")).toBeLessThan(
-      previewZoomFactor(0.6, "fit"),
-    );
-    const laptopFit = leftoverContainFit({
-      frameW: 1440,
-      viewW: 1440,
-      viewH: 900,
-      hudH: 357,
-      width: 1200,
-      height: 1500,
-    });
-    expect(laptopFit).toBeCloseTo(543 / 1500);
-    expect(laptopFit * 1200).toBeCloseTo(434.4, 0);
-    const phoneFit = leftoverContainFit({
-      frameW: 390,
-      viewW: 390,
-      viewH: 844,
-      hudH: 1174,
-      width: 1200,
-      height: 1500,
-    });
-    expect(phoneFit).toBeCloseTo(390 / 1200);
-    const stampWell = leftoverContainFit({
-      frameW: 1440,
-      viewW: 1440,
-      viewH: 900,
-      hudH: 720,
-      width: 1200,
-      height: 1500,
-    });
-    expect(stampWell).toBeCloseTo(180 / 1500);
-    expect(stampWell).toBeLessThan(PREVIEW_ZOOM_NATURAL_SCALE);
-    expect(stampWell * 1500).toBeCloseTo(180);
-    expect(stampWell * 1200).toBeCloseTo(144);
-    expect(
-      leftoverContainFit({
-        frameW: 1440,
-        viewW: 1440,
-        viewH: 900,
-        hudH: 357,
-        width: 1200,
-        height: 1500,
-        padY: 32,
-      }),
-    ).toBeCloseTo(511 / 1500);
+    expect(seventyFive.width).toBe(450);
+    expect(seventyFive.height).toBeCloseTo(562.5);
+    expect(Math.round(seventyFive.height)).toBe(563);
   });
 
   it("scales the whole post with +/− and wheel without changing 100%", () => {
-    expect(previewZoomFactor(0.36, "100")).toBe(0.5);
-    expect(previewZoomFactor(0.36, "100", 1)).toBe(0.5);
-    expect(previewZoomFactor(0.36, "fit", 1)).toBeCloseTo(0.594);
-    const plus = stepPreviewZoomBump(1, 1);
-    expect(plus).toBeCloseTo(1.05);
-    expect(stepPreviewZoomBump(1, -1)).toBeCloseTo(1 / 1.05);
-    expect(previewZoomFactor(0.36, "fit", plus)).toBeCloseTo(0.594 * 1.05);
-    expect(previewZoomFactor(0.36, "fit", plus)).not.toBe(
-      PREVIEW_ZOOM_NATURAL_SCALE,
+    expect(previewZoomFactor("100")).toBe(0.5);
+    expect(previewZoomFactor("100", 0)).toBe(0.5);
+    expect(previewZoomFactor("fit", 0) * GRAPHIC_WIDTH).toBe(560);
+    const plus = stepPreviewZoomBump(0, 1);
+    expect(plus).toBe(1);
+    expect(stepPreviewZoomBump(0, -1)).toBe(-1);
+    expect(previewZoomFactor("fit", plus) * GRAPHIC_WIDTH).toBe(
+      560 + PREVIEW_ZOOM_STEP_PX,
     );
-    expect(previewZoomFactor(0.36, "100", 2)).toBe(1);
-    const wheelIn = bumpFromWheelDelta(1, -100);
-    expect(wheelIn).toBeCloseTo(1.05);
-    expect(bumpFromWheelDelta(1, 100)).toBeCloseTo(1 / 1.05);
-    const again = bumpFromWheelDelta(wheelIn, -100);
-    expect(again / wheelIn).toBeCloseTo(wheelIn / 1);
-    expect(bumpFromWheelDelta(1, -800)).toBeCloseTo(1.05);
-    expect(bumpFromWheelDelta(1, -800)).toBeLessThan(1.12);
+    expect(previewZoomFactor("fit", plus)).not.toBe(PREVIEW_ZOOM_NATURAL_SCALE);
+    expect(previewZoomFactor("fit", plus) * GRAPHIC_WIDTH).not.toBe(600);
+    expect(previewZoomFactor("100", 20) * GRAPHIC_WIDTH).toBe(GRAPHIC_WIDTH);
+    const wheelIn = bumpFromWheelDelta(0, -100);
+    expect(wheelIn).toBe(1);
+    expect(bumpFromWheelDelta(0, 100)).toBe(-1);
+    expect(bumpFromWheelDelta(wheelIn, -100)).toBe(2);
+    expect(bumpFromWheelDelta(0, -800)).toBe(1);
+    expect(bumpFromWheelDelta(0, -800)).toBeLessThan(2);
     expect(composerPreviewAllowsPageScroll("fit")).toBe(true);
     expect(composerPreviewAllowsPageScroll("100")).toBe(true);
   });

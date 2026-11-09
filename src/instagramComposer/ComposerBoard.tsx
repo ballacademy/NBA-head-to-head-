@@ -7,8 +7,6 @@ import { ComposerStampMark } from "./ComposerStampToggle";
 import { composerShowsStamp } from "./composerStamp";
 import { readComposerMode } from "./composerMode";
 import {
-  leftoverContainFit,
-  PREVIEW_ZOOM_NATURAL_SCALE,
   previewZoomFactor,
   useComposerPreviewZoom,
   useComposerPreviewZoomBump,
@@ -20,10 +18,11 @@ import {
  * caret in untransformed coordinates, so a scaled parent leaves the
  * insertion point floating above the glyphs.
  *
- * Fit landing is leftover-contain × PREVIEW_ZOOM_FIT_BUMP (page may scroll).
- * 100% stays PREVIEW_ZOOM_NATURAL_SCALE (600×750). Wheel on a filled photo
- * slot crops that image; wheel on the 4:5 post (not a photo) scales the
- * whole post; HUD / leftover chrome / empty page scroll (see ComposerHub).
+ * Fit is a fixed 560-wide post on every composer (4:5 = 560×700,
+ * 9:16 = 560-wide). 75% is 450-wide. 100% stays PREVIEW_ZOOM_NATURAL_SCALE
+ * (600×750). Wheel on a filled photo slot crops that image; wheel on the
+ * 4:5 post (not a photo) scales the whole post; HUD / leftover chrome /
+ * empty page scroll (see ComposerHub).
  */
 export function ComposerBoard({
   children,
@@ -36,57 +35,19 @@ export function ComposerBoard({
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  const [fit, setFit] = useState(PREVIEW_ZOOM_NATURAL_SCALE);
   const [previewZoom] = useComposerPreviewZoom();
   const [bump] = useComposerPreviewZoomBump();
-  const factor = previewZoomFactor(fit, previewZoom, bump);
+  const factor = previewZoomFactor(previewZoom, bump);
 
   useLayoutEffect(() => {
     const node = wrapRef.current;
     if (!node) {
       return;
     }
-    const frame = node.closest(".sc-stage__frame");
-    const root = node.closest(".sc-root");
-    const tabs = root?.querySelector(".sc-tabs");
-    const toolbar = root?.querySelector(".sc-toolbar");
-    const stage = root?.querySelector(".sc-stage");
     const sync = () => {
       const next = node.clientWidth;
       if (next > 0) {
         setScale(next / width);
-      }
-      const frameW =
-        frame instanceof HTMLElement && frame.clientWidth > 0
-          ? frame.clientWidth
-          : 0;
-      const viewW = window.visualViewport?.width ?? window.innerWidth;
-      const viewH = window.visualViewport?.height ?? window.innerHeight;
-      const hudH =
-        (tabs instanceof HTMLElement ? tabs.getBoundingClientRect().height : 0) +
-        (toolbar instanceof HTMLElement
-          ? toolbar.getBoundingClientRect().height
-          : 0);
-      let padY = 0;
-      if (stage instanceof HTMLElement) {
-        const style = getComputedStyle(stage);
-        padY =
-          (Number.parseFloat(style.paddingTop) || 0) +
-          (Number.parseFloat(style.paddingBottom) || 0);
-      }
-      if ((frameW > 0 || viewW > 0) && viewH > 0) {
-        const nextFit = leftoverContainFit({
-          frameW,
-          viewW,
-          viewH,
-          hudH,
-          width,
-          height,
-          padY,
-        });
-        if (nextFit > 0) {
-          setFit(nextFit);
-        }
       }
     };
     sync();
@@ -100,18 +61,6 @@ export function ComposerBoard({
     }
     const observer = new ResizeObserver(sync);
     observer.observe(node);
-    if (frame instanceof Element) {
-      observer.observe(frame);
-    }
-    if (tabs instanceof Element) {
-      observer.observe(tabs);
-    }
-    if (toolbar instanceof Element) {
-      observer.observe(toolbar);
-    }
-    if (stage instanceof Element) {
-      observer.observe(stage);
-    }
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", sync);

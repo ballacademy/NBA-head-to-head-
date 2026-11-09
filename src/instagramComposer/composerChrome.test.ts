@@ -257,17 +257,20 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(previewZoom).toContain("PREVIEW_ZOOM_NATURAL_SCALE = 0.5");
-    expect(previewZoom).toContain("PREVIEW_ZOOM_FIT_BUMP = 1.65");
-    expect(previewZoom).toContain("PREVIEW_ZOOM_BUMP_STEP = 1.05");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_FIT_WIDTH = 560");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE_WIDTH = 450");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_STEP_PX = 30");
+    expect(previewZoom).toContain("PREVIEW_ZOOM_BUMP_DEFAULT = 0");
     expect(previewZoom).toContain("PREVIEW_ZOOM_SEVENTY_FIVE");
-    expect(previewZoom).toContain("leftoverContainFit");
-    expect(previewZoom).toContain("leftoverH > 0");
+    expect(previewZoom).not.toContain("leftoverContainFit");
+    expect(previewZoom).not.toContain("PREVIEW_ZOOM_FIT_BUMP");
+    expect(previewZoom).not.toContain("PREVIEW_ZOOM_BUMP_STEP = 1.05");
     expect(previewZoom).toContain("wheelScalesPhoto");
     expect(previewZoom).toContain("wheelScalesPost");
     expect(previewZoom).toContain('POST_ZOOM_BOARD_SELECTOR = ".sc-stage__board"');
     expect(previewZoom).not.toContain("LEFTOVER_FIT_MIN_PX");
     expect(previewZoom).not.toContain("Math.min(PREVIEW_ZOOM_NATURAL_SCALE, leftover)");
-    expect(board).toContain("leftoverContainFit");
+    expect(board).not.toContain("leftoverContainFit");
     expect(board).not.toContain('maxWidth: "100%"');
     expect(sheet).toMatch(
       /\.sc-stage__frame > \.sc-hint[\s\S]*?position:\s*absolute/,
@@ -289,6 +292,7 @@ describe("composer chrome", () => {
     expect(hub).toContain("composerPreviewAllowsPageScroll");
     expect(hub).toContain("wheelScalesPost");
     expect(hub).toContain("bumpFromWheelDelta");
+    expect(hub).toContain("writeComposerPreviewZoomBump(PREVIEW_ZOOM_BUMP_DEFAULT)");
     expect(hub).toContain("beginComposerHydrateWrites");
     const standings = readFileSync(
       join(root, "standingsComposer/nbaStandings.ts"),

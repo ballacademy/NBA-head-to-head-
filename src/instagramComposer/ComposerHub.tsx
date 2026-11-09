@@ -46,6 +46,7 @@ import { useComposerHudMode } from "./composerHudMode";
 import {
   bumpFromWheelDelta,
   composerPreviewAllowsPageScroll,
+  PREVIEW_ZOOM_BUMP_DEFAULT,
   useComposerPreviewZoom,
   useComposerPreviewZoomBump,
   wheelScalesPost,
@@ -118,6 +119,7 @@ export function ComposerHub() {
 
   useEffect(() => {
     setComposerExportContext(mode);
+    writeComposerPreviewZoomBump(PREVIEW_ZOOM_BUMP_DEFAULT);
   }, [mode]);
 
   useEffect(() => {
