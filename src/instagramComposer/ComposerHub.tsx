@@ -58,6 +58,7 @@ import { ComposerTabs } from "./ComposerTabs";
 import {
   beginComposerHydrateWrites,
   hydrateJsonStorage,
+  noteComposerUserEdit,
 } from "../lib/browserStorage";
 import { chainHudWheel, syncComposerVisualViewport } from "./chainHudWheel";
 import "./composerSlotSwap.css";
@@ -106,6 +107,16 @@ export function ComposerHub() {
       beginComposerHydrateWrites();
       setPersistReady(true);
     });
+  }, []);
+
+  useEffect(() => {
+    const note = () => noteComposerUserEdit();
+    window.addEventListener("pointerdown", note, true);
+    window.addEventListener("keydown", note, true);
+    return () => {
+      window.removeEventListener("pointerdown", note, true);
+      window.removeEventListener("keydown", note, true);
+    };
   }, []);
 
   useEffect(() => {

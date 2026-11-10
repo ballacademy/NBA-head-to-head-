@@ -107,7 +107,8 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
     const allGames = sortPicksGames(draft.games);
     const games = visiblePicksGames(allGames, exporting);
     const mode: PicksResultMode = draft.resultMode === "su" ? "su" : "ats";
-    const showRecord = Boolean(atsRecord.trim());
+    const recordLine = atsRecord.trim() || "0-0-0";
+    const showRecord = true;
     const dailyLine = dailyRecord.trim();
     const showDaily = Boolean(dailyLine);
     const fill = picksFillLayout(
@@ -274,7 +275,7 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
               aria-label={`${picksRecordKicker(mode)} record`}
             >
               <p className="pk-ats-kicker">{picksRecordKicker(mode)}</p>
-              <p className="pk-ats">{atsRecord}</p>
+              <p className="pk-ats">{recordLine}</p>
             </div>
           </div>
         ) : null}

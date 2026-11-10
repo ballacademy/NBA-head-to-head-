@@ -7,7 +7,6 @@ import { ComposerHudExtras } from "../instagramComposer/ComposerHudExtras";
 import { ComposerHudSelect } from "../instagramComposer/ComposerHudSelect";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerNameStyleToggle } from "../instagramComposer/ComposerNameStyleToggle";
-import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
@@ -246,18 +245,6 @@ export function ShotChartComposerApp() {
     void fillShots(next);
   };
 
-  const setNight = (iso: string) => {
-    night.setDate(iso);
-    const next = {
-      ...draft,
-      window: "last-game" as const,
-      nightDate: iso,
-      eventId: "",
-    };
-    setDraft(next);
-    void fillShots(next);
-  };
-
   const pickRecentGame = (eventId: string) => {
     const game = recentGames.find((row) => row.eventId === eventId);
     const next = {
@@ -402,12 +389,6 @@ export function ShotChartComposerApp() {
             />
             ) : (
               <>
-                <ComposerNightDate
-                  date={draft.nightDate || night.date}
-                  todayIso={night.todayIso}
-                  yesterdayIso={night.yesterdayIso}
-                  onChange={setNight}
-                />
                 <label className="sc-field">
                   Game
                   <select

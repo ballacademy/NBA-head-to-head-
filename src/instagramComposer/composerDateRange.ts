@@ -232,12 +232,53 @@ export const rangeWeekLine = (from: string, to: string) => {
   return `${startLabel}, ${startYear} – ${endLabel}, ${endYear}`;
 };
 
+const AUTO_WEEK_LINE =
+  /^(WEEK OF\s+)?[A-Z]{3} \d{1,2}(\s*[–-]\s*\d{1,2})?, \d{4}$|^(WEEK OF\s+)?[A-Z]{3} \d{1,2}\s*[–-]\s*[A-Z]{3} \d{1,2}, \d{4}$/i;
+
+export const weekOfLine = (from: string, to: string) => {
+  const line = rangeWeekLine(from, to);
+  return line ? `WEEK OF ${line}` : "";
+};
+
+export const isThisWeekRange = (
+  from: string,
+  to: string,
+  now = new Date(),
+) => matchDateRangePreset(from, to, now) === "this-week";
+
+export const withThisWeekLastWeekFallback = async <T>(
+  from: string,
+  to: string,
+  load: (fromIso: string, toIso: string) => Promise<T>,
+  isEmpty: (data: T) => boolean,
+  now = new Date(),
+): Promise<{ from: string; to: string; data: T; fellBack: boolean }> => {
+  const data = await load(from, to);
+  if (!isThisWeekRange(from, to, now) || !isEmpty(data)) {
+    return { from, to, data, fellBack: false };
+  }
+  const last = lastWeekRange(now);
+  const lastData = await load(last.from, last.to);
+  if (isEmpty(lastData)) {
+    return { from, to, data, fellBack: false };
+  }
+  return { from: last.from, to: last.to, data: lastData, fellBack: true };
+};
+
+export const THIS_WEEK_FALLBACK_STATUS =
+  "This week has no 2GP games yet — filled last week.";
+
 export const isAutoWeekLine = (week: string, from: string, to: string) => {
   const current = week.replace(/\s+/g, " ").trim().toUpperCase();
   if (!current) {
     return true;
   }
-  return current === rangeWeekLine(from, to).toUpperCase();
+  const stripped = current.replace(/^WEEK OF\s+/, "");
+  const auto = rangeWeekLine(from, to).toUpperCase();
+  if (stripped === auto || current === auto || current === `WEEK OF ${auto}`) {
+    return true;
+  }
+  return AUTO_WEEK_LINE.test(current) || AUTO_WEEK_LINE.test(stripped);
 };
 
 export const matchDateRangePreset = (

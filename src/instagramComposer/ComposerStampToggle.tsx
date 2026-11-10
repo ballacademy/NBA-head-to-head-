@@ -3,7 +3,7 @@ import { useComposerStamp } from "./composerStamp";
 export function ComposerStampToggle() {
   const [stamp, setStamp] = useComposerStamp();
   return (
-    <label className="sc-field sc-field--wide">
+    <label className="sc-field sc-field--wide sc-field--stamp">
       <span className="sc-toolbar__eyebrow">Date stamp</span>
       <button
         type="button"

@@ -12,8 +12,10 @@ import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
 import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
 import {
   isAutoWeekLine,
-  rangeWeekLine,
+  THIS_WEEK_FALLBACK_STATUS,
+  weekOfLine,
   useComposerDateRange,
+  withThisWeekLastWeekFallback,
 } from "../instagramComposer/composerDateRange";
 import {
   copyGraphicCaption,
@@ -53,6 +55,7 @@ import {
 } from "../playerOfTheDayComposer/nightStandouts";
 import {
   fillStartersFromStandouts,
+  selectPlusStarters,
   totwGames,
   totwPickerEmpty,
   totwPickerHeading,
@@ -139,6 +142,8 @@ export function TeamOfTheWeekComposerApp() {
   const [title, setTitle] = useState(empty.title);
   const [week, setWeek] = useState(empty.week);
   const [strips, setStrips] = useState<TotwStrip[]>(empty.strips);
+  const stripsRef = useRef(strips);
+  stripsRef.current = strips;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [photoTarget, setPhotoTarget] = useState(0);
   const [exporting, setExporting] = useState(false);
@@ -185,37 +190,62 @@ export function TeamOfTheWeekComposerApp() {
   ) => {
     setStatus("Loading box scores for this range…");
     try {
-      const rows = await loadWeek(fromIso, toIso);
+      const shouldFill = force || totwEmpty(stripsRef.current);
+      const result = shouldFill
+        ? await withThisWeekLastWeekFallback(
+            fromIso,
+            toIso,
+            loadWeek,
+            (loaded) => selectPlusStarters(loaded).length === 0,
+          )
+        : {
+            from: fromIso,
+            to: toIso,
+            data: await loadWeek(fromIso, toIso),
+            fellBack: false,
+          };
+      if (result.fellBack) {
+        setRange({ from: result.from, to: result.to });
+      }
+      const rows = result.data;
+      const lineFrom = result.from;
+      const lineTo = result.to;
       setWeek((current) =>
         isAutoWeekLine(current, fromIso, toIso)
-          ? rangeWeekLine(fromIso, toIso)
+          ? weekOfLine(lineFrom, lineTo)
           : current,
       );
-      setStrips((current) => {
-        if (!force && !totwEmpty(current)) {
-          return current;
-        }
-        const next = fillStartersFromStandouts(current, rows);
-        const filled = next.filter((slot) => slot.playerId);
-        setStatus(
-          filled.length
+      const currentStrips = stripsRef.current;
+      const shouldWrite = force || totwEmpty(currentStrips);
+      const next = shouldWrite
+        ? fillStartersFromStandouts(currentStrips, rows)
+        : currentStrips;
+      if (shouldWrite) {
+        setStrips(next);
+      }
+      const filled = next.filter((slot) => slot.playerId);
+      const statusText =
+        result.fellBack && filled.length
+          ? THIS_WEEK_FALLBACK_STATUS
+          : filled.length
             ? "Filled PG–C."
-            : "No box scores for this range yet — pick players for the empty slots.",
-        );
-        const toast = fillQualityMessage(
-          statsSample,
-          rows.map((row) => totwGames(row)),
-        );
-        if (toast) {
-          showComposerToast(toast);
-        }
-        return next;
-      });
+            : "No box scores for this range yet — pick players for the empty slots.";
+      setStatus(statusText);
+      if (result.fellBack && filled.length) {
+        showComposerToast(statusText);
+      }
+      const toast = fillQualityMessage(
+        statsSample,
+        rows.map((row) => totwGames(row)),
+      );
+      if (toast) {
+        showComposerToast(toast);
+      }
     } catch (error) {
       console.error(error);
       setStatus("Could not load this range’s standouts.");
     }
-  }, [loadWeek, range.from, range.to, statsSample]);
+  }, [loadWeek, range.from, range.to, setRange, statsSample]);
 
   useEffect(() => {
     document.title = "Team of the Week graphic";
@@ -479,6 +509,7 @@ export function TeamOfTheWeekComposerApp() {
           Title
           <input
             value={title}
+            title={title}
             maxLength={COMPOSER_TITLE_MAX_LENGTH}
             onChange={(event) => onComposerTextChange(event, setTitle)}
           />
@@ -492,6 +523,7 @@ export function TeamOfTheWeekComposerApp() {
           Week
           <input
             value={week}
+            title={week}
             maxLength={40}
             onChange={(event) => setWeek(event.target.value.slice(0, 40))}
           />
@@ -558,6 +590,7 @@ export function TeamOfTheWeekComposerApp() {
           on={showNames}
           onChange={setShowNames}
           ariaLabel="Show first and last names"
+          className="sc-hud-simple-keep"
         />
         <StripStatHud
           on={showStripStat}

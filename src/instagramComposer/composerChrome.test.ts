@@ -1553,7 +1553,7 @@ describe("composer chrome", () => {
     expect(shotHud).toContain("seasonRange={fullSeasonRange()}");
     expect(shotHud).toContain("window: \"range\" as const");
     expect(shotHud).toContain("applyFilledShotChart");
-    expect(shotHud).toContain("ComposerNightDate");
+    expect(shotHud).not.toContain("ComposerNightDate");
     expect(shotHud).toContain("ComposerHudExtras");
     expect(shotHud).toContain("ComposerNameStyleToggle");
     expect(shotHud).toContain('aria-label="Recent game"');
@@ -1868,5 +1868,72 @@ describe("composer chrome", () => {
     );
     expect(presetSelect).toContain("ComposerHudSelect");
     expect(presetSelect).toContain("sc-field--preset");
+  });
+
+  it("fixes round-5 This-week fallback, Compare headshots, phone HUD, Picks lockup, and Simple chips", () => {
+    const totwApp = readFileSync(
+      join(root, "teamOfTheWeekComposer/TeamOfTheWeekComposerApp.tsx"),
+      "utf8",
+    );
+    expect(totwApp).toContain("withThisWeekLastWeekFallback");
+    expect(totwApp).toContain("THIS_WEEK_FALLBACK_STATUS");
+    expect(totwApp).toContain("weekOfLine");
+    expect(totwApp).toContain("sc-hud-simple-keep");
+    const totwPlus = readFileSync(
+      join(root, "teamOfTheWeekPlusComposer/TeamOfTheWeekPlusComposerApp.tsx"),
+      "utf8",
+    );
+    expect(totwPlus).toContain("withThisWeekLastWeekFallback");
+    const takeawaysCover = readFileSync(
+      join(root, "takeawaysComposer/TakeawaysCoverComposerApp.tsx"),
+      "utf8",
+    );
+    expect(takeawaysCover).toContain("withThisWeekLastWeekFallback");
+    const compareState = readFileSync(
+      join(root, "compareComposer/compareState.ts"),
+      "utf8",
+    );
+    expect(compareState).toContain("player.headshotUrl || null");
+    expect(sheet).toContain("max-height: 38vh");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-field--stamp");
+    expect(sheet).toContain("text-overflow: ellipsis");
+    const picksGraphic = readFileSync(
+      join(root, "picksComposer/PicksGraphic.tsx"),
+      "utf8",
+    );
+    expect(picksGraphic).toContain('atsRecord.trim() || "0-0-0"');
+    expect(picksGraphic).toContain("const showRecord = true");
+    const potdApp = readFileSync(
+      join(root, "playerOfTheDayComposer/PlayerOfTheDayComposerApp.tsx"),
+      "utf8",
+    );
+    expect(potdApp).toContain("Add both to board");
+    expect(potdApp).toContain("addNamedLeaderboardEntries(names)");
+    expect(potdApp.indexOf("Add both to board")).toBeLessThan(
+      potdApp.indexOf('aria-label="Slots"'),
+    );
+    const shotHud = readFileSync(
+      join(root, "shotChartComposer/ShotChartComposerApp.tsx"),
+      "utf8",
+    );
+    expect(shotHud).not.toContain("ComposerNightDate");
+    const quoteApp = readFileSync(
+      join(root, "quoteComposer/QuoteComposerApp.tsx"),
+      "utf8",
+    );
+    expect(quoteApp).toContain("tap a quote chip.");
+    expect(quoteApp).toContain("showComposerToast");
+    const rankedApp = readFileSync(
+      join(root, "rankedLineupsComposer/RankedLineupsComposerApp.tsx"),
+      "utf8",
+    );
+    expect(rankedApp).toContain('className="sc-hud-simple-keep"');
+    expect(browserStorage).toContain("noteComposerUserEdit");
+    expect(browserStorage).toContain("allowUnsavedPips");
+    const injuryState = readFileSync(
+      join(root, "injuryComposer/injuryState.ts"),
+      "utf8",
+    );
+    expect(injuryState).toContain("gtdTeam");
   });
 });

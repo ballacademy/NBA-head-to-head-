@@ -113,4 +113,36 @@ describe("injury report", () => {
     expect(injuryFillStatus(withGtd)).toMatch(/OUT \/ GTD|OUT and .* GTD/);
     expect(injuryFillStatus([])).toBe("No OUT / GTD names returned.");
   });
+
+  it("keeps a GTD club on the 10-team page when OUT-first would drop it", () => {
+    const teams = [
+      "ATL",
+      "BOS",
+      "BKN",
+      "CHA",
+      "CHI",
+      "CLE",
+      "DAL",
+      "DEN",
+      "DET",
+      "GSW",
+      "OKC",
+    ];
+    const players = teams.flatMap((teamId, teamIndex) =>
+      [0, 1, 2].map((slot) => ({
+        id: `${teamId}-${slot}`,
+        name: `${teamId} ${slot}`,
+        shortName: teamId,
+        teamId,
+        status: (teamId === "OKC" ? "GTD" : "OUT") as const,
+        detail: "",
+      })),
+    );
+    const mixed = selectInjuryPost(players, true);
+    expect(mixed).toHaveLength(INJURY_POST_TEAM_MAX);
+    expect(mixed.some((block) => block.teamId === "OKC")).toBe(true);
+    expect(
+      mixed.some((block) => block.players.some((row) => row.status === "GTD")),
+    ).toBe(true);
+  });
 });

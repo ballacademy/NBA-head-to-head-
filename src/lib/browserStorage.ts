@@ -50,6 +50,7 @@ export const readJson = <T>(key: string): T | null => {
 /** First persist of each key after hop/hydrate is a rewrite, not an edit. */
 const hydrateSilentKeys = new Set<string>();
 let hydrateQuiet = false;
+let allowUnsavedPips = false;
 let hydrateQuietTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const endComposerHydrateWrites = () => {
@@ -60,8 +61,13 @@ export const endComposerHydrateWrites = () => {
   }
 };
 
+export const noteComposerUserEdit = () => {
+  allowUnsavedPips = true;
+};
+
 export const beginComposerHydrateWrites = () => {
   hydrateSilentKeys.clear();
+  allowUnsavedPips = false;
   hydrateQuiet = true;
   if (hydrateQuietTimer != null) {
     clearTimeout(hydrateQuietTimer);
@@ -71,7 +77,7 @@ export const beginComposerHydrateWrites = () => {
     hydrateQuietTimer = window.setTimeout(() => {
       hydrateQuiet = false;
       hydrateQuietTimer = null;
-    }, 400);
+    }, 2000);
   } else {
     hydrateQuiet = false;
   }
@@ -99,7 +105,8 @@ export const writeJson = <T>(key: string, value: T) => {
   try {
     const next = JSON.stringify(value);
     const previous = storage.getItem(key);
-    const silentHydrate = !hydrateSilentKeys.has(key) || hydrateQuiet;
+    const silentHydrate =
+      !hydrateSilentKeys.has(key) || hydrateQuiet || !allowUnsavedPips;
     hydrateSilentKeys.add(key);
     storage.setItem(key, next);
     if (

@@ -36,6 +36,7 @@ import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { fetchLastGame } from "../playerOfTheDayComposer/lastGame";
 import { useComposerNight } from "../instagramComposer/composerNight";
+import { showComposerToast } from "../instagramComposer/composerFillToast";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -188,11 +189,13 @@ export function QuoteComposerApp() {
     setKeepPrompt(null);
     setQuotePrompt(null);
     setGamePresets([]);
-    setStatus(
-      keepLine
-        ? `Filled ${player.name} — last-game chips stay in the HUD.`
-        : `Filled ${player.name} — quote cleared. Upload a photo.`,
-    );
+    const statusText = keepLine
+      ? !draft.quote.trim()
+        ? `Filled ${player.name} — tap a quote chip.`
+        : `Filled ${player.name} — last-game chips stay in the HUD.`
+      : `Filled ${player.name} — quote cleared. Upload a photo.`;
+    setStatus(statusText);
+    showComposerToast(statusText);
     void fetchLastGame(player.id, statsSample).then((game) => {
       setGamePresets(lastGameQuotePresets(game));
     });

@@ -63,6 +63,7 @@ export function ComposerSaves<T>({
         Save as
         <input
           value={name}
+          title={name || "Name this graphic"}
           maxLength={40}
           placeholder="Name this graphic"
           aria-label="Graphic name"
@@ -138,6 +139,9 @@ export function ComposerSaves<T>({
         Load
         <select
           value={selected}
+          title={
+            saves.find((item) => item.id === selected)?.name || "Saved graphics"
+          }
           aria-label="Saved graphics"
           onChange={(event) => setSelected(event.target.value)}
         >

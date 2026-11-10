@@ -319,6 +319,9 @@ export function PlayerOfTheDayComposerApp() {
     } else {
       setStatus("No box scores for that night yet — pick players for the empty slots.");
     }
+    if (names.length >= 2) {
+      addNamedLeaderboardEntries(names);
+    }
     if (statsSample === "preseason") {
       showComposerToast("Fill is preseason.");
     }
@@ -500,6 +503,22 @@ export function PlayerOfTheDayComposerApp() {
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className="sc-chip"
+            aria-label="Add names to the POTD leaderboard"
+            onClick={() => {
+              const names = cards.map(cardPlayerName).filter(Boolean);
+              if (names.length < 2) {
+                setStatus("Pick at least two players first.");
+                return;
+              }
+              addNamedLeaderboardEntries(names);
+              setStatus("Added names to the leaderboard.");
+            }}
+          >
+            Add both to board
+          </button>
           <div className="sc-look sc-hud-full-only" role="group" aria-label="Slots">
             <span className="sc-look__label">Slots</span>
             {cards.map((_, index) => (
@@ -515,22 +534,6 @@ export function PlayerOfTheDayComposerApp() {
                 {potdSlotLabel(index, cards.length).replace(" card", "")}
               </button>
             ))}
-            <button
-              type="button"
-              className="sc-chip"
-              aria-label="Add names to the POTD leaderboard"
-              onClick={() => {
-                const names = cards.map(cardPlayerName).filter(Boolean);
-                if (names.length < 2) {
-                  setStatus("Pick at least two players first.");
-                  return;
-                }
-                addNamedLeaderboardEntries(names);
-                setStatus("Added names to the leaderboard.");
-              }}
-            >
-              Add both to board
-            </button>
             <button
               type="button"
               className="sc-chip"

@@ -834,6 +834,7 @@ export function RankedLineupsComposerApp({
           onChange={setShowFade}
           label="Names in photo"
           ariaLabel="First and last name with team logo on the photo"
+          className="sc-hud-simple-keep"
         />
         <StripStatHud
           on={showStripStat}

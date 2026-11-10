@@ -3,6 +3,8 @@ import {
   dateRangeChipsForHud,
   datesInInclusiveRange,
   isAutoWeekLine,
+  weekOfLine,
+  isThisWeekRange,
   fullSeasonRange,
   last5DaysRange,
   lastWeekRange,
@@ -17,6 +19,7 @@ import {
   seasonDateRange,
   thisWeekRange,
   tonightRange,
+  withThisWeekLastWeekFallback,
 } from "./composerDateRange";
 
 describe("composer date range", () => {
@@ -99,6 +102,43 @@ describe("composer date range", () => {
     expect(
       isAutoWeekLine("MONSTER WEEK", "2026-10-13", "2026-10-19"),
     ).toBe(false);
+    expect(isAutoWeekLine("NOV 2, 2026", "2026-11-09", "2026-11-09")).toBe(
+      true,
+    );
+    expect(
+      isAutoWeekLine("WEEK OF NOV 10, 2026", "2026-11-09", "2026-11-15"),
+    ).toBe(true);
+    expect(weekOfLine("2026-11-02", "2026-11-08")).toBe(
+      "WEEK OF NOV 2 – 8, 2026",
+    );
+  });
+
+  it("falls This week back to Last week when the pack is empty", async () => {
+    const monday = new Date("2026-11-09T18:00:00-05:00");
+    const week = thisWeekRange(monday);
+    const last = lastWeekRange(monday);
+    expect(isThisWeekRange(week.from, week.to, monday)).toBe(true);
+    const result = await withThisWeekLastWeekFallback(
+      week.from,
+      week.to,
+      async (from) => (from === last.from ? ["ok"] : []),
+      (rows) => rows.length === 0,
+      monday,
+    );
+    expect(result).toEqual({
+      from: last.from,
+      to: last.to,
+      data: ["ok"],
+      fellBack: true,
+    });
+    const custom = await withThisWeekLastWeekFallback(
+      last.from,
+      last.to,
+      async () => [],
+      (rows) => rows.length === 0,
+      monday,
+    );
+    expect(custom.fellBack).toBe(false);
   });
 
   it("puts This week first for TOTW and trims Simple chips", () => {

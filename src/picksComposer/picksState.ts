@@ -680,13 +680,12 @@ export const summarizePicksNight = (
 const pickedPicksGames = (games: PicksGame[]) =>
   games.filter((game) => game.pick === "away" || game.pick === "home");
 
-/** Every pick on the slate is a final (or a manual stamp) — not tonight’s open card. */
+/** Every game on the slate is a final (or a manual stamp) — not tonight’s open card. */
 export const isCompletedPicksNight = (games: PicksGame[]) => {
-  const picked = pickedPicksGames(games);
-  if (!picked.length) {
+  if (!games.length) {
     return false;
   }
-  return picked.every(
+  return games.every(
     (game) => game.final === true || isPicksGrade(game.gradeManual),
   );
 };
@@ -701,7 +700,7 @@ export const summarizePicksGames = (
       .filter((result): result is PicksAtsResult => Boolean(result)),
   );
 
-/** Daily W-L-P for a finished slate. Empty on in-progress / 0-0 nights. */
+/** Daily W-L-P for a finished slate. Empty on in-progress nights. */
 export const formatPicksDailyGraphicRecord = (
   games: PicksGame[],
   mode: PicksResultMode = "ats",
@@ -709,11 +708,7 @@ export const formatPicksDailyGraphicRecord = (
   if (!isCompletedPicksNight(games)) {
     return "";
   }
-  const tally = summarizePicksGames(games, mode);
-  if (!tally.wins && !tally.losses && !tally.pushes) {
-    return "";
-  }
-  return formatPicksAtsRecord(tally);
+  return formatPicksAtsRecord(summarizePicksGames(games, mode));
 };
 
 export const picksDailyRecordKicker = (iso: string, now = new Date()) => {

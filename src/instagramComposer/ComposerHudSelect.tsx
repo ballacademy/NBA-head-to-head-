@@ -201,6 +201,7 @@ export function ComposerHudSelect<T extends string>({
               ? "sc-chip sc-hud-select__trigger is-on"
               : "sc-chip sc-hud-select__trigger"
           }
+          title={current}
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={listId}

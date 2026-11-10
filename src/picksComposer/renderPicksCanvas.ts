@@ -316,14 +316,14 @@ export const renderPicksCanvas = async (
   context.textBaseline = "middle";
   context.fillText(pill, width / 2, weekY + weekH / 2);
   setLetterSpacing(context, 0);
-  const atsRecord = (input.atsRecord ?? "").trim();
+  const atsRecord = (input.atsRecord ?? "").trim() || "0-0-0";
   const dailyRecord = (input.dailyRecord ?? "").trim();
   const fill = picksFillLayout(
     games.length,
     boardH,
     0,
     lines.length,
-    Boolean(atsRecord),
+    true,
     Boolean(dailyRecord),
   );
   const needed = new Set<string>();

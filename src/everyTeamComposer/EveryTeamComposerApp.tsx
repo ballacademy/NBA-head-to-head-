@@ -616,6 +616,7 @@ export function EveryTeamComposerApp() {
           Title
           <input
             value={title}
+            title={title}
             maxLength={COMPOSER_TITLE_MAX_LENGTH}
             onChange={(event) => onComposerTextChange(event, setTitle)}
           />

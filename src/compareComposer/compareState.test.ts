@@ -87,7 +87,7 @@ describe("compare composer recs", () => {
     const luka = getPlayer("3945274")!;
     const next = fillCompareSide(luka, defaultCompareDraft().sides[0]!);
     expect(next.playerId).toBe(luka.id);
-    expect(next.photoSrc).toBeNull();
+    expect(next.photoSrc).toBe(luka.headshotUrl);
     expect(next.lastName.toUpperCase()).toContain("DONCIC");
     expect(defaultCompareDraft().showLetterGrade).toBe(false);
     expect(compareStatBarShares("28", "11").left).toBe(1);

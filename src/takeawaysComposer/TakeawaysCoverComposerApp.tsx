@@ -16,7 +16,12 @@ import {
   carriedPlayerId,
   rememberComposerPlayer,
 } from "../instagramComposer/composerCarry";
-import { useComposerDateRange } from "../instagramComposer/composerDateRange";
+import {
+  THIS_WEEK_FALLBACK_STATUS,
+  useComposerDateRange,
+  withThisWeekLastWeekFallback,
+} from "../instagramComposer/composerDateRange";
+import { showComposerToast } from "../instagramComposer/composerFillToast";
 import {
   TAKEAWAYS_LOOK_KEY,
   useComposerLook,
@@ -35,6 +40,7 @@ import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { hydrateJsonStorage, readJson, writeJson } from "../lib/browserStorage";
 import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { fetchStandoutsInRange } from "../playerOfTheDayComposer/nightStandouts";
+import { selectPlusStarters } from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
 import {
   GRAPHIC_HEIGHT,
   STORY_DESIGN_HEIGHT,
@@ -152,19 +158,32 @@ export function TakeawaysCoverComposerApp() {
 
   const fillWeek = () => {
     setFilling(true);
-    void fetchStandoutsInRange(range.from, range.to)
-      .then((rows) => {
+    void withThisWeekLastWeekFallback(
+      range.from,
+      range.to,
+      fetchStandoutsInRange,
+      (rows) => selectPlusStarters(rows).length === 0,
+    )
+      .then((result) => {
+        if (result.fellBack) {
+          setRange({ from: result.from, to: result.to });
+        }
         setDraft((current) => {
           const next = fillTakeawaysNames(
-            applyTakeawaysRange(current, range.from, range.to),
-            rows,
+            applyTakeawaysRange(current, result.from, result.to),
+            result.data,
           );
           const filled = next.cards.filter((card) => card.playerId).length;
-          setStatus(
-            filled
-              ? `Filled ${filled} names — add takeaways yourself.`
-              : "No TOTW names for that week yet — pick players.",
-          );
+          const statusText =
+            result.fellBack && filled
+              ? THIS_WEEK_FALLBACK_STATUS
+              : filled
+                ? `Filled ${filled} names — add takeaways yourself.`
+                : "No TOTW names for that week yet — pick players.";
+          setStatus(statusText);
+          if (result.fellBack && filled) {
+            showComposerToast(statusText);
+          }
           return next;
         });
       })

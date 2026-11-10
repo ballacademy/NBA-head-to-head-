@@ -3,6 +3,7 @@ import {
   beginComposerHydrateWrites,
   endComposerHydrateWrites,
   hydrateJsonStorage,
+  noteComposerUserEdit,
   readJson,
   writeJson,
 } from "./browserStorage";
@@ -76,6 +77,7 @@ describe("composer photo persist", () => {
     const key = "ddgm:standings-composer";
     writeJson(key, { title: "PROJECTED NBA STANDINGS" });
     expect(writes).toEqual([]);
+    noteComposerUserEdit();
     writeJson(key, { title: "EASTERN CONFERENCE" });
     expect(writes).toEqual([key]);
     writeJson(key, { title: "EASTERN CONFERENCE" });
@@ -83,6 +85,7 @@ describe("composer photo persist", () => {
     beginComposerHydrateWrites();
     writeJson(key, { title: "PROJECTED NBA STANDINGS" });
     expect(writes).toEqual([key]);
+    noteComposerUserEdit();
     writeJson(key, { title: "EASTERN CONFERENCE" });
     expect(writes).toEqual([key, key]);
     window.removeEventListener("ddgm:composer-draft-write", onWrite);
@@ -112,7 +115,8 @@ describe("composer photo persist", () => {
     writeJson(key, { title: "THE QUOTE" });
     writeJson(key, { title: "Hydrate rewrite" });
     expect(writes).toEqual([]);
-    vi.advanceTimersByTime(400);
+    vi.advanceTimersByTime(2000);
+    noteComposerUserEdit();
     writeJson(key, { title: "Typed title" });
     expect(writes).toEqual([key]);
     endComposerHydrateWrites();

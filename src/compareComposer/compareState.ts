@@ -473,7 +473,7 @@ export const fillCompareSide = (
     teamId: getTeam(player.team)?.id ?? player.team,
     firstName: names.firstName,
     lastName: names.lastName,
-    photoSrc: keep ? previous.photoSrc : null,
+    photoSrc: keep ? previous.photoSrc : player.headshotUrl || null,
     customPhoto: keep,
     pan: keep ? { ...previous.pan } : { ...DEFAULT_HEADSHOT_PAN },
   };
@@ -494,13 +494,7 @@ export const landCarriedComparePlayer = (
   const side = fillCompareSide(player, draft.sides[0]!);
   return {
     ...draft,
-    sides: [
-      {
-        ...side,
-        photoSrc: player.headshotUrl || side.photoSrc,
-      },
-      draft.sides[1]!,
-    ],
+    sides: [side, draft.sides[1]!],
   };
 };
 

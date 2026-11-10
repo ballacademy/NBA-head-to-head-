@@ -376,6 +376,7 @@ export function HeadlineComposerApp() {
           Body
           <input
             value={draft.body}
+            title={draft.body}
             maxLength={HEADLINE_BODY_MAX}
             onChange={(event) =>
               setDraft((current) => ({
@@ -480,6 +481,7 @@ export function HeadlineComposerApp() {
           Team
           <select
             value={draft.teamId ?? ""}
+            title={getTeam(draft.teamId)?.name ?? "Team"}
             aria-label="Team"
             onChange={(event) => {
               const teamId = event.target.value || null;

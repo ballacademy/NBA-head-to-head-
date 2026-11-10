@@ -985,5 +985,14 @@ describe("picks composer", () => {
     ];
     expect(isCompletedPicksNight(mixed)).toBe(false);
     expect(formatPicksDailyGraphicRecord(mixed)).toBe("");
+    const finalsNoPicks = [
+      row({ id: "x", pick: null, final: true, awayScore: 110, homeScore: 100 }),
+      row({ id: "y", pick: null, final: true, awayScore: 99, homeScore: 101 }),
+    ];
+    expect(isCompletedPicksNight(finalsNoPicks)).toBe(true);
+    expect(formatPicksDailyGraphicRecord(finalsNoPicks)).toBe("0-0-0");
+    expect(formatPicksDailyRecordLine(finalsNoPicks, "2026-10-25", "ats", now)).toBe(
+      "LAST NIGHT 0-0-0",
+    );
   });
 });
