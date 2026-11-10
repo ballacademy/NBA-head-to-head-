@@ -134,7 +134,7 @@ describe("injury report", () => {
         name: `${teamId} ${slot}`,
         shortName: teamId,
         teamId,
-        status: (teamId === "OKC" ? "GTD" : "OUT") as const,
+        status: teamId === "OKC" ? ("GTD" as const) : ("OUT" as const),
         detail: "",
       })),
     );
