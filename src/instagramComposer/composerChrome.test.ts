@@ -2037,5 +2037,7 @@ describe("composer chrome", () => {
     expect(mockApp).toContain("fetchReportedTrade");
     expect(mockNews).toContain("site.web.api.espn.com");
     expect(mockNews).toContain("parseReportedTradeHtml");
+    expect(mockNews).toContain("parseGetLine");
+    expect(mockNews).toContain("extractTradeStoryIds");
   });
 });

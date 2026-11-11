@@ -7,6 +7,7 @@ import {
   applyReportedTrade,
   extractEspnPlayers,
   extractEspnTeams,
+  extractTradeStoryIds,
   parseReportedTradeHtml,
 } from "./mockTradeNews";
 
@@ -24,6 +25,18 @@ const LAB_HTML = `
 
 const FAILED_HTML = `
 <p>ESPN's Shams Charania reported that the last time <a href="https://www.espn.com/nba/player/_/id/3917376/jaylen-brown">Jaylen Brown</a> and <a href="https://www.espn.com/nba/player/_/id/4065648/jayson-tatum">Jayson Tatum</a> spoke was in June after the <a href="https://www.espn.com/nba/team/_/name/bos/boston-celtics">Boston Celtics</a> failed to trade for <a href="https://www.espn.com/nba/player/_/id/3032977/giannis-antetokounmpo">Giannis Antetokounmpo</a>.</p>
+`;
+
+const GRADES_HTML = `
+<h2><a href="https://www.espn.com/nba/story/_/id/49241843/sources-celtics-sending-brown-76ers-george-picks">Celtics trade Jaylen Brown to Sixers for Paul George, picks</a></h2>
+<p><strong><a href="https://www.espn.com/nba/team/_/name/bos/boston-celtics">Boston Celtics</a> get:</strong> F <a href="https://www.espn.com/nba/player/_/id/4251/paul-george">Paul George</a>, 2028 first-round pick (could convert to a pick swap), 2031 first-round pick (unprotected), 2028 and 2030 second-round picks<br>
+<strong><a href="https://www.espn.com/nba/team/_/name/phi/philadelphia-76ers">Philadelphia 76ers</a> get:</strong> G <a href="https://www.espn.com/nba/player/_/id/3917376/jaylen-brown">Jaylen Brown</a></p>
+`;
+
+const DEDICATED_HTML = `
+<p><a href="https://www.espn.com/nba/player/_/id/3917376/jaylen-brown">Jaylen Brown</a> has a new home, as the <a href="https://www.espn.com/nba/team/_/name/bos/boston-celtics">Boston Celtics</a> agreed to send the former NBA Finals MVP to the <a href="https://www.espn.com/nba/team/_/name/phi/philadelphia-76ers">Philadelphia 76ers</a> in a blockbuster trade Wednesday, sources told ESPN's Shams Charania.</p>
+<p>The 76ers are sending <a href="https://www.espn.com/nba/player/_/id/4251/paul-george">Paul George</a>, two first-round picks (2028, 2031) and two second-round selections (2028, 2030) to Boston to complete the deal, sources said.</p>
+<p>The 2028 first-round pick could convert from a first to a swap that is more favorable to Boston.</p>
 `;
 
 describe("mock trade ESPN reports", () => {
@@ -62,6 +75,17 @@ describe("mock trade ESPN reports", () => {
     expect(filled.sides[1]?.players[0]?.lastName).toMatch(/Hield/i);
     expect(filled.sides[1]?.picks[0]?.cash).toBe(true);
     expect(filled.sides[0]?.picks).toEqual([]);
+    const withOtherDeal = `${DILLINGHAM_HTML}
+<p>Dillingham could have a larger role in Charlotte, which traded longtime starting guard <a href="https://www.espn.com/nba/player/_/id/4432816/lamelo-ball">LaMelo Ball</a> to the <a href="https://www.espn.com/nba/team/_/name/min/minnesota-timberwolves">Minnesota Timberwolves</a> earlier this offseason.</p>`;
+    const kept = parseReportedTradeHtml(
+      withOtherDeal,
+      "4684275",
+      "Rob Dillingham",
+    );
+    expect(kept?.map((side) => side.teamId).sort()).toEqual(["CHA", "CHI"]);
+    expect(
+      kept?.flatMap((side) => side.players.map((row) => row.id)),
+    ).toEqual(["4684275", "2990984"]);
   });
 
   it("fills only named ESPN assets for Brown-to-PHI and skips mocks", () => {
@@ -90,5 +114,53 @@ describe("mock trade ESPN reports", () => {
     expect(
       parseReportedTradeHtml(mixed, "3917376", "Jaylen Brown")?.[0]?.teamId,
     ).toBe("PHI");
+  });
+
+  it("fills every named player and pick on both sides from ESPN get-lines", () => {
+    const sides = parseReportedTradeHtml(
+      GRADES_HTML,
+      "3917376",
+      "Jaylen Brown",
+    );
+    expect(sides?.[0]?.teamId).toBe("PHI");
+    expect(sides?.[0]?.players.map((row) => row.id)).toEqual(["3917376"]);
+    expect(sides?.[1]?.teamId).toBe("BOS");
+    expect(sides?.[1]?.players.map((row) => row.id)).toEqual(["4251"]);
+    expect(
+      sides?.[1]?.picks.map((pick) => `${pick.year} ${pick.round}${pick.swap ? " swap" : ""}`),
+    ).toEqual(["2028 1st swap", "2031 1st", "2028 2nd", "2030 2nd"]);
+    expect(sides?.[0]?.picks).toEqual([]);
+    const filled = applyReportedTrade(defaultMockTradeDraft(), {
+      headline: "Celtics trade Jaylen Brown",
+      storyId: "49135150",
+      sides: sides!,
+    });
+    expect(filled.sides[1]?.players[0]?.lastName).toMatch(/George/i);
+    expect(filled.sides[1]?.picks).toHaveLength(4);
+    const mixedThin = parseReportedTradeHtml(
+      `${BROWN_HTML}${GRADES_HTML}`,
+      "3917376",
+      "Jaylen Brown",
+    );
+    expect(mixedThin?.[1]?.players.map((row) => row.id)).toEqual(["4251"]);
+    expect(mixedThin?.[1]?.picks).toHaveLength(4);
+    expect(
+      extractTradeStoryIds(GRADES_HTML),
+    ).toContain("49241843");
+  });
+
+  it("fills named return pieces from a dedicated ESPN announcement", () => {
+    const sides = parseReportedTradeHtml(
+      DEDICATED_HTML,
+      "3917376",
+      "Jaylen Brown",
+    );
+    expect(sides?.[0]?.teamId).toBe("PHI");
+    expect(sides?.[0]?.players.map((row) => row.id)).toEqual(["3917376"]);
+    expect(sides?.[1]?.teamId).toBe("BOS");
+    expect(sides?.[1]?.players.map((row) => row.id)).toEqual(["4251"]);
+    expect(
+      sides?.[1]?.picks.map((pick) => `${pick.year} ${pick.round}${pick.swap ? " swap" : ""}`),
+    ).toEqual(["2028 1st swap", "2031 1st", "2028 2nd", "2030 2nd"]);
   });
 });
