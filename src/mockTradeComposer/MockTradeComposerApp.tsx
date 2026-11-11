@@ -39,6 +39,10 @@ import { MockTradeGraphic } from "./MockTradeGraphic";
 import { exportMockTradePng } from "./exportMockTradePng";
 import { renderMockTradeCanvas } from "./renderMockTradeCanvas";
 import {
+  applyReportedTrade,
+  fetchReportedTrade,
+} from "./mockTradeNews";
+import {
   addMockTradePick,
   addMockTradePlayer,
   addMockTradeTeam,
@@ -88,6 +92,8 @@ export function MockTradeComposerApp() {
   const [picker, setPicker] = useState<{ side: number; player: number } | null>(
     null,
   );
+  const [tradePicker, setTradePicker] = useState(false);
+  const [tradePlayerId, setTradePlayerId] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ side: number; player: number }>({
     side: 0,
     player: 0,
@@ -142,6 +148,33 @@ export function MockTradeComposerApp() {
     setStatus(
       `Filled ${game.teamId} and ${game.opponentId} from last night — add players yourself.`,
     );
+  };
+
+  const fillReportedTrade = async () => {
+    const id =
+      tradePlayerId ||
+      draft.sides
+        .flatMap((side) => side.players)
+        .find((player) => player.playerId)?.playerId ||
+      null;
+    const person = getPlayer(id);
+    if (!id) {
+      setTradePicker(true);
+      setStatus(
+        "Pick a player first — Fill uses that player’s latest reported ESPN trade.",
+      );
+      return;
+    }
+    const name = person?.name || "that player";
+    setStatus(`Looking up ESPN trades for ${name}…`);
+    const trade = await fetchReportedTrade(id, name);
+    if (!trade) {
+      setStatus(`No reported ESPN trade found for ${name}.`);
+      return;
+    }
+    push(draft);
+    setDraft((current) => applyReportedTrade(current, trade));
+    setStatus(`Filled ${name}’s latest reported ESPN trade.`);
   };
 
   const commitPick = (side: number, player: number, playerId: string, keep: boolean) => {
@@ -255,7 +288,10 @@ export function MockTradeComposerApp() {
     return () => window.removeEventListener("paste", onPaste);
   }, [focus]);
 
-  const closePicker = useCallback(() => setPicker(null), []);
+  const closePicker = useCallback(() => {
+    setPicker(null);
+    setTradePicker(false);
+  }, []);
   const used: Record<string, string> = {};
   draft.sides.forEach((side, sideIndex) => {
     side.players.forEach((player, playerIndex) => {
@@ -317,6 +353,31 @@ export function MockTradeComposerApp() {
         }
         data={
           <>
+            <div
+              className="sc-look sc-hud-simple-keep"
+              role="group"
+              aria-label="Reported trade"
+            >
+              <span className="sc-look__label">Trade</span>
+              <button
+                type="button"
+                className="sc-chip"
+                aria-label={
+                  tradePlayerId ? "Change trade player" : "Pick player"
+                }
+                onClick={() => setTradePicker(true)}
+              >
+                {tradePlayerId ? "Change player" : "Pick player"}
+              </button>
+              <button
+                type="button"
+                className="sc-chip"
+                aria-label="Fill trade"
+                onClick={() => void fillReportedTrade()}
+              >
+                Fill trade
+              </button>
+            </div>
             {draft.sides.map((_, index) => teamSelect(index))}
             <button
               type="button"
@@ -922,6 +983,29 @@ export function MockTradeComposerApp() {
               }),
             );
             setPicker(null);
+          }}
+          onClose={closePicker}
+        />
+      ) : null}
+      {tradePicker ? (
+        <PlayerPicker
+          heading="Pick a player to fill their latest reported trade"
+          hint="Fill trade loads the most recent ESPN-reported deal involving this player. Nothing is invented."
+          currentId={tradePlayerId}
+          usedLabels={{}}
+          onPick={(playerId) => {
+            const person = getPlayer(playerId);
+            setTradePlayerId(playerId);
+            setTradePicker(false);
+            setStatus(
+              person
+                ? `Fill trade will use ${person.name}.`
+                : "Fill trade will use that player.",
+            );
+          }}
+          onClear={() => {
+            setTradePlayerId(null);
+            setTradePicker(false);
           }}
           onClose={closePicker}
         />

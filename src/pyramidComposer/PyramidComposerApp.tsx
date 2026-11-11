@@ -48,6 +48,7 @@ import { renderPyramidCanvas } from "./renderPyramidCanvas";
 import { pyramidSlotCount } from "./pyramidLayout";
 import {
   applyPyramidPick,
+  expandPyramidTitle,
   clearPyramidSlot,
   coachesFromStandings,
   createEmptyPyramidSlots,
@@ -89,6 +90,7 @@ const loadDraft = (): PyramidDraft => {
     const rows = parsePyramidRows(stored.rows, stored.slots.length);
     return {
       ...stored,
+      title: expandPyramidTitle(stored.title),
       rows,
       slots: resizePyramidSlots(stored.slots, rows),
       showBa: stored.showBa !== false,
@@ -99,7 +101,9 @@ const loadDraft = (): PyramidDraft => {
   }
   const empty = defaultPyramidDraft();
   return {
-    title: stored?.title?.trim() ? stored.title : empty.title,
+    title: stored?.title?.trim()
+      ? expandPyramidTitle(stored.title)
+      : empty.title,
     slots: empty.slots,
     rows: empty.rows,
     showBa: stored?.showBa !== false,
@@ -363,7 +367,9 @@ export function PyramidComposerApp() {
           <input
             value={title}
             maxLength={COMPOSER_TITLE_MAX_LENGTH}
-            onChange={(event) => onComposerTextChange(event, setTitle, 48)}
+            onChange={(event) =>
+              onComposerTextChange(event, setTitle, COMPOSER_TITLE_MAX_LENGTH)
+            }
           />
         </label>
         <TitlePresetSelect

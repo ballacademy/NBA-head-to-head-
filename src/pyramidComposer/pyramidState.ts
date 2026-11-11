@@ -45,7 +45,7 @@ export {
   type TotwStrip as PyramidSlot,
 };
 
-export const DEFAULT_PYRAMID_TITLE = "COY";
+export const DEFAULT_PYRAMID_TITLE = "NBA COY PYRAMID";
 export const PYRAMID_TITLE_TRACK = 0.04;
 export const PYRAMID_HEADSHOT_PAN: PhotoPan = {
   x: 0.5,
@@ -173,7 +173,24 @@ export const usedPyramidPlayerIds = (slots: TotwStrip[]) => {
 };
 
 export const pyramidTitle = (title: string) =>
-  normalizeComposerTitle(title, DEFAULT_PYRAMID_TITLE);
+  normalizeComposerTitle(expandPyramidTitle(title), DEFAULT_PYRAMID_TITLE);
+
+export const expandPyramidTitle = (title: string) => {
+  const token = title.replace(/\s+/g, " ").trim().toUpperCase();
+  if (!token) {
+    return DEFAULT_PYRAMID_TITLE;
+  }
+  if (token.includes("PYRAMID")) {
+    return title.replace(/\s+/g, " ").trim();
+  }
+  const group = PYRAMID_AWARD_GROUPS.find(
+    (item) =>
+      item.label.toUpperCase() === token ||
+      item.id.toUpperCase() === token ||
+      item.id.replace("-", " ").toUpperCase() === token,
+  );
+  return group?.title ?? title.replace(/\s+/g, " ").trim();
+};
 
 export const PYRAMID_COY_SEED_IDS = [
   "coach-BOS",
@@ -207,27 +224,27 @@ export const pyramidLadderKind = (title: string): "coach" | "player" => {
 };
 
 export const PYRAMID_AWARD_GROUPS = [
-  { id: "mvp", label: "MVP", title: "MVP", kind: "player" as const },
-  { id: "dpoy", label: "DPOY", title: "DPOY", kind: "player" as const },
-  { id: "mip", label: "MIP", title: "MIP", kind: "player" as const },
-  { id: "6moy", label: "6MOY", title: "6MOY", kind: "player" as const },
-  { id: "coy", label: "COY", title: "COY", kind: "coach" as const },
+  { id: "mvp", label: "MVP", title: "NBA MVP PYRAMID", kind: "player" as const },
+  { id: "dpoy", label: "DPOY", title: "NBA DPOY PYRAMID", kind: "player" as const },
+  { id: "mip", label: "MIP", title: "NBA MIP PYRAMID", kind: "player" as const },
+  { id: "6moy", label: "6MOY", title: "NBA 6MOY PYRAMID", kind: "player" as const },
+  { id: "coy", label: "COY", title: "NBA COY PYRAMID", kind: "coach" as const },
   {
     id: "all-nba",
     label: "All-NBA",
-    title: "ALL-NBA",
+    title: "NBA ALL-NBA PYRAMID",
     kind: "player" as const,
   },
   {
     id: "all-defense",
     label: "All-Defense",
-    title: "ALL-DEFENSE",
+    title: "NBA ALL-DEFENSE PYRAMID",
     kind: "player" as const,
   },
   {
     id: "roy",
     label: "Rookie",
-    title: "ROY",
+    title: "NBA ROOKIE PYRAMID",
     kind: "player" as const,
   },
 ] as const;

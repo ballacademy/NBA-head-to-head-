@@ -10,7 +10,10 @@ import {
 } from "../instagramComposer/composerLook";
 import { formatComposerName, useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
-import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import {
+  COMPOSER_TITLE_MAX_LENGTH,
+  onComposerTextChange,
+} from "../instagramComposer/titleLayout";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 import {
@@ -145,16 +148,21 @@ export const PyramidGraphic = forwardRef<HTMLElement, PyramidGraphicProps>(
         ) : null}
         <header className="pyr-header">
           <div className="pyr-title-plate">
-            <span className="pyr-title-word">PYRAMID</span>
+            <input
+              className="pyr-title"
+              value={title}
+              maxLength={COMPOSER_TITLE_MAX_LENGTH}
+              spellCheck={false}
+              aria-label="Pyramid title"
+              onChange={(event) =>
+                onComposerTextChange(
+                  event,
+                  onTitleChange,
+                  COMPOSER_TITLE_MAX_LENGTH,
+                )
+              }
+            />
           </div>
-          <input
-            className="pyr-award-notch"
-            value={title}
-            maxLength={48}
-            spellCheck={false}
-            aria-label="Pyramid award"
-            onChange={(event) => onComposerTextChange(event, onTitleChange, 48)}
-          />
         </header>
         <div className="pyr-rows">
           {metrics.rows.map((count, row) => {

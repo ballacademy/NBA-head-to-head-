@@ -2004,4 +2004,38 @@ describe("composer chrome", () => {
     expect(compareHud).toContain("fetchRecentGames(id, sample, season)");
     expect(compareHud).toContain("averageLastGames");
   });
+
+  it("keeps Pyramid as one editable title and Mock Trade Fill from ESPN reports", () => {
+    const pyramidGraphic = readFileSync(
+      join(root, "pyramidComposer/PyramidGraphic.tsx"),
+      "utf8",
+    );
+    const pyramidCanvas = readFileSync(
+      join(root, "pyramidComposer/renderPyramidCanvas.ts"),
+      "utf8",
+    );
+    const pyramidCss = readFileSync(
+      join(root, "pyramidComposer/pyramidComposer.css"),
+      "utf8",
+    );
+    const mockApp = readFileSync(
+      join(root, "mockTradeComposer/MockTradeComposerApp.tsx"),
+      "utf8",
+    );
+    const mockNews = readFileSync(
+      join(root, "mockTradeComposer/mockTradeNews.ts"),
+      "utf8",
+    );
+    expect(pyramidGraphic).toContain('aria-label="Pyramid title"');
+    expect(pyramidGraphic).not.toContain("pyr-title-word");
+    expect(pyramidGraphic).not.toContain("pyr-award-notch");
+    expect(pyramidCanvas).not.toContain('fillText("PYRAMID"');
+    expect(pyramidCss).not.toContain(".pyr-award-notch");
+    expect(mockApp).toContain("Fill trade");
+    expect(mockApp).toContain('"Pick player"');
+    expect(mockApp).toContain("sc-hud-simple-keep");
+    expect(mockApp).toContain("fetchReportedTrade");
+    expect(mockNews).toContain("site.web.api.espn.com");
+    expect(mockNews).toContain("parseReportedTradeHtml");
+  });
 });

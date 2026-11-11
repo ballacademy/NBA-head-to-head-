@@ -44,6 +44,7 @@ import {
   PYR_POP_RIM,
   PYR_POP_RIM_GLOW,
   PYR_QUIET_FRAME,
+  PYR_TITLE_H,
   PYR_TITLE_SIZE,
   PYR_TITLE_TRACK,
   PYR_TITLE_Y,
@@ -590,8 +591,8 @@ export const renderPyramidCanvas = async (
   context.textBaseline = "middle";
   const plateX = 48 * s;
   const plateW = width - 96 * s;
-  const plateY = 14 * s;
-  const plateH = 72 * s;
+  const plateY = PYR_TITLE_Y * s;
+  const plateH = PYR_TITLE_H * s;
   context.fillStyle = "#1c1c1c";
   context.fillRect(plateX, plateY, plateW, plateH);
   context.strokeStyle = "#fff";
@@ -601,25 +602,9 @@ export const renderPyramidCanvas = async (
     paintPurplePlateEdge(context, plateX, plateY, plateW, plateH, s);
   }
   context.fillStyle = "#fff";
-  context.font = `900 ${36 * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, 0.18 * 36 * s);
-  context.fillText("PYRAMID", width / 2, plateY + plateH / 2);
-  const notchW = Math.max(220 * s, context.measureText(title).width + 48 * s);
-  const notchH = 36 * s;
-  const notchX = (width - notchW) / 2;
-  const notchY = plateY + plateH - 2 * s;
-  context.beginPath();
-  context.moveTo(notchX + notchW * 0.06, notchY);
-  context.lineTo(notchX + notchW * 0.94, notchY);
-  context.lineTo(notchX + notchW, notchY + notchH);
-  context.lineTo(notchX, notchY + notchH);
-  context.closePath();
-  context.fillStyle = "#fff";
-  context.fill();
-  context.fillStyle = "#111";
-  context.font = `900 ${20 * s}px ${POSTER_FONT}`;
-  setLetterSpacing(context, 0.04 * 20 * s);
-  context.fillText(title || "COY", width / 2, notchY + notchH / 2);
+  context.font = `900 ${PYR_TITLE_SIZE * s}px ${POSTER_FONT}`;
+  setLetterSpacing(context, PYR_TITLE_TRACK * PYR_TITLE_SIZE * s);
+  context.fillText(title, width / 2, plateY + plateH / 2, plateW - 24 * s);
   setLetterSpacing(context, 0);
 
   if (input.showBa !== false) {
