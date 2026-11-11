@@ -80,6 +80,7 @@ import {
   fillCompareSide,
   hasCustomPhoto,
   isCompareDraft,
+  isSeasonAverageStatsLabel,
   landCarriedComparePlayer,
   moveCompareStat,
   normalizeCompareDraft,
@@ -340,7 +341,10 @@ export function CompareComposerApp() {
       night.date,
     );
     const statsLabel =
-      !draft.statsLabel.trim() || draft.statsLabel === previousAuto
+      !draft.statsLabel.trim() ||
+      draft.statsLabel === previousAuto ||
+      (statsMode === "game" &&
+        isSeasonAverageStatsLabel(draft.statsLabel, season))
         ? autoCompareStatsLabel(statsMode, season, night.date)
         : draft.statsLabel;
     const next = { ...draft, statsMode, statsLabel };

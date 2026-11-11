@@ -10,6 +10,8 @@ import {
   applySideStatValues,
   autoCompareStatsLabel,
   compareGameNightLabel,
+  isSeasonAverageStatsLabel,
+  visibleCompareStatsLabel,
   COMPARE_STAT_COUNT,
   COMPARE_STAT_MAX,
   compareCaptionFor,
@@ -72,6 +74,37 @@ describe("compare composer recs", () => {
     expect(autoCompareStatsLabel("game", "2026-27", "2026-11-09")).toBe(
       "NOV 9",
     );
+    expect(isSeasonAverageStatsLabel("2025-26 AVG", "2026-27")).toBe(true);
+    expect(isSeasonAverageStatsLabel("2025-2026 season average")).toBe(true);
+    expect(isSeasonAverageStatsLabel("NOV 9")).toBe(false);
+    expect(
+      visibleCompareStatsLabel({
+        statsMode: "game",
+        statsLabel: "2025-26 AVG",
+        season: "2026-27",
+      }),
+    ).toBe("");
+    expect(
+      visibleCompareStatsLabel({
+        statsMode: "game",
+        statsLabel: "NOV 9",
+        season: "2026-27",
+      }),
+    ).toBe("NOV 9");
+    expect(
+      visibleCompareStatsLabel({
+        statsMode: "season",
+        statsLabel: `${statsSeasonFor("2026-27")} AVG`,
+        season: "2026-27",
+      }),
+    ).toBe(`${statsSeasonFor("2026-27")} AVG`);
+    expect(
+      normalizeCompareDraft({
+        ...draft,
+        statsMode: "game",
+        statsLabel: "2025-2026 season average",
+      }).statsLabel,
+    ).toBe("");
     expect(compareGameNightLabel("2026-11-08")).toBe("NOV 8");
     expect(draft.subtitle).toBe("");
     expect(isAutoCompareSubtitle("CAREER START VS CAREER BENCH APPEARANCES")).toBe(

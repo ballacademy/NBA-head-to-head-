@@ -37,6 +37,7 @@ import {
   compareStatLowerIsBetter,
   compareWinner,
   leadingSide,
+  visibleCompareStatsLabel,
   visibleCompareStats,
   type CompareDraft,
   type CompareSide,
@@ -366,7 +367,7 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
           <div className="cmp-stats">
             <input
               className="cmp-stats__label"
-              value={draft.statsLabel}
+              value={visibleCompareStatsLabel(draft)}
               maxLength={24}
               aria-label="Stats column label"
               onChange={(event) =>

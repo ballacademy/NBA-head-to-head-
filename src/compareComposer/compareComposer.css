@@ -217,14 +217,6 @@
   padding: calc(8 * var(--u)) 0 calc(12 * var(--u));
 }
 
-.cmp-board:not(.is-ba-off) .cmp-stats__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-}
-
 .cmp-stats__label {
   flex: 0 0 auto;
   width: 100%;

@@ -291,6 +291,39 @@ export const autoCompareStatsLabel = (
   return `${statsSeasonFor(season)} AVG`;
 };
 
+/** Leftover season-avg copy must not print on a Last game / Tonight PNG. */
+export const isSeasonAverageStatsLabel = (
+  value: string,
+  season?: string | null,
+) => {
+  const folded = foldCompareLine(value);
+  if (!folded) {
+    return false;
+  }
+  if (season && folded === foldCompareLine(autoCompareStatsLabel("season", season))) {
+    return true;
+  }
+  return (
+    folded.includes("SEASON AVERAGE") ||
+    folded.includes("SEASON AVG") ||
+    /\d{4}\s*[-–]\s*\d{2,4}\s+AVG$/.test(folded) ||
+    /\d{4}\s*[-–]\s*\d{4}$/.test(folded)
+  );
+};
+
+export const visibleCompareStatsLabel = (
+  draft: Pick<CompareDraft, "statsLabel" | "statsMode" | "season">,
+) => {
+  const raw = (draft.statsLabel ?? "").trim();
+  if (
+    parseCompareStatsMode(draft.statsMode) === "game" &&
+    isSeasonAverageStatsLabel(raw, draft.season)
+  ) {
+    return "";
+  }
+  return raw;
+};
+
 export const defaultCompareDraft = (): CompareDraft => {
   const season = everyTeamCurrentSeason();
   return {
@@ -315,9 +348,14 @@ export const normalizeCompareDraft = (draft: CompareDraft): CompareDraft => {
       ? draft.season
       : everyTeamCurrentSeason();
   const statsMode = parseCompareStatsMode(draft.statsMode);
+  const statsLabel = (draft.statsLabel ?? "").trim();
   return {
     ...draft,
     subtitle: isAutoCompareSubtitle(draft.subtitle) ? "" : draft.subtitle,
+    statsLabel:
+      statsMode === "game" && isSeasonAverageStatsLabel(statsLabel, season)
+        ? ""
+        : statsLabel || draft.statsLabel || "",
     stats: parseCompareStats(draft.stats),
     statsMode,
     season,

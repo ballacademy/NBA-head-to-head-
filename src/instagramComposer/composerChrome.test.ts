@@ -1968,4 +1968,30 @@ describe("composer chrome", () => {
     expect(compareCss).not.toContain(".cmp-stat__bar");
     expect(compareGraphic).not.toContain("cmp-stat__bars");
   });
+
+  it("keeps Compare preview and PNG stats labels in sync and hides season-avg on Last game", () => {
+    const compareCss = readFileSync(
+      join(root, "compareComposer/compareComposer.css"),
+      "utf8",
+    );
+    const compareGraphic = readFileSync(
+      join(root, "compareComposer/CompareGraphic.tsx"),
+      "utf8",
+    );
+    const compareCanvas = readFileSync(
+      join(root, "compareComposer/renderCompareCanvas.ts"),
+      "utf8",
+    );
+    const compareState = readFileSync(
+      join(root, "compareComposer/compareState.ts"),
+      "utf8",
+    );
+    expect(compareCss).not.toContain(
+      ".cmp-board:not(.is-ba-off) .cmp-stats__label",
+    );
+    expect(compareGraphic).toContain("visibleCompareStatsLabel");
+    expect(compareCanvas).toContain("visibleCompareStatsLabel");
+    expect(compareCanvas).not.toContain('input.statsLabel || "STATS"');
+    expect(compareState).toContain("isSeasonAverageStatsLabel");
+  });
 });

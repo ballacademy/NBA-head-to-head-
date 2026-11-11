@@ -49,6 +49,7 @@ import {
   compareWinner,
   leadingSide,
   visibleCompareStats,
+  visibleCompareStatsLabel,
   type CompareDraft,
 } from "./compareState";
 import { getTeam } from "../standingsComposer/teams";
@@ -313,18 +314,21 @@ export const renderCompareCanvas = async (
 
   const stats = visibleCompareStats(input.stats, true);
   const type = compareStatType(stats.length || input.stats.length);
-  context.font = `900 ${18 * s}px ${POSTER_FONT}`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  setLetterSpacing(context, 0.16 * 18 * s);
-  context.fillStyle = "#fff";
-  context.fillText(
-    (input.statsLabel || "STATS").toUpperCase(),
-    statsX + statsW / 2,
-    photoY + 29 * s,
-    statsW,
-  );
-  setLetterSpacing(context, 0);
+  const statsColumnLabel = visibleCompareStatsLabel(input);
+  if (statsColumnLabel) {
+    context.font = `900 ${18 * s}px ${POSTER_FONT}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    setLetterSpacing(context, 0.16 * 18 * s);
+    context.fillStyle = "#fff";
+    context.fillText(
+      statsColumnLabel.toUpperCase(),
+      statsX + statsW / 2,
+      photoY + 29 * s,
+      statsW,
+    );
+    setLetterSpacing(context, 0);
+  }
 
   const rowCount = Math.max(stats.length, 1);
   const bodyTop = photoY + 36 * s;
