@@ -1965,7 +1965,7 @@ describe("composer chrome", () => {
     expect(compareCss).toContain(".cmp-board.is-exporting .pod-photo__tools");
     expect(compareCss).not.toContain(".cmp-stat__side.is-lead .cmp-stat__val::after");
     expect(compareCss).not.toContain(".cmp-stat__side.is-lead .cmp-stat__unit");
-    expect(compareCss).toContain("background: rgba(255, 255, 255, 0.16)");
-    expect(compareCss).not.toMatch(/\.cmp-stat__bar \{[^}]*255,\s*229,\s*102/);
+    expect(compareCss).not.toContain(".cmp-stat__bar");
+    expect(compareGraphic).not.toContain("cmp-stat__bars");
   });
 });

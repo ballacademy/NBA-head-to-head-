@@ -34,7 +34,7 @@ import { getTeam } from "../standingsComposer/teams";
 import { CMP_BRAND, compareStatType } from "./compareLayout";
 import {
   compareSideCaption,
-  compareStatBarShares,
+  compareStatLowerIsBetter,
   compareWinner,
   leadingSide,
   visibleCompareStats,
@@ -374,9 +374,12 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
               }
             />
             {stats.map((stat, index) => {
-              const lead = leadingSide(stat.left, stat.right);
+              const lead = leadingSide(
+                stat.left,
+                stat.right,
+                compareStatLowerIsBetter(stat.key, stat.label),
+              );
               const empty = !stat.left.trim() && !stat.right.trim();
-              const bars = compareStatBarShares(stat.left, stat.right);
               return (
                 <div
                   key={`cmp-stat-${stat.key}-${index}`}
@@ -392,16 +395,6 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                     .join(" ")}
                   onPointerDown={(event) => startStatDrag(index, event)}
                 >
-                  <span className="cmp-stat__bars" aria-hidden="true">
-                    <span
-                      className="cmp-stat__bar is-left"
-                      style={{ width: `${Math.round(bars.left * 100)}%` }}
-                    />
-                    <span
-                      className="cmp-stat__bar is-right"
-                      style={{ width: `${Math.round(bars.right * 100)}%` }}
-                    />
-                  </span>
                   {dragEnabled ? (
                     <span className="cmp-stat__grip" aria-hidden="true" />
                   ) : null}

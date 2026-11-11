@@ -478,11 +478,31 @@ export const numericStat = (value: string): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-export const leadingSide = (left: string, right: string): 0 | 1 | null => {
+const LOWER_IS_BETTER_KEYS = new Set(["tov", "pf"]);
+const LOWER_IS_BETTER_LABELS = new Set(["TOV", "PF", "FOULS"]);
+
+export const compareStatLowerIsBetter = (
+  key?: string | null,
+  label?: string | null,
+) => {
+  if (LOWER_IS_BETTER_KEYS.has((key ?? "").trim().toLowerCase())) {
+    return true;
+  }
+  return LOWER_IS_BETTER_LABELS.has((label ?? "").trim().toUpperCase());
+};
+
+export const leadingSide = (
+  left: string,
+  right: string,
+  lowerIsBetter = false,
+): 0 | 1 | null => {
   const a = numericStat(left);
   const b = numericStat(right);
   if (a == null || b == null || a === b) {
     return null;
+  }
+  if (lowerIsBetter) {
+    return a < b ? 0 : 1;
   }
   return a > b ? 0 : 1;
 };
@@ -613,7 +633,11 @@ export const compareWinner = (stats: CompareStat[]): 0 | 1 | null => {
   let left = 0;
   let right = 0;
   for (const stat of stats) {
-    const lead = leadingSide(stat.left, stat.right);
+    const lead = leadingSide(
+      stat.left,
+      stat.right,
+      compareStatLowerIsBetter(stat.key, stat.label),
+    );
     if (lead === 0) {
       left += 1;
     } else if (lead === 1) {

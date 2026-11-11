@@ -29,7 +29,7 @@ export const CMP_COL_GAP = 8;
 export const CMP_STATS_W = 324;
 export const CMP_SUB_H = 88;
 export const CMP_SUB_SIZE = 26;
-export const CMP_STAT_SIZE = 48;
+export const CMP_STAT_SIZE = 54;
 export const CMP_LABEL_SIZE = 16;
 export const CMP_NAME_SIZE = 18;
 export const CMP_LEAD = "#ffe566";
@@ -83,19 +83,19 @@ export const CMP_STATS_X = comparePhotoFrame(false, false).statsX;
 export const compareStatType = (count = CMP_STAT_COUNT) => {
   const n = Math.min(CMP_STAT_MAX, Math.max(CMP_STAT_MIN, count));
   if (n <= 5) {
-    return { value: CMP_STAT_SIZE, label: CMP_LABEL_SIZE, rule: 0.56, stroke: 2.4 };
+    return { value: CMP_STAT_SIZE, label: CMP_LABEL_SIZE, rule: 0.56, stroke: 2.6 };
   }
   if (n === 6) {
-    return { value: 36, label: 13, rule: 0.54, stroke: 2.2 };
+    return { value: 40, label: 13, rule: 0.54, stroke: 2.3 };
   }
   if (n === 7) {
-    return { value: 34, label: 12, rule: 0.52, stroke: 2 };
+    return { value: 36, label: 12, rule: 0.52, stroke: 2.1 };
   }
   if (n === 8) {
-    return { value: 32, label: 12, rule: 0.5, stroke: 1.8 };
+    return { value: 34, label: 12, rule: 0.5, stroke: 1.9 };
   }
   if (n === 9) {
-    return { value: 30, label: 11, rule: 0.48, stroke: 1.7 };
+    return { value: 32, label: 11, rule: 0.48, stroke: 1.8 };
   }
-  return { value: 28, label: 11, rule: 0.46, stroke: 1.6 };
+  return { value: 30, label: 11, rule: 0.46, stroke: 1.7 };
 };

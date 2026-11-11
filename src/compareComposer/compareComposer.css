@@ -252,32 +252,6 @@
   margin: 0;
 }
 
-.cmp-stat__bars {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 38%;
-  height: 22%;
-  z-index: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(10 * var(--u));
-  pointer-events: none;
-}
-
-.cmp-stat__bar {
-  height: 100%;
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.cmp-stat__bar.is-left {
-  justify-self: end;
-}
-
-.cmp-stat__bar.is-right {
-  justify-self: start;
-}
-
 .cmp-grade {
   position: absolute;
   left: calc(28 * var(--u));
@@ -370,7 +344,7 @@
   background: transparent;
   color: #fff;
   font-family: var(--ig-poster);
-  font-size: calc(var(--cmp-value, 40) * var(--u));
+  font-size: calc(var(--cmp-value, 54) * var(--u));
   font-weight: 900;
   letter-spacing: 0.02em;
   text-align: center;

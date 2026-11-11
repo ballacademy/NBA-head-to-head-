@@ -45,8 +45,8 @@ import {
 } from "./compareLayout";
 import {
   compareSideCaption,
+  compareStatLowerIsBetter,
   compareWinner,
-  compareStatBarShares,
   leadingSide,
   visibleCompareStats,
   type CompareDraft,
@@ -332,20 +332,12 @@ export const renderCompareCanvas = async (
   const rowSpan = bodyH / rowCount;
   stats.forEach((stat, index) => {
     const y = bodyTop + index * rowSpan + rowSpan / 2;
-    const lead = leadingSide(stat.left, stat.right);
+    const lead = leadingSide(
+      stat.left,
+      stat.right,
+      compareStatLowerIsBetter(stat.key, stat.label),
+    );
     const mid = statsX + statsW / 2;
-    const bars = compareStatBarShares(stat.left, stat.right);
-    const barH = Math.max(8 * s, rowSpan * 0.2);
-    const barMax = statsW / 2 - 18 * s;
-    context.fillStyle = "rgba(255, 255, 255, 0.16)";
-    if (bars.left > 0) {
-      const bw = barMax * bars.left;
-      context.fillRect(mid - 12 * s - bw, y - barH / 2, bw, barH);
-    }
-    if (bars.right > 0) {
-      const bw = barMax * bars.right;
-      context.fillRect(mid + 12 * s, y - barH / 2, bw, barH);
-    }
     context.fillStyle = "rgba(255,255,255,0.45)";
     const ruleH = Math.max(20 * s, rowSpan * type.rule);
     context.fillRect(

@@ -21,6 +21,7 @@ import {
   normalizeCompareDraft,
   fillCompareSide,
   landCarriedComparePlayer,
+  compareStatLowerIsBetter,
   leadingSide,
   nextCompareStat,
   numericStat,
@@ -100,6 +101,11 @@ describe("compare composer recs", () => {
     expect(leadingSide("31.1", "24.2")).toBe(0);
     expect(leadingSide("24.2", "31.1")).toBe(1);
     expect(leadingSide("24.2", "24.2")).toBeNull();
+    expect(compareStatLowerIsBetter("tov", "TOV")).toBe(true);
+    expect(compareStatLowerIsBetter("pf", "PF")).toBe(true);
+    expect(compareStatLowerIsBetter("pts", "PTS")).toBe(false);
+    expect(leadingSide("2.4", "0.8", true)).toBe(1);
+    expect(leadingSide("0.8", "2.4", true)).toBe(0);
     expect(numericStat("47.2%")).toBeCloseTo(47.2);
     const landed = landCarriedComparePlayer(defaultCompareDraft(), luka.id);
     expect(landed.sides[0]?.playerId).toBe(luka.id);
@@ -202,7 +208,7 @@ describe("compare composer recs", () => {
     expect(story.h).toBeGreaterThan(STORY_DESIGN_HEIGHT * 0.85);
     expect(withSub.h).toBeLessThan(feed.h);
     expect(comparePhotoFrame(false, false).h).toBe(feed.h);
-    expect(compareStatType(5).value).toBe(48);
+    expect(compareStatType(5).value).toBe(54);
     expect(compareStatType(10).value).toBeLessThan(compareStatType(5).value);
     expect(compareStatType(10).value).toBeGreaterThanOrEqual(24);
     let stats = defaultCompareStats();
