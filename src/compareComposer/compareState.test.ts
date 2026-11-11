@@ -10,6 +10,7 @@ import {
   applySideStatValues,
   autoCompareStatsLabel,
   compareGameNightLabel,
+  compareUsesLiveSeasonAverages,
   isSeasonAverageStatsLabel,
   visibleCompareStatsLabel,
   COMPARE_STAT_COUNT,
@@ -67,9 +68,11 @@ describe("compare composer recs", () => {
       "AST",
     ]);
     expect(parseCompareStatsMode(undefined)).toBe("season");
-    expect(autoCompareStatsLabel("season", "2026-27")).toBe(
-      `${statsSeasonFor("2026-27")} AVG`,
-    );
+    expect(autoCompareStatsLabel("season", "2026-27")).toBe("2026-27 AVG");
+    expect(compareUsesLiveSeasonAverages("2026-27", "regular")).toBe(true);
+    expect(compareUsesLiveSeasonAverages("2025-26", "regular")).toBe(false);
+    expect(compareUsesLiveSeasonAverages("2026-27", "preseason")).toBe(false);
+    expect(statsSeasonFor("2026-27", "regular")).toBe("2025-26");
     expect(autoCompareStatsLabel("game", "2026-27")).toBe("ONE GAME");
     expect(autoCompareStatsLabel("game", "2026-27", "2026-11-09")).toBe(
       "NOV 9",
@@ -181,6 +184,36 @@ describe("compare composer recs", () => {
     );
     expect(game[0]).toBe("33");
     expect(game[1]).toBe("54.5");
+    const averaged = statsFromLastGame(
+      {
+        eventId: "1",
+        gameDate: "2026-11-10",
+        teamId: "BOS",
+        opponentId: "NYK",
+        opponentAbbrev: "NYK",
+        result: "W",
+        playerScore: "120",
+        opponentScore: "110",
+        resultLine: "LAST 8",
+        dateLabel: "LAST 8",
+        stats: {
+          pts: "22",
+          reb: "5.2",
+          ast: "3.8",
+          stl: "1.1",
+          blk: "0.4",
+          fg: "8-16.4",
+          three: "3.7-8.4",
+          tov: "2.1",
+          min: "32.5",
+          ft: "2.3-2.6",
+        },
+      },
+      defaultCompareStats(),
+    );
+    expect(averaged[0]).toBe("22");
+    expect(averaged[1]).toBe("48.8");
+    expect(averaged[2]).toBe("44.0");
     expect(formatCompareMinutes("36:42")).toBe("36");
     expect(formatCompareMinutes("0.7")).toBe("42");
     expect(formatCompareMinutes("33.2")).toBe("33");

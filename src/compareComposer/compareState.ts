@@ -23,7 +23,6 @@ import {
   isPercentStatMetric,
   playerRowForSeason,
   rosterStatValue,
-  statsSeasonFor,
   type EveryTeamStatMetric,
 } from "../everyTeamComposer/historicalRosters";
 import { getTeam } from "../standingsComposer/teams";
@@ -288,8 +287,13 @@ export const autoCompareStatsLabel = (
   if (mode === "this-week") {
     return "THIS WEEK";
   }
-  return `${statsSeasonFor(season)} AVG`;
+  return `${season} AVG`;
 };
+
+export const compareUsesLiveSeasonAverages = (
+  season: string,
+  sample: ComposerStatsSample = "regular",
+) => sample === "regular" && season === everyTeamCurrentSeason();
 
 /** Leftover season-avg copy must not print on a Last game / Tonight PNG. */
 export const isSeasonAverageStatsLabel = (
@@ -410,7 +414,7 @@ export const effectiveCompareSeason = (
 ) => draft.sideSeasons?.[side] || draft.season || everyTeamCurrentSeason();
 
 const pctFromMakes = (value: string) => {
-  const match = value.trim().match(/^(\d+)\s*-\s*(\d+)$/);
+  const match = value.trim().match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
   if (!match) {
     return value;
   }

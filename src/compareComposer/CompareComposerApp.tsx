@@ -70,6 +70,7 @@ import {
   autoCompareStatsLabel,
   compareCaptionFor,
   compareGameNightLabel,
+  compareUsesLiveSeasonAverages,
   comparePasteSlotIndex,
   clearCompareSide,
   COMPARE_STAT_MAX,
@@ -215,11 +216,24 @@ export function CompareComposerApp() {
         );
       } else {
         const season = effectiveCompareSeason(snapshot, index);
-        nextStats = applySideStatValues(
-          nextStats,
-          index,
-          statsFromSeason(id, person.teamId, season, nextStats, sample),
-        );
+        if (compareUsesLiveSeasonAverages(season, sample)) {
+          const games = await fetchRecentGames(id, sample, season);
+          const averaged = averageLastGames(
+            games,
+            Math.max(games.length, 1),
+          );
+          nextStats = applySideStatValues(
+            nextStats,
+            index,
+            statsFromLastGame(averaged, nextStats),
+          );
+        } else {
+          nextStats = applySideStatValues(
+            nextStats,
+            index,
+            statsFromSeason(id, person.teamId, season, nextStats, sample),
+          );
+        }
       }
     }
     setDraft((current) => ({ ...current, stats: nextStats }));

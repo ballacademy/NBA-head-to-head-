@@ -1994,4 +1994,14 @@ describe("composer chrome", () => {
     expect(compareCanvas).not.toContain('input.statsLabel || "STATS"');
     expect(compareState).toContain("isSeasonAverageStatsLabel");
   });
+
+  it("fills Compare Regular current-season averages from ESPN, not last year", () => {
+    const compareHud = readFileSync(
+      join(root, "compareComposer/CompareComposerApp.tsx"),
+      "utf8",
+    );
+    expect(compareHud).toContain("compareUsesLiveSeasonAverages");
+    expect(compareHud).toContain("fetchRecentGames(id, sample, season)");
+    expect(compareHud).toContain("averageLastGames");
+  });
 });
