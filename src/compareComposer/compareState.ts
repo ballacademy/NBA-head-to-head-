@@ -249,12 +249,38 @@ export const isCompareDraft = (value: unknown): value is CompareDraft =>
       Array.isArray((value as CompareDraft).stats),
   );
 
+const NIGHT_MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+
+/** Shared one-game stamp — Tonight / Last night / a date, not per-player last game. */
+export const compareGameNightLabel = (iso?: string | null) => {
+  const match = (iso ?? "").trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return "ONE GAME";
+  }
+  const month = NIGHT_MONTHS[Number(match[2]) - 1] ?? "";
+  return `${month} ${Number(match[3])}`.trim();
+};
+
 export const autoCompareStatsLabel = (
   mode: CompareStatsMode,
   season: string,
+  nightIso?: string | null,
 ) => {
   if (mode === "game") {
-    return "LAST GAME";
+    return compareGameNightLabel(nightIso);
   }
   if (mode === "last-5") {
     return "LAST 5";

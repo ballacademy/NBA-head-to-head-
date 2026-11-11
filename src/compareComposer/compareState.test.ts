@@ -9,6 +9,7 @@ import {
   addCompareStat,
   applySideStatValues,
   autoCompareStatsLabel,
+  compareGameNightLabel,
   COMPARE_STAT_COUNT,
   COMPARE_STAT_MAX,
   compareCaptionFor,
@@ -66,7 +67,11 @@ describe("compare composer recs", () => {
     expect(autoCompareStatsLabel("season", "2026-27")).toBe(
       `${statsSeasonFor("2026-27")} AVG`,
     );
-    expect(autoCompareStatsLabel("game", "2026-27")).toBe("LAST GAME");
+    expect(autoCompareStatsLabel("game", "2026-27")).toBe("ONE GAME");
+    expect(autoCompareStatsLabel("game", "2026-27", "2026-11-09")).toBe(
+      "NOV 9",
+    );
+    expect(compareGameNightLabel("2026-11-08")).toBe("NOV 8");
     expect(draft.subtitle).toBe("");
     expect(isAutoCompareSubtitle("CAREER START VS CAREER BENCH APPEARANCES")).toBe(
       true,

@@ -335,9 +335,9 @@ export const renderCompareCanvas = async (
     const lead = leadingSide(stat.left, stat.right);
     const mid = statsX + statsW / 2;
     const bars = compareStatBarShares(stat.left, stat.right);
-    const barH = Math.max(16 * s, rowSpan * 0.42);
+    const barH = Math.max(8 * s, rowSpan * 0.2);
     const barMax = statsW / 2 - 18 * s;
-    context.fillStyle = "rgba(255, 229, 102, 0.28)";
+    context.fillStyle = "rgba(255, 255, 255, 0.16)";
     if (bars.left > 0) {
       const bw = barMax * bars.left;
       context.fillRect(mid - 12 * s - bw, y - barH / 2, bw, barH);
@@ -377,11 +377,10 @@ export const renderCompareCanvas = async (
     const unit = (stat.label || "").toUpperCase();
     context.font = `900 ${type.label * s}px ${POSTER_FONT}`;
     setLetterSpacing(context, 0.14 * type.label * s);
+    context.fillStyle = "rgba(255,255,255,0.78)";
     context.textAlign = "right";
-    context.fillStyle = lead === 0 ? CMP_LEAD : "rgba(255,255,255,0.78)";
     context.fillText(unit, mid - 16 * s, y + type.value * 0.42 * s);
     context.textAlign = "left";
-    context.fillStyle = lead === 1 ? CMP_LEAD : "rgba(255,255,255,0.78)";
     context.fillText(unit, mid + 16 * s, y + type.value * 0.42 * s);
     setLetterSpacing(context, 0);
   });

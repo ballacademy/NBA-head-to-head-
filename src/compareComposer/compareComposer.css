@@ -109,6 +109,7 @@
 
 .cmp-photo {
   position: relative;
+  z-index: 2;
   min-width: 0;
   min-height: 0;
 }
@@ -117,7 +118,7 @@
   position: absolute;
   left: calc(12 * var(--u));
   bottom: calc(18 * var(--u));
-  z-index: 4;
+  z-index: 2;
   width: calc(36 * var(--u));
   height: calc(36 * var(--u));
   transform: none;
@@ -134,8 +135,44 @@
 .cmp-photo .pod-photo {
   position: absolute;
   inset: 0;
+  z-index: 0;
   border-radius: 0;
   overflow: hidden;
+}
+
+.cmp-photo .pod-photo__tools,
+.cmp-photo .pod-photo:not(.is-empty) .pod-photo__tools {
+  left: calc(8 * var(--u));
+  right: auto;
+  top: calc(52 * var(--u));
+  bottom: auto;
+  z-index: 8;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cmp-photo__hud {
+  position: absolute;
+  left: calc(8 * var(--u));
+  top: calc(12 * var(--u));
+  z-index: 9;
+  pointer-events: auto;
+}
+
+.cmp-photo__hud-btn {
+  pointer-events: auto;
+  height: calc(28 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border: 0;
+  border-radius: calc(4 * var(--u));
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-family: inherit;
+  font-size: calc(11 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .cmp-photo-name {
@@ -144,6 +181,7 @@
   right: 0;
   bottom: 0;
   z-index: 3;
+  pointer-events: none;
   margin: 0;
   padding: calc(48 * var(--u)) calc(10 * var(--u)) calc(16 * var(--u))
     calc(52 * var(--u));
@@ -161,12 +199,12 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.1;
-  pointer-events: none;
 }
 
 .cmp-stats {
   grid-column: 2;
   grid-row: 1;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -175,6 +213,7 @@
   min-width: 0;
   min-height: 0;
   height: 100%;
+  overflow: hidden;
   padding: calc(8 * var(--u)) 0 calc(12 * var(--u));
 }
 
@@ -217,8 +256,8 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 22%;
-  height: 56%;
+  top: 38%;
+  height: 22%;
   z-index: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -228,7 +267,7 @@
 
 .cmp-stat__bar {
   height: 100%;
-  background: rgba(255, 229, 102, 0.28);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .cmp-stat__bar.is-left {
@@ -311,6 +350,8 @@
   flex-direction: column;
   align-items: center;
   min-width: 0;
+  overflow: hidden;
+  background: transparent;
 }
 
 .cmp-stat__side.is-left {
@@ -372,10 +413,10 @@
 
 .cmp-stat__side.is-lead .cmp-stat__val {
   color: var(--lead);
-}
-
-.cmp-stat__side.is-lead .cmp-stat__unit {
-  color: var(--lead);
+  -webkit-text-stroke-color: #000;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
 }
 
 .cmp-rule {
@@ -429,17 +470,6 @@
   box-shadow: none;
 }
 
-.cmp-stat__side.is-lead .cmp-stat__val::after {
-  content: "";
-  display: inline-block;
-  width: calc(10 * var(--u));
-  height: calc(10 * var(--u));
-  margin-left: calc(8 * var(--u));
-  border-radius: 50%;
-  background: #d4af37;
-  vertical-align: middle;
-}
-
 .cmp-winner {
   position: absolute;
   top: calc(12 * var(--u));
@@ -459,8 +489,17 @@
   pointer-events: none;
 }
 
-.cmp-board.is-exporting .pod-photo__tools {
+.cmp-board.is-exporting .pod-photo__tools,
+.cmp-board.is-exporting .cmp-photo__hud {
   display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cmp-photo .pod-photo:not(.is-empty) .pod-photo__tools,
+  .cmp-photo .pod-photo.is-empty .pod-photo__tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .cmp-title:focus,

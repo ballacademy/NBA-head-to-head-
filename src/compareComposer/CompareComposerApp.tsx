@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { writeLastShowBa } from "../instagramComposer/composerBoardDefaults";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
-import { ComposerHudSelect } from "../instagramComposer/ComposerHudSelect";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
 import { ComposerSaves } from "../instagramComposer/ComposerSaves";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
@@ -43,8 +42,8 @@ import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { thisWeekRange } from "../instagramComposer/composerDateRange";
 import {
   averageLastGames,
-  fetchLastGame,
   fetchRecentGames,
+  gameOnDate,
   gamesInInclusiveRange,
 } from "../playerOfTheDayComposer/lastGame";
 import {
@@ -70,6 +69,7 @@ import {
   applySideStatValues,
   autoCompareStatsLabel,
   compareCaptionFor,
+  compareGameNightLabel,
   comparePasteSlotIndex,
   clearCompareSide,
   COMPARE_STAT_MAX,
@@ -167,6 +167,8 @@ export function CompareComposerApp() {
     const mode = parseCompareStatsMode(snapshot.statsMode);
     const sides: Array<0 | 1> = side == null ? [0, 1] : [side];
     let nextStats = snapshot.stats;
+    const played: string[] = [];
+    const missed: string[] = [];
     for (const index of sides) {
       const person = snapshot.sides[index]!;
       const id = playerId && index === side ? playerId : person.playerId;
@@ -175,7 +177,17 @@ export function CompareComposerApp() {
         continue;
       }
       if (mode === "game") {
-        const game = await fetchLastGame(id, sample, onDate);
+        const games = await fetchRecentGames(id, sample);
+        const game = gameOnDate(games, onDate || "");
+        const name =
+          [person.firstName, person.lastName].filter(Boolean).join(" ") ||
+          getPlayer(id)?.name ||
+          "Player";
+        if (game) {
+          played.push(name);
+        } else {
+          missed.push(name);
+        }
         nextStats = applySideStatValues(
           nextStats,
           index,
@@ -210,6 +222,20 @@ export function CompareComposerApp() {
       }
     }
     setDraft((current) => ({ ...current, stats: nextStats }));
+    if (mode === "game") {
+      const nightLabel = compareGameNightLabel(onDate);
+      if (missed.length && played.length) {
+        setStatus(
+          `Filled ${played.join(" and ")} from ${nightLabel}. ${missed.join(" and ")} did not play that night.`,
+        );
+      } else if (played.length) {
+        setStatus(`Filled ${played.join(" and ")} from ${nightLabel}.`);
+      } else if (missed.length) {
+        setStatus(
+          `${missed.join(" and ")} did not play ${nightLabel} — pick a night they both did.`,
+        );
+      }
+    }
   };
 
   const commitPick = (side: 0 | 1, playerId: string, keep: boolean) => {
@@ -233,9 +259,16 @@ export function CompareComposerApp() {
     void fillStats(next, side, player.id);
   };
 
+  const openSidePicker = (side: 0 | 1) => {
+    setPhotoTarget(side);
+    setPicker(side);
+  };
+
   const fillLastNight = async () => {
+    const iso = night.yesterdayIso;
+    night.setDate(iso);
     setStatus("Loading this night’s box scores…");
-    const rows = (await night.ensureStandouts()).filter(
+    const rows = (await night.ensureStandouts(iso)).filter(
       (row) => row.live !== true && row.final !== false,
     );
     if (!rows[0]) {
@@ -255,14 +288,18 @@ export function CompareComposerApp() {
     if (second) {
       nextSides[1] = fillCompareSide(second, draft.sides[1]!, false);
     }
-    const next = { ...draft, sides: nextSides, statsMode: "game" as const };
+    const next = {
+      ...draft,
+      sides: nextSides,
+      statsMode: "game" as const,
+      statsLabel: autoCompareStatsLabel(
+        "game",
+        draft.season || everyTeamCurrentSeason(),
+        iso,
+      ),
+    };
     setDraft(next);
-    setStatus(
-      second
-        ? `Filled ${first.name} and ${second.name} from last night.`
-        : `Filled ${first.name} from last night.`,
-    );
-    void fillStats(next);
+    void fillStats(next, undefined, undefined, statsSample, iso);
   };
 
   useEffect(() => {
@@ -300,10 +337,11 @@ export function CompareComposerApp() {
     const previousAuto = autoCompareStatsLabel(
       parseCompareStatsMode(draft.statsMode),
       season,
+      night.date,
     );
     const statsLabel =
       !draft.statsLabel.trim() || draft.statsLabel === previousAuto
-        ? autoCompareStatsLabel(statsMode, season)
+        ? autoCompareStatsLabel(statsMode, season, night.date)
         : draft.statsLabel;
     const next = { ...draft, statsMode, statsLabel };
     setDraft(next);
@@ -442,6 +480,34 @@ export function CompareComposerApp() {
         }
         data={
           <>
+        <div className="sc-look" role="group" aria-label="Left player">
+          <span className="sc-look__label">Left</span>
+          <button
+            type="button"
+            className="sc-chip"
+            aria-label={
+              draft.sides[0]?.playerId ? "Change left player" : "Pick left player"
+            }
+            onClick={() => openSidePicker(0)}
+          >
+            {draft.sides[0]?.playerId ? "Change" : "Pick player"}
+          </button>
+        </div>
+        <div className="sc-look" role="group" aria-label="Right player">
+          <span className="sc-look__label">Right</span>
+          <button
+            type="button"
+            className="sc-chip"
+            aria-label={
+              draft.sides[1]?.playerId
+                ? "Change right player"
+                : "Pick right player"
+            }
+            onClick={() => openSidePicker(1)}
+          >
+            {draft.sides[1]?.playerId ? "Change" : "Pick player"}
+          </button>
+        </div>
         <button
           type="button"
           className="sc-chip"
@@ -457,18 +523,49 @@ export function CompareComposerApp() {
         >
           Swap sides
         </button>
-        <ComposerHudSelect
-          label="Stats"
-          ariaLabel="Stats source"
-          value={mode}
-          options={[
-            { value: "season", label: "Season avg" },
-            { value: "game", label: "Last game" },
-            { value: "last-5", label: "Last 5" },
-            { value: "this-week", label: "This week" },
-          ]}
-          onChange={setStatsMode}
-        />
+        <div className="sc-look" role="group" aria-label="Stats source">
+          <span className="sc-look__label">Stats</span>
+          <button
+            type="button"
+            className={mode === "game" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "game"}
+            onClick={() => setStatsMode("game")}
+          >
+            Last game
+          </button>
+          <button
+            type="button"
+            className={mode === "season" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "season"}
+            onClick={() => setStatsMode("season")}
+          >
+            Season avg
+          </button>
+          <button
+            type="button"
+            className={
+              mode === "last-5"
+                ? "sc-chip is-on sc-hud-full-only"
+                : "sc-chip sc-hud-full-only"
+            }
+            aria-pressed={mode === "last-5"}
+            onClick={() => setStatsMode("last-5")}
+          >
+            Last 5
+          </button>
+          <button
+            type="button"
+            className={
+              mode === "this-week"
+                ? "sc-chip is-on sc-hud-full-only"
+                : "sc-chip sc-hud-full-only"
+            }
+            aria-pressed={mode === "this-week"}
+            onClick={() => setStatsMode("this-week")}
+          >
+            This week
+          </button>
+        </div>
         <ComposerStatsSampleToggle
           sample={statsSample}
           onChange={(nextSample) => {
@@ -483,11 +580,23 @@ export function CompareComposerApp() {
             yesterdayIso={night.yesterdayIso}
             onChange={(iso) => {
               night.setDate(iso);
-              void fillStats(draft, undefined, undefined, statsSample, iso);
+              const season = draft.season || everyTeamCurrentSeason();
+              const previousAuto = autoCompareStatsLabel(
+                "game",
+                season,
+                night.date,
+              );
+              const statsLabel =
+                !draft.statsLabel.trim() || draft.statsLabel === previousAuto
+                  ? autoCompareStatsLabel("game", season, iso)
+                  : draft.statsLabel;
+              const next = { ...draft, statsLabel };
+              setDraft(next);
+              void fillStats(next, undefined, undefined, statsSample, iso);
             }}
           />
         ) : null}
-        <label className="sc-field">
+        <label className="sc-field sc-hud-full-only">
           Season
           <select
             value={draft.season || everyTeamCurrentSeason()}
@@ -503,7 +612,7 @@ export function CompareComposerApp() {
             ))}
           </select>
         </label>
-        <label className="sc-field">
+        <label className="sc-field sc-hud-full-only">
           Left season
           <select
             value={draft.sideSeasons?.[0] ?? ""}
@@ -519,7 +628,7 @@ export function CompareComposerApp() {
             ))}
           </select>
         </label>
-        <label className="sc-field">
+        <label className="sc-field sc-hud-full-only">
           Right season
           <select
             value={draft.sideSeasons?.[1] ?? ""}
@@ -536,7 +645,7 @@ export function CompareComposerApp() {
           </select>
         </label>
         {draft.stats.map((stat, index) => (
-          <div key={`cmp-key-${stat.key}-${index}`} className="sc-field">
+          <div key={`cmp-key-${stat.key}-${index}`} className="sc-field sc-hud-full-only">
             <span>Stat {index + 1}</span>
             <div className="sc-stat-slot">
               <select
@@ -580,7 +689,7 @@ export function CompareComposerApp() {
         ))}
         <button
           type="button"
-          className="sc-chip"
+          className="sc-chip sc-hud-full-only"
           disabled={draft.stats.length >= COMPARE_STAT_MAX}
           onClick={() => {
             const next = { ...draft, stats: addCompareStat(draft.stats) };
@@ -836,10 +945,7 @@ export function CompareComposerApp() {
                 }));
               }}
               onActivate={setPhotoTarget}
-              onPick={(side) => {
-                setPhotoTarget(side);
-                setPicker(side);
-              }}
+              onPick={openSidePicker}
               onPan={(side, pan) =>
                 setDraft((current) => {
                   const sides = [...current.sides] as CompareDraft["sides"];

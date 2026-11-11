@@ -1936,4 +1936,36 @@ describe("composer chrome", () => {
     );
     expect(injuryState).toContain("gtdTeam");
   });
+
+  it("lets Compare change players from Simple HUD and on-graphic overlays", () => {
+    const compareHud = readFileSync(
+      join(root, "compareComposer/CompareComposerApp.tsx"),
+      "utf8",
+    );
+    const compareGraphic = readFileSync(
+      join(root, "compareComposer/CompareGraphic.tsx"),
+      "utf8",
+    );
+    const compareCss = readFileSync(
+      join(root, "compareComposer/compareComposer.css"),
+      "utf8",
+    );
+    expect(compareHud).toContain("Change left player");
+    expect(compareHud).toContain("Change right player");
+    expect(compareHud).toContain("Pick left player");
+    expect(compareHud).toContain("Pick right player");
+    expect(compareHud).toContain("openSidePicker");
+    expect(compareGraphic).toContain("cmp-photo__hud");
+    expect(compareCss).toContain(".cmp-photo__hud");
+    expect(compareCss).toContain(".cmp-photo .pod-photo:not(.is-empty) .pod-photo__tools");
+    expect(compareCss).toMatch(
+      /\.cmp-photo \.pod-photo:not\(\.is-empty\) \.pod-photo__tools \{[\s\S]*?opacity:\s*1;[\s\S]*?pointer-events:\s*auto;/,
+    );
+    expect(compareCss).toContain(".cmp-board.is-exporting .cmp-photo__hud");
+    expect(compareCss).toContain(".cmp-board.is-exporting .pod-photo__tools");
+    expect(compareCss).not.toContain(".cmp-stat__side.is-lead .cmp-stat__val::after");
+    expect(compareCss).not.toContain(".cmp-stat__side.is-lead .cmp-stat__unit");
+    expect(compareCss).toContain("background: rgba(255, 255, 255, 0.16)");
+    expect(compareCss).not.toMatch(/\.cmp-stat__bar \{[^}]*255,\s*229,\s*102/);
+  });
 });

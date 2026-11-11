@@ -327,6 +327,31 @@ export const CompareGraphic = forwardRef<HTMLElement, CompareGraphicProps>(
                   onUpload={(dataUrl) => onUpload(side, dataUrl)}
                   onPick={() => onPick(side)}
                 />
+                {exporting ? null : (
+                  <div className="cmp-photo__hud">
+                    <button
+                      type="button"
+                      className="cmp-photo__hud-btn"
+                      aria-label={
+                        person.playerId
+                          ? side === 0
+                            ? "Change left player"
+                            : "Change right player"
+                          : side === 0
+                            ? "Pick left player"
+                            : "Pick right player"
+                      }
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onActivate?.(side);
+                        onPick(side);
+                      }}
+                    >
+                      {person.playerId ? "Change player" : "Pick player"}
+                    </button>
+                  </div>
+                )}
                 {winner === side ? (
                   <span className="cmp-winner" aria-hidden="true">
                     W
