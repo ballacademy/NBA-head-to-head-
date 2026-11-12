@@ -37,7 +37,8 @@ export const PLB_WINS_W = 118;
 export const PLB_NAME_ADVANCE = 12.2;
 export const PLB_HAIRLINE = "rgba(245, 196, 0, 0.22)";
 export const PLB_ALT_FILL = "rgba(245, 196, 0, 0.05)";
-export const PLB_POTD_FILL = "rgba(245, 196, 0, 0.16)";
+/** Gold ring on today’s mug. 4 native → ~2 Fit px on a 29px head. */
+export const PLB_HEAD_RING = 4;
 export const PLB_ROW_H = 78;
 export const PLB_WRAP_ROW_H = 102;
 export const PLB_LIST_PAD_TOP = 18;

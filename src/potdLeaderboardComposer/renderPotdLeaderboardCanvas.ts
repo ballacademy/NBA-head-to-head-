@@ -41,7 +41,7 @@ import {
   PLB_HEAD_W,
   PLB_PIP_SIZE,
   PLB_PIP_W,
-  PLB_POTD_FILL,
+  PLB_HEAD_RING,
   PLB_META_SIZE,
   PLB_RANK_W,
   PLB_WINS_W,
@@ -304,12 +304,6 @@ export const renderPotdLeaderboardCanvas = async (
     cursorY += rowH;
     const y = top + rowH / 2;
     paintHairlineRow(top, rowH, index);
-    if (isPotdPairName(entry.name, potdKeys)) {
-      context.fillStyle = PLB_POTD_FILL;
-      context.fillRect(innerX, top, innerW, rowH);
-      context.fillStyle = PLB_YELLOW;
-      context.fillRect(innerX, top + 4 * s, 4 * s, rowH - 8 * s);
-    }
 
     const size = PLB_ROW_SIZE * entry.nameScale * s;
     const meta = PLB_META_SIZE * s;
@@ -349,14 +343,23 @@ export const renderPotdLeaderboardCanvas = async (
     const headY = y - headSize / 2;
     const head = entry.headshotUrl ? heads.get(entry.headshotUrl) : undefined;
     if (head) {
+      const cx = headX + headSize / 2;
       context.save();
       context.beginPath();
-      context.arc(headX + headSize / 2, y, headSize / 2, 0, Math.PI * 2);
+      context.arc(cx, y, headSize / 2, 0, Math.PI * 2);
       context.clip();
       drawCoverHeadshot(context, head, headX, headY, headSize, headSize, {
         silhouette: false,
       });
       context.restore();
+      if (isPotdPairName(entry.name, potdKeys)) {
+        const ring = PLB_HEAD_RING * s;
+        context.beginPath();
+        context.arc(cx, y, Math.max(1, headSize / 2 - ring / 2), 0, Math.PI * 2);
+        context.strokeStyle = PLB_YELLOW;
+        context.lineWidth = ring;
+        context.stroke();
+      }
     }
 
     if (showPips) {

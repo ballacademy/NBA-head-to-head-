@@ -131,11 +131,8 @@
   background: rgba(245, 196, 0, 0.05);
 }
 
-.plb-row.is-potd {
-  background: rgba(245, 196, 0, 0.16);
-  box-shadow:
-    inset calc(4 * var(--u)) 0 0 var(--plb-yellow),
-    inset 0 -1px 0 rgba(245, 196, 0, 0.28);
+.plb-head.is-potd {
+  box-shadow: inset 0 0 0 calc(4 * var(--u)) var(--plb-yellow);
 }
 
 .plb-row.is-wrap {

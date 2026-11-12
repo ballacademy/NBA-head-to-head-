@@ -179,7 +179,15 @@ export const PotdLeaderboardGraphic = forwardRef<
                     }
                   />
                 </div>
-                <span className="plb-head" aria-hidden="true">
+                <span
+                  className={[
+                    "plb-head",
+                    highlighted && entry.headshotUrl ? "is-potd" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  aria-hidden="true"
+                >
                   {entry.headshotUrl ? (
                     <PlayerHeadshot
                       className="plb-head__img"

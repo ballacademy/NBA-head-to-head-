@@ -1758,6 +1758,18 @@ describe("composer chrome", () => {
     expect(plbCss).toContain("min-height: calc(78 * var(--u))");
     expect(plbCss).toContain("width: calc(62 * var(--u))");
     expect(plbCss).toContain("width: calc(56 * var(--u))");
+    expect(plbCss).toContain(".plb-head.is-potd");
+    expect(plbCss).not.toContain("rgba(245, 196, 0, 0.16)");
+    expect(plbCss).not.toMatch(
+      /inset calc\(4 \* var\(--u\)\) 0 0 var\(--plb-yellow\)/,
+    );
+    expect(potdGraphic).toContain('highlighted && entry.headshotUrl ? "is-potd"');
+    const plbCanvas = readFileSync(
+      join(root, "potdLeaderboardComposer/renderPotdLeaderboardCanvas.ts"),
+      "utf8",
+    );
+    expect(plbCanvas).toContain("PLB_HEAD_RING");
+    expect(plbCanvas).not.toContain("PLB_POTD_FILL");
   });
 
   it("pastes Ctrl+V into the last clicked photo slot, not only the last dragged", () => {
