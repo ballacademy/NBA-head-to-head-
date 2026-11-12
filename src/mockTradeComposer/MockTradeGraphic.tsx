@@ -8,8 +8,8 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
+import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { LetterGradePlate } from "../instagramComposer/LetterGradePlate";
 import { headlinePanelHex } from "../headlineComposer/headlineLayout";
@@ -25,14 +25,11 @@ import { salaryLabelForPlayer } from "../lib/playerSalaries";
 import { getTeam } from "../standingsComposer/teams";
 import { mockTradeLayout } from "./mockTradeLayout";
 import {
-  MOCK_TRADE_NAME_MAX,
   MOCK_TRADE_TITLE_MAX,
   compactMockTradeDraft,
   mockTradePickLabel,
-  mockTradePlayerLockup,
-  mockTradePlayerName,
-  mockTradePlayerSlot,
   mockTradeSalaryTotalsLabel,
+  mockTradePlayerSlot,
   mockTradeTeamCount,
   type MockTradeDraft,
   type PhotoPan,
@@ -46,7 +43,12 @@ interface MockTradeGraphicProps {
   exporting?: boolean;
   story?: boolean;
   onTitleChange: (value: string) => void;
-  onPlayerNameChange: (
+  onPlayerFirstNameChange: (
+    side: number,
+    player: number,
+    firstName: string,
+  ) => void;
+  onPlayerLastNameChange: (
     side: number,
     player: number,
     lastName: string,
@@ -80,7 +82,8 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
       exporting = false,
       story = false,
       onTitleChange,
-      onPlayerNameChange,
+      onPlayerFirstNameChange,
+      onPlayerLastNameChange,
       onPickPlayer,
       onActivate,
       onPan,
@@ -97,8 +100,6 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
       enabled: !exporting,
       onSwap,
     });
-    const [nameStyle] = useComposerNameStyle();
-    const [nameFocus, setNameFocus] = useState<string | null>(null);
     const board = exporting ? compactMockTradeDraft(draft) : draft;
     const teamCount = mockTradeTeamCount(board);
     const layout = mockTradeLayout(
@@ -162,6 +163,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
             w: rect.w,
             h: rect.h,
           });
+          const hero = side.players.length <= 2;
           return (
             <section
               key={`mt-col-${sideIndex}`}
@@ -178,100 +180,82 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                     src={team.logoSrc}
                     label={team.name}
                     shadow={18}
-                    fitX={0.9}
-                    fitY={0.88}
+                    fitX={0.82}
+                    fitY={0.82}
                   />
                 ) : (
                   <span className="mt-team-fallback">{`TEAM ${sideIndex + 1}`}</span>
                 )}
               </div>
-              <p className="mt-gets" style={boxStyle(local(column.gets))}>
-                Gets
-                {draft.showSalaries ? (
-                  <span className="mt-cap">
-                    {mockTradeSalaryTotalsLabel(board, sideIndex)}
-                  </span>
-                ) : null}
-              </p>
+              {draft.showSalaries ? (
+                <p className="mt-cap">{mockTradeSalaryTotalsLabel(board, sideIndex)}</p>
+              ) : null}
               {column.players.map((slot, playerIndex) => {
                 const person = side.players[playerIndex]!;
-                const lockupKey = `${sideIndex}-${playerIndex}`;
                 const slotIndex = mockTradePlayerSlot(sideIndex, playerIndex);
-                const lockup =
-                  nameFocus === lockupKey
-                    ? mockTradePlayerName(person)
-                    : mockTradePlayerLockup(person, nameStyle);
+                const empty = !person.photoSrc;
                 return (
-                  <div key={`mt-player-${sideIndex}-${playerIndex}`}>
-                    <div
-                      className={[
-                        "mt-player",
-                        composerSlotClass(
-                          slotIndex,
-                          slotSwap.draggingFrom,
-                          slotSwap.dropIndex,
-                        ),
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      data-composer-slot={slotIndex}
-                      style={boxStyle(local(slot.photo))}
-                      onPointerDown={(event) => {
-                        onActivate?.(sideIndex, playerIndex);
-                        slotSwap.startDrag(slotIndex, event);
-                      }}
-                    >
-                      <PhotoFrame
-                        src={person.photoSrc}
-                        label={lockup || `player ${playerIndex + 1}`}
-                        pan={person.pan}
-                        custom={person.customPhoto}
-                        empty={!person.photoSrc}
-                        vignette
-                        pickLabel="Pick player"
-                        changeLabel="Change player"
-                        slotSwapEnabled={!exporting && Boolean(onSwap)}
-                        onActivate={() =>
-                          onActivate?.(sideIndex, playerIndex)
-                        }
-                        onPan={(pan) => onPan(sideIndex, playerIndex, pan)}
-                        onUpload={(dataUrl) =>
-                          onUpload(sideIndex, playerIndex, dataUrl)
-                        }
-                        onPick={() => onPickPlayer(sideIndex, playerIndex)}
-                      />
-                    </div>
-                    <input
-                      className="mt-name"
-                      style={boxStyle(local(slot.name))}
-                      value={lockup}
-                      maxLength={MOCK_TRADE_NAME_MAX}
-                      spellCheck={false}
-                      aria-label={`Team ${sideIndex + 1} player ${playerIndex + 1} name`}
-                      placeholder="NAME"
-                      onFocus={() => setNameFocus(lockupKey)}
-                      onBlur={() => setNameFocus(null)}
-                      onChange={(event) =>
-                        onComposerTextChange(
-                          event,
-                          (lastName) =>
-                            onPlayerNameChange(sideIndex, playerIndex, lastName),
-                          MOCK_TRADE_NAME_MAX,
-                        )
+                  <div
+                    key={`mt-player-${sideIndex}-${playerIndex}`}
+                    className={[
+                      "mt-player",
+                      hero ? "is-hero" : "is-grid",
+                      composerSlotClass(
+                        slotIndex,
+                        slotSwap.draggingFrom,
+                        slotSwap.dropIndex,
+                      ),
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    data-composer-slot={slotIndex}
+                    style={boxStyle(local(slot.photo))}
+                    onPointerDown={(event) => {
+                      onActivate?.(sideIndex, playerIndex);
+                      slotSwap.startDrag(slotIndex, event);
+                    }}
+                  >
+                    <PhotoFrame
+                      src={person.photoSrc}
+                      label={person.lastName || `player ${playerIndex + 1}`}
+                      pan={person.pan}
+                      custom={person.customPhoto}
+                      empty={empty}
+                      vignette
+                      pickLabel="Pick player"
+                      changeLabel="Change player"
+                      slotSwapEnabled={!exporting && Boolean(onSwap)}
+                      onActivate={() => onActivate?.(sideIndex, playerIndex)}
+                      onPan={(pan) => onPan(sideIndex, playerIndex, pan)}
+                      onUpload={(dataUrl) =>
+                        onUpload(sideIndex, playerIndex, dataUrl)
                       }
+                      onPick={() => onPickPlayer(sideIndex, playerIndex)}
                     />
-                    {draft.showSalaries && person.playerId ? (
-                      <p
-                        className="mt-salary"
-                        style={boxStyle({
-                          ...local(slot.name),
-                          y: local(slot.name).y + local(slot.name).h - 2,
-                          h: 16,
-                        })}
-                      >
-                        {salaryLabelForPlayer(undefined, person.playerId) || "—"}
-                      </p>
-                    ) : null}
+                    {empty ? null : (
+                      <PlayerNameFade
+                        firstName={person.firstName}
+                        lastName={person.lastName}
+                        teamId={side.teamId ?? person.teamId}
+                        empty={false}
+                        givenAria={`Team ${sideIndex + 1} player ${playerIndex + 1} first name`}
+                        familyAria={`Team ${sideIndex + 1} player ${playerIndex + 1} name`}
+                        stat={
+                          draft.showSalaries && person.playerId
+                            ? salaryLabelForPlayer(undefined, person.playerId)
+                            : ""
+                        }
+                        onFirstChange={(value) =>
+                          onPlayerFirstNameChange(sideIndex, playerIndex, value)
+                        }
+                        onLastChange={(value) =>
+                          onPlayerLastNameChange(sideIndex, playerIndex, value)
+                        }
+                        onEmptyClick={() =>
+                          onPickPlayer(sideIndex, playerIndex)
+                        }
+                      />
+                    )}
                   </div>
                 );
               })}

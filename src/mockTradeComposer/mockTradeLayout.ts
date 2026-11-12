@@ -16,14 +16,11 @@ export const MT_TITLE_H = 78;
 export const MT_TITLE_SIZE = 40;
 export const MT_GAP = 10;
 export const MT_BA = 58;
-export const MT_GETS_H = 38;
-export const MT_GETS_SIZE = 13;
-export const MT_NAME_H = 28;
-export const MT_NAME_SIZE = 16;
-export const MT_CHIP_H = 34;
-export const MT_CHIP_GAP = 7;
-export const MT_COL_INSET = 16;
-export const MT_PLAYER_GAP = 10;
+export const MT_CHIP_H = 64;
+export const MT_CHIP_GAP = 10;
+export const MT_CHIP_INSET = 12;
+export const MT_PLAYER_GAP = 8;
+export const MT_NAME_FADE_H = 110;
 
 export interface MockTradeRect {
   x: number;
@@ -43,7 +40,6 @@ export interface MockTradeColumnLayout {
   w: number;
   h: number;
   logo: MockTradeRect;
-  gets: MockTradeRect;
   players: MockTradePlayerRect[];
   picks: MockTradeRect[];
 }
@@ -57,46 +53,48 @@ export interface MockTradeBoardLayout {
 export const mockTradeBoardHeight = (story = false) =>
   story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
 
+const playerGrid = (count: number): { cols: number; rows: number } => {
+  if (count <= 1) {
+    return { cols: 1, rows: 1 };
+  }
+  if (count === 2) {
+    return { cols: 1, rows: 2 };
+  }
+  if (count === 3) {
+    return { cols: 1, rows: 3 };
+  }
+  return { cols: 2, rows: 2 };
+};
+
 const packPlayers = (
   x: number,
   y: number,
   w: number,
   h: number,
   count: number,
-  three: boolean,
 ): MockTradePlayerRect[] => {
   if (count <= 0 || w <= 0 || h <= 0) {
     return [];
   }
   const gap = MT_PLAYER_GAP;
-  const cols =
-    count === 1 ? 1 : count === 2 ? (three ? 1 : 2) : count === 3 ? (three ? 1 : 3) : 2;
-  const rows = Math.ceil(count / cols);
+  const { cols, rows } = playerGrid(count);
   const cellW = (w - gap * (cols - 1)) / cols;
   const cellH = (h - gap * (rows - 1)) / rows;
-  const nameH = Math.min(MT_NAME_H, Math.max(18, cellH * 0.18));
-  const maxPhotoW = three ? 168 : count === 1 ? 280 : 210;
+  const fadeH = Math.min(MT_NAME_FADE_H, Math.max(64, cellH * 0.22));
   return Array.from({ length: count }, (_, index) => {
     const col = index % cols;
     const row = Math.floor(index / cols);
     const cx = x + col * (cellW + gap);
     const cy = y + row * (cellH + gap);
-    const photoH = Math.max(36, cellH - nameH);
-    const photoW = Math.min(cellW, photoH * 0.86, maxPhotoW);
-    const photoBoxH = Math.min(photoH, photoW / 0.78);
-    const photoX = cx + (cellW - photoW) / 2;
-    const photoY = cy + Math.max(0, (photoH - photoBoxH) / 2);
+    const photo = { x: cx, y: cy, w: cellW, h: cellH };
     return {
-      x: cx,
-      y: cy,
-      w: cellW,
-      h: cellH,
-      photo: { x: photoX, y: photoY, w: photoW, h: photoBoxH },
+      ...photo,
+      photo,
       name: {
         x: cx,
-        y: photoY + photoBoxH + 2,
+        y: cy + cellH - fadeH,
         w: cellW,
-        h: nameH,
+        h: fadeH,
       },
     };
   });
@@ -113,7 +111,7 @@ const packPicks = (
     return [];
   }
   const gap = MT_CHIP_GAP;
-  const minChip = three ? 150 : 200;
+  const minChip = three ? 160 : 200;
   const maxCols = three ? 1 : 2;
   const cols = Math.max(
     1,
@@ -160,12 +158,11 @@ export const mockTradeLayout = (
     const y = bodyY;
     const w = colW;
     const h = bodyH;
-    const inset = MT_COL_INSET;
-    const innerX = x + inset;
-    const innerW = w - inset * 2;
     const pickCount = Math.max(0, pickCounts[index] ?? 0);
     const playerCount = Math.max(0, playerCounts[index] ?? 0);
-    const pickMin = n === 3 ? 150 : 200;
+    const innerX = x + MT_CHIP_INSET;
+    const innerW = w - MT_CHIP_INSET * 2;
+    const pickMin = n === 3 ? 160 : 200;
     const pickMaxCols = n === 3 ? 1 : 2;
     const pickCols = Math.max(
       1,
@@ -179,31 +176,16 @@ export const mockTradeLayout = (
     const picksH = pickRows
       ? pickRows * MT_CHIP_H + (pickRows - 1) * MT_CHIP_GAP
       : 0;
-    const picksY = y + h - inset - picksH;
-    const logoH = h * (n === 3 ? 0.3 : 0.36);
-    const logo: MockTradeRect = {
-      x: innerX,
-      y: y + inset,
-      w: innerW,
-      h: logoH,
-    };
-    const gets: MockTradeRect = {
-      x: innerX,
-      y: y + inset + logoH + 4,
-      w: innerW,
-      h: MT_GETS_H,
-    };
-    const playersY = gets.y + gets.h + 8;
-    const playersBottom = (pickCount ? picksY - 12 : y + h - inset);
-    const playersH = Math.max(48, playersBottom - playersY);
+    const picksY = y + h - (pickCount ? MT_CHIP_INSET + picksH : 0);
+    const playersBottom = pickCount ? picksY - MT_CHIP_INSET : y + h;
+    const playersH = Math.max(48, playersBottom - y);
     return {
       x,
       y,
       w,
       h,
-      logo,
-      gets,
-      players: packPlayers(innerX, playersY, innerW, playersH, playerCount, n === 3),
+      logo: { x, y, w, h },
+      players: packPlayers(x, y, w, playersH, playerCount),
       picks: packPicks(innerX, picksY, innerW, pickCount, n === 3),
     };
   });

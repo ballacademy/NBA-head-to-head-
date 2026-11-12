@@ -7,6 +7,7 @@ import {
   type ComposerLook,
 } from "../instagramComposer/composerLook";
 import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
+import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import {
   applyPhotoGrade,
   canvasGradeFilter,
@@ -32,6 +33,7 @@ import {
 import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_WIDTH,
+  MT_NAME_FADE_H,
   MT_TITLE_SIZE,
   mockTradeBoardHeight,
   mockTradeLayout,
@@ -39,7 +41,6 @@ import {
 import {
   compactMockTradeDraft,
   mockTradePickLabel,
-  mockTradePlayerLockup,
   mockTradeSalaryTotalsLabel,
   mockTradeTeamCount,
   type MockTradeDraft,
@@ -139,6 +140,8 @@ export const renderMockTradeCanvas = async (
     if (team) {
       const logo = await loadImage(team.logoSrc);
       if (logo) {
+        context.save();
+        context.globalAlpha = 0.22;
         drawCenteredLogo(
           context,
           logo,
@@ -148,17 +151,18 @@ export const renderMockTradeCanvas = async (
           column.logo.h * s,
           {
             cacheKey: `${team.logoSrc}-mock-trade`,
-            fitX: 0.9,
-            fitY: 0.88,
+            fitX: 0.82,
+            fitY: 0.82,
             shadow: 18,
           },
         );
+        context.restore();
       }
     } else {
       context.font = `900 ${28 * s}px ${POSTER_FONT}`;
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillStyle = "rgba(255,255,255,0.28)";
+      context.fillStyle = "rgba(255,255,255,0.22)";
       setLetterSpacing(context, 0.18 * 28 * s);
       context.fillText(
         `TEAM ${sideIndex + 1}`,
@@ -168,30 +172,24 @@ export const renderMockTradeCanvas = async (
       setLetterSpacing(context, 0);
     }
 
-    context.font = `800 ${13 * s}px ${POSTER_FONT}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillStyle = "rgba(255,255,255,0.72)";
-    setLetterSpacing(context, 0.28 * 13 * s);
-    context.fillText(
-      "GETS",
-      (column.gets.x + column.gets.w / 2) * s,
-      (column.gets.y + 10) * s,
-    );
-    setLetterSpacing(context, 0);
     if (input.showSalaries) {
-      context.font = `900 ${11 * s}px ${POSTER_FONT}`;
+      context.font = `800 ${14 * s}px ${POSTER_FONT}`;
       context.fillStyle = "rgba(250, 204, 21, 0.92)";
-      setLetterSpacing(context, 0.1 * 11 * s);
+      context.textAlign = "center";
       context.textBaseline = "top";
+      setLetterSpacing(context, 0.1 * 14 * s);
       context.fillText(
         mockTradeSalaryTotalsLabel(board, sideIndex),
-        (column.gets.x + column.gets.w / 2) * s,
-        (column.gets.y + 18) * s,
-        column.gets.w * s,
+        (column.x + column.w / 2) * s,
+        (column.y + 10) * s,
+        (column.w - 20) * s,
       );
       setLetterSpacing(context, 0);
     }
+
+    const hero = side.players.length <= 2;
+    const fadeTeam = getTeam(side.teamId);
+    const fadeLogo = fadeTeam ? await loadImage(fadeTeam.logoSrc) : null;
 
     for (const [playerIndex, slot] of column.players.entries()) {
       const person = side.players[playerIndex]!;
@@ -200,10 +198,9 @@ export const renderMockTradeCanvas = async (
       const pw = slot.photo.w * s;
       const ph = slot.photo.h * s;
       context.save();
-      roundRect(context, px, py, pw, ph, 10 * s);
+      context.beginPath();
+      context.rect(px, py, pw, ph);
       context.clip();
-      context.fillStyle = "#111";
-      context.fillRect(px, py, pw, ph);
       if (person.photoSrc) {
         const photo = person.photoSrc.startsWith("data:")
           ? await loadImage(person.photoSrc)
@@ -242,38 +239,27 @@ export const renderMockTradeCanvas = async (
       }
       context.restore();
       paintCellFrame(context, px, py, pw, ph, input.look, s);
-      const name = mockTradePlayerLockup(
-        person,
-        readComposerNameStyle(),
-      ).toUpperCase();
-      if (name) {
-        context.font = `900 ${16 * s}px ${POSTER_FONT}`;
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillStyle = "#fff";
-        setLetterSpacing(context, 0.06 * 16 * s);
-        context.fillText(
-          name,
-          (slot.name.x + slot.name.w / 2) * s,
-          (slot.name.y + slot.name.h / 2) * s,
-          slot.name.w * s,
-        );
-        setLetterSpacing(context, 0);
-      }
-      if (input.showSalaries && person.playerId) {
-        const cap = salaryLabelForPlayer(undefined, person.playerId);
-        if (cap) {
-          context.font = `900 ${12 * s}px ${POSTER_FONT}`;
-          context.fillStyle = "rgba(250, 204, 21, 0.92)";
-          context.textAlign = "center";
-          context.textBaseline = "top";
-          context.fillText(
-            cap,
-            (slot.name.x + slot.name.w / 2) * s,
-            (slot.name.y + slot.name.h) * s,
-            slot.name.w * s,
-          );
-        }
+      if (person.photoSrc || person.lastName || person.firstName) {
+        const fadeH = Math.min(slot.name.h, hero ? MT_NAME_FADE_H : 84) * s;
+        drawPlayerNameFade(context, {
+          x: px,
+          y: py + ph - fadeH,
+          w: pw,
+          h: fadeH,
+          given: person.firstName,
+          family: person.lastName,
+          logo: fadeLogo,
+          logoSrc: fadeTeam?.logoSrc,
+          logoSize: (hero ? 28 : 22) * s,
+          familySize: (hero ? 32 : 18) * s,
+          givenSize: (hero ? 16 : 11) * s,
+          scale: s,
+          nameStyle: readComposerNameStyle(),
+          stat:
+            input.showSalaries && person.playerId
+              ? salaryLabelForPlayer(undefined, person.playerId)
+              : "",
+        });
       }
     }
 
@@ -283,22 +269,22 @@ export const renderMockTradeCanvas = async (
       const cy = chip.y * s;
       const cw = chip.w * s;
       const ch = chip.h * s;
-      context.fillStyle = "rgba(6,8,12,0.72)";
-      roundRect(context, cx, cy, cw, ch, 8 * s);
+      context.fillStyle = "#1c1c1c";
+      roundRect(context, cx, cy, cw, ch, 6 * s);
       context.fill();
       context.strokeStyle =
         pick.cash || pick.twoWay || pick.top4 || pick.swap
           ? "#ffe566"
-          : "rgba(255,255,255,0.22)";
-      context.lineWidth = 1.5 * s;
-      roundRect(context, cx, cy, cw, ch, 8 * s);
+          : "rgba(255,255,255,0.28)";
+      context.lineWidth = 2 * s;
+      roundRect(context, cx, cy, cw, ch, 6 * s);
       context.stroke();
-      context.font = `800 ${13 * s}px ${POSTER_FONT}`;
+      context.font = `900 ${18 * s}px ${POSTER_FONT}`;
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.fillStyle =
         pick.cash || pick.twoWay || pick.top4 || pick.swap ? "#ffe566" : "#fff";
-      setLetterSpacing(context, 0.06 * 13 * s);
+      setLetterSpacing(context, 0.02 * 18 * s);
       context.fillText(
         mockTradePickLabel(pick),
         cx + cw / 2,

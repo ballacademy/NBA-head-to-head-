@@ -120,7 +120,7 @@ export const emptyMockTradePick = (): MockTradePick => ({
 export const emptyMockTradeSide = (): MockTradeSide => ({
   teamId: null,
   players: [emptyMockTradePlayer()],
-  picks: [emptyMockTradePick()],
+  picks: [],
 });
 
 export const isMockTradePlayer = (value: unknown): value is MockTradePlayer =>
@@ -210,7 +210,7 @@ const parseSide = (value: unknown): MockTradeSide | null => {
     : [emptyMockTradePlayer()];
   const picks = Array.isArray(raw.picks)
     ? raw.picks.map(parsePick).filter((row): row is MockTradePick => Boolean(row))
-    : [emptyMockTradePick()];
+    : [];
   return {
     teamId: typeof raw.teamId === "string" && raw.teamId.trim() ? raw.teamId : null,
     players: players.slice(0, MOCK_TRADE_PLAYER_MAX),

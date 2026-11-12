@@ -28,12 +28,12 @@ import {
 } from "./mockTradeState";
 
 describe("mock trade draft", () => {
-  it("starts empty with two teams and one player plus one pick each", () => {
+  it("starts empty with two teams and one player plus no ghost picks", () => {
     const draft = defaultMockTradeDraft();
     expect(draft.title).toBe("MOCK TRADE");
     expect(draft.sides).toHaveLength(2);
     expect(draft.sides.every((side) => side.players.length === 1)).toBe(true);
-    expect(draft.sides.every((side) => side.picks.length === 1)).toBe(true);
+    expect(draft.sides.every((side) => side.picks.length === 0)).toBe(true);
     expect(draft.sides.every((side) => side.players[0]?.photoSrc == null)).toBe(
       true,
     );
@@ -44,7 +44,7 @@ describe("mock trade draft", () => {
     let draft = addMockTradeTeam(defaultMockTradeDraft());
     expect(mockTradeTeamCount(draft)).toBe(3);
     expect(draft.sides[2]?.players).toHaveLength(1);
-    expect(draft.sides[2]?.picks).toHaveLength(1);
+    expect(draft.sides[2]?.picks).toHaveLength(0);
     draft = addMockTradeTeam(draft);
     expect(draft.sides).toHaveLength(3);
     draft = removeMockTradeTeam(draft);
@@ -79,7 +79,7 @@ describe("mock trade draft", () => {
   it("adds and removes player and pick slots up to the caps", () => {
     let side = emptyMockTradeSide();
     expect(side.players).toHaveLength(1);
-    expect(side.picks).toHaveLength(1);
+    expect(side.picks).toHaveLength(0);
     side = addMockTradePlayer(side);
     side = addMockTradePlayer(side);
     side = addMockTradePlayer(side);
@@ -227,6 +227,49 @@ describe("mock trade layout", () => {
     );
     expect(pickXs.size).toBeLessThanOrEqual(2);
     expect(stacked.columns[0]!.picks[0]!.w).toBeGreaterThan(180);
+  });
+
+  it("gives leftover column height to faces and skips reserved pick rows", () => {
+    const one = mockTradeLayout(2, [1, 1], [0, 0]);
+    const photo = one.columns[0]!.players[0]!.photo;
+    expect(photo.w).toBeCloseTo(one.columns[0]!.w, 5);
+    expect(photo.h).toBeGreaterThan(1000);
+    expect(photo.x).toBe(one.columns[0]!.x);
+    expect(photo.y + photo.h).toBeCloseTo(
+      one.columns[0]!.y + one.columns[0]!.h,
+      5,
+    );
+    expect(one.columns[0]!.picks).toHaveLength(0);
+    expect(one.columns[0]!.logo.w).toBeCloseTo(one.columns[0]!.w, 5);
+    expect(one.columns[0]!.logo.h).toBeCloseTo(one.columns[0]!.h, 5);
+
+    const two = mockTradeLayout(2, [2, 2], [0, 0]);
+    expect(two.columns[0]!.players[0]!.photo.x).toBe(
+      two.columns[0]!.players[1]!.photo.x,
+    );
+    expect(two.columns[0]!.players[0]!.photo.w).toBeCloseTo(
+      two.columns[0]!.w,
+      5,
+    );
+    expect(two.columns[0]!.players[1]!.photo.y).toBeGreaterThan(
+      two.columns[0]!.players[0]!.photo.y,
+    );
+
+    const four = mockTradeLayout(2, [4, 1], [0, 0]);
+    const xs = new Set(
+      four.columns[0]!.players.map((slot) => Math.round(slot.photo.x)),
+    );
+    expect(xs.size).toBe(2);
+    expect(four.columns[0]!.players[0]!.photo.w).toBeLessThan(
+      four.columns[0]!.w,
+    );
+
+    const withPick = mockTradeLayout(2, [1, 1], [1, 0]);
+    expect(withPick.columns[0]!.picks[0]!.h).toBe(64);
+    expect(
+      withPick.columns[0]!.players[0]!.photo.y +
+        withPick.columns[0]!.players[0]!.photo.h,
+    ).toBeLessThan(withPick.columns[0]!.picks[0]!.y);
   });
 
   it("exports 4:5 at 1200×1500 and stretches 9:16", () => {
