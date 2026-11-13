@@ -1,7 +1,6 @@
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import {
   DEFAULT_CUSTOM_PAN,
-  DEFAULT_HEADSHOT_PAN,
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -25,6 +24,8 @@ export const LEADER_BARS_STORAGE_KEY = "ddgm:leader-bars-composer";
 export const LEADER_BARS_SAVES_KEY = "ddgm:leader-bars-composer:saves";
 export const DEFAULT_LEADER_BARS_TITLE = "PPG LEADERS";
 export const LEADER_BARS_TITLE_TRACK = 0.04;
+/** Face lower, fill the leftover crop — not a floating bust in a black well. */
+export const LB_HERO_PAN: PhotoPan = { x: 0.5, y: 0.4, zoom: 1.62, rotate: 0 };
 
 export type LeaderBarsPhotoPos = "top" | "bottom";
 export type LeaderBarsBarStyle = "gold" | "team";
@@ -40,7 +41,7 @@ export interface LeaderBarsDraft {
   photoPos: LeaderBarsPhotoPos;
   barStyle: LeaderBarsBarStyle;
   showBarHeadshots: boolean;
-  /** Team-color name plates on each bar row. Default On; Off restores the faint box. */
+  /** Team-color name plates on each bar row. Default Off; On is the rainbow night. */
   namePlates: boolean;
   playerId: string | null;
   teamId: string | null;
@@ -75,7 +76,7 @@ export const defaultLeaderBarsDraft = (
   photoPos: "top",
   barStyle: "gold",
   showBarHeadshots: false,
-  namePlates: true,
+  namePlates: false,
   playerId: null,
   teamId: null,
   photoSrc: null,
@@ -97,7 +98,7 @@ export const normalizeLeaderBarsDraft = (
     photoPos: value.photoPos === "bottom" ? "bottom" : "top",
     barStyle: value.barStyle === "team" ? "team" : "gold",
     showBarHeadshots: value.showBarHeadshots === true,
-    namePlates: value.namePlates !== false,
+    namePlates: value.namePlates === true,
     customPhoto: value.customPhoto === true,
     pan: isPhotoPan(value.pan) ? value.pan : fallback.pan,
     photoSrc: isNullable(value.photoSrc) ? value.photoSrc : fallback.photoSrc,
@@ -135,7 +136,7 @@ export const applyLeaderBarsHero = (
     teamId: getTeam(player.team)?.id ?? player.team ?? null,
     photoSrc: keep ? draft.photoSrc : player.headshotUrl || null,
     customPhoto: Boolean(keep),
-    pan: keep ? { ...draft.pan } : { ...DEFAULT_HEADSHOT_PAN },
+    pan: keep ? { ...draft.pan } : { ...LB_HERO_PAN },
   };
 };
 
@@ -147,11 +148,11 @@ export const leaderBarsCaption = (draft: LeaderBarsDraft) =>
 
 export const leaderBarsExportRows = (
   draft: LeaderBarsDraft,
-  exporting: boolean,
+  _exporting: boolean,
   square: boolean,
 ) => {
   const rows = square ? draft.rows.slice(0, 5) : draft.rows;
-  return visibleLeaderRows(rows, exporting);
+  return visibleLeaderRows(rows, true);
 };
 
 export const leaderBarsOccupied = (draft: LeaderBarsDraft) =>

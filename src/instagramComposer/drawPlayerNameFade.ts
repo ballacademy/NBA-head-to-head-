@@ -112,6 +112,8 @@ export const drawPlayerNameFade = (
     pad?: number;
     nameStyle?: ComposerNameStyle;
     stat?: string;
+    statSize?: number;
+    statColor?: string;
   },
 ) => {
   const pad = input.pad ?? 5 * input.scale;
@@ -148,7 +150,7 @@ export const drawPlayerNameFade = (
     textX = logoX + input.logoSize + 4 * input.scale;
   }
   const stat = (input.stat ?? "").replace(/\s+/g, " ").trim().toUpperCase();
-  const statSize = 9 * input.scale;
+  const statSize = input.statSize ?? 9 * input.scale;
   const stackBottom = stat ? lockupBottom - statSize * 1.15 : lockupBottom;
   drawNameStack(
     context,
@@ -162,10 +164,10 @@ export const drawPlayerNameFade = (
     input.scale,
   );
   if (stat) {
-    context.font = `800 ${statSize}px ${POSTER_FONT}`;
+    context.font = `900 ${statSize}px ${POSTER_FONT}`;
     context.textAlign = "left";
     context.textBaseline = "bottom";
-    context.fillStyle = "rgba(255,255,255,0.82)";
+    context.fillStyle = input.statColor ?? "rgba(255,255,255,0.82)";
     context.fillText(stat, textX, lockupBottom, input.x + input.w - pad - textX);
   }
 };

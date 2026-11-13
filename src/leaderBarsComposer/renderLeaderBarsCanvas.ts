@@ -2,28 +2,37 @@ import {
   paintCellFrame,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { readComposerNameStyle } from "../instagramComposer/composerNameStyle";
+import { drawPlayerNameFade } from "../instagramComposer/drawPlayerNameFade";
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import {
   GRAPHIC_HEIGHT,
   GRAPHIC_WIDTH,
   STORY_DESIGN_HEIGHT,
 } from "../standingsComposer/rankingState";
+import { getTeam } from "../standingsComposer/teams";
 import {
   LEADER_BARS_TITLE_TRACK,
   type LeaderBarsDraft,
 } from "./leaderBarsState";
 import {
-  leaderBarsBoardRect,
-  leaderBarsPhotoRect,
-  leaderBarsTitleRect,
+  LB_GAP,
+  LB_HERO_FAMILY,
+  LB_HERO_GIVEN,
+  LB_HERO_LOGO,
+  LB_HERO_STAT,
+  LB_NAME_FADE_H,
+  leaderBarsLayout,
 } from "./leaderBarsLayout";
 import {
+  LEADER_GOLD,
+  leaderRowName,
   maxLeaderRaw,
   squareLeaderRows,
   visibleLeaderRows,
 } from "../leaderboardComposer/leaderboardFill";
 import {
-  packedLeaderRowH,
+  loadImage,
   paintBarRow,
   paintLeaderBa,
   paintLeaderFrame,
@@ -56,9 +65,14 @@ export const renderLeaderBarsCanvas = async (
   }
   await document.fonts?.ready.catch(() => undefined);
   const photoOnTop = input.photoPos !== "bottom";
-  const photo = leaderBarsPhotoRect(photoOnTop, boardH);
-  const title = leaderBarsTitleRect(photoOnTop, boardH);
-  const board = leaderBarsBoardRect(photoOnTop, boardH);
+  const rows = visibleLeaderRows(
+    squareLeaderRows(input.rows, Boolean(input.square)),
+    true,
+  );
+  const layout = leaderBarsLayout(rows.length, photoOnTop, boardH);
+  const photo = layout.photo;
+  const title = layout.title;
+  const board = layout.board;
   await paintLeaderTitleMetalFloor(
     context,
     width,
@@ -76,6 +90,31 @@ export const renderLeaderBarsCanvas = async (
     photo.h * scale,
     input.photoGrade,
   );
+  const hero = rows[0];
+  if (hero && leaderRowName(hero)) {
+    const fadeH = Math.min(LB_NAME_FADE_H, photo.h) * scale;
+    const fadeTeam = getTeam(hero.teamId);
+    const fadeLogo = fadeTeam ? await loadImage(fadeTeam.logoSrc) : null;
+    const s = scale;
+    drawPlayerNameFade(context, {
+      x: photo.x * s,
+      y: (photo.y + photo.h) * s - fadeH,
+      w: photo.w * s,
+      h: fadeH,
+      given: hero.firstName,
+      family: hero.lastName,
+      logo: fadeLogo,
+      logoSrc: fadeTeam?.logoSrc,
+      logoSize: LB_HERO_LOGO * s,
+      familySize: LB_HERO_FAMILY * s,
+      givenSize: LB_HERO_GIVEN * s,
+      scale: s,
+      nameStyle: readComposerNameStyle(),
+      stat: hero.value,
+      statSize: LB_HERO_STAT * s,
+      statColor: LEADER_GOLD,
+    });
+  }
   const lines = splitBalancedTitle(
     input.title,
     input.title,
@@ -91,19 +130,10 @@ export const renderLeaderBarsCanvas = async (
     scale,
     input.purpleFlair,
   );
-  const rows = visibleLeaderRows(
-    squareLeaderRows(input.rows, Boolean(input.square)),
-    true,
-  );
   const max = maxLeaderRaw(rows);
-  const plates = input.namePlates !== false;
-  const gap = 8;
-  const rowH =
-    rows.length > 0
-      ? plates
-        ? packedLeaderRowH(board.h, rows.length, gap)
-        : Math.min(64, (board.h - gap * (rows.length - 1)) / rows.length)
-      : 52;
+  const plates = input.namePlates === true;
+  const rowH = layout.rowH;
+  const gap = LB_GAP;
   for (let index = 0; index < rows.length; index += 1) {
     await paintBarRow(
       context,

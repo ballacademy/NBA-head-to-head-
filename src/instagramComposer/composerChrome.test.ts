@@ -2082,4 +2082,39 @@ describe("composer chrome", () => {
     expect(mockLayout).toContain("MT_RECEIVE_H");
     expect(mockLayout).toContain("receive:");
   });
+
+  it("packs Leader bars leftover into a full-bleed hero with punch type", () => {
+    const layout = readFileSync(
+      join(root, "leaderBarsComposer/leaderBarsLayout.ts"),
+      "utf8",
+    );
+    const css = readFileSync(
+      join(root, "leaderBarsComposer/leaderBarsComposer.css"),
+      "utf8",
+    );
+    const graphic = readFileSync(
+      join(root, "leaderBarsComposer/LeaderBarsGraphic.tsx"),
+      "utf8",
+    );
+    const canvas = readFileSync(
+      join(root, "leaderBarsComposer/renderLeaderBarsCanvas.ts"),
+      "utf8",
+    );
+    const state = readFileSync(
+      join(root, "leaderBarsComposer/leaderBarsState.ts"),
+      "utf8",
+    );
+    expect(layout).not.toContain("LB_PHOTO_H");
+    expect(layout).toContain("LB_ROW_H = 80");
+    expect(css).not.toContain("flex: 0 0 33%");
+    expect(css).toContain(".lb-hero");
+    expect(css).toContain("font-size: calc(56 * var(--u))");
+    expect(css).toContain("height: calc(36 * var(--u))");
+    expect(graphic).toContain("PlayerNameFade");
+    expect(graphic).toContain("leaderBarsLayout");
+    expect(canvas).toContain("leaderBarsLayout");
+    expect(canvas).toContain("drawPlayerNameFade");
+    expect(state).toContain("namePlates: false");
+    expect(state).toContain("visibleLeaderRows(rows, true)");
+  });
 });

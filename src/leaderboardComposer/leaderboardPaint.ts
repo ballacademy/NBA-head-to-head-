@@ -26,6 +26,7 @@ import {
   paintHeaderMetalField,
   paintStuddedCharcoal,
 } from "../standingsComposer/headerTexture";
+import { getTeamColors } from "../lib/teamColors";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { formatComposerName } from "../instagramComposer/composerNameStyle";
@@ -340,21 +341,15 @@ export const paintBarRow = async (
   const pad = 10 * s;
   if (namePlates) {
     await paintNamePlate(context, row, x, y, w, h, scale, gold);
-  } else {
-    context.fillStyle = gold ? "rgba(212, 175, 55, 0.16)" : "rgba(255,255,255,0.04)";
-    context.fillRect(x, y, w, h);
-    context.strokeStyle = gold ? LEADER_GOLD : "rgba(255,255,255,0.22)";
-    context.lineWidth = Math.max(1, 1.25 * s);
-    context.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
   }
-  const rankSize = namePlates ? Math.min(22 * s, h * 0.4) : Math.round(h * 0.42);
+  const rankSize = namePlates ? Math.min(22 * s, h * 0.4) : 16 * s;
   context.font = `900 ${rankSize}px ${POSTER_FONT}`;
   context.textAlign = "left";
   context.textBaseline = "middle";
-  context.fillStyle = gold ? LEADER_GOLD : "#fff";
+  context.fillStyle = gold ? LEADER_GOLD : "rgba(255,255,255,0.55)";
   context.fillText(String(rank), x + pad, y + h / 2);
-  const logoX = x + 52 * s;
-  const logoSize = Math.min(h - 10 * s, 36 * s);
+  const logoX = x + 40 * s;
+  const logoSize = Math.min(h - 16 * s, 36 * s);
   if (showHeadshots && row.headshotUrl) {
     const shot = await loadCorsImage(row.headshotUrl);
     if (shot) {
@@ -387,30 +382,33 @@ export const paintBarRow = async (
     );
   }
   const name = formatComposerName(row.firstName, row.lastName) || "";
-  const nameSize = namePlates ? Math.min(20 * s, h * 0.34) : Math.round(h * 0.36);
+  const nameSize = namePlates ? Math.min(20 * s, h * 0.34) : 28 * s;
   context.font = `900 ${nameSize}px ${POSTER_FONT}`;
   context.fillStyle = "#fff";
   context.textAlign = "left";
   const nameX = logoX + logoSize + 10 * s;
-  const barX = nameX + 220 * s;
-  const valueW = 92 * s;
+  const valueW = 140 * s;
+  const nameW = 220 * s;
+  const barX = nameX + nameW;
   const barW = Math.max(40 * s, w - (barX - x) - valueW - pad);
-  context.fillText(name.toUpperCase(), nameX, y + h / 2, 210 * s);
+  context.fillText(name.toUpperCase(), nameX, y + h / 2, nameW - 8 * s);
   const frac = row.rawValue != null && max > 0 ? Math.min(1, row.rawValue / max) : 0;
   const fillW = Math.max(frac > 0 ? 12 * s : 0, barW * frac);
-  const barY = y + h * 0.32;
-  const barH = h * 0.36;
+  const trackH = gold ? 36 * s : 22 * s;
+  const barY = y + (h - trackH) / 2;
   context.fillStyle = "rgba(255,255,255,0.08)";
-  context.fillRect(barX, barY, barW, barH);
+  context.fillRect(barX, barY, barW, trackH);
   if (fillW > 0) {
-    context.fillStyle = teamColorBars && row.teamId
-      ? (getTeam(row.teamId)?.cellFrom ?? LEADER_GOLD)
+    const teamFill = row.teamId ? getTeamColors(row.teamId).primary : "#f4f4f4";
+    context.fillStyle = teamColorBars
+      ? teamFill
       : gold
         ? LEADER_GOLD
-        : "#f4f4f4";
-    context.fillRect(barX, barY, fillW, barH);
+        : teamFill;
+    context.fillRect(barX, barY, fillW, trackH);
   }
-  context.font = `900 ${namePlates ? Math.min(24 * s, h * 0.38) : Math.round(h * 0.4)}px ${POSTER_FONT}`;
+  const valueSize = namePlates ? Math.min(24 * s, h * 0.38) : 56 * s;
+  context.font = `900 ${valueSize}px ${POSTER_FONT}`;
   context.textAlign = "right";
   context.fillStyle = gold ? LEADER_GOLD : "#fff";
   context.fillText(row.value, x + w - pad, y + h / 2, valueW);

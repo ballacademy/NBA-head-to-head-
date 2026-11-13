@@ -7,9 +7,14 @@ import {
 import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import { formatComposerName, useComposerNameStyle } from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
+import { PlayerNameFade } from "../instagramComposer/PlayerNameFade";
 import { getTeamColors } from "../lib/teamColors";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import {
@@ -23,6 +28,7 @@ import {
   leaderPlateAccent,
   leaderPlateFill,
 } from "../leaderboardComposer/leaderPlate";
+import { leaderBarsLayout } from "./leaderBarsLayout";
 import {
   leaderBarsExportRows,
   splitLeaderBarsTitle,
@@ -44,6 +50,16 @@ interface LeaderBarsGraphicProps {
   onUpload: (dataUrl: string) => void;
   onPick: () => void;
 }
+
+const u = (value: number) => `calc(${value} * var(--u))`;
+
+const boxStyle = (rect: { x: number; y: number; w: number; h: number }) =>
+  ({
+    left: u(rect.x),
+    top: u(rect.y),
+    width: u(rect.w),
+    height: u(rect.h),
+  }) as const;
 
 export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>(
   function LeaderBarsGraphic(
@@ -69,7 +85,13 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
     const rows = leaderBarsExportRows(draft, exporting, square);
     const max = maxLeaderRaw(rows);
     const lines = splitLeaderBarsTitle(draft.title);
-    const empty = !rows.some(leaderRowOccupied);
+    const empty = !draft.photoSrc && !rows.some(leaderRowOccupied);
+    const photoOnTop = draft.photoPos !== "bottom";
+    const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+    const layout = leaderBarsLayout(rows.length, photoOnTop, boardH);
+    const hero = rows[0];
+    const heroNamed = Boolean(hero && leaderRowName(hero));
+    const plates = draft.namePlates === true;
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -100,14 +122,17 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
       return () => observer.disconnect();
     }, []);
 
+    const stackTop = layout.title.y;
+    const stackH = boardH - stackTop;
+
     return (
       <article
         ref={setRefs}
         className={[
           "lb-board",
           empty ? "is-empty" : "",
-          draft.namePlates !== false ? "is-plates" : "",
-          draft.photoPos === "bottom" ? "is-bottom" : "",
+          plates ? "is-plates" : "",
+          photoOnTop ? "" : "is-bottom",
           story ? "is-story" : "",
           square ? "is-square" : "",
           exporting ? "is-exporting" : "",
@@ -120,17 +145,46 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
         style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
         aria-label="Instagram leader bars graphic"
       >
-        <PhotoFrame
-          src={draft.photoSrc}
-          label={leaderRowName(rows[0] ?? { firstName: "", lastName: "", playerId: null, teamId: null, value: "", rawValue: null, headshotUrl: null }) || "leader photo"}
-          pan={draft.pan}
-          custom={draft.customPhoto}
-          empty={!draft.photoSrc}
-          vignette
-          onPan={onPan}
-          onUpload={onUpload}
-          onPick={onPick}
-        />
+        <div className="lb-hero" style={boxStyle(layout.photo)}>
+          <PhotoFrame
+            src={draft.photoSrc}
+            label={
+              leaderRowName(
+                hero ?? {
+                  firstName: "",
+                  lastName: "",
+                  playerId: null,
+                  teamId: null,
+                  value: "",
+                  rawValue: null,
+                  headshotUrl: null,
+                },
+              ) || "leader photo"
+            }
+            pan={draft.pan}
+            custom={draft.customPhoto}
+            empty={!draft.photoSrc}
+            vignette
+            pickLabel="Pick player"
+            onPan={onPan}
+            onUpload={onUpload}
+            onPick={onPick}
+          />
+          {heroNamed ? (
+            <PlayerNameFade
+              firstName={hero!.firstName}
+              lastName={hero!.lastName}
+              teamId={hero!.teamId}
+              empty={false}
+              givenAria="Leader first name"
+              familyAria="Leader last name"
+              stat={hero!.value}
+              onFirstChange={(firstName) => onRowChange(0, { firstName })}
+              onLastChange={(lastName) => onRowChange(0, { lastName })}
+              onEmptyClick={onPick}
+            />
+          ) : null}
+        </div>
         {draft.showBa !== false ? (
           <img
             className="composer-ba"
@@ -139,7 +193,13 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
             aria-hidden="true"
           />
         ) : null}
-        <div className="lb-stack">
+        <div
+          className="lb-stack"
+          style={{
+            top: u(stackTop),
+            height: u(stackH),
+          }}
+        >
           <div className="lb-title-box">
             <ComposerTitleField
               value={draft.title}
@@ -163,7 +223,7 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
                   className={[
                     "lb-row",
                     gold ? "is-gold" : "",
-                    draft.namePlates !== false ? "is-plate" : "",
+                    plates ? "is-plate" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -175,7 +235,7 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
                     } as React.CSSProperties
                   }
                 >
-                  {draft.namePlates !== false && logo ? (
+                  {plates && logo ? (
                     <img className="lb-row__mark" src={logo} alt="" />
                   ) : null}
                   <span className="lb-rank">{index + 1}</span>
@@ -206,6 +266,7 @@ export const LeaderBarsGraphic = forwardRef<HTMLElement, LeaderBarsGraphicProps>
                     <div
                       className={[
                         "lb-fill",
+                        gold ? "" : "is-team",
                         draft.barStyle === "team" ? "is-team" : "",
                       ]
                         .filter(Boolean)
