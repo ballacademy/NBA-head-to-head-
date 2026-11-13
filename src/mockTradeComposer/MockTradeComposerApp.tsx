@@ -893,6 +893,14 @@ export function MockTradeComposerApp() {
               onTitleChange={(title) =>
                 setDraft((current) => ({ ...current, title }))
               }
+              onReceiveChange={(side, receive) =>
+                setDraft((current) =>
+                  patchMockTradeSide(current, side, {
+                    ...current.sides[side]!,
+                    receive,
+                  }),
+                )
+              }
               onPlayerFirstNameChange={(side, player, firstName) =>
                 setDraft((current) =>
                   patchMockTradeSide(current, side, {

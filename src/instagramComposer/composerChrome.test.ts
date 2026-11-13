@@ -2052,4 +2052,34 @@ describe("composer chrome", () => {
     expect(mockNews).toContain("parseGetLine");
     expect(mockNews).toContain("extractTradeStoryIds");
   });
+
+  it("ships Mock Trade receive as one top-of-column fade kicker", () => {
+    const mockGraphic = readFileSync(
+      join(root, "mockTradeComposer/MockTradeGraphic.tsx"),
+      "utf8",
+    );
+    const mockCss = readFileSync(
+      join(root, "mockTradeComposer/mockTradeComposer.css"),
+      "utf8",
+    );
+    const mockCanvas = readFileSync(
+      join(root, "mockTradeComposer/renderMockTradeCanvas.ts"),
+      "utf8",
+    );
+    const mockLayout = readFileSync(
+      join(root, "mockTradeComposer/mockTradeLayout.ts"),
+      "utf8",
+    );
+    expect(mockGraphic).toContain("mt-receive");
+    expect(mockGraphic).toContain("mockTradeReceiveLabel");
+    expect(mockGraphic).not.toContain("mt-gets");
+    expect(mockGraphic).not.toMatch(/\bGETS\b/);
+    expect(mockCss).toContain(".mt-receive");
+    expect(mockCss).not.toContain(".mt-gets");
+    expect(mockCanvas).toContain("mockTradeReceiveLabel");
+    expect(mockCanvas).toContain("MT_RECEIVE_SIZE");
+    expect(mockCanvas).not.toMatch(/\bGETS\b/);
+    expect(mockLayout).toContain("MT_RECEIVE_H");
+    expect(mockLayout).toContain("receive:");
+  });
 });

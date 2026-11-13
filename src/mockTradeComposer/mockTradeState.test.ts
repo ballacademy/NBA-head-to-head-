@@ -16,6 +16,8 @@ import {
   MOCK_TRADE_PLAYER_MAX,
   mockTradeCaptionFor,
   mockTradePickLabel,
+  mockTradeReceiveAuto,
+  mockTradeReceiveLabel,
   mockTradeSalaryTotalsLabel,
   mockTradeTeamCount,
   normalizeMockTradeDraft,
@@ -205,6 +207,53 @@ describe("mock trade draft", () => {
     expect(next.sides).toHaveLength(2);
     expect(next.showBa).toBe(true);
   });
+
+  it("auto-fills nickname RECEIVE from the acquiring team", () => {
+    expect(mockTradeReceiveAuto("BOS")).toBe("CELTICS RECEIVE");
+    expect(mockTradeReceiveAuto("PHI")).toBe("76ERS RECEIVE");
+    expect(mockTradeReceiveAuto("MIN")).toBe("WOLVES RECEIVE");
+    expect(mockTradeReceiveAuto("POR")).toBe("BLAZERS RECEIVE");
+    expect(mockTradeReceiveAuto(null)).toBe("");
+    expect(
+      mockTradeReceiveLabel({
+        teamId: null,
+        receive: "",
+        players: [],
+        picks: [],
+      }),
+    ).toBe("");
+    expect(
+      mockTradeReceiveLabel({
+        teamId: "BOS",
+        receive: "",
+        players: [],
+        picks: [],
+      }),
+    ).toBe("CELTICS RECEIVE");
+    expect(
+      mockTradeReceiveLabel({
+        teamId: "BOS",
+        receive: "Boston gets Brown",
+        players: [],
+        picks: [],
+      }),
+    ).toBe("BOSTON GETS BROWN");
+    const seeded = setMockTradeSideTeam(defaultMockTradeDraft(), 0, "BOS");
+    expect(mockTradeReceiveLabel(seeded.sides[0]!)).toBe("CELTICS RECEIVE");
+    const swapped = setMockTradeSideTeam(seeded, 0, "PHI");
+    expect(mockTradeReceiveLabel(swapped.sides[0]!)).toBe("76ERS RECEIVE");
+    const custom = setMockTradeSideTeam(
+      {
+        ...seeded,
+        sides: seeded.sides.map((side, index) =>
+          index === 0 ? { ...side, receive: "CELTS GET BROWN" } : side,
+        ),
+      },
+      0,
+      "PHI",
+    );
+    expect(mockTradeReceiveLabel(custom.sides[0]!)).toBe("CELTS GET BROWN");
+  });
 });
 
 describe("mock trade layout", () => {
@@ -242,6 +291,9 @@ describe("mock trade layout", () => {
     expect(one.columns[0]!.picks).toHaveLength(0);
     expect(one.columns[0]!.logo.w).toBeCloseTo(one.columns[0]!.w, 5);
     expect(one.columns[0]!.logo.h).toBeCloseTo(one.columns[0]!.h, 5);
+    expect(one.columns[0]!.receive.y).toBe(one.columns[0]!.y);
+    expect(one.columns[0]!.receive.h).toBe(88);
+    expect(one.columns[0]!.players[0]!.photo.y).toBe(one.columns[0]!.y);
 
     const two = mockTradeLayout(2, [2, 2], [0, 0]);
     expect(two.columns[0]!.players[0]!.photo.x).toBe(
@@ -280,5 +332,13 @@ describe("mock trade layout", () => {
     expect(story.columns[0]!.h).toBeGreaterThan(
       mockTradeLayout(2, [1, 1], [1, 1]).columns[0]!.h,
     );
+    expect(story.columns[0]!.receive.h).toBe(88);
+    expect(story.columns[0]!.players[0]!.photo.h).toBeGreaterThan(
+      mockTradeLayout(2, [1, 1], [0, 0]).columns[0]!.players[0]!.photo.h,
+    );
+    const three = mockTradeLayout(3, [1, 1, 1], [0, 0, 0]);
+    expect(three.columns[0]!.receive.h).toBe(88);
+    expect(three.columns[0]!.receive.y).toBe(three.columns[0]!.y);
+    expect(three.columns[0]!.players[0]!.photo.y).toBe(three.columns[0]!.y);
   });
 });

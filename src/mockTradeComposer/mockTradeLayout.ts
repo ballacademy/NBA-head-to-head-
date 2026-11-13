@@ -21,6 +21,10 @@ export const MT_CHIP_GAP = 10;
 export const MT_CHIP_INSET = 12;
 export const MT_PLAYER_GAP = 8;
 export const MT_NAME_FADE_H = 110;
+/** Top-of-column receive fade. Overlay — does not reserve a GETS band. */
+export const MT_RECEIVE_H = 88;
+export const MT_RECEIVE_SIZE = 28;
+export const MT_RECEIVE_SIZE_3 = 22;
 
 export interface MockTradeRect {
   x: number;
@@ -40,6 +44,7 @@ export interface MockTradeColumnLayout {
   w: number;
   h: number;
   logo: MockTradeRect;
+  receive: MockTradeRect;
   players: MockTradePlayerRect[];
   picks: MockTradeRect[];
 }
@@ -185,6 +190,7 @@ export const mockTradeLayout = (
       w,
       h,
       logo: { x, y, w, h },
+      receive: { x, y, w, h: Math.min(MT_RECEIVE_H, h) },
       players: packPlayers(x, y, w, playersH, playerCount),
       picks: packPicks(innerX, picksY, innerW, pickCount, n === 3),
     };

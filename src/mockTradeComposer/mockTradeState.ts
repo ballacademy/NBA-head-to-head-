@@ -27,6 +27,7 @@ export { clampPan, type PhotoPan };
 
 export const DEFAULT_MOCK_TRADE_TITLE = "MOCK TRADE";
 export const MOCK_TRADE_TITLE_MAX = 28;
+export const MOCK_TRADE_RECEIVE_MAX = 28;
 export const MOCK_TRADE_NAME_MAX = 22;
 export const MOCK_TRADE_PLAYER_MAX = 4;
 export const MOCK_TRADE_PICK_MAX = 6;
@@ -61,6 +62,7 @@ export interface MockTradePick {
 
 export interface MockTradeSide {
   teamId: string | null;
+  receive?: string;
   players: MockTradePlayer[];
   picks: MockTradePick[];
 }
@@ -119,9 +121,40 @@ export const emptyMockTradePick = (): MockTradePick => ({
 
 export const emptyMockTradeSide = (): MockTradeSide => ({
   teamId: null,
+  receive: "",
   players: [emptyMockTradePlayer()],
   picks: [],
 });
+
+/** Nickname for the receive kicker. Long clubs shorten; PHI stays 76ERS. */
+const RECEIVE_NICK: Record<string, string> = {
+  MIN: "WOLVES",
+  POR: "BLAZERS",
+};
+
+export const mockTradeReceiveNick = (teamId: string | null) => {
+  const team = getTeam(teamId);
+  if (!team) {
+    return "";
+  }
+  return (RECEIVE_NICK[team.id] ?? team.shortName)
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+};
+
+export const mockTradeReceiveAuto = (teamId: string | null) => {
+  const nick = mockTradeReceiveNick(teamId);
+  return nick ? `${nick} RECEIVE` : "";
+};
+
+export const mockTradeReceiveLabel = (side: MockTradeSide) => {
+  const override = (side.receive ?? "").replace(/\s+/g, " ").trim();
+  if (override) {
+    return override.toUpperCase();
+  }
+  return mockTradeReceiveAuto(side.teamId);
+};
 
 export const isMockTradePlayer = (value: unknown): value is MockTradePlayer =>
   Boolean(
@@ -213,6 +246,10 @@ const parseSide = (value: unknown): MockTradeSide | null => {
     : [];
   return {
     teamId: typeof raw.teamId === "string" && raw.teamId.trim() ? raw.teamId : null,
+    receive:
+      typeof raw.receive === "string"
+        ? raw.receive.slice(0, MOCK_TRADE_RECEIVE_MAX)
+        : "",
     players: players.slice(0, MOCK_TRADE_PLAYER_MAX),
     picks: picks.slice(0, MOCK_TRADE_PICK_MAX),
   };
@@ -316,9 +353,19 @@ export const setMockTradeSideTeam = (
   teamId: string | null,
 ): MockTradeDraft => ({
   ...draft,
-  sides: draft.sides.map((side, sideIndex) =>
-    sideIndex === index ? { ...side, teamId } : side,
-  ),
+  sides: draft.sides.map((side, sideIndex) => {
+    if (sideIndex !== index) {
+      return side;
+    }
+    const auto = mockTradeReceiveAuto(side.teamId);
+    const override = (side.receive ?? "").replace(/\s+/g, " ").trim().toUpperCase();
+    const keepCustom = Boolean(override && override !== auto);
+    return {
+      ...side,
+      teamId,
+      receive: keepCustom ? side.receive : "",
+    };
+  }),
 });
 
 export const addMockTradePlayer = (side: MockTradeSide): MockTradeSide =>

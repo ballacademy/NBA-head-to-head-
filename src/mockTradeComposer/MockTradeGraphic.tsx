@@ -25,9 +25,11 @@ import { salaryLabelForPlayer } from "../lib/playerSalaries";
 import { getTeam } from "../standingsComposer/teams";
 import { mockTradeLayout } from "./mockTradeLayout";
 import {
+  MOCK_TRADE_RECEIVE_MAX,
   MOCK_TRADE_TITLE_MAX,
   compactMockTradeDraft,
   mockTradePickLabel,
+  mockTradeReceiveLabel,
   mockTradeSalaryTotalsLabel,
   mockTradePlayerSlot,
   mockTradeTeamCount,
@@ -43,6 +45,7 @@ interface MockTradeGraphicProps {
   exporting?: boolean;
   story?: boolean;
   onTitleChange: (value: string) => void;
+  onReceiveChange: (side: number, value: string) => void;
   onPlayerFirstNameChange: (
     side: number,
     player: number,
@@ -82,6 +85,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
       exporting = false,
       story = false,
       onTitleChange,
+      onReceiveChange,
       onPlayerFirstNameChange,
       onPlayerLastNameChange,
       onPickPlayer,
@@ -143,6 +147,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
         ref={setRefs}
         className={[
           "mt-board",
+          teamCount === 3 ? "is-three" : "",
           exporting ? "is-exporting" : "",
           story ? "is-story" : "",
           composerLookClass(look),
@@ -172,7 +177,7 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                 ...boxStyle(column),
                 ["--col-fill" as string]: headlinePanelHex(side.teamId),
               }}
-              aria-label={`Team ${sideIndex + 1} gets`}
+              aria-label={`Team ${sideIndex + 1} receive`}
             >
               <div className="mt-logo" style={boxStyle(local(column.logo))}>
                 {team ? (
@@ -186,6 +191,32 @@ export const MockTradeGraphic = forwardRef<HTMLElement, MockTradeGraphicProps>(
                 ) : (
                   <span className="mt-team-fallback">{`TEAM ${sideIndex + 1}`}</span>
                 )}
+              </div>
+              <div
+                className={[
+                  "mt-receive",
+                  mockTradeReceiveLabel(side) ? "" : "is-empty",
+                  draft.showSalaries ? "has-cap" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={boxStyle(local(column.receive))}
+              >
+                <input
+                  className="mt-receive__input"
+                  value={mockTradeReceiveLabel(side)}
+                  maxLength={MOCK_TRADE_RECEIVE_MAX}
+                  spellCheck={false}
+                  placeholder=""
+                  aria-label={`Team ${sideIndex + 1} receive`}
+                  onChange={(event) =>
+                    onComposerTextChange(
+                      event,
+                      (value) => onReceiveChange(sideIndex, value),
+                      MOCK_TRADE_RECEIVE_MAX,
+                    )
+                  }
+                />
               </div>
               {draft.showSalaries ? (
                 <p className="mt-cap">{mockTradeSalaryTotalsLabel(board, sideIndex)}</p>

@@ -34,6 +34,8 @@ import { getTeam } from "../standingsComposer/teams";
 import {
   GRAPHIC_WIDTH,
   MT_NAME_FADE_H,
+  MT_RECEIVE_SIZE,
+  MT_RECEIVE_SIZE_3,
   MT_TITLE_SIZE,
   mockTradeBoardHeight,
   mockTradeLayout,
@@ -41,6 +43,7 @@ import {
 import {
   compactMockTradeDraft,
   mockTradePickLabel,
+  mockTradeReceiveLabel,
   mockTradeSalaryTotalsLabel,
   mockTradeTeamCount,
   type MockTradeDraft,
@@ -172,21 +175,6 @@ export const renderMockTradeCanvas = async (
       setLetterSpacing(context, 0);
     }
 
-    if (input.showSalaries) {
-      context.font = `800 ${14 * s}px ${POSTER_FONT}`;
-      context.fillStyle = "rgba(250, 204, 21, 0.92)";
-      context.textAlign = "center";
-      context.textBaseline = "top";
-      setLetterSpacing(context, 0.1 * 14 * s);
-      context.fillText(
-        mockTradeSalaryTotalsLabel(board, sideIndex),
-        (column.x + column.w / 2) * s,
-        (column.y + 10) * s,
-        (column.w - 20) * s,
-      );
-      setLetterSpacing(context, 0);
-    }
-
     const hero = side.players.length <= 2;
     const fadeTeam = getTeam(side.teamId);
     const fadeLogo = fadeTeam ? await loadImage(fadeTeam.logoSrc) : null;
@@ -290,6 +278,52 @@ export const renderMockTradeCanvas = async (
         cx + cw / 2,
         cy + ch / 2,
         cw - 12 * s,
+      );
+      setLetterSpacing(context, 0);
+    }
+
+    const receiveLabel = mockTradeReceiveLabel(side);
+    if (receiveLabel) {
+      const rx = column.receive.x * s;
+      const ry = column.receive.y * s;
+      const rw = column.receive.w * s;
+      const rh = column.receive.h * s;
+      const fade = context.createLinearGradient(rx, ry, rx, ry + rh);
+      fade.addColorStop(0, "rgba(0,0,0,0.92)");
+      fade.addColorStop(0.38, "rgba(0,0,0,0.62)");
+      fade.addColorStop(0.76, "rgba(0,0,0,0.2)");
+      fade.addColorStop(1, "rgba(0,0,0,0)");
+      context.fillStyle = fade;
+      context.fillRect(rx, ry, rw, rh);
+      const size =
+        (teamCount === 3 ? MT_RECEIVE_SIZE_3 : MT_RECEIVE_SIZE) * s;
+      context.font = `900 ${size}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.textBaseline = "top";
+      context.fillStyle = "#fff";
+      context.shadowColor = "rgba(0,0,0,0.72)";
+      context.shadowOffsetX = s;
+      context.shadowOffsetY = s;
+      context.shadowBlur = 0;
+      setLetterSpacing(context, (teamCount === 3 ? 0.06 : 0.08) * size);
+      context.fillText(receiveLabel, rx + rw / 2, ry + 12 * s, rw - 20 * s);
+      setLetterSpacing(context, 0);
+      context.shadowColor = "transparent";
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = 0;
+    }
+
+    if (input.showSalaries) {
+      context.font = `800 ${14 * s}px ${POSTER_FONT}`;
+      context.fillStyle = "rgba(250, 204, 21, 0.92)";
+      context.textAlign = "center";
+      context.textBaseline = "top";
+      setLetterSpacing(context, 0.1 * 14 * s);
+      context.fillText(
+        mockTradeSalaryTotalsLabel(board, sideIndex),
+        (column.x + column.w / 2) * s,
+        (column.y + (receiveLabel ? 46 : 10)) * s,
+        (column.w - 20) * s,
       );
       setLetterSpacing(context, 0);
     }

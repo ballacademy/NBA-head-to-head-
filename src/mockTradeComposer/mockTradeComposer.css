@@ -100,10 +100,63 @@
   color: rgba(255, 255, 255, 0.28);
 }
 
+.mt-receive {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: calc(12 * var(--u)) calc(10 * var(--u)) calc(28 * var(--u));
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.62) 38%,
+    rgba(0, 0, 0, 0.2) 76%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.mt-receive.is-empty {
+  background: none;
+}
+
+.mt-receive__input {
+  pointer-events: auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.72);
+}
+
+.mt-board.is-three .mt-receive__input {
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.06em;
+}
+
+.mt-receive__input:focus {
+  outline: calc(2 * var(--u)) dashed rgba(255, 255, 255, 0.45);
+  outline-offset: calc(4 * var(--u));
+}
+
+.mt-board.is-exporting .mt-receive__input:focus {
+  outline: none;
+}
+
 .mt-cap {
   position: absolute;
   z-index: 4;
-  top: calc(10 * var(--u));
+  top: calc(46 * var(--u));
   left: calc(10 * var(--u));
   right: calc(10 * var(--u));
   margin: 0;
@@ -117,6 +170,10 @@
   text-transform: uppercase;
   pointer-events: none;
   text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.7);
+}
+
+.mt-col:has(.mt-receive.is-empty) .mt-cap {
+  top: calc(10 * var(--u));
 }
 
 .mt-grade {

@@ -802,6 +802,7 @@ export const applyReportedTrade = (
   const sides: MockTradeSide[] = trade.sides.slice(0, MOCK_TRADE_TEAM_MAX).map(
     (side) => ({
       teamId: side.teamId,
+      receive: "",
       players: side.players.length
         ? side.players
             .slice(0, MOCK_TRADE_PLAYER_MAX)
@@ -813,6 +814,7 @@ export const applyReportedTrade = (
   while (sides.length < 2) {
     sides.push({
       teamId: null,
+      receive: "",
       players: [emptyMockTradePlayer()],
       picks: [],
     });
