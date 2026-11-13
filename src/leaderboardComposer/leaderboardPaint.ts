@@ -37,6 +37,12 @@ import { leaderPlateAccent, leaderPlateFill } from "./leaderPlate";
 export { leaderPlateAccent, leaderPlateFill, packedLeaderRowH } from "./leaderPlate";
 
 export const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
+export const RANK_GOLD = "#d4af37";
+export const RANK_SILVER = "#c0c7d0";
+export const RANK_BRONZE = "#c47a3a";
+
+export const rankMetalFill = (rank: number, quiet = "rgba(255,255,255,0.55)") =>
+  rank === 1 ? RANK_GOLD : rank === 2 ? RANK_SILVER : rank === 3 ? RANK_BRONZE : quiet;
 export const BA_SRC = "/ba-logo-circled.png";
 export const BA_SIZE = 72;
 export const BA_INSET = 42;
@@ -426,6 +432,7 @@ export const paintListRow = async (
   showHeadshots: boolean,
   scale: number,
   namePlates = false,
+  punch = false,
 ) => {
   const s = scale;
   if (namePlates) {
@@ -434,14 +441,18 @@ export const paintListRow = async (
     context.fillStyle = "rgba(212, 175, 55, 0.18)";
     context.fillRect(x, y, w, h);
   }
-  const typeH = namePlates ? Math.min(22 * s, h * 0.38) : Math.round(h * 0.42);
-  context.font = `900 ${typeH}px ${POSTER_FONT}`;
+  const rankSize = punch
+    ? Math.min(Math.round(h * 0.11), 18 * s)
+    : namePlates
+      ? Math.min(22 * s, h * 0.38)
+      : Math.round(h * 0.42);
+  context.font = `900 ${rankSize}px ${POSTER_FONT}`;
   context.textAlign = "left";
   context.textBaseline = "middle";
-  context.fillStyle = highlight ? LEADER_GOLD : "rgba(255,255,255,0.7)";
-  context.fillText(String(rank), x + 8 * s, y + h / 2);
-  const logoSize = Math.min(h - 8 * s, 32 * s);
-  const logoX = x + 40 * s;
+  context.fillStyle = highlight ? LEADER_GOLD : rankMetalFill(rank);
+  context.fillText(String(rank), x + 6 * s, y + h / 2);
+  const logoSize = Math.min(h - (punch ? 24 * s : 8 * s), punch ? 28 * s : 32 * s);
+  const logoX = x + (punch ? 26 * s : 40 * s);
   if (showHeadshots && row.headshotUrl) {
     const shot = await loadCorsImage(row.headshotUrl);
     if (shot) {
@@ -467,19 +478,34 @@ export const paintListRow = async (
       logoSize,
     );
   }
-  const name = formatComposerName(row.firstName, row.lastName).toUpperCase();
+  const name = (
+    punch
+      ? row.lastName || row.firstName || formatComposerName(row.firstName, row.lastName)
+      : formatComposerName(row.firstName, row.lastName)
+  ).toUpperCase();
   context.fillStyle = highlight ? LEADER_GOLD : "#fff";
-  const nameSize = namePlates ? Math.min(18 * s, h * 0.32) : Math.round(h * 0.34);
+  const nameSize = punch
+    ? Math.min(Math.round(h * 0.2), 42 * s)
+    : namePlates
+      ? Math.min(18 * s, h * 0.32)
+      : Math.round(h * 0.34);
   context.font = `900 ${nameSize}px ${POSTER_FONT}`;
   const nameX = logoX + logoSize + 8 * s;
-  const nameMax = Math.max(48 * s, w - (nameX - x) - 70 * s);
+  const valueW = punch ? 170 * s : 80 * s;
+  const nameMax = Math.max(48 * s, w - (nameX - x) - valueW);
   const fitted = abbreviateOverflowName(name, nameMax, (value) =>
     context.measureText(value).width,
   );
   context.fillText(fitted, nameX, y + h / 2, nameMax);
   context.textAlign = "right";
-  context.font = `900 ${namePlates ? Math.min(22 * s, h * 0.36) : Math.round(h * 0.4)}px ${POSTER_FONT}`;
-  context.fillText(row.value, x + w - 10 * s, y + h / 2, 80 * s);
+  const valueSize = punch
+    ? Math.min(Math.round(h * 0.3), 64 * s)
+    : namePlates
+      ? Math.min(22 * s, h * 0.36)
+      : Math.round(h * 0.4);
+  context.font = `900 ${valueSize}px ${POSTER_FONT}`;
+  context.fillStyle = highlight ? LEADER_GOLD : rankMetalFill(rank, "#fff");
+  context.fillText(row.value, x + w - 10 * s, y + h / 2, valueW);
 };
 
 export const paintTitlePlate = (

@@ -21,7 +21,7 @@ export const downloadExportPack = async (
     filename: string;
     render: () => Promise<HTMLCanvasElement>;
   }> = [],
-  story: { safe?: boolean; letterbox?: boolean } = {},
+  story: { safe?: boolean; letterbox?: boolean; squareLetterbox?: boolean } = {},
 ) => {
   const board = await render();
   await downloadCanvasPng(board, filename);
@@ -32,8 +32,10 @@ export const downloadExportPack = async (
       storyFilename(filename),
     );
   }
-  await wait(220);
-  await downloadCanvasPng(await toSquareCanvas(board), squareFilename(filename));
+  if (story.squareLetterbox !== false) {
+    await wait(220);
+    await downloadCanvasPng(await toSquareCanvas(board), squareFilename(filename));
+  }
   for (const extra of extras) {
     await wait(220);
     await downloadCanvasPng(await extra.render(), extra.filename);

@@ -1,6 +1,5 @@
 import {
   DEFAULT_CUSTOM_PAN,
-  DEFAULT_HEADSHOT_PAN,
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -15,7 +14,6 @@ import {
   leaderRowOccupied,
   parseLeaderRowCount,
   resizeLeaderRows,
-  visibleLeaderRows,
   type LeaderRow,
   type LeaderWindowKind,
 } from "../leaderboardComposer/leaderboardFill";
@@ -23,6 +21,8 @@ import {
 export const LEADER_SPLIT_STORAGE_KEY = "ddgm:leader-split-composer";
 export const LEADER_SPLIT_SAVES_KEY = "ddgm:leader-split-composer:saves";
 export const DEFAULT_LEADER_SPLIT_TITLE = "PPG LEADERS";
+/** Face lower, fill the leftover crop — not a floating bust in a black well. */
+export const LS_HERO_PAN: PhotoPan = { x: 0.5, y: 0.4, zoom: 1.72, rotate: 0 };
 
 export interface LeaderSplitDraft {
   title: string;
@@ -34,7 +34,7 @@ export interface LeaderSplitDraft {
   season: string;
   mirror: boolean;
   showListHeadshots: boolean;
-  /** Team-color name plates. Default On; Off restores hairline rows. */
+  /** Team-color name plates. Default Off; packing fills the pane. */
   namePlates: boolean;
   playerId: string | null;
   teamId: string | null;
@@ -123,21 +123,28 @@ export const applyLeaderSplitHero = (
     teamId: getTeam(player.team)?.id ?? player.team ?? null,
     photoSrc: keep ? draft.photoSrc : player.headshotUrl || null,
     customPhoto: Boolean(keep),
-    pan: keep ? { ...draft.pan } : { ...DEFAULT_HEADSHOT_PAN },
+    pan: keep ? { ...draft.pan } : { ...LS_HERO_PAN },
   };
 };
 
 export const leaderSplitCaption = (draft: LeaderSplitDraft) =>
   leaderCaptionLines(draft.title || DEFAULT_LEADER_SPLIT_TITLE, draft.rows);
 
-export const leaderSplitExportRows = (
+export const leaderSplitVisibleEntries = (
   draft: LeaderSplitDraft,
-  exporting: boolean,
-  square: boolean,
+  square = false,
 ) => {
   const rows = square ? draft.rows.slice(0, 5) : draft.rows;
-  return visibleLeaderRows(rows, exporting);
+  return rows
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) => leaderRowOccupied(row));
 };
+
+export const leaderSplitExportRows = (
+  draft: LeaderSplitDraft,
+  _exporting: boolean,
+  square: boolean,
+) => leaderSplitVisibleEntries(draft, square).map((entry) => entry.row);
 
 export const leaderSplitOccupied = (draft: LeaderSplitDraft) =>
   Boolean(draft.photoSrc) || draft.rows.some(leaderRowOccupied);

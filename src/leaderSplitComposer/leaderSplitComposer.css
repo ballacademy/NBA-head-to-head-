@@ -5,6 +5,7 @@
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --gold: #d4af37;
   --list-w: 42%;
+  --ls-row-h: 180;
   position: relative;
   width: 100%;
   height: 100%;
@@ -24,72 +25,54 @@
   flex-direction: row-reverse;
 }
 
-.ls-board.is-story,
-.ls-board.is-square {
-  flex-direction: column;
-}
-
-.ls-board.is-story.is-mirror,
-.ls-board.is-square.is-mirror {
-  flex-direction: column;
-}
-
 .ls-list {
   flex: 0 0 var(--list-w);
   display: flex;
   flex-direction: column;
   min-width: 0;
   z-index: 2;
-  padding: calc(28 * var(--u)) calc(28 * var(--u)) calc(24 * var(--u));
+  padding: calc(24 * var(--u));
   background-color: #1c1c1c;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
   background-size: calc(10 * var(--u)) calc(10 * var(--u));
   background-repeat: repeat;
 }
 
-.ls-board.is-story .ls-list,
-.ls-board.is-square .ls-list {
-  flex: 1 1 auto;
-  --list-w: 100%;
-}
-
-.ls-board .pod-photo {
+.ls-photo-wrap {
   position: relative;
   flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   z-index: 1;
+}
+
+.ls-photo-wrap .pod-photo {
+  position: absolute;
+  inset: 0;
+  border: 0;
   border-radius: 0;
-  border: none;
+  box-shadow: none;
+  background: #121214;
   touch-action: none;
   cursor: grab;
 }
 
-.ls-board.is-story .pod-photo,
-.ls-board.is-square .pod-photo {
-  flex: 0 0 52%;
+.ls-photo-wrap .pod-photo.is-empty {
+  background: #121214;
 }
 
-.ls-list-title {
-  flex: 0 0 auto;
-  width: 100%;
-  margin: 0 0 calc(12 * var(--u));
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--gold);
-  font-family: var(--ig-poster);
-  font-weight: 900;
-  font-size: calc(22 * var(--u));
+.ls-photo-wrap .pod-photo__pick {
+  font-size: calc(64 * var(--u));
   letter-spacing: 0.14em;
-  text-transform: uppercase;
-  outline: none;
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .ls-rows {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  gap: calc(4 * var(--u));
+  justify-content: flex-start;
+  gap: 0;
   min-height: 0;
   margin: 0;
   padding: 0;
@@ -98,11 +81,14 @@
 
 .ls-row {
   position: relative;
+  flex: 1 1 0;
   display: grid;
-  grid-template-columns: calc(36 * var(--u)) calc(32 * var(--u)) minmax(0, 1fr) calc(72 * var(--u));
+  grid-template-columns:
+    calc(22 * var(--u)) calc(28 * var(--u)) minmax(0, 1fr) calc(170 * var(--u));
   align-items: center;
-  gap: calc(8 * var(--u));
-  min-height: calc(48 * var(--u));
+  gap: calc(6 * var(--u));
+  min-height: 0;
+  overflow: hidden;
 }
 
 .ls-row + .ls-row {
@@ -125,13 +111,10 @@
 }
 
 .ls-board.is-plates .ls-rows {
-  justify-content: stretch;
   gap: calc(8 * var(--u));
 }
 
 .ls-board.is-plates .ls-row {
-  flex: 1 1 0;
-  min-height: calc(56 * var(--u));
   padding: 0 calc(10 * var(--u));
   border-radius: calc(8 * var(--u));
   overflow: hidden;
@@ -185,15 +168,18 @@
 }
 
 .ls-rank {
-  font-size: calc(18 * var(--u));
-  color: rgba(255, 255, 255, 0.7);
+  font-size: min(
+    calc(var(--ls-row-h) * 0.11 * var(--u)),
+    calc(18 * var(--u))
+  );
+  color: rgba(255, 255, 255, 0.55);
   text-align: center;
 }
 
 .ls-logo,
 .ls-face {
-  width: calc(30 * var(--u));
-  height: calc(30 * var(--u));
+  width: calc(28 * var(--u));
+  height: calc(28 * var(--u));
   object-fit: contain;
 }
 
@@ -203,14 +189,29 @@
 }
 
 .ls-name {
-  font-size: calc(18 * var(--u));
+  font-size: min(
+    calc(var(--ls-row-h) * 0.2 * var(--u)),
+    calc(42 * var(--u))
+  );
   letter-spacing: 0.02em;
   text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  field-sizing: fixed;
 }
 
 .ls-value {
-  font-size: calc(22 * var(--u));
+  font-size: min(
+    calc(var(--ls-row-h) * 0.3 * var(--u)),
+    calc(64 * var(--u))
+  );
   text-align: right;
+  line-height: 1;
+  overflow: hidden;
+  width: 100%;
+  field-sizing: fixed;
 }
 
 .ls-fade {
@@ -218,7 +219,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 46%;
+  height: 42%;
   z-index: 2;
   pointer-events: none;
   background: linear-gradient(
@@ -237,11 +238,12 @@
   z-index: 6;
   display: flex;
   flex-direction: column;
-  gap: calc(6 * var(--u));
+  gap: calc(4 * var(--u));
   pointer-events: none;
 }
 
 .ls-kicker,
+.ls-hero-given,
 .ls-hero-name,
 .ls-hero-value {
   font-family: var(--ig-poster);
@@ -253,7 +255,7 @@
 
 .ls-kicker {
   color: var(--gold);
-  font-size: calc(22 * var(--u));
+  font-size: calc(18 * var(--u));
   letter-spacing: 0.18em;
   pointer-events: auto;
   background: transparent;
@@ -262,14 +264,21 @@
   width: 100%;
 }
 
+.ls-hero-given {
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.1em;
+  opacity: 0.92;
+}
+
 .ls-hero-name {
-  font-size: calc(72 * var(--u));
+  font-size: calc(96 * var(--u));
   line-height: 0.88;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .ls-hero-value {
-  font-size: calc(54 * var(--u));
+  font-size: calc(64 * var(--u));
   color: var(--gold);
 }
 
@@ -284,17 +293,4 @@
 .ls-board.is-none {
   --frame-w: 0px;
   --frame-color: transparent;
-}
-
-.ls-photo-wrap {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-}
-
-.ls-photo-wrap .pod-photo {
-  position: absolute;
-  inset: 0;
-  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
 }

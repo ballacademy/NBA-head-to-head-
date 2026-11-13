@@ -1,4 +1,7 @@
-import { downloadPngMaybeSquare } from "../instagramComposer/exportDownload";
+import {
+  downloadCanvasPng,
+  squareFilename,
+} from "../instagramComposer/exportDownload";
 import {
   renderLeaderSplitCanvas,
   type LeaderSplitRenderInput,
@@ -15,5 +18,8 @@ export const exportLeaderSplitPng = async (
     { ...input, story, square },
     2,
   );
-  await downloadPngMaybeSquare(canvas, filename, square);
+  await downloadCanvasPng(
+    canvas,
+    square ? squareFilename(filename) : filename,
+  );
 };

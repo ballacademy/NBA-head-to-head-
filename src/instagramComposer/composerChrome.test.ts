@@ -2117,4 +2117,41 @@ describe("composer chrome", () => {
     expect(state).toContain("namePlates: false");
     expect(state).toContain("visibleLeaderRows(rows, true)");
   });
+
+  it("packs Leader split leftover into a full-bleed hero with punch type", () => {
+    const layout = readFileSync(
+      join(root, "leaderSplitComposer/leaderSplitLayout.ts"),
+      "utf8",
+    );
+    const css = readFileSync(
+      join(root, "leaderSplitComposer/leaderSplitComposer.css"),
+      "utf8",
+    );
+    const graphic = readFileSync(
+      join(root, "leaderSplitComposer/LeaderSplitGraphic.tsx"),
+      "utf8",
+    );
+    const canvas = readFileSync(
+      join(root, "leaderSplitComposer/renderLeaderSplitCanvas.ts"),
+      "utf8",
+    );
+    const state = readFileSync(
+      join(root, "leaderSplitComposer/leaderSplitState.ts"),
+      "utf8",
+    );
+    const pack = readFileSync(
+      join(root, "leaderSplitComposer/LeaderSplitComposerApp.tsx"),
+      "utf8",
+    );
+    expect(layout).toContain("LS_LIST_PCT = 0.42");
+    expect(css).not.toContain("space-evenly");
+    expect(css).not.toContain(".ls-list-title");
+    expect(css).toContain("font-size: calc(96 * var(--u))");
+    expect(graphic).not.toContain("ls-list-title");
+    expect(graphic).toContain("ls-kicker");
+    expect(canvas).not.toContain("min(56");
+    expect(canvas).toContain("leaderSplitLayout");
+    expect(state).toContain("leaderSplitVisibleEntries");
+    expect(pack).toContain("squareLetterbox: false");
+  });
 });

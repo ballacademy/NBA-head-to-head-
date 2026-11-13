@@ -1,13 +1,15 @@
-import { formatComposerName } from "../instagramComposer/composerNameStyle";
+import {
+  composerNameLines,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import type { ComposerLook } from "../instagramComposer/composerLook";
+import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
-  GRAPHIC_HEIGHT,
-  GRAPHIC_WIDTH,
-  STORY_DESIGN_HEIGHT,
-} from "../standingsComposer/rankingState";
-import { LEADER_GOLD, squareLeaderRows, visibleLeaderRows } from "../leaderboardComposer/leaderboardFill";
+  LEADER_GOLD,
+  squareLeaderRows,
+  visibleLeaderRows,
+} from "../leaderboardComposer/leaderboardFill";
 import {
-  packedLeaderRowH,
   paintLeaderBa,
   paintLeaderCharcoalPane,
   paintLeaderFrame,
@@ -17,6 +19,14 @@ import {
   POSTER_FONT,
   setTracking,
 } from "../leaderboardComposer/leaderboardPaint";
+import {
+  LS_HERO_FAMILY,
+  LS_HERO_GIVEN,
+  LS_HERO_KICKER,
+  LS_HERO_STAT,
+  leaderSplitBoardHeight,
+  leaderSplitLayout,
+} from "./leaderSplitLayout";
 import type { LeaderSplitDraft } from "./leaderSplitState";
 
 export type LeaderSplitRenderInput = LeaderSplitDraft & {
@@ -31,8 +41,7 @@ export const renderLeaderSplitCanvas = async (
   input: LeaderSplitRenderInput,
   scale = 2,
 ) => {
-  const restack = Boolean(input.story || input.square);
-  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+  const boardH = leaderSplitBoardHeight(Boolean(input.story), Boolean(input.square));
   const width = GRAPHIC_WIDTH * scale;
   const height = boardH * scale;
   const canvas = document.createElement("canvas");
@@ -43,93 +52,89 @@ export const renderLeaderSplitCanvas = async (
     throw new Error("Could not open canvas");
   }
   await document.fonts?.ready.catch(() => undefined);
-  const listW = restack ? GRAPHIC_WIDTH : Math.round(GRAPHIC_WIDTH * 0.42);
-  const photoW = restack ? GRAPHIC_WIDTH : GRAPHIC_WIDTH - listW;
-  const photoH = restack ? Math.round(boardH * 0.52) : boardH;
-  const listH = restack ? boardH - photoH : boardH;
-  const photoX = restack || input.mirror ? 0 : listW;
-  const photoY = 0;
-  const listX = restack || !input.mirror ? 0 : photoW;
-  const listY = restack ? photoH : 0;
+  const rows = visibleLeaderRows(
+    squareLeaderRows(input.rows, Boolean(input.square)),
+    true,
+  );
+  const layout = leaderSplitLayout(rows.length, input.mirror, boardH);
+  const photo = layout.photo;
+  const list = layout.list;
+  const s = scale;
   await paintLeaderPhoto(
     context,
     input.photoSrc,
     input.pan,
-    photoX * scale,
-    photoY * scale,
-    photoW * scale,
-    photoH * scale,
+    photo.x * s,
+    photo.y * s,
+    photo.w * s,
+    photo.h * s,
     input.photoGrade,
   );
   const fade = context.createLinearGradient(
     0,
-    (photoY + photoH * 0.54) * scale,
+    (photo.y + photo.h * 0.58) * s,
     0,
-    (photoY + photoH) * scale,
+    (photo.y + photo.h) * s,
   );
   fade.addColorStop(0, "rgba(6,6,8,0)");
   fade.addColorStop(0.48, "rgba(6,6,8,0.55)");
   fade.addColorStop(1, "rgba(6,6,8,0.96)");
   context.fillStyle = fade;
   context.fillRect(
-    photoX * scale,
-    (photoY + photoH * 0.54) * scale,
-    photoW * scale,
-    photoH * 0.46 * scale,
-  );
-  const rows = visibleLeaderRows(
-    squareLeaderRows(input.rows, Boolean(input.square)),
-    true,
+    photo.x * s,
+    (photo.y + photo.h * 0.58) * s,
+    photo.w * s,
+    photo.h * 0.42 * s,
   );
   const first = rows[0];
-  const s = scale;
   context.textAlign = "left";
   context.textBaseline = "alphabetic";
+  const typeX = (photo.x + 36) * s;
+  const typeMax = (photo.w - 72) * s;
+  let cursor = (photo.y + photo.h - 36) * s;
+  if (first?.value) {
+    context.fillStyle = LEADER_GOLD;
+    context.font = `900 ${LS_HERO_STAT * s}px ${POSTER_FONT}`;
+    context.fillText(first.value, typeX, cursor, typeMax);
+    cursor -= LS_HERO_STAT * 1.05 * s;
+  }
+  const lines = first
+    ? composerNameLines(first.firstName, first.lastName, readComposerNameStyle())
+    : { given: "", family: "" };
+  if (lines.family) {
+    context.fillStyle = "#fff";
+    context.font = `900 ${LS_HERO_FAMILY * s}px ${POSTER_FONT}`;
+    context.fillText(lines.family.toUpperCase(), typeX, cursor, typeMax);
+    cursor -= LS_HERO_FAMILY * 0.92 * s;
+  }
+  if (lines.given) {
+    context.fillStyle = "rgba(255,255,255,0.92)";
+    context.font = `900 ${LS_HERO_GIVEN * s}px ${POSTER_FONT}`;
+    context.fillText(lines.given.toUpperCase(), typeX, cursor, typeMax);
+    cursor -= LS_HERO_GIVEN * 1.2 * s;
+  }
   context.fillStyle = LEADER_GOLD;
-  context.font = `900 ${22 * s}px ${POSTER_FONT}`;
-  setTracking(context, 0.18 * 22 * s);
+  context.font = `900 ${LS_HERO_KICKER * s}px ${POSTER_FONT}`;
+  setTracking(context, 0.18 * LS_HERO_KICKER * s);
   context.fillText(
     (input.title || "PPG LEADERS").toUpperCase(),
-    (photoX + 36) * s,
-    (photoY + photoH - 160) * s,
-    (photoW - 72) * s,
+    typeX,
+    cursor,
+    typeMax,
   );
   setTracking(context, 0);
-  if (first) {
-    const last = formatComposerName(first.firstName, first.lastName, "last");
-    context.fillStyle = "#fff";
-    context.font = `900 ${72 * s}px ${POSTER_FONT}`;
-    context.fillText(last.toUpperCase(), (photoX + 36) * s, (photoY + photoH - 88) * s, (photoW - 72) * s);
-    context.fillStyle = LEADER_GOLD;
-    context.font = `900 ${54 * s}px ${POSTER_FONT}`;
-    context.fillText(first.value, (photoX + 36) * s, (photoY + photoH - 28) * s, (photoW - 72) * s);
-  }
-  const pad = 28;
-  const usableH = listH - pad * 2;
-  const plates = input.namePlates !== false;
-  const gap = plates ? 8 : 0;
-  const rowH = rows.length
-    ? plates
-      ? packedLeaderRowH(usableH, rows.length, gap)
-      : Math.min(56, usableH / rows.length)
-    : 48;
-  if (plates) {
-    paintLeaderCharcoalPane(
-      context,
-      listX * s,
-      listY * s,
-      listW * s,
-      listH * s,
-      scale,
-    );
-  } else {
+
+  paintLeaderCharcoalPane(context, list.x * s, list.y * s, list.w * s, list.h * s, scale);
+  const plates = input.namePlates === true;
+  const rowH = layout.rowH;
+  if (!plates && rows.length > 0) {
     paintLeaderHairlineRows(
       context,
-      listX * s,
-      listY * s,
-      listW * s,
-      listH * s,
-      Math.max(rows.length, 8),
+      list.x * s,
+      layout.rows.y * s,
+      list.w * s,
+      layout.rows.h * s,
+      rows.length,
       scale,
     );
   }
@@ -138,14 +143,15 @@ export const renderLeaderSplitCanvas = async (
       context,
       rows[index]!,
       index + 1,
-      (listX + pad) * s,
-      (listY + pad + index * (rowH + gap)) * s,
-      (listW - pad * 2) * s,
+      layout.rows.x * s,
+      (layout.rows.y + index * rowH) * s,
+      layout.rows.w * s,
       rowH * s,
       false,
       input.showListHeadshots,
       scale,
       plates,
+      true,
     );
   }
   paintLeaderFrame(context, width, height, input.look, scale, input.purpleFlair);

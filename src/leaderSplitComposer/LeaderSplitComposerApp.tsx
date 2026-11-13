@@ -17,7 +17,7 @@ import { useComposerLook, usePurpleFlair } from "../instagramComposer/composerLo
 import { keepComposerPhotos } from "../instagramComposer/composerPhotos";
 import { exportFilenameFromTitle } from "../instagramComposer/composerPresets";
 import { copyGraphicCaption, graphicCaption } from "../instagramComposer/graphicCaption";
-import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { downloadExportPack, squareFilename, storyFilename } from "../instagramComposer/exportPack";
 import { usePhotoGrade } from "../instagramComposer/photoGrade";
 import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
 import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
@@ -489,8 +489,16 @@ export function LeaderSplitComposerApp() {
                               2,
                             ),
                         },
+                        {
+                          filename: squareFilename(filename),
+                          render: () =>
+                            renderLeaderSplitCanvas(
+                              { ...renderInput(), square: true },
+                              2,
+                            ),
+                        },
                       ],
-                      { letterbox: false },
+                      { letterbox: false, squareLetterbox: false },
                     );
                     setStatus("Pack download started (4:5 + 9:16 + 1:1).");
                   } catch (error) {
