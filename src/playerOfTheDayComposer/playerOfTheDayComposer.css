@@ -328,6 +328,10 @@
   display: none;
 }
 
+.is-exporting .pod-photo__pick {
+  display: none;
+}
+
 .pod-photo__tool {
   pointer-events: auto;
   font-family: inherit;

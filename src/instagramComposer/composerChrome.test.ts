@@ -2154,4 +2154,79 @@ describe("composer chrome", () => {
     expect(state).toContain("leaderSplitVisibleEntries");
     expect(pack).toContain("squareLetterbox: false");
   });
+
+  it("shares one layout so Fit 560 preview matches the exported PNG", () => {
+    const dualLayout = readFileSync(
+      join(root, "dualRanksComposer/dualRanksLayout.ts"),
+      "utf8",
+    );
+    const dualGraphic = readFileSync(
+      join(root, "dualRanksComposer/DualRanksGraphic.tsx"),
+      "utf8",
+    );
+    const dualCanvas = readFileSync(
+      join(root, "dualRanksComposer/renderDualRanksCanvas.ts"),
+      "utf8",
+    );
+    const dualCss = readFileSync(
+      join(root, "dualRanksComposer/dualRanksComposer.css"),
+      "utf8",
+    );
+    const takeawaysState = readFileSync(
+      join(root, "takeawaysComposer/takeawaysState.ts"),
+      "utf8",
+    );
+    const barsLayout = readFileSync(
+      join(root, "leaderBarsComposer/leaderBarsLayout.ts"),
+      "utf8",
+    );
+    const paint = readFileSync(
+      join(root, "leaderboardComposer/leaderboardPaint.ts"),
+      "utf8",
+    );
+    const shotLayout = readFileSync(
+      join(root, "shotChartComposer/shotChartLayout.ts"),
+      "utf8",
+    );
+    const shotCanvas = readFileSync(
+      join(root, "shotChartComposer/renderShotChartCanvas.ts"),
+      "utf8",
+    );
+    const playInCanvas = readFileSync(
+      join(root, "playInComposer/renderPlayInCanvas.ts"),
+      "utf8",
+    );
+    const mockCanvas = readFileSync(
+      join(root, "mockTradeComposer/renderMockTradeCanvas.ts"),
+      "utf8",
+    );
+    const rankedCss = readFileSync(
+      join(root, "rankedLineupsComposer/rankedLineupsComposer.css"),
+      "utf8",
+    );
+    const photoCss = readFileSync(
+      join(root, "playerOfTheDayComposer/playerOfTheDayComposer.css"),
+      "utf8",
+    );
+    expect(dualLayout).toContain("export const dualRanksLayout");
+    expect(dualGraphic).toContain("dualRanksLayout");
+    expect(dualCanvas).toContain("dualRanksLayout");
+    expect(dualCss).toContain("text-overflow: ellipsis");
+    expect(takeawaysState).toContain("filter(takeawaysCardOccupied)");
+    expect(takeawaysState).not.toContain("exporting ? slots.filter");
+    expect(barsLayout).toContain("export const leaderBarsRowCols");
+    expect(paint).toContain("leaderBarsRowCols");
+    expect(paint).toContain("ellipsisOverflowName");
+    expect(shotLayout).toContain("export const shotZoneCells");
+    expect(shotCanvas).toContain("shotZoneCells");
+    expect(shotCanvas).toContain("rgba(28, 28, 28, 0.92)");
+    expect(playInCanvas).toContain("innerFrameRect");
+    expect(playInCanvas).not.toContain("#7eb6ff");
+    expect(playInCanvas).toContain('fillStyle = "rgba(255,255,255,0.22)"');
+    expect(mockCanvas).toContain("rgba(8, 10, 14, 0.92)");
+    expect(rankedCss).not.toContain(
+      ".rl-board.is-exporting .rl-strip:has(.pod-photo.is-empty)",
+    );
+    expect(photoCss).toContain(".is-exporting .pod-photo__pick");
+  });
 });

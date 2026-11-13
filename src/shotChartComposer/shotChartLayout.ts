@@ -38,11 +38,15 @@ export const SHOT_TITLE_PLATE_H =
 export const SHOT_NOTCH_H = 72;
 export const SHOT_NOTCH_OVERLAP = 2;
 export const SHOT_NOTCH_LOGO = 36;
+export const SHOT_NOTCH_PIP = 28;
 export const SHOT_COURT_GAP = 12;
 export const SHOT_MAKE_R = 15;
 export const SHOT_MISS_R = 13;
 export const SHOT_ZONES_MIN_H = 120;
 export const SHOT_ZONES_GAP = 12;
+export const SHOT_ZONE_GAP_X = 12;
+export const SHOT_ZONE_GAP_Y = 10;
+export const SHOT_ZONE_BORDER = 1.5;
 export const SHOT_LEGEND_H = 24;
 export const SHOT_BOTTOM = 14;
 export const SHOT_COURT_PAD_X = 22;
@@ -57,6 +61,21 @@ export interface ShotChartRect {
   w: number;
   h: number;
 }
+
+export const shotZoneCells = (zones: ShotChartRect) => {
+  const cellW = (zones.w - SHOT_ZONE_GAP_X * 2) / 3;
+  const cellH = (zones.h - SHOT_ZONE_GAP_Y) / 2;
+  return Array.from({ length: 6 }, (_, index) => {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    return {
+      x: zones.x + col * (cellW + SHOT_ZONE_GAP_X),
+      y: zones.y + row * (cellH + SHOT_ZONE_GAP_Y),
+      w: cellW,
+      h: cellH,
+    };
+  });
+};
 
 export interface ShotChartBoardRects {
   court: ShotChartRect;

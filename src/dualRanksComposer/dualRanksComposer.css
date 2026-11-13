@@ -4,7 +4,7 @@
   --frame-w: calc(4 * var(--u));
   --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
   --gold: #d4af37;
-  --photo-w: 45%;
+  --dr-row-h: 52;
   position: relative;
   width: 100%;
   height: 100%;
@@ -12,24 +12,15 @@
   color: #fff;
   overflow: hidden;
   user-select: none;
-  display: flex;
-  flex-direction: row;
 }
 
 .dr-board.is-black {
   --frame-color: #0a0a0a;
 }
 
-.dr-board.is-top,
-.dr-board.is-well,
-.dr-board.is-story,
-.dr-board.is-square {
-  flex-direction: column;
-}
-
 .dr-photo-wrap {
-  position: relative;
-  flex: 0 0 var(--photo-w);
+  position: absolute;
+  overflow: hidden;
   min-width: 0;
 }
 
@@ -49,18 +40,6 @@
   pointer-events: none;
 }
 
-.dr-board.is-top .dr-photo-wrap,
-.dr-board.is-story .dr-photo-wrap,
-.dr-board.is-square .dr-photo-wrap {
-  flex: 0 0 46%;
-  --photo-w: 100%;
-}
-
-.dr-board.is-well .dr-photo-wrap {
-  flex: 1 1 auto;
-  --photo-w: 100%;
-}
-
 .dr-board .pod-photo {
   position: absolute;
   inset: 0;
@@ -70,11 +49,11 @@
 }
 
 .dr-cols {
-  flex: 1 1 auto;
+  position: absolute;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: calc(10 * var(--u));
-  padding: calc(24 * var(--u)) calc(16 * var(--u)) calc(24 * var(--u)) calc(12 * var(--u));
+  gap: calc(16 * var(--u));
+  padding: calc(24 * var(--u));
   min-width: 0;
   z-index: 2;
   background-color: #1c1c1c;
@@ -84,12 +63,7 @@
 }
 
 .dr-board.is-well .dr-cols {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 42%;
-  background: linear-gradient(to top, rgba(8, 8, 10, 0.96), rgba(8, 8, 10, 0.72));
+  background-color: #1c1c1c;
 }
 
 .dr-board.is-hide-right .dr-cols,
@@ -121,8 +95,9 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  gap: calc(4 * var(--u));
+  justify-content: flex-start;
+  gap: 0;
+  min-height: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -130,12 +105,13 @@
 
 .dr-row {
   position: relative;
+  flex: 1 1 0;
   display: grid;
   grid-template-columns:
     calc(22 * var(--u)) calc(22 * var(--u)) minmax(0, 1fr) calc(44 * var(--u));
   align-items: center;
   gap: calc(4 * var(--u));
-  min-height: calc(40 * var(--u));
+  min-height: 0;
   padding: 0 calc(2 * var(--u));
   overflow: hidden;
 }
@@ -214,7 +190,10 @@
   outline: none;
   min-width: 0;
   width: 100%;
-  font-size: calc(13 * var(--u));
+  font-size: min(
+    calc(var(--dr-row-h) * 0.16 * var(--u)),
+    calc(18 * var(--u))
+  );
 }
 
 .dr-row.is-feature .dr-rank,
@@ -227,6 +206,8 @@
   letter-spacing: 0.01em;
   text-align: left;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dr-logo {
@@ -238,7 +219,10 @@
 
 .dr-value {
   text-align: right;
-  font-size: calc(15 * var(--u));
+  font-size: min(
+    calc(var(--dr-row-h) * 0.2 * var(--u)),
+    calc(22 * var(--u))
+  );
 }
 
 .dr-board .composer-ba {

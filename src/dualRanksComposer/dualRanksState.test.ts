@@ -8,7 +8,7 @@ import {
 } from "./dualRanksState";
 
 describe("dual ranks", () => {
-  it("hides an empty column on export and keeps both in preview", () => {
+  it("hides empty columns and ghost ranks in preview the way export does", () => {
     const draft = normalizeDualRanksDraft({
       ...defaultDualRanksDraft(),
       leftRows: emptyLeaderRows(8).map((row, index) =>
@@ -26,8 +26,8 @@ describe("dual ranks", () => {
       rightRows: emptyLeaderRows(8),
     });
     const preview = dualExportColumns(draft, false, false);
-    expect(preview.hideRight).toBe(false);
-    expect(preview.right).toHaveLength(8);
+    expect(preview.hideRight).toBe(true);
+    expect(preview.right).toHaveLength(0);
     const exported = dualExportColumns(draft, true, false);
     expect(exported.hideRight).toBe(true);
     expect(exported.hideLeft).toBe(false);

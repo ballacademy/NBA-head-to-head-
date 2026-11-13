@@ -11,6 +11,7 @@ import {
   drawBannerInterior,
   paintHeaderMetalField,
 } from "../standingsComposer/headerTexture";
+import { loadCorsImage } from "../lib/playerHeadshots";
 import { drawCenteredLogo } from "../standingsComposer/logoDraw";
 import {
   GRAPHIC_HEIGHT,
@@ -26,6 +27,7 @@ import {
   SHOT_NOTCH_H,
   SHOT_NOTCH_LOGO,
   SHOT_NOTCH_OVERLAP,
+  SHOT_NOTCH_PIP,
   SHOT_PLATE_X,
   SHOT_PLATE_Y,
   SHOT_TITLE_PAD,
@@ -33,8 +35,10 @@ import {
   SHOT_TITLE_SIZE,
   SHOT_TITLE_TRACK,
   paintHalfCourt,
+  SHOT_ZONE_BORDER,
   shotChartBoardRects,
   shotToPx,
+  shotZoneCells,
 } from "./shotChartLayout";
 import {
   shotChartEmptyCourtLabel,
@@ -204,7 +208,12 @@ export const renderShotChartCanvas = async (
   setLetterSpacing(context, 0);
   const logoOn = Boolean(input.teamId && getTeam(input.teamId));
   const logoSize = SHOT_NOTCH_LOGO * s;
-  const nameRowW = nameW + (logoOn ? logoSize + 8 * s : 0);
+  const pipOn = Boolean(input.photoSrc);
+  const pipSize = SHOT_NOTCH_PIP * s;
+  const nameRowW =
+    nameW +
+    (pipOn ? pipSize + 6 * s : 0) +
+    (logoOn ? logoSize + 6 * s : 0);
   const notchW = Math.min(
     width * 0.78,
     Math.max(280 * s, Math.max(nameRowW, metaW) + 144 * s),
@@ -226,22 +235,34 @@ export const renderShotChartCanvas = async (
   const team = getTeam(input.teamId);
   const logo = team ? await loadImage(team.logoSrc) : null;
   const nameStart = width / 2 - nameRowW / 2;
+  let cursor = nameStart;
+  if (pipOn) {
+    const pip = input.photoSrc!.startsWith("data:")
+      ? await loadImage(input.photoSrc!)
+      : await loadCorsImage(input.photoSrc!);
+    if (pip) {
+      context.save();
+      context.beginPath();
+      context.arc(cursor + pipSize / 2, nameY, pipSize / 2, 0, Math.PI * 2);
+      context.clip();
+      context.drawImage(pip, cursor, nameY - pipSize / 2, pipSize, pipSize);
+      context.restore();
+    }
+    cursor += pipSize + 6 * s;
+  }
   if (logo) {
-    drawCenteredLogo(context, logo, nameStart, nameY - logoSize / 2, logoSize, logoSize, {
+    drawCenteredLogo(context, logo, cursor, nameY - logoSize / 2, logoSize, logoSize, {
       shadow: 1 * s,
       cacheKey: team?.logoSrc,
     });
+    cursor += logoSize + 6 * s;
   }
   context.fillStyle = "#111";
   context.textAlign = "left";
   context.textBaseline = "middle";
   context.font = `900 ${20 * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.06 * 20 * s);
-  context.fillText(
-    playerLabel,
-    nameStart + (logo ? logoSize + 8 * s : 0),
-    nameY,
-  );
+  context.fillText(playerLabel, cursor, nameY);
   context.textAlign = "center";
   context.font = `900 ${14 * s}px ${POSTER_FONT}`;
   setLetterSpacing(context, 0.08 * 14 * s);
@@ -291,13 +312,27 @@ export const renderShotChartCanvas = async (
     );
   } else if (showZones) {
     const zones = shotZoneSplits(shots);
-    const cellW = (rects.zones.w * s) / 3;
-    const cellH = (rects.zones.h * s) / 2;
+    const cells = shotZoneCells(rects.zones);
     zones.forEach((zone, index) => {
-      const col = index % 3;
-      const row = Math.floor(index / 3);
-      const cx = rects.zones.x * s + col * cellW + cellW / 2;
-      const cy = rects.zones.y * s + row * cellH + cellH / 2;
+      const cell = cells[index];
+      if (!cell) {
+        return;
+      }
+      const x = cell.x * s;
+      const y = cell.y * s;
+      const w = cell.w * s;
+      const h = cell.h * s;
+      const stroke = SHOT_ZONE_BORDER * s;
+      context.fillStyle = "rgba(28, 28, 28, 0.92)";
+      context.fillRect(x, y, w, h);
+      context.strokeStyle = "rgba(255, 255, 255, 0.35)";
+      context.lineWidth = stroke;
+      context.strokeRect(
+        x + stroke / 2,
+        y + stroke / 2,
+        w - stroke,
+        h - stroke,
+      );
       const split = `${zone.makes}–${zone.attempts}`;
       context.textAlign = "center";
       context.textBaseline = "middle";
@@ -306,6 +341,8 @@ export const renderShotChartCanvas = async (
       const splitW = context.measureText(split).width;
       const labelW = context.measureText(zone.label).width;
       const total = labelW + gap + splitW;
+      const cx = x + w / 2;
+      const cy = y + h / 2;
       context.fillStyle = "#fff";
       context.textAlign = "left";
       context.fillText(zone.label, cx - total / 2, cy);

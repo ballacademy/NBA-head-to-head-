@@ -1,4 +1,5 @@
 import {
+  innerFrameRect,
   paintCellFrame,
   paintPurpleBaGlow,
   paintPurpleCornerBloom,
@@ -21,6 +22,8 @@ import {
   PI_BA_INSET,
   PI_BA_SIZE,
   PI_BYE_LABEL,
+  PI_CONF_CLIP,
+  PI_CONF_H,
   PI_CONF_SIZE,
   PI_KICKER,
   PI_KICKER_SIZE,
@@ -63,7 +66,7 @@ const paintBar = (
   bar: PlayInBar,
   s: number,
 ) => {
-  context.fillStyle = "rgba(255,255,255,0.9)";
+  context.fillStyle = "rgba(255,255,255,0.22)";
   context.fillRect(bar.x * s, bar.y * s, bar.w * s, bar.h * s);
 };
 
@@ -89,7 +92,8 @@ const paintSlot = async (
   if (team) {
     const logo = await loadImage(team.logoSrc);
     if (logo) {
-      drawCenteredLogo(context, logo, x, y, w, h, {
+      const inner = innerFrameRect(x, y, w, h, s, look);
+      drawCenteredLogo(context, logo, inner.x, inner.y, inner.w, inner.h, {
         cacheKey: `${team.logoSrc}-playin`,
         fitX: PI_LOGO_FIT,
         fitY: PI_LOGO_FIT,
@@ -204,11 +208,24 @@ export const renderPlayInCanvas = async (
   const cols = playInBoardCols(input.size, boardH);
   for (const col of cols) {
     const ids = col.conference === "east" ? input.east : input.west;
+    const confX = col.x * s;
+    const confY = col.y * s;
+    const confW = col.w * s;
+    const confH = PI_CONF_H * s;
+    const clip = PI_CONF_CLIP;
+    context.beginPath();
+    context.moveTo(confX + confW * clip, confY);
+    context.lineTo(confX + confW * (1 - clip), confY);
+    context.lineTo(confX + confW, confY + confH);
+    context.lineTo(confX, confY + confH);
+    context.closePath();
+    context.fillStyle = "#fff";
+    context.fill();
     context.font = `900 ${PI_CONF_SIZE * s}px ${POSTER_FONT}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillStyle = col.conference === "east" ? "#7eb6ff" : "#ff8a7a";
-    context.fillText(col.label, (col.x + col.w / 2) * s, (col.y + 16) * s);
+    context.fillStyle = "#111";
+    context.fillText(col.label, confX + confW / 2, confY + confH / 2);
     const scores = col.conference === "east" ? input.eastScores : input.westScores;
     const recordFor = (teamId: string | null | undefined) =>
       input.showWl && teamId

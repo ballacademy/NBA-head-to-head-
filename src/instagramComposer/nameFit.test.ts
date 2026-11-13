@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   abbreviateOverflowName,
+  ellipsisOverflowName,
   fittedCellNames,
   wrapNameToWidth,
 } from "./nameFit";
@@ -20,6 +21,18 @@ describe("name wrap", () => {
       "GILGEOUS-",
       "ALEXANDER",
     ]);
+  });
+});
+
+describe("css ellipsis overflow", () => {
+  it("clips with dots the way text-overflow: ellipsis does", () => {
+    expect(ellipsisOverflowName("Gilgeous-Alexander", 18, measure)).toBe(
+      "GILGEOUS-ALEXANDER",
+    );
+    expect(ellipsisOverflowName("Gilgeous-Alexander", 10, measure)).toBe(
+      "GILGEOU...",
+    );
+    expect(ellipsisOverflowName("Doncic", 10, measure)).toBe("DONCIC");
   });
 });
 

@@ -30,7 +30,8 @@ import { getTeamColors } from "../lib/teamColors";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { formatComposerName } from "../instagramComposer/composerNameStyle";
-import { abbreviateOverflowName } from "../instagramComposer/nameFit";
+import { ellipsisOverflowName } from "../instagramComposer/nameFit";
+import { LB_LOGO_SIZE, LB_TRACK_GOLD_H, LB_TRACK_H, leaderBarsRowCols } from "../leaderBarsComposer/leaderBarsLayout";
 import { LEADER_GOLD, type LeaderRow } from "./leaderboardFill";
 import { leaderPlateAccent, leaderPlateFill } from "./leaderPlate";
 
@@ -344,18 +345,22 @@ export const paintBarRow = async (
 ) => {
   const s = scale;
   const gold = goldFirst && rank === 1;
-  const pad = 10 * s;
+  const cols = leaderBarsRowCols(w / s);
   if (namePlates) {
     await paintNamePlate(context, row, x, y, w, h, scale, gold);
   }
   const rankSize = namePlates ? Math.min(22 * s, h * 0.4) : 16 * s;
   context.font = `900 ${rankSize}px ${POSTER_FONT}`;
-  context.textAlign = "left";
+  context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillStyle = gold ? LEADER_GOLD : "rgba(255,255,255,0.55)";
-  context.fillText(String(rank), x + pad, y + h / 2);
-  const logoX = x + 40 * s;
-  const logoSize = Math.min(h - 16 * s, 36 * s);
+  context.fillText(
+    String(rank),
+    x + (cols.rankX + cols.rankW / 2) * s,
+    y + h / 2,
+  );
+  const logoSize = Math.min(h - 16 * s, LB_LOGO_SIZE * s);
+  const logoX = x + cols.logoX * s + (cols.logoW * s - logoSize) / 2;
   if (showHeadshots && row.headshotUrl) {
     const shot = await loadCorsImage(row.headshotUrl);
     if (shot) {
@@ -392,15 +397,14 @@ export const paintBarRow = async (
   context.font = `900 ${nameSize}px ${POSTER_FONT}`;
   context.fillStyle = "#fff";
   context.textAlign = "left";
-  const nameX = logoX + logoSize + 10 * s;
-  const valueW = 140 * s;
-  const nameW = 220 * s;
-  const barX = nameX + nameW;
-  const barW = Math.max(40 * s, w - (barX - x) - valueW - pad);
-  context.fillText(name.toUpperCase(), nameX, y + h / 2, nameW - 8 * s);
+  const nameX = x + cols.nameX * s;
+  const nameW = cols.nameW * s;
+  context.fillText(name.toUpperCase(), nameX, y + h / 2, Math.max(0, nameW - 4 * s));
+  const barX = x + cols.barX * s;
+  const barW = cols.barW * s;
   const frac = row.rawValue != null && max > 0 ? Math.min(1, row.rawValue / max) : 0;
   const fillW = Math.max(frac > 0 ? 12 * s : 0, barW * frac);
-  const trackH = gold ? 36 * s : 22 * s;
+  const trackH = gold ? LB_TRACK_GOLD_H * s : LB_TRACK_H * s;
   const barY = y + (h - trackH) / 2;
   context.fillStyle = "rgba(255,255,255,0.08)";
   context.fillRect(barX, barY, barW, trackH);
@@ -417,7 +421,12 @@ export const paintBarRow = async (
   context.font = `900 ${valueSize}px ${POSTER_FONT}`;
   context.textAlign = "right";
   context.fillStyle = gold ? LEADER_GOLD : "#fff";
-  context.fillText(row.value, x + w - pad, y + h / 2, valueW);
+  context.fillText(
+    row.value,
+    x + (cols.valueX + cols.valueW - cols.pad) * s,
+    y + h / 2,
+    cols.valueW * s,
+  );
 };
 
 export const paintListRow = async (
@@ -441,18 +450,21 @@ export const paintListRow = async (
     context.fillStyle = "rgba(212, 175, 55, 0.18)";
     context.fillRect(x, y, w, h);
   }
+  const compact = !punch && !namePlates;
   const rankSize = punch
     ? Math.min(Math.round(h * 0.11), 18 * s)
     : namePlates
       ? Math.min(22 * s, h * 0.38)
-      : Math.round(h * 0.42);
+      : Math.min(18 * s, Math.round(h * 0.34));
   context.font = `900 ${rankSize}px ${POSTER_FONT}`;
-  context.textAlign = "left";
+  context.textAlign = compact ? "center" : "left";
   context.textBaseline = "middle";
   context.fillStyle = highlight ? LEADER_GOLD : rankMetalFill(rank);
-  context.fillText(String(rank), x + 6 * s, y + h / 2);
-  const logoSize = Math.min(h - (punch ? 24 * s : 8 * s), punch ? 28 * s : 32 * s);
-  const logoX = x + (punch ? 26 * s : 40 * s);
+  context.fillText(String(rank), compact ? x + 13 * s : x + 6 * s, y + h / 2);
+  const logoSize = compact
+    ? Math.min(h - 8 * s, 22 * s)
+    : Math.min(h - (punch ? 24 * s : 8 * s), punch ? 28 * s : 32 * s);
+  const logoX = x + (compact ? 28 * s : punch ? 26 * s : 40 * s);
   if (showHeadshots && row.headshotUrl) {
     const shot = await loadCorsImage(row.headshotUrl);
     if (shot) {
@@ -490,13 +502,14 @@ export const paintListRow = async (
       ? Math.min(18 * s, h * 0.32)
       : Math.round(h * 0.34);
   context.font = `900 ${nameSize}px ${POSTER_FONT}`;
-  const nameX = logoX + logoSize + 8 * s;
-  const valueW = punch ? 170 * s : 80 * s;
-  const nameMax = Math.max(48 * s, w - (nameX - x) - valueW);
-  const fitted = abbreviateOverflowName(name, nameMax, (value) =>
+  context.textAlign = "left";
+  const nameX = logoX + logoSize + (compact ? 4 * s : 8 * s);
+  const valueW = punch ? 170 * s : compact ? 44 * s : 80 * s;
+  const nameMax = Math.max(48 * s, w - (nameX - x) - valueW - (compact ? 2 * s : 0));
+  const fitted = ellipsisOverflowName(name, nameMax, (value) =>
     context.measureText(value).width,
   );
-  context.fillText(fitted, nameX, y + h / 2, nameMax);
+  context.fillText(fitted, nameX, y + h / 2);
   context.textAlign = "right";
   const valueSize = punch
     ? Math.min(Math.round(h * 0.3), 64 * s)

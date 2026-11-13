@@ -79,6 +79,27 @@ const pickLongerFit = (
   return fits.reduce((best, next) => (next.length > best.length ? next : best));
 };
 
+/** CSS `text-overflow: ellipsis` — clip with dots instead of rewriting the name. */
+export const ellipsisOverflowName = (
+  text: string,
+  maxWidth: number,
+  measure: (value: string) => number,
+): string => {
+  const value = text.replace(/\s+/g, " ").trim().toUpperCase();
+  if (!value) {
+    return "";
+  }
+  if (maxWidth <= 0 || measure(value) <= maxWidth) {
+    return value;
+  }
+  const dots = "...";
+  let keep = value;
+  while (keep.length > 0 && measure(`${keep}${dots}`) > maxWidth) {
+    keep = keep.slice(0, -1);
+  }
+  return keep ? `${keep}${dots}` : dots;
+};
+
 /**
  * When a name does not fit, abbreviate with a period instead of shrinking
  * the face. Hyphenated last names prefer `GILGEOUS-A.` or `G.-ALEXANDER`

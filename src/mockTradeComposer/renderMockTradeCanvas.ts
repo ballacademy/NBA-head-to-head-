@@ -189,7 +189,10 @@ export const renderMockTradeCanvas = async (
       context.beginPath();
       context.rect(px, py, pw, ph);
       context.clip();
-      if (person.photoSrc) {
+      if (!person.photoSrc) {
+        context.fillStyle = "rgba(8, 10, 14, 0.92)";
+        context.fillRect(px, py, pw, ph);
+      } else {
         const photo = person.photoSrc.startsWith("data:")
           ? await loadImage(person.photoSrc)
           : await loadCorsImage(person.photoSrc);

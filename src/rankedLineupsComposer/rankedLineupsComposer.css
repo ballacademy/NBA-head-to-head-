@@ -221,14 +221,6 @@
   grid-template-rows: 1.22fr 1fr;
 }
 
-.rl-board.is-exporting .rl-strip:has(.pod-photo.is-empty) {
-  display: none;
-}
-
-.rl-board.is-exporting .rl-strips {
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-}
-
 .rl-strip {
   position: relative;
   min-width: 0;

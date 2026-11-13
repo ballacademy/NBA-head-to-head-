@@ -152,23 +152,31 @@ export const applyDualRanksHero = (
   };
 };
 
+export const dualVisibleEntries = (
+  rows: LeaderRow[],
+  square = false,
+) => {
+  const cut = square ? rows.slice(0, 5) : rows;
+  return cut
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) => leaderRowOccupied(row));
+};
+
 export const dualExportColumns = (
   draft: DualRanksDraft,
-  exporting: boolean,
+  _exporting: boolean,
   square: boolean,
 ) => {
-  const slice = (rows: LeaderRow[]) => {
-    const cut = square ? rows.slice(0, 5) : rows;
-    return visibleLeaderRows(cut, exporting);
+  const leftEntries = dualVisibleEntries(draft.leftRows, square);
+  const rightEntries = dualVisibleEntries(draft.rightRows, square);
+  return {
+    left: leftEntries.map((entry) => entry.row),
+    right: rightEntries.map((entry) => entry.row),
+    leftEntries,
+    rightEntries,
+    hideLeft: leftEntries.length === 0,
+    hideRight: rightEntries.length === 0,
   };
-  const left = slice(draft.leftRows);
-  const right = slice(draft.rightRows);
-  if (!exporting) {
-    return { left, right, hideRight: false, hideLeft: false };
-  }
-  const hideLeft = !left.some(leaderRowOccupied);
-  const hideRight = !right.some(leaderRowOccupied);
-  return { left, right, hideLeft, hideRight };
 };
 
 export const dualCaptionLines = (draft: DualRanksDraft) => [

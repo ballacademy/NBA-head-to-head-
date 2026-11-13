@@ -390,11 +390,8 @@ export const takeawaysCoverCards = (draft: TakeawaysDraft) => {
 
 export const takeawaysCoverViewCards = (
   draft: TakeawaysDraft,
-  exporting = false,
-) => {
-  const slots = takeawaysCoverCards(draft);
-  return exporting ? slots.filter(takeawaysCardOccupied) : slots;
-};
+  _exporting = false,
+) => takeawaysCoverCards(draft).filter(takeawaysCardOccupied);
 
 export const hasCustomTakeawaysPhoto = (card: TakeawaysCard) =>
   card.customPhoto && Boolean(card.photoSrc?.startsWith("data:"));

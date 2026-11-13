@@ -1,13 +1,26 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   composerFlairClass,
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
-import { useComposerNameStyle } from "../instagramComposer/composerNameStyle";
+import {
+  formatComposerName,
+  useComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
 import { composerGradeClass } from "../instagramComposer/photoGrade";
 import { PhotoFrame } from "../playerOfTheDayComposer/PhotoFrame";
-import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { leaderRowName, type LeaderRow } from "../leaderboardComposer/leaderboardFill";
@@ -15,7 +28,12 @@ import {
   leaderPlateAccent,
   leaderPlateFill,
 } from "../leaderboardComposer/leaderPlate";
-import { dualExportColumns, fitDualRankName, type DualRanksDraft } from "./dualRanksState";
+import { dualRanksLayout } from "./dualRanksLayout";
+import {
+  dualExportColumns,
+  type DualRanksDraft,
+  type DualRanksLayout,
+} from "./dualRanksState";
 import type { PhotoPan } from "../playerOfTheDayComposer/playerOfTheDayState";
 
 interface DualRanksGraphicProps {
@@ -33,9 +51,33 @@ interface DualRanksGraphicProps {
   onPick: () => void;
 }
 
+const u = (value: number) => `calc(${value} * var(--u))`;
+
+const boxStyle = (rect: { x: number; y: number; w: number; h: number }) =>
+  ({
+    left: u(rect.x),
+    top: u(rect.y),
+    width: u(rect.w),
+    height: u(rect.h),
+  }) as const;
+
+const dualKind = (
+  layout: DualRanksLayout,
+  story: boolean,
+  square: boolean,
+): DualRanksLayout => {
+  if (layout === "well") {
+    return "well";
+  }
+  if (story || square || layout === "top") {
+    return "top";
+  }
+  return "side";
+};
+
 const Column = ({
   header,
-  rows,
+  entries,
   featuredId,
   season,
   aria,
@@ -45,7 +87,7 @@ const Column = ({
   namePlates,
 }: {
   header: string;
-  rows: LeaderRow[];
+  entries: Array<{ row: LeaderRow; index: number }>;
   featuredId: string | null;
   season: string;
   aria: string;
@@ -63,14 +105,15 @@ const Column = ({
       onChange={(event) => onHeader(event.target.value)}
     />
     <ol className="dr-rows">
-      {rows.map((row, index) => {
+      {entries.map((entry, index) => {
+        const row = entry.row;
         const logo = row.teamId
           ? getTeam(row.teamId)?.logoSrc ?? teamLogoSrc(row.teamId, season)
           : null;
         const featured = Boolean(featuredId && row.playerId === featuredId);
         return (
           <li
-            key={`${aria}-${index}`}
+            key={`${aria}-${entry.index}`}
             className={[
               "dr-row",
               index === 0 ? "is-gold" : "",
@@ -84,7 +127,7 @@ const Column = ({
                 ? ({
                     ["--team-fill" as string]: leaderPlateFill(row.teamId),
                     ["--team-accent" as string]: leaderPlateAccent(row.teamId),
-                  } as React.CSSProperties)
+                  } as CSSProperties)
                 : undefined
             }
           >
@@ -95,12 +138,15 @@ const Column = ({
             {logo ? <img className="dr-logo" src={logo} alt="" /> : <span className="dr-logo" />}
             <input
               className="dr-name"
-              value={fitDualRankName(row, nameStyle) || leaderRowName(row)}
+              value={
+                formatComposerName(row.firstName, row.lastName, nameStyle) ||
+                leaderRowName(row)
+              }
               aria-label={`${aria} ${index + 1} name`}
               spellCheck={false}
               onChange={(event) => {
                 const bits = event.target.value.split(/\s+/);
-                onRow(index, {
+                onRow(entry.index, {
                   firstName: bits.slice(0, -1).join(" "),
                   lastName: bits.at(-1) ?? "",
                 });
@@ -111,7 +157,9 @@ const Column = ({
               value={row.value}
               aria-label={`${aria} ${index + 1} value`}
               spellCheck={false}
-              onChange={(event) => onRow(index, { value: event.target.value })}
+              onChange={(event) =>
+                onRow(entry.index, { value: event.target.value })
+              }
             />
           </li>
         );
@@ -141,7 +189,16 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
     const localRef = useRef<HTMLElement | null>(null);
     const [unit, setUnit] = useState(1);
     const [nameStyle] = useComposerNameStyle();
-    const cols = dualExportColumns(draft, exporting, square);
+    const cols = dualExportColumns(draft, true, square);
+    const boardH = story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+    const colCount = (cols.hideLeft ? 0 : 1) + (cols.hideRight ? 0 : 1);
+    const rowCount = Math.max(cols.left.length, cols.right.length);
+    const layout = dualRanksLayout(
+      rowCount,
+      dualKind(draft.layout, story, square),
+      Math.max(1, colCount),
+      boardH,
+    );
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -193,10 +250,15 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
         ]
           .filter(Boolean)
           .join(" ")}
-        style={{ ["--u" as string]: `${unit}px` } as React.CSSProperties}
+        style={
+          {
+            ["--u" as string]: `${unit}px`,
+            ["--dr-row-h" as string]: String(layout.rowH || 52),
+          } as CSSProperties
+        }
         aria-label="Instagram dual ranks graphic"
       >
-        <div className="dr-photo-wrap">
+        <div className="dr-photo-wrap" style={boxStyle(layout.photo)}>
           <PhotoFrame
             src={draft.photoSrc}
             label="featured player"
@@ -214,11 +276,11 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
             </p>
           )}
         </div>
-        <div className="dr-cols">
+        <div className="dr-cols" style={boxStyle(layout.pane)}>
           {cols.hideLeft ? null : (
             <Column
               header={draft.leftHeader}
-              rows={cols.left}
+              entries={cols.leftEntries}
               featuredId={draft.featuredPlayerId}
               season={draft.season}
               aria="Left board"
@@ -231,7 +293,7 @@ export const DualRanksGraphic = forwardRef<HTMLElement, DualRanksGraphicProps>(
           {cols.hideRight ? null : (
             <Column
               header={draft.rightHeader}
-              rows={cols.right}
+              entries={cols.rightEntries}
               featuredId={draft.featuredPlayerId}
               season={draft.season}
               aria="Right board"

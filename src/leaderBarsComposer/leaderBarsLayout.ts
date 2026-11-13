@@ -20,6 +20,68 @@ export const LB_HERO_FAMILY = 64;
 export const LB_HERO_GIVEN = 22;
 export const LB_HERO_STAT = 44;
 export const LB_HERO_LOGO = 64;
+export const LB_RANK_COL = 36;
+export const LB_LOGO_COL = 40;
+export const LB_VALUE_COL = 140;
+export const LB_COL_GAP = 8;
+export const LB_ROW_PAD_X = 8;
+export const LB_NAME_FR = 1.35;
+export const LB_BAR_FR = 1.15;
+export const LB_BAR_MIN = 100;
+export const LB_LOGO_SIZE = 34;
+
+export interface LeaderBarsRowCols {
+  pad: number;
+  gap: number;
+  rankX: number;
+  rankW: number;
+  logoX: number;
+  logoW: number;
+  nameX: number;
+  nameW: number;
+  barX: number;
+  barW: number;
+  valueX: number;
+  valueW: number;
+}
+
+/** Same 5-column grid as `.lb-row` so PNG bars match the Fit 560 preview. */
+export const leaderBarsRowCols = (rowW: number): LeaderBarsRowCols => {
+  const pad = LB_ROW_PAD_X;
+  const gap = LB_COL_GAP;
+  const inner = Math.max(0, rowW - pad * 2);
+  const fixed = LB_RANK_COL + LB_LOGO_COL + LB_VALUE_COL;
+  const flex = Math.max(0, inner - gap * 4 - fixed);
+  let nameW = flex * (LB_NAME_FR / (LB_NAME_FR + LB_BAR_FR));
+  let barW = flex - nameW;
+  if (barW < LB_BAR_MIN) {
+    nameW = Math.max(0, nameW - (LB_BAR_MIN - barW));
+    barW = Math.min(LB_BAR_MIN, flex);
+  }
+  let x = pad;
+  const rankX = x;
+  x += LB_RANK_COL + gap;
+  const logoX = x;
+  x += LB_LOGO_COL + gap;
+  const nameX = x;
+  x += nameW + gap;
+  const barX = x;
+  x += barW + gap;
+  return {
+    pad,
+    gap,
+    rankX,
+    rankW: LB_RANK_COL,
+    logoX,
+    logoW: LB_LOGO_COL,
+    nameX,
+    nameW,
+    barX,
+    barW,
+    valueX: x,
+    valueW: LB_VALUE_COL,
+  };
+};
 
 export interface LeaderBarsRect {
   x: number;

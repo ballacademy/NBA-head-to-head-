@@ -118,7 +118,7 @@ describe("takeaways state", () => {
         ...defaultTakeawaysDraft().cards.slice(1),
       ],
     });
-    expect(takeawaysCoverViewCards(withName, false)).toHaveLength(3);
+    expect(takeawaysCoverViewCards(withName, false)).toHaveLength(1);
     expect(takeawaysCoverViewCards(withName, true)).toHaveLength(1);
     const landed = landCarriedTakeawaysPlayer(defaultTakeawaysDraft(), "3975");
     expect(landed.cards[0]?.playerId).toBe("3975");
