@@ -1,0 +1,64 @@
+import { describe, expect, it } from "vitest";
+import { emptyLeaderRow, emptyLeaderRows } from "../leaderboardComposer/leaderboardFill";
+import {
+  defaultDualRanksDraft,
+  dualExportColumns,
+  fitDualRankName,
+  normalizeDualRanksDraft,
+} from "./dualRanksState";
+
+describe("dual ranks", () => {
+  it("hides empty columns and ghost ranks in preview the way export does", () => {
+    const draft = normalizeDualRanksDraft({
+      ...defaultDualRanksDraft(),
+      leftRows: emptyLeaderRows(8).map((row, index) =>
+        index === 0
+          ? {
+              ...row,
+              playerId: "1",
+              firstName: "Shai",
+              lastName: "Gilgeous-Alexander",
+              value: "32.7",
+              rawValue: 32.7,
+            }
+          : row,
+      ),
+      rightRows: emptyLeaderRows(8),
+    });
+    const preview = dualExportColumns(draft, false, false);
+    expect(preview.hideRight).toBe(true);
+    expect(preview.right).toHaveLength(0);
+    const exported = dualExportColumns(draft, true, false);
+    expect(exported.hideRight).toBe(true);
+    expect(exported.hideLeft).toBe(false);
+    expect(exported.left).toHaveLength(1);
+  });
+
+  it("keeps short full names and period-abbreviates overflow", () => {
+    expect(
+      fitDualRankName({ firstName: "Payton", lastName: "Pritchard" }),
+    ).toBe("PAYTON PRITCHARD");
+    expect(
+      fitDualRankName({ firstName: "Anthony", lastName: "Edwards" }),
+    ).toBe("ANTHONY EDWARDS");
+    expect(
+      fitDualRankName({ firstName: "Shai", lastName: "Gilgeous-Alexander" }),
+    ).toMatch(/GILGEOUS|G\.-ALEXANDER|\.$/);
+    expect(
+      fitDualRankName({ firstName: "Shai", lastName: "Gilgeous-Alexander" }),
+    ).not.toBe("SHAI GILGEOUS-ALEXANDER");
+  });
+
+  it("defaults team-color name plates off so Fill stays charcoal hairline", () => {
+    expect(defaultDualRanksDraft().namePlates).toBe(false);
+    expect(normalizeDualRanksDraft({}).namePlates).toBe(false);
+    expect(normalizeDualRanksDraft({ namePlates: true }).namePlates).toBe(true);
+  });
+
+  it("does not invent a featured rank when the player is missing from the table", () => {
+    const draft = defaultDualRanksDraft();
+    expect(draft.featuredPlayerId).toBeNull();
+    expect(draft.leftRows.every((row) => row.playerId == null)).toBe(true);
+    expect(emptyLeaderRow().value).toBe("");
+  });
+});

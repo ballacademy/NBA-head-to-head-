@@ -1,0 +1,158 @@
+import {
+  paintCellFrame,
+  paintPurpleBaGlow,
+  type ComposerLook,
+} from "../instagramComposer/composerLook";
+import {
+  formatComposerPersonName,
+  readComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
+import {
+  FIELD_TEXTURE_SRC,
+  paintBoardField,
+} from "../standingsComposer/headerTexture";
+import { drawCenteredLogo } from "../standingsComposer/logoDraw";
+import {
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+} from "../standingsComposer/rankingState";
+import { getTeam } from "../standingsComposer/teams";
+import {
+  INJURY_KICKER_FILL,
+  INJURY_KICKER_INK,
+  injuryFillLayout,
+  splitInjuryTitle,
+  type InjuryDraft,
+  type InjuryKicker,
+} from "./injuryState";
+
+const POSTER_FONT = "Montserrat, ui-sans-serif, system-ui, sans-serif";
+
+const loadImage = (src: string) =>
+  new Promise<HTMLImageElement | null>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image.naturalWidth > 0 ? image : null);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+
+export type InjuryRenderInput = InjuryDraft & {
+  look?: ComposerLook;
+  purpleFlair?: boolean;
+  story?: boolean;
+};
+
+export const renderInjuryCanvas = async (
+  input: InjuryRenderInput,
+  scale = 2,
+): Promise<HTMLCanvasElement> => {
+  const width = GRAPHIC_WIDTH * scale;
+  const boardH = input.story ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT;
+  const height = boardH * scale;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return canvas;
+  }
+  const s = scale;
+  paintBoardField(context, await loadImage(FIELD_TEXTURE_SRC), width, height);
+  paintCellFrame(context, 0, 0, width, height, input.look, s);
+
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = "#fff";
+  if (!input.showBa) {
+    context.font = `900 ${22 * s}px ${POSTER_FONT}`;
+    context.fillText(input.brand.toUpperCase(), width / 2, 34 * s);
+  }
+  const lines = splitInjuryTitle(input.title);
+  context.font = `900 ${46 * s}px ${POSTER_FONT}`;
+  lines.forEach((line, index) => {
+    context.fillText(line, width / 2, (92 + index * 48) * s);
+  });
+
+  const kicker = (input.kicker || "OUT / GTD").toUpperCase();
+  context.font = `italic 900 ${22 * s}px ${POSTER_FONT}`;
+  const kw = Math.min(420 * s, context.measureText(kicker).width + 36 * s);
+  const kx = (width - kw) / 2;
+  const ky = 188 * s;
+  context.fillStyle = "#fff";
+  context.fillRect(kx, ky, kw, 36 * s);
+  context.fillStyle = "#111";
+  context.fillText(kicker, width / 2, ky + 18 * s);
+
+  context.fillStyle = "rgba(255,255,255,0.88)";
+  context.font = `900 ${16 * s}px ${POSTER_FONT}`;
+  context.fillText((input.dateLine || "").toUpperCase(), width / 2, 246 * s);
+
+  const logos = await Promise.all(
+    input.teams.map((block) => {
+      const team = getTeam(block.teamId);
+      return team ? loadImage(team.logoSrc) : Promise.resolve(null);
+    }),
+  );
+
+  const fill = injuryFillLayout(input.teams.length, boardH);
+  const cols = fill.cols;
+  const listTop = fill.listTop * s;
+  const colW = (width - 56 * s) / cols;
+  const logoSize = fill.logo * s;
+  const pipH = fill.pipH * s;
+  const nameSize = fill.name * s;
+  input.teams.forEach((block, index) => {
+    const col = index % cols;
+    const row = Math.floor(index / cols);
+    const x = 28 * s + col * (colW + 12 * s);
+    const y = listTop + row * (fill.rowH + fill.gap) * s;
+    const logo = logos[index];
+    if (logo) {
+      drawCenteredLogo(context, logo, x, y, logoSize, logoSize, {
+        cacheKey: `${block.teamId}-inj`,
+        shadow: 0,
+      });
+    }
+    context.textAlign = "center";
+    context.fillStyle = "#fff";
+    context.font = `900 ${12 * s}px ${POSTER_FONT}`;
+    context.fillText(block.teamId, x + logoSize / 2, y + logoSize + 14 * s);
+    context.textAlign = "left";
+    const lineH = Math.max(pipH + 4 * s, nameSize + 4 * s);
+    block.players.slice(0, 4).forEach((player, playerIndex) => {
+      const py = y + playerIndex * lineH + (logoSize - lineH * Math.min(block.players.length, 4)) / 2;
+      const status = player.status as InjuryKicker;
+      context.fillStyle = INJURY_KICKER_FILL[status] ?? "#fff";
+      context.fillRect(x + logoSize + 12 * s, py, 72 * s, pipH);
+      context.fillStyle = INJURY_KICKER_INK[status] ?? "#111";
+      context.font = `italic 900 ${fill.pipSize * s}px ${POSTER_FONT}`;
+      context.textAlign = "center";
+      context.fillText(player.status, x + logoSize + 48 * s, py + pipH / 2);
+      context.textAlign = "left";
+      context.fillStyle = "#fff";
+      context.font = `900 ${nameSize}px ${POSTER_FONT}`;
+      context.fillText(
+        (
+          formatComposerPersonName(player.name, readComposerNameStyle()) ||
+          player.shortName
+        ).toUpperCase(),
+        x + logoSize + 90 * s,
+        py + pipH / 2,
+      );
+    });
+  });
+
+  if (input.showBa) {
+    const ba = await loadImage("/ba-logo-circled.png");
+    if (ba) {
+      const size = 56 * s;
+      const inset = 24 * s;
+      if (input.purpleFlair) {
+        paintPurpleBaGlow(context, width - inset - size, inset, size);
+      }
+      context.drawImage(ba, width - inset - size, inset, size, size);
+    }
+  }
+  return canvas;
+};

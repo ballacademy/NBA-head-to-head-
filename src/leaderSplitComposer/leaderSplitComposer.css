@@ -1,0 +1,296 @@
+.ls-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --gold: #d4af37;
+  --list-w: 42%;
+  --ls-row-h: 180;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #1c1c1c;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  flex-direction: row;
+}
+
+.ls-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.ls-board.is-mirror {
+  flex-direction: row-reverse;
+}
+
+.ls-list {
+  flex: 0 0 var(--list-w);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  z-index: 2;
+  padding: calc(24 * var(--u));
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  background-repeat: repeat;
+}
+
+.ls-photo-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  z-index: 1;
+}
+
+.ls-photo-wrap .pod-photo {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #121214;
+  touch-action: none;
+  cursor: grab;
+}
+
+.ls-photo-wrap .pod-photo.is-empty {
+  background: #121214;
+}
+
+.ls-photo-wrap .pod-photo__pick {
+  font-size: calc(64 * var(--u));
+  letter-spacing: 0.14em;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.ls-rows {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ls-row {
+  position: relative;
+  flex: 1 1 0;
+  display: grid;
+  grid-template-columns:
+    calc(22 * var(--u)) calc(28 * var(--u)) minmax(0, 1fr) calc(170 * var(--u));
+  align-items: center;
+  gap: calc(6 * var(--u));
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ls-row + .ls-row {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.ls-row.is-gold .ls-rank,
+.ls-row.is-gold .ls-value {
+  color: #d4af37;
+}
+
+.ls-row.is-silver .ls-rank,
+.ls-row.is-silver .ls-value {
+  color: #c0c7d0;
+}
+
+.ls-row.is-bronze .ls-rank,
+.ls-row.is-bronze .ls-value {
+  color: #c47a3a;
+}
+
+.ls-board.is-plates .ls-rows {
+  gap: calc(8 * var(--u));
+}
+
+.ls-board.is-plates .ls-row {
+  padding: 0 calc(10 * var(--u));
+  border-radius: calc(8 * var(--u));
+  overflow: hidden;
+  background: var(--team-fill, #2a2a2a);
+  box-shadow: inset calc(6 * var(--u)) 0 0 var(--team-accent, rgba(255, 255, 255, 0.18));
+}
+
+.ls-board.is-plates .ls-row + .ls-row {
+  box-shadow: inset calc(6 * var(--u)) 0 0 var(--team-accent, rgba(255, 255, 255, 0.18));
+}
+
+.ls-row__mark {
+  display: none;
+}
+
+.ls-board.is-plates .ls-row__mark {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  right: 6%;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 78%;
+  width: auto;
+  max-width: 42%;
+  opacity: 0.18;
+  pointer-events: none;
+  object-fit: contain;
+}
+
+.ls-board.is-plates .ls-rank,
+.ls-board.is-plates .ls-logo,
+.ls-board.is-plates .ls-face,
+.ls-board.is-plates .ls-name,
+.ls-board.is-plates .ls-value {
+  position: relative;
+  z-index: 1;
+}
+
+.ls-rank,
+.ls-name,
+.ls-value {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  outline: none;
+  min-width: 0;
+}
+
+.ls-rank {
+  font-size: min(
+    calc(var(--ls-row-h) * 0.11 * var(--u)),
+    calc(18 * var(--u))
+  );
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+
+.ls-logo,
+.ls-face {
+  width: calc(28 * var(--u));
+  height: calc(28 * var(--u));
+  object-fit: contain;
+}
+
+.ls-face {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ls-name {
+  font-size: min(
+    calc(var(--ls-row-h) * 0.2 * var(--u)),
+    calc(42 * var(--u))
+  );
+  letter-spacing: 0.02em;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  width: 100%;
+  field-sizing: fixed;
+}
+
+.ls-value {
+  font-size: min(
+    calc(var(--ls-row-h) * 0.3 * var(--u)),
+    calc(64 * var(--u))
+  );
+  text-align: right;
+  line-height: 1;
+  overflow: hidden;
+  width: 100%;
+  field-sizing: fixed;
+}
+
+.ls-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(6, 6, 8, 0.96) 0%,
+    rgba(6, 6, 8, 0.55) 48%,
+    rgba(6, 6, 8, 0) 100%
+  );
+}
+
+.ls-photo-type {
+  position: absolute;
+  left: calc(36 * var(--u));
+  right: calc(36 * var(--u));
+  bottom: calc(36 * var(--u));
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: calc(4 * var(--u));
+  pointer-events: none;
+}
+
+.ls-kicker,
+.ls-hero-given,
+.ls-hero-name,
+.ls-hero-value {
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+  color: #fff;
+}
+
+.ls-kicker {
+  color: var(--gold);
+  font-size: calc(18 * var(--u));
+  letter-spacing: 0.18em;
+  pointer-events: auto;
+  background: transparent;
+  border: 0;
+  outline: none;
+  width: 100%;
+}
+
+.ls-hero-given {
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.1em;
+  opacity: 0.92;
+}
+
+.ls-hero-name {
+  font-size: calc(96 * var(--u));
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.ls-hero-value {
+  font-size: calc(64 * var(--u));
+  color: var(--gold);
+}
+
+.ls-board .composer-ba {
+  z-index: 6;
+}
+
+.ls-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.ls-board.is-none {
+  --frame-w: 0px;
+  --frame-color: transparent;
+}

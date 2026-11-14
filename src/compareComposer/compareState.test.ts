@@ -1,0 +1,346 @@
+import { describe, expect, it } from "vitest";
+import catalog from "../../data/every-team-historical-rosters.json";
+import {
+  hydrateEveryTeamRosters,
+  statsSeasonFor,
+} from "../everyTeamComposer/historicalRosters";
+import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  addCompareStat,
+  applySideStatValues,
+  autoCompareStatsLabel,
+  compareGameNightLabel,
+  compareUsesLiveSeasonAverages,
+  isSeasonAverageStatsLabel,
+  visibleCompareStatsLabel,
+  COMPARE_STAT_COUNT,
+  COMPARE_STAT_MAX,
+  compareCaptionFor,
+  comparePasteSlotIndex,
+  compareStatBarShares,
+  defaultCompareDraft,
+  defaultCompareStats,
+  isAutoCompareSubtitle,
+  normalizeCompareDraft,
+  fillCompareSide,
+  landCarriedComparePlayer,
+  compareStatLowerIsBetter,
+  leadingSide,
+  nextCompareStat,
+  numericStat,
+  parseCompareStats,
+  parseCompareStatsMode,
+  moveCompareStat,
+  removeCompareStat,
+  resetCompareKeepPhotos,
+  swapCompareSides,
+  compareWinner,
+  formatCompareMinutes,
+  statsFromLastGame,
+  statsFromSeason,
+} from "./compareState";
+import {
+  CMP_INSET,
+  CMP_PHOTO_W,
+  GRAPHIC_HEIGHT,
+  GRAPHIC_WIDTH,
+  STORY_DESIGN_HEIGHT,
+  comparePhotoFrame,
+  compareStackTop,
+  compareStatType,
+} from "./compareLayout";
+
+hydrateEveryTeamRosters(
+  catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
+);
+
+describe("compare composer recs", () => {
+  it("starts empty-photo with this-season averages and stacked default stats", () => {
+    const draft = defaultCompareDraft();
+    expect(draft.sides[0]?.photoSrc).toBeNull();
+    expect(draft.sides[1]?.photoSrc).toBeNull();
+    expect(draft.statsMode).toBe("season");
+    expect(draft.stats.map((stat) => stat.label)).toEqual([
+      "PTS",
+      "FG%",
+      "3P%",
+      "REB",
+      "AST",
+    ]);
+    expect(parseCompareStatsMode(undefined)).toBe("season");
+    expect(autoCompareStatsLabel("season", "2026-27")).toBe("2026-27 AVG");
+    expect(compareUsesLiveSeasonAverages("2026-27", "regular")).toBe(true);
+    expect(compareUsesLiveSeasonAverages("2025-26", "regular")).toBe(false);
+    expect(compareUsesLiveSeasonAverages("2026-27", "preseason")).toBe(false);
+    expect(statsSeasonFor("2026-27", "regular")).toBe("2025-26");
+    expect(autoCompareStatsLabel("game", "2026-27")).toBe("ONE GAME");
+    expect(autoCompareStatsLabel("game", "2026-27", "2026-11-09")).toBe(
+      "NOV 9",
+    );
+    expect(isSeasonAverageStatsLabel("2025-26 AVG", "2026-27")).toBe(true);
+    expect(isSeasonAverageStatsLabel("2025-2026 season average")).toBe(true);
+    expect(isSeasonAverageStatsLabel("NOV 9")).toBe(false);
+    expect(
+      visibleCompareStatsLabel({
+        statsMode: "game",
+        statsLabel: "2025-26 AVG",
+        season: "2026-27",
+      }),
+    ).toBe("");
+    expect(
+      visibleCompareStatsLabel({
+        statsMode: "game",
+        statsLabel: "NOV 9",
+        season: "2026-27",
+      }),
+    ).toBe("NOV 9");
+    expect(
+      visibleCompareStatsLabel({
+        statsMode: "season",
+        statsLabel: `${statsSeasonFor("2026-27")} AVG`,
+        season: "2026-27",
+      }),
+    ).toBe(`${statsSeasonFor("2026-27")} AVG`);
+    expect(
+      normalizeCompareDraft({
+        ...draft,
+        statsMode: "game",
+        statsLabel: "2025-2026 season average",
+      }).statsLabel,
+    ).toBe("");
+    expect(compareGameNightLabel("2026-11-08")).toBe("NOV 8");
+    expect(draft.subtitle).toBe("");
+    expect(isAutoCompareSubtitle("CAREER START VS CAREER BENCH APPEARANCES")).toBe(
+      true,
+    );
+    expect(
+      normalizeCompareDraft({
+        ...draft,
+        subtitle: "CAREER START VS CAREER BENCH APPEARANCES",
+      }).subtitle,
+    ).toBe("");
+    expect(compareCaptionFor(draft)).not.toContain("CAREER START");
+    expect(comparePasteSlotIndex(1, null)).toBe(1);
+    expect(comparePasteSlotIndex(0, 1)).toBe(1);
+    expect(comparePasteSlotIndex(1, 0)).toBe(0);
+  });
+
+  it("fills a side without a mugshot and highlights the leader", () => {
+    const luka = getPlayer("3945274")!;
+    const next = fillCompareSide(luka, defaultCompareDraft().sides[0]!);
+    expect(next.playerId).toBe(luka.id);
+    expect(next.photoSrc).toBe(luka.headshotUrl);
+    expect(next.lastName.toUpperCase()).toContain("DONCIC");
+    expect(defaultCompareDraft().showLetterGrade).toBe(false);
+    expect(compareStatBarShares("28", "11").left).toBe(1);
+    expect(compareStatBarShares("28", "11").right).toBeCloseTo(11 / 28);
+    expect(leadingSide("31.1", "24.2")).toBe(0);
+    expect(leadingSide("24.2", "31.1")).toBe(1);
+    expect(leadingSide("24.2", "24.2")).toBeNull();
+    expect(compareStatLowerIsBetter("tov", "TOV")).toBe(true);
+    expect(compareStatLowerIsBetter("pf", "PF")).toBe(true);
+    expect(compareStatLowerIsBetter("pts", "PTS")).toBe(false);
+    expect(leadingSide("2.4", "0.8", true)).toBe(1);
+    expect(leadingSide("0.8", "2.4", true)).toBe(0);
+    expect(numericStat("47.2%")).toBeCloseTo(47.2);
+    const landed = landCarriedComparePlayer(defaultCompareDraft(), luka.id);
+    expect(landed.sides[0]?.playerId).toBe(luka.id);
+    expect(landed.sides[0]?.photoSrc).toBe(luka.headshotUrl);
+    expect(
+      landCarriedComparePlayer(landed, "3112335").sides[0]?.playerId,
+    ).toBe(luka.id);
+  });
+
+  it("reads season averages through last-year fallback", () => {
+    const sga = getPlayer("4278073");
+    const id = sga?.id ?? "4278073";
+    const values = statsFromSeason(id, "OKC", "2026-27", defaultCompareStats());
+    expect(values[0]).toMatch(/^\d/);
+    const game = statsFromLastGame(
+      {
+        eventId: "1",
+        gameDate: "2026-10-13",
+        teamId: "OKC",
+        opponentId: "MIN",
+        opponentAbbrev: "MIN",
+        result: "W",
+        playerScore: "120",
+        opponentScore: "110",
+        resultLine: "W",
+        dateLabel: "10/13",
+        stats: {
+          pts: "33",
+          reb: "6",
+          ast: "8",
+          stl: "1",
+          blk: "1",
+          fg: "12-22",
+          three: "3-8",
+          tov: "2",
+          min: "36",
+        },
+      },
+      defaultCompareStats(),
+    );
+    expect(game[0]).toBe("33");
+    expect(game[1]).toBe("54.5");
+    const averaged = statsFromLastGame(
+      {
+        eventId: "1",
+        gameDate: "2026-11-10",
+        teamId: "BOS",
+        opponentId: "NYK",
+        opponentAbbrev: "NYK",
+        result: "W",
+        playerScore: "120",
+        opponentScore: "110",
+        resultLine: "LAST 8",
+        dateLabel: "LAST 8",
+        stats: {
+          pts: "22",
+          reb: "5.2",
+          ast: "3.8",
+          stl: "1.1",
+          blk: "0.4",
+          fg: "8-16.4",
+          three: "3.7-8.4",
+          tov: "2.1",
+          min: "32.5",
+          ft: "2.3-2.6",
+        },
+      },
+      defaultCompareStats(),
+    );
+    expect(averaged[0]).toBe("22");
+    expect(averaged[1]).toBe("48.8");
+    expect(averaged[2]).toBe("44.0");
+    expect(formatCompareMinutes("36:42")).toBe("36");
+    expect(formatCompareMinutes("0.7")).toBe("42");
+    expect(formatCompareMinutes("33.2")).toBe("33");
+    const ten = addCompareStat(
+      addCompareStat(
+        addCompareStat(defaultCompareStats()),
+      ),
+    );
+    const gameTen = statsFromLastGame(
+      {
+        eventId: "1",
+        gameDate: "2026-10-13",
+        teamId: "OKC",
+        opponentId: "MIN",
+        opponentAbbrev: "MIN",
+        result: "W",
+        playerScore: "120",
+        opponentScore: "110",
+        resultLine: "W",
+        dateLabel: "10/13",
+        stats: {
+          pts: "33",
+          reb: "6",
+          ast: "8",
+          stl: "1",
+          blk: "1",
+          fg: "12-22",
+          three: "3-8",
+          tov: "2",
+          min: "36",
+          ft: "8-9",
+        },
+      },
+      ten,
+    );
+    expect(ten.map((stat) => stat.label).slice(5)).toEqual(["FT%", "TOV", "MIN"]);
+    expect(gameTen.slice(5)).toEqual(["88.9", "2", "36"]);
+    const patched = applySideStatValues(defaultCompareStats(), 0, game);
+    expect(patched[0]?.left).toBe("33");
+    expect(patched[0]?.right).toBe("");
+  });
+
+  it("adds unused counting stats through 10 without shrinking the photo columns", () => {
+    expect(COMPARE_STAT_COUNT).toBe(5);
+    expect(COMPARE_STAT_MAX).toBe(10);
+    expect(CMP_PHOTO_W).toBe(390);
+    expect(GRAPHIC_WIDTH * 2).toBe(2400);
+    expect(GRAPHIC_HEIGHT * 2).toBe(3000);
+    const feed = comparePhotoFrame(false, false);
+    const story = comparePhotoFrame(true, false);
+    const withSub = comparePhotoFrame(false, true);
+    expect(feed.y).toBe(compareStackTop());
+    expect(feed.h).toBe(GRAPHIC_HEIGHT - compareStackTop() - CMP_INSET);
+    expect(feed.h).toBeGreaterThan(GRAPHIC_HEIGHT * 0.8);
+    expect(feed.y + feed.h).toBe(GRAPHIC_HEIGHT - CMP_INSET);
+    expect(story.h).toBe(STORY_DESIGN_HEIGHT - compareStackTop() - CMP_INSET);
+    expect(story.h).toBeGreaterThan(feed.h);
+    expect(story.h).toBeGreaterThan(STORY_DESIGN_HEIGHT * 0.85);
+    expect(withSub.h).toBeLessThan(feed.h);
+    expect(comparePhotoFrame(false, false).h).toBe(feed.h);
+    expect(compareStatType(5).value).toBe(54);
+    expect(compareStatType(10).value).toBeLessThan(compareStatType(5).value);
+    expect(compareStatType(10).value).toBeGreaterThanOrEqual(24);
+    let stats = defaultCompareStats();
+    const added: string[] = [];
+    while (nextCompareStat(stats)) {
+      added.push(nextCompareStat(stats)!.label);
+      stats = addCompareStat(stats);
+    }
+    expect(added).toEqual(["FT%", "TOV", "MIN", "BLK", "STL"]);
+    expect(stats).toHaveLength(10);
+    expect(stats.map((stat) => stat.label)).toEqual([
+      "PTS",
+      "FG%",
+      "3P%",
+      "REB",
+      "AST",
+      "FT%",
+      "TOV",
+      "MIN",
+      "BLK",
+      "STL",
+    ]);
+    expect(addCompareStat(stats)).toHaveLength(10);
+    expect(removeCompareStat(stats, 9)).toHaveLength(9);
+    expect(removeCompareStat(defaultCompareStats(), 0)).toHaveLength(4);
+    expect(removeCompareStat([{ ...emptyRow(), key: "pts" }], 0)).toHaveLength(1);
+    expect(
+      moveCompareStat(defaultCompareStats(), 0, 2).map((stat) => stat.key),
+    ).toEqual(["fgPct", "fg3Pct", "pts", "reb", "ast"]);
+    const filled = applySideStatValues(
+      applySideStatValues(defaultCompareStats(), 0, ["30", "50", "40", "8", "7"]),
+      1,
+      ["20", "40", "30", "5", "4"],
+    );
+    expect(compareWinner(filled)).toBe(0);
+    const swapped = swapCompareSides({
+      ...defaultCompareDraft(),
+      stats: filled,
+    });
+    expect(swapped.stats[0]?.right).toBe("30");
+    expect(compareWinner(swapped.stats)).toBe(1);
+    const keep = resetCompareKeepPhotos({
+      ...defaultCompareDraft(),
+      sides: [
+        {
+          ...defaultCompareDraft().sides[0]!,
+          customPhoto: true,
+          photoSrc: "data:image/png;base64,aaa",
+        },
+        defaultCompareDraft().sides[1]!,
+      ],
+    });
+    expect(keep.sides[0]?.photoSrc).toContain("data:image");
+    expect(keep.title).toBe(defaultCompareDraft().title);
+    expect(parseCompareStats([...stats, emptyRow(), emptyRow()])).toHaveLength(
+      10,
+    );
+    expect(leadingSide(stats[0]!.left, stats[0]!.right)).toBeNull();
+    expect(leadingSide("2.4", "0.8")).toBe(0);
+    expect(leadingSide("0.8", "2.4")).toBe(1);
+  });
+});
+
+const emptyRow = () => ({
+  key: "gp" as const,
+  label: "GP",
+  left: "1",
+  right: "2",
+});
