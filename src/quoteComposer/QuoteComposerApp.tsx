@@ -275,6 +275,7 @@ export function QuoteComposerApp() {
           Name
           <input
             value={draft.attribution}
+            title={draft.attribution || "Name"}
             maxLength={ATTRIB_MAX}
             onChange={(event) =>
               setDraft((current) => ({

@@ -44,7 +44,6 @@ import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import { ShotChartGraphic } from "./ShotChartGraphic";
 import { exportShotChartPng } from "./exportShotChartPng";
 import { renderShotChartCanvas } from "./renderShotChartCanvas";
-import type { LastGame } from "../playerOfTheDayComposer/lastGame";
 import {
   applyFilledShotChart,
   applyShotChartFilter,
@@ -52,12 +51,9 @@ import {
   defaultShotChartDraft,
   fetchRecentGames,
   fetchShotChartForGame,
-  formatShotMatchup,
   gamesForShotWindow,
-  isoDateOnly,
   isShotChartDraft,
   shotChartFilter,
-  shotGameOptionLabel,
   type ShotChartDraft,
   type ShotChartFilter,
   type ShotChartWindow,
@@ -100,7 +96,6 @@ export function ShotChartComposerApp() {
   const night = useComposerNight();
   const { push, pop, canUndo } = useComposerUndo<ShotChartDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
-  const [recentGames, setRecentGames] = useState<LastGame[]>([]);
   const fillSeq = useRef(0);
 
   useEffect(() => {
@@ -150,14 +145,13 @@ export function ShotChartComposerApp() {
     setStatus("Loading shots…");
     try {
       const games = await fetchRecentGames(next.playerId, sample);
-      setRecentGames(games);
       const fillRange = {
         from: next.from || range.from,
         to: next.to || range.to,
       };
       const windowGames = gamesForShotWindow(games, next.window, fillRange, {
-        eventId: next.eventId,
-        nightDate: next.nightDate || night.date,
+        eventId: next.window === "range" ? next.eventId : "",
+        nightDate: next.window === "last-game" ? "" : next.nightDate || night.date,
       });
       const batches = await Promise.all(
         windowGames.map((game) =>
@@ -204,22 +198,6 @@ export function ShotChartComposerApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
-  useEffect(() => {
-    if (!hydrated || !draft.playerId) {
-      setRecentGames([]);
-      return;
-    }
-    let cancelled = false;
-    void fetchRecentGames(draft.playerId, statsSample).then((games) => {
-      if (!cancelled) {
-        setRecentGames(games);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [hydrated, draft.playerId, statsSample]);
-
   const pickPlayer = (playerId: string) => {
     const player = getPlayer(playerId);
     if (!player) {
@@ -239,20 +217,7 @@ export function ShotChartComposerApp() {
       window,
       from: range.from,
       to: range.to,
-      eventId: window === "range" ? "" : draft.eventId,
-    };
-    setDraft(next);
-    void fillShots(next);
-  };
-
-  const pickRecentGame = (eventId: string) => {
-    const game = recentGames.find((row) => row.eventId === eventId);
-    const next = {
-      ...draft,
-      window: "last-game" as const,
-      eventId,
-      nightDate: game ? isoDateOnly(game.gameDate) : draft.nightDate,
-      matchup: game ? formatShotMatchup(game) : "",
+      eventId: "",
     };
     setDraft(next);
     void fillShots(next);
@@ -388,37 +353,14 @@ export function ShotChartComposerApp() {
               }}
             />
             ) : (
-              <>
-                <label className="sc-field">
-                  Game
-                  <select
-                    value={draft.eventId || ""}
-                    aria-label="Recent game"
-                    onChange={(event) => pickRecentGame(event.target.value)}
-                  >
-                    <option value="">Latest</option>
-                    {draft.eventId &&
-                    !recentGames.some((game) => game.eventId === draft.eventId) ? (
-                      <option value={draft.eventId}>
-                        {draft.gameLabel || "Selected game"}
-                      </option>
-                    ) : null}
-                    {recentGames.slice(0, 20).map((game) => (
-                      <option key={game.eventId} value={game.eventId}>
-                        {shotGameOptionLabel(game)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  type="button"
-                  className="sc-chip"
-                  onClick={() => void fillShots()}
-                  disabled={filling}
-                >
-                  {filling ? "Loading…" : "Fill"}
-                </button>
-              </>
+              <button
+                type="button"
+                className="sc-chip"
+                onClick={() => void fillShots()}
+                disabled={filling}
+              >
+                {filling ? "Loading…" : "Fill"}
+              </button>
             )}
           </>
         }

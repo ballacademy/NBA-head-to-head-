@@ -348,6 +348,7 @@ export function HeadlineComposerApp() {
           Kicker
           <input
             value={draft.headline}
+            title={draft.headline || "Kicker"}
             maxLength={HEADLINE_MAX}
             list="headline-kicker-presets"
             aria-label="Headline kicker"
@@ -452,7 +453,10 @@ export function HeadlineComposerApp() {
           <button
             type="button"
             className="sc-chip"
-            onClick={() => void fillAutoBody(draft)}
+            onClick={() => {
+              night.setDate(night.yesterdayIso);
+              void fillAutoBody(draft, night.yesterdayIso);
+            }}
             disabled={!draft.playerId && !draft.teamId}
             title={
               draft.playerId

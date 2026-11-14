@@ -67,6 +67,7 @@ import { type LandingHubTab } from "./LandingBottomNav";
 import { HubFeatureReturnButton } from "./HubFeatureReturnButton";
 import { HubShell } from "./HubShell";
 import {
+  gameAppDocumentTitle,
   loadLandingH2hMode,
   loadLandingPlaySection,
   saveLandingH2hMode,
@@ -306,6 +307,16 @@ export function LandingPage({
     setPrivateJoinPrefill("");
     setChallengeInvitePlayerId(null);
   }, []);
+
+  useEffect(() => {
+    const hubParam =
+      new URLSearchParams(window.location.search).get("hub") ||
+      (hubTab === "play" ? "play" : hubTab);
+    document.title = gameAppDocumentTitle(
+      hubParam,
+      hubTab === "play" ? playSection : null,
+    );
+  }, [hubTab, playSection]);
 
   const updatePlaySection = useCallback((section: LandingPlaySection) => {
     setPlaySection(section);

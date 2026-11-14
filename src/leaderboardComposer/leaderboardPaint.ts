@@ -30,7 +30,7 @@ import { getTeamColors } from "../lib/teamColors";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { formatComposerName } from "../instagramComposer/composerNameStyle";
-import { ellipsisOverflowName } from "../instagramComposer/nameFit";
+import { abbreviateOverflowName } from "../instagramComposer/nameFit";
 import { LB_LOGO_SIZE, LB_TRACK_GOLD_H, LB_TRACK_H, leaderBarsRowCols } from "../leaderBarsComposer/leaderBarsLayout";
 import { LEADER_GOLD, type LeaderRow } from "./leaderboardFill";
 import { leaderPlateAccent, leaderPlateFill } from "./leaderPlate";
@@ -506,7 +506,7 @@ export const paintListRow = async (
   const nameX = logoX + logoSize + (compact ? 4 * s : 8 * s);
   const valueW = punch ? 170 * s : compact ? 44 * s : 80 * s;
   const nameMax = Math.max(48 * s, w - (nameX - x) - valueW - (compact ? 2 * s : 0));
-  const fitted = ellipsisOverflowName(name, nameMax, (value) =>
+  const fitted = abbreviateOverflowName(name, nameMax, (value) =>
     context.measureText(value).width,
   );
   context.fillText(fitted, nameX, y + h / 2);

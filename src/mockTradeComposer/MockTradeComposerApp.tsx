@@ -168,7 +168,9 @@ export function MockTradeComposerApp() {
     setStatus(`Looking up ESPN trades for ${name}…`);
     const trade = await fetchReportedTrade(id, name);
     if (!trade) {
-      setStatus(`No reported ESPN trade found for ${name}.`);
+      setStatus(
+        `No current ESPN trade story for ${name} — nothing invented.`,
+      );
       return;
     }
     push(draft);

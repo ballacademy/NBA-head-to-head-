@@ -31,6 +31,7 @@ import {
 import { dualRanksLayout } from "./dualRanksLayout";
 import {
   dualExportColumns,
+  fitDualRankName,
   type DualRanksDraft,
   type DualRanksLayout,
 } from "./dualRanksState";
@@ -139,6 +140,11 @@ const Column = ({
             <input
               className="dr-name"
               value={
+                fitDualRankName(row, nameStyle) ||
+                formatComposerName(row.firstName, row.lastName, nameStyle) ||
+                leaderRowName(row)
+              }
+              title={
                 formatComposerName(row.firstName, row.lastName, nameStyle) ||
                 leaderRowName(row)
               }

@@ -31,6 +31,7 @@ import {
 } from "../leaderboardComposer/leaderPlate";
 import { leaderSplitLayout } from "./leaderSplitLayout";
 import {
+  fitLeaderSplitName,
   leaderSplitVisibleEntries,
   type LeaderSplitDraft,
 } from "./leaderSplitState";
@@ -159,13 +160,19 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
                 <input
                   className="ls-name"
                   value={
+                    fitLeaderSplitName(row, nameStyle) ||
                     (nameStyle === "full"
                       ? row.lastName || row.firstName
                       : formatComposerName(
                           row.firstName,
                           row.lastName,
                           nameStyle,
-                        )) || leaderRowName(row)
+                        )) ||
+                    leaderRowName(row)
+                  }
+                  title={
+                    formatComposerName(row.firstName, row.lastName, nameStyle) ||
+                    leaderRowName(row)
                   }
                   aria-label={`Leader ${index + 1} name`}
                   spellCheck={false}

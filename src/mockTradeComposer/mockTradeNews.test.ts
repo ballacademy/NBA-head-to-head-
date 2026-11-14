@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defaultMockTradeDraft } from "./mockTradeState";
 import {
+  ESPN_ATHLETE_NEWS_URL,
   ESPN_ATHLETE_OVERVIEW_URL,
   ESPN_NBA_NEWS_URL,
   ESPN_STORY_URL,
@@ -45,6 +46,7 @@ describe("mock trade ESPN reports", () => {
     expect(ESPN_ATHLETE_OVERVIEW_URL("3917376")).toContain(
       "site.web.api.espn.com",
     );
+    expect(ESPN_ATHLETE_NEWS_URL("3945274")).toContain("athlete=3945274");
     expect(ESPN_STORY_URL("50028196")).toContain("content.core.api.espn.com");
   });
 

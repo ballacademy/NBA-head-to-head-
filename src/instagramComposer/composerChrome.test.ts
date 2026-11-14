@@ -1556,7 +1556,7 @@ describe("composer chrome", () => {
     expect(shotHud).not.toContain("ComposerNightDate");
     expect(shotHud).toContain("ComposerHudExtras");
     expect(shotHud).toContain("ComposerNameStyleToggle");
-    expect(shotHud).toContain('aria-label="Recent game"');
+    expect(shotHud).not.toContain('aria-label="Recent game"');
     expect(shotHud).toContain('label: "Both"');
     expect(shotHud).toContain('label: "Makes"');
     expect(shotHud).toContain('label: "Misses"');
@@ -1906,7 +1906,7 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(compareState).toContain("player.headshotUrl || null");
-    expect(sheet).toContain("max-height: 38vh");
+    expect(sheet).toContain("max-height: 22vh");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-field--stamp");
     expect(sheet).toContain("text-overflow: ellipsis");
     const picksGraphic = readFileSync(
@@ -2211,12 +2211,12 @@ describe("composer chrome", () => {
     expect(dualLayout).toContain("export const dualRanksLayout");
     expect(dualGraphic).toContain("dualRanksLayout");
     expect(dualCanvas).toContain("dualRanksLayout");
-    expect(dualCss).toContain("text-overflow: ellipsis");
+    expect(dualCss).toContain("text-overflow: clip");
     expect(takeawaysState).toContain("filter(takeawaysCardOccupied)");
     expect(takeawaysState).not.toContain("exporting ? slots.filter");
     expect(barsLayout).toContain("export const leaderBarsRowCols");
     expect(paint).toContain("leaderBarsRowCols");
-    expect(paint).toContain("ellipsisOverflowName");
+    expect(paint).toContain("abbreviateOverflowName");
     expect(shotLayout).toContain("export const shotZoneCells");
     expect(shotCanvas).toContain("shotZoneCells");
     expect(shotCanvas).toContain("rgba(28, 28, 28, 0.92)");
@@ -2228,5 +2228,78 @@ describe("composer chrome", () => {
       ".rl-board.is-exporting .rl-strip:has(.pod-photo.is-empty)",
     );
     expect(photoCss).toContain(".is-exporting .pod-photo__pick");
+  });
+
+  it("ships site-bugs 1–9: leftover post, roster wait, last-night clock, HUD wrap, period names, play title, one shot date, library auth, mock toast", () => {
+    const everyTeam = readFileSync(
+      join(root, "everyTeamComposer/EveryTeamComposerApp.tsx"),
+      "utf8",
+    );
+    const statApp = readFileSync(
+      join(root, "statCardComposer/StatCardComposerApp.tsx"),
+      "utf8",
+    );
+    const headlineHud = readFileSync(
+      join(root, "headlineComposer/HeadlineComposerApp.tsx"),
+      "utf8",
+    );
+    const dualGraphic = readFileSync(
+      join(root, "dualRanksComposer/DualRanksGraphic.tsx"),
+      "utf8",
+    );
+    const splitGraphic = readFileSync(
+      join(root, "leaderSplitComposer/LeaderSplitGraphic.tsx"),
+      "utf8",
+    );
+    const splitCss = readFileSync(
+      join(root, "leaderSplitComposer/leaderSplitComposer.css"),
+      "utf8",
+    );
+    const landingHub = readFileSync(join(root, "lib/landingHub.ts"), "utf8");
+    const landingPage = readFileSync(
+      join(root, "components/LandingPage.tsx"),
+      "utf8",
+    );
+    const app = readFileSync(join(root, "App.tsx"), "utf8");
+    const shotHud = readFileSync(
+      join(root, "shotChartComposer/ShotChartComposerApp.tsx"),
+      "utf8",
+    );
+    const libraryRemote = readFileSync(
+      join(root, "lib/composerLibraryRemote.ts"),
+      "utf8",
+    );
+    const mockApp = readFileSync(
+      join(root, "mockTradeComposer/MockTradeComposerApp.tsx"),
+      "utf8",
+    );
+    const mockNews = readFileSync(
+      join(root, "mockTradeComposer/mockTradeNews.ts"),
+      "utf8",
+    );
+    expect(sheet).toContain("max-height: 22vh");
+    expect(sheet).toContain(".sc-root.is-hud-simple .sc-stage");
+    expect(sheet).toContain("contents boxes ignore `order`");
+    expect(sheet).toContain("overflow-wrap: anywhere");
+    expect(everyTeam).toContain("await loadEveryTeamRosters()");
+    expect(everyTeam).toContain("disabled={rangeLoading || !rostersReady}");
+    expect(everyTeam).toContain("previousSeason(season)");
+    expect(statApp).toContain("night.setDate(yesterday)");
+    expect(statApp).toContain("lastNightRange()");
+    expect(headlineHud).toContain("night.setDate(night.yesterdayIso)");
+    expect(dualGraphic).toContain("fitDualRankName");
+    expect(splitGraphic).toContain("fitLeaderSplitName");
+    expect(splitCss).toContain("text-overflow: clip");
+    expect(landingHub).toContain("export const gameAppDocumentTitle");
+    expect(landingPage).toContain("gameAppDocumentTitle");
+    expect(app).toContain("gameAppDocumentTitle");
+    expect(shotHud).not.toContain('aria-label="Recent game"');
+    expect(shotHud).toContain(
+      'next.window === "last-game" ? "" : next.nightDate',
+    );
+    expect(libraryRemote).toContain("peekCachedAccountLinked");
+    expect(libraryRemote).not.toMatch(/if \(options\.force\)/);
+    expect(mockApp).toContain("No current ESPN trade story");
+    expect(mockNews).toContain("ESPN_ATHLETE_NEWS_URL");
   });
 });

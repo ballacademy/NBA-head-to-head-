@@ -571,8 +571,12 @@ export function StatCardComposerApp() {
   };
 
   const fillLastNight = async () => {
+    const yesterday = night.yesterdayIso;
+    night.setDate(yesterday);
+    const written = setRange(lastNightRange());
+    setGameDate(written.to);
     setStatus("Loading this night’s box scores…");
-    const rows = completedNightRows(await night.ensureStandouts());
+    const rows = completedNightRows(await night.ensureStandouts(yesterday));
     const top = rows[0];
     if (!top) {
       setStatus("No box scores for that night yet — pick a player.");

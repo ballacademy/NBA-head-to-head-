@@ -25,6 +25,9 @@ export const ESPN_NBA_NEWS_URL =
 export const ESPN_ATHLETE_OVERVIEW_URL = (athleteId: string) =>
   `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${encodeURIComponent(athleteId)}/overview`;
 
+export const ESPN_ATHLETE_NEWS_URL = (athleteId: string) =>
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/news?athlete=${encodeURIComponent(athleteId)}&limit=20`;
+
 export const ESPN_STORY_URL = (storyId: string) =>
   `https://content.core.api.espn.com/v1/sports/news/${encodeURIComponent(storyId)}`;
 
@@ -830,12 +833,14 @@ export const fetchReportedTrade = async (
   if (!id) {
     return null;
   }
-  const [overview, leagueNews] = await Promise.all([
+  const [overview, leagueNews, athleteNews] = await Promise.all([
     fetchEspnJson<EspnNewsFeed>(ESPN_ATHLETE_OVERVIEW_URL(id)),
     fetchEspnJson<EspnNewsFeed>(ESPN_NBA_NEWS_URL),
+    fetchEspnJson<EspnNewsFeed>(ESPN_ATHLETE_NEWS_URL(id)),
   ]);
   const pool = [
     ...newsItems(overview),
+    ...newsItems(athleteNews),
     ...newsItems(leagueNews),
   ];
   const buzz = newsItems(leagueNews).find((item) =>

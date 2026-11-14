@@ -92,6 +92,7 @@ import {
   loadEveryTeamRosters,
   missingSeasonReason,
   parseCellSeasons,
+  previousSeason,
   parseEveryTeamSeason,
   parseEveryTeamStatMetric,
   parseEveryTeamStatRate,
@@ -446,6 +447,8 @@ export function EveryTeamComposerApp() {
   };
 
   const handleAutoSort = async (metric: EveryTeamStatMetric) => {
+    await loadEveryTeamRosters();
+    setRostersReady(true);
     const teams = ranked
       ? normalizeRankedOrder(rankedOrder)
       : createDefaultRankedOrder();
@@ -485,21 +488,45 @@ export function EveryTeamComposerApp() {
   };
 
   const handleAutoFill = async (metric: EveryTeamStatMetric) => {
+    await loadEveryTeamRosters();
+    setRostersReady(true);
     const teams = ranked
       ? normalizeRankedOrder(rankedOrder)
       : createDefaultRankedOrder();
+    const label = autoSortMetricLabel(metric, statRate);
     if (useSeasonTable) {
-      const next = autoFillEveryTeamSlots(
-        season,
+      let fillSeason = season;
+      let next = autoFillEveryTeamSlots(
+        fillSeason,
         cellSeasons,
         metric,
         statsSample,
         statRate,
       );
-      const filled = next.filter(Boolean).length;
+      let filled = next.filter(Boolean).length;
+      let usedLastSeason = false;
+      if (filled === 0 && statsSample === "regular") {
+        const prior = previousSeason(season);
+        if (prior !== season) {
+          const priorSlots = autoFillEveryTeamSlots(
+            prior,
+            cellSeasons,
+            metric,
+            statsSample,
+            statRate,
+          );
+          const priorFilled = priorSlots.filter(Boolean).length;
+          if (priorFilled > 0) {
+            next = priorSlots;
+            filled = priorFilled;
+            fillSeason = prior;
+            usedLastSeason = true;
+          }
+        }
+      }
       if (filled === 0) {
         setStatus(
-          `No ${autoSortMetricLabel(metric, statRate)} leaders for this board’s seasons.`,
+          `No ${label} leaders for ${season} — last season’s table is used when this year has none.`,
         );
         return;
       }
@@ -507,7 +534,7 @@ export function EveryTeamComposerApp() {
         setPartners(
           autoFillEveryTeamPartners(
             next,
-            season,
+            fillSeason,
             cellSeasons,
             metric,
             statsSample,
@@ -521,14 +548,21 @@ export function EveryTeamComposerApp() {
         rankedMetricValues(
           teams,
           next,
-          season,
+          fillSeason,
           cellSeasons,
           metric,
           statsSample,
           statRate,
         ),
-        String(filled),
+        usedLastSeason
+          ? `${filled} last-season (${fillSeason})`
+          : String(filled),
       );
+      if (usedLastSeason) {
+        setStatus(
+          `No ${label} yet this year — filled last season (${fillSeason}).`,
+        );
+      }
       return;
     }
     setRangeLoading(true);
@@ -634,6 +668,11 @@ export function EveryTeamComposerApp() {
           Board year
           <select
             value={season}
+            title={
+              season === everyTeamCurrentSeason()
+                ? `${season} (current)`
+                : season
+            }
             aria-label="Board season"
             disabled={!rostersReady}
             onChange={(event) => changeBoardSeason(event.target.value)}
@@ -716,7 +755,7 @@ export function EveryTeamComposerApp() {
             type="button"
             className="sc-chip"
             onClick={() => void handleAutoFill(fillMetric)}
-            disabled={rangeLoading}
+            disabled={rangeLoading || !rostersReady}
           >
             Fill leaders
           </button>
@@ -778,7 +817,7 @@ export function EveryTeamComposerApp() {
             type="button"
             className="sc-chip"
             onClick={() => void handleAutoSort(sortMetric)}
-            disabled={rangeLoading}
+            disabled={rangeLoading || !rostersReady}
           >
             Sort 1–30
           </button>

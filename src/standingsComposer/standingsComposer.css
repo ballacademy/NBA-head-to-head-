@@ -493,15 +493,47 @@
 .sc-field--preset select,
 .sc-field--preset .sc-hud-select__trigger,
 .sc-field--preset .sc-hud-select__value {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  height: auto;
+  min-height: 32px;
+  line-height: 1.25;
 }
 
 .sc-hud-select__trigger,
 .sc-hud-select__value {
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  height: auto;
+  line-height: 1.25;
+}
+
+.sc-field input:not([type="range"]):not([type="checkbox"]):not([type="file"]):not([type="date"]),
+.sc-field textarea,
+.sc-field select {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.sc-field input:not([type="range"]):not([type="checkbox"]):not([type="file"]):not([type="date"]),
+.sc-field textarea {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  height: auto;
+  min-height: 32px;
+  line-height: 1.25;
+}
+
+.sc-field select {
   text-overflow: ellipsis;
 }
 
@@ -2418,12 +2450,58 @@ label.sc-chip {
   }
 
   .sc-root.is-hud-simple .sc-tabs {
-    max-height: 38vh;
+    max-height: 22vh;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     gap: 4px 6px;
     padding-top: max(4px, env(safe-area-inset-top, 0px));
+  }
+
+  .sc-root.is-hud-simple .sc-composer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sc-root.is-hud-simple .sc-toolbar,
+  .sc-root.is-hud-simple .sc-toolbar__body,
+  .sc-root.is-hud-simple .sc-toolbar__pinned {
+    display: contents;
+  }
+
+  .sc-root.is-hud-simple .sc-toolbar__row--primary {
+    order: 1;
+    display: flex;
+    width: 100%;
+  }
+
+  .sc-root.is-hud-simple .sc-stage {
+    order: 2;
+    width: 100%;
+  }
+
+  /* contents boxes ignore `order` — keep these as real flex items so the
+     Fit 560 post sits under Title, not under Fill/Save. */
+  .sc-root.is-hud-simple .sc-toolbar__row--data,
+  .sc-root.is-hud-simple .sc-toolbar__row--filters,
+  .sc-root.is-hud-simple .sc-toolbar__scroll {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .sc-root.is-hud-simple .sc-toolbar__row--data {
+    order: 3;
+  }
+
+  .sc-root.is-hud-simple .sc-toolbar__scroll {
+    order: 4;
+  }
+
+  .sc-root.is-hud-simple .sc-toolbar__row--actions {
+    order: 5;
   }
 
   .sc-root.is-hud-simple .sc-tabs__group {
@@ -2445,7 +2523,7 @@ label.sc-chip {
   }
 
   .sc-root.is-hud-simple .sc-toolbar__identity {
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 4px;
   }
 
   .sc-root.is-hud-focus {
@@ -2583,7 +2661,7 @@ label.sc-chip {
   .sc-stat-slot__remove,
   .sc-hud-select__trigger,
   .sc-hud-select__option {
-    height: 44px;
+    height: auto;
     min-height: 44px;
     font-size: 16px;
   }
@@ -2608,6 +2686,17 @@ label.sc-chip {
     padding: 8px 10px 24px;
     align-content: start;
     overflow: visible;
+  }
+
+  .sc-root.is-hud-simple main.sc-stage {
+    overflow-x: auto;
+    overflow-y: visible;
+    justify-items: start;
+    place-items: start start;
+  }
+
+  .sc-root.is-hud-simple .sc-stage__frame {
+    justify-items: start;
   }
 
   .sc-stage__frame {

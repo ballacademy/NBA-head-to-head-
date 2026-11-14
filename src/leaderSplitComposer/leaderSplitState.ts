@@ -3,6 +3,12 @@ import {
   isPhotoPan,
   type PhotoPan,
 } from "../playerOfTheDayComposer/playerOfTheDayState";
+import {
+  formatComposerName,
+  type ComposerNameStyle,
+} from "../instagramComposer/composerNameStyle";
+import { abbreviateOverflowName } from "../instagramComposer/nameFit";
+import { measureTitleAdvance } from "../instagramComposer/titleLayout";
 import { getTeam } from "../standingsComposer/teams";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
 import type { EveryTeamStatMetric } from "../everyTeamComposer/historicalRosters";
@@ -148,3 +154,21 @@ export const leaderSplitExportRows = (
 
 export const leaderSplitOccupied = (draft: LeaderSplitDraft) =>
   Boolean(draft.photoSrc) || draft.rows.some(leaderRowOccupied);
+
+/** Packed list row — last-name punch; period-abbreviate overflow, don’t clip. */
+export const LS_NAME_ADVANCE = 8;
+
+export const fitLeaderSplitName = (
+  row: Pick<LeaderRow, "firstName" | "lastName">,
+  style: ComposerNameStyle = "full",
+  maxAdvance = LS_NAME_ADVANCE,
+) => {
+  const source =
+    style === "full"
+      ? row.lastName || row.firstName || `${row.firstName} ${row.lastName}`.trim()
+      : formatComposerName(row.firstName, row.lastName, style) ||
+        `${row.firstName} ${row.lastName}`.replace(/\s+/g, " ").trim();
+  return abbreviateOverflowName(source, maxAdvance, (value) =>
+    measureTitleAdvance(value, 0.02),
+  );
+};

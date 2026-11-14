@@ -68,7 +68,7 @@ export const pushComposerLibraryIfLinked = async (
   if (!playerId.trim()) {
     return false;
   }
-  if (!options.force && !composerLibraryPullSucceeded) {
+  if (peekCachedAccountLinked(playerId) !== true) {
     if (!(await isPlayerAccountLinked(playerId))) {
       return false;
     }

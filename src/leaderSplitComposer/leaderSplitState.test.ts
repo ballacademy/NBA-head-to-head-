@@ -12,6 +12,7 @@ import {
 } from "./leaderSplitLayout";
 import {
   defaultLeaderSplitDraft,
+  fitLeaderSplitName,
   leaderSplitExportRows,
   normalizeLeaderSplitDraft,
 } from "./leaderSplitState";
@@ -39,6 +40,18 @@ describe("leader split pack", () => {
     const story = leaderSplitLayout(8, false, STORY_DESIGN_HEIGHT);
     expect(story.photo.h).toBeGreaterThan(eight.photo.h);
     expect(leaderSplitBoardHeight(false, true)).toBe(GRAPHIC_WIDTH);
+  });
+
+  it("period-abbreviates overflow last names instead of ellipsis", () => {
+    expect(
+      fitLeaderSplitName({ firstName: "Payton", lastName: "Pritchard" }),
+    ).toBe("PRITCHARD");
+    expect(
+      fitLeaderSplitName({ firstName: "Shai", lastName: "Gilgeous-Alexander" }),
+    ).toMatch(/GILGEOUS-A\.|G\.-ALEXANDER|\.$/);
+    expect(
+      fitLeaderSplitName({ firstName: "Shai", lastName: "Gilgeous-Alexander" }),
+    ).not.toBe("GILGEOUS-ALEXANDER");
   });
 
   it("hides ghost ranks in preview the way export does", () => {
