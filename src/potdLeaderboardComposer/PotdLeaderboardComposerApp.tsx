@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ComposerBoard } from "../instagramComposer/ComposerBoard";
 import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
 import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
@@ -22,12 +22,19 @@ import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
-import { exportPotdLeaderboardPng } from "./exportPotdLeaderboardPng";
+import {
+  exportPotdLeaderboardPack,
+  exportPotdLeaderboardPng,
+} from "./exportPotdLeaderboardPng";
 import { PotdLeaderboardGraphic } from "./PotdLeaderboardGraphic";
 import {
   addLeaderboardEntry,
+  addNamedLeaderboardEntries,
+  clampLeaderboardPage,
   defaultLeaderboardDraft,
   LEADERBOARD_MAX_ROWS,
+  leaderboardPageCount,
+  packLeaderboardPages,
   patchLeaderboardEntry,
   renameLeaderboardEntry,
   readLeaderboardDraft,
@@ -53,7 +60,14 @@ export function PotdLeaderboardComposerApp() {
   const [showBa, setShowBa] = useState(false);
   const [showPips, setShowPips] = useState(true);
   const [potdKeys, setPotdKeys] = useState<string[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [draftName, setDraftName] = useState("");
   const { push, pop, canUndo } = useComposerUndo<LeaderboardEntry[]>();
+  const pageCount = useMemo(
+    () => leaderboardPageCount(entries),
+    [entries],
+  );
+  const safePage = clampLeaderboardPage(pageIndex, entries);
 
   useEffect(() => {
     document.title = "POTD Leaderboard graphic";
@@ -76,6 +90,10 @@ export function PotdLeaderboardComposerApp() {
     writeLeaderboardDraft({ title, entries, showBa, showPips });
   }, [title, entries, showBa, showPips, hydrated]);
 
+  useEffect(() => {
+    setPageIndex((current) => clampLeaderboardPage(current, entries));
+  }, [entries, pageCount]);
+
   const filenameFor = (story = false) =>
     exportFilenameFromTitle(title, "potd-leaderboard", exportDateStamp(), story);
 
@@ -89,19 +107,35 @@ export function PotdLeaderboardComposerApp() {
     setStatus("Rendering PNG…");
     try {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      const input = {
+        title,
+        entries,
+        look,
+        purpleFlair,
+        showBa,
+        showPips,
+        potdKeys,
+      };
       await exportPotdLeaderboardPng(
         node,
         filenameFor(story),
-        { title, entries, look, purpleFlair, showBa, showPips, potdKeys },
+        input,
         story,
         square,
       );
+      const pages = packLeaderboardPages(entries).length;
       setStatus(
-        square
-          ? "1:1 PNG download started."
-          : story
-            ? "Story PNG download started."
-            : "Download started.",
+        pages > 1
+          ? square
+            ? `1:1 PNG download started (${pages} pages).`
+            : story
+              ? `Story PNG download started (${pages} pages).`
+              : `Download started (${pages} linked pages).`
+          : square
+            ? "1:1 PNG download started."
+            : story
+              ? "Story PNG download started."
+              : "Download started.",
       );
     } catch (error) {
       console.error(error);
@@ -127,6 +161,8 @@ export function PotdLeaderboardComposerApp() {
     setTitle(next.title);
     setEntries(next.entries);
     setShowPips(next.showPips !== false);
+    setPageIndex(0);
+    setDraftName("");
     setStatus("Blank post.");
   };
 
@@ -152,17 +188,72 @@ export function PotdLeaderboardComposerApp() {
           </>
         }
         data={
+          <>
+          <label className="sc-field sc-hud-simple-keep">
+            Name
+            <input
+              value={draftName}
+              maxLength={40}
+              placeholder="Add a player"
+              aria-label="Add player name"
+              title={draftName || "Add a player"}
+              onChange={(event) =>
+                setDraftName(event.target.value.replace(/[\r\n]+/g, " "))
+              }
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") {
+                  return;
+                }
+                event.preventDefault();
+                const trimmed = draftName.replace(/\s+/g, " ").trim();
+                if (!trimmed) {
+                  return;
+                }
+                push(entries);
+                setEntries(addNamedLeaderboardEntries([trimmed]));
+                setDraftName("");
+              }}
+            />
+          </label>
           <button
             type="button"
-            className="sc-chip"
+            className="sc-chip sc-hud-simple-keep"
             onClick={() => {
+              const trimmed = draftName.replace(/\s+/g, " ").trim();
               push(entries);
+              if (trimmed) {
+                setEntries(addNamedLeaderboardEntries([trimmed]));
+                setDraftName("");
+                return;
+              }
               setEntries((current) => addLeaderboardEntry(current));
             }}
             disabled={entries.length >= LEADERBOARD_MAX_ROWS}
           >
             Add player
           </button>
+          {pageCount > 1 ? (
+            <div
+              className="sc-look sc-hud-simple-keep"
+              role="group"
+              aria-label="Leaderboard page"
+            >
+              <span className="sc-look__label">Page</span>
+              {Array.from({ length: pageCount }, (_, index) => (
+                <button
+                  key={`plb-page-${index + 1}`}
+                  type="button"
+                  className={safePage === index ? "sc-chip is-on" : "sc-chip"}
+                  aria-pressed={safePage === index}
+                  aria-label={`Page ${index + 1}`}
+                  onClick={() => setPageIndex(index)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          </>
         }
         board={
           <>
@@ -237,6 +328,41 @@ export function PotdLeaderboardComposerApp() {
           </button>
           <button
             type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                setStatus("Rendering pack…");
+                try {
+                  await exportPotdLeaderboardPack(filenameFor(), {
+                    title,
+                    entries,
+                    look,
+                    purpleFlair,
+                    showBa,
+                    showPips,
+                    potdKeys,
+                  });
+                  const pages = packLeaderboardPages(entries).length;
+                  setStatus(
+                    pages > 1
+                      ? `Pack download started (${pages} linked pages).`
+                      : "Pack download started (4:5 + 9:16 + 1:1).",
+                  );
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export pack.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+            disabled={exporting}
+          >
+            Export pack
+          </button>
+          <button
+            type="button"
             className="sc-btn sc-btn--ghost sc-hud-full-only"
             onClick={() => void handleExport(true)}
             disabled={exporting}
@@ -277,6 +403,7 @@ export function PotdLeaderboardComposerApp() {
             showPips={showPips}
             potdKeys={potdKeys}
             exporting={exporting}
+            pageIndex={safePage}
             onTitleChange={setTitle}
             onNameChange={(id, name) =>
               setEntries((current) => renameLeaderboardEntry(current, id, name))
@@ -288,13 +415,19 @@ export function PotdLeaderboardComposerApp() {
               push(entries);
               setEntries((current) => removeLeaderboardEntry(current, id));
             }}
+            onNextPage={() =>
+              setPageIndex((current) =>
+                clampLeaderboardPage(current + 1, entries),
+              )
+            }
           />
           </ComposerBoard>
           <p className="sc-hint">
             Add names and win totals. Ranks (and T for ties) fill in
-            automatically. Team pip adds a small logo; off is all yellow.
-            Today’s Player of the Day pair is highlighted. Downloads a 4:5
-            Instagram PNG — nothing is posted.
+            automatically. Overflow continues on page 2, 3… with the same
+            list. Team pip adds a small logo; off is all yellow. Today’s
+            Player of the Day pair is highlighted. Downloads a 4:5 Instagram
+            PNG — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}
         </div>

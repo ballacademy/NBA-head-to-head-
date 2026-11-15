@@ -18,6 +18,7 @@ import {
   PLB_WINS_W,
   PLB_TITLE_PAD,
   PLB_TITLE_SIZE,
+  LEADERBOARD_PAGE_SINGLE_CAPACITY,
   leaderboardBlankCount,
 } from "./potdLeaderboardLayout";
 import { applyPlayerPick, createEmptyCards } from "../playerOfTheDayComposer/playerOfTheDayState";
@@ -37,7 +38,10 @@ import {
   renameLeaderboardEntry,
   splitLeaderboardName,
   teamForLeaderboardName,
+  leaderboardPageCount,
+  packLeaderboardPages,
   winsForName,
+  withLeaderboardPage,
   writeLeaderboardDraft,
 } from "./potdLeaderboardState";
 
@@ -245,6 +249,51 @@ describe("POTD leaderboard ranks", () => {
       name: "Jalen Brunson",
     });
     expect(patched[0]!.wins).toBe(1);
+  });
+
+  it("packs 4:5 page 1 then continues ranks on page 2 without inventing names", () => {
+    expect(LEADERBOARD_PAGE_SINGLE_CAPACITY).toBe(15);
+    const names = [
+      "Luka Doncic",
+      "Nikola Jokic",
+      "Joel Embiid",
+      "Stephen Curry",
+      "LeBron James",
+      "Kevin Durant",
+      "Jayson Tatum",
+      "Anthony Davis",
+      "Damian Lillard",
+      "Kawhi Leonard",
+      "James Harden",
+      "Kyrie Irving",
+      "Paul George",
+      "Jimmy Butler",
+      "Devin Booker",
+      "Jaylen Brown",
+      "Bam Adebayo",
+    ];
+    const entries = names.map((name, index) =>
+      entry(name, names.length - index),
+    );
+    const pages = packLeaderboardPages(entries);
+    expect(pages).toHaveLength(2);
+    expect(pages[0]).toHaveLength(15);
+    expect(pages[1]).toHaveLength(2);
+    expect(pages[0]!.at(-1)!.name).toBe("Devin Booker");
+    expect(pages[1]![0]!.name).toBe("Jaylen Brown");
+    expect(pages[1]![0]!.rankLabel).toBe("16.");
+    expect(pages[1]![1]!.rankLabel).toBe("17.");
+    expect(leaderboardPageCount([])).toBe(1);
+    expect(packLeaderboardPages([])).toEqual([]);
+    expect(withLeaderboardPage("potd-leaderboard.png", 0, 1)).toBe(
+      "potd-leaderboard.png",
+    );
+    expect(withLeaderboardPage("potd-leaderboard.png", 0, 2)).toBe(
+      "potd-leaderboard-1.png",
+    );
+    expect(withLeaderboardPage("potd-leaderboard.png", 1, 2)).toBe(
+      "potd-leaderboard-2.png",
+    );
   });
 
   it("does not add a second 1 when Add both already created the row", () => {

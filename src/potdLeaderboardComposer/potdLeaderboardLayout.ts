@@ -43,6 +43,12 @@ export const PLB_ROW_H = 78;
 export const PLB_WRAP_ROW_H = 102;
 export const PLB_LIST_PAD_TOP = 18;
 export const PLB_LIST_PAD_BOTTOM = 14;
+/** Compact Cover-style swipe; sits in the bottom-right pad, yellow on black. */
+export const PLB_SWIPE_SIZE = 56;
+export const PLB_SWIPE_INSET = 18;
+export const PLB_SWIPE_LABEL = 14;
+export const PLB_SWIPE_CHEV = 16;
+export const PLB_SWIPE_STROKE = 3.4;
 
 export const leaderboardListInnerH = (boardH = GRAPHIC_HEIGHT) =>
   boardH -
@@ -60,6 +66,37 @@ export const leaderboardRowH = (wrap: boolean) =>
 /** At most two dummy hairlines — never a 15-row empty spreadsheet. */
 export const LEADERBOARD_MAX_BLANKS = 2;
 export const LEADERBOARD_EMPTY_BLANKS = 2;
+
+/** Single-line rows that fill the 4:5 list. Do not shrink type to cram more. */
+export const LEADERBOARD_PAGE_SINGLE_CAPACITY = Math.floor(
+  leaderboardListInnerH(GRAPHIC_HEIGHT) / PLB_ROW_H,
+);
+
+/** Pack named rows into 4:5 pages. Story / 1:1 inherit this split. */
+export const packLeaderboardRowPages = <
+  T extends { displayLines: string[] },
+>(
+  rows: T[],
+): T[][] => {
+  const inner = leaderboardListInnerH(GRAPHIC_HEIGHT);
+  const pages: T[][] = [];
+  let current: T[] = [];
+  let used = 0;
+  for (const row of rows) {
+    const h = leaderboardRowH(row.displayLines.length > 1);
+    if (current.length > 0 && used + h > inner) {
+      pages.push(current);
+      current = [];
+      used = 0;
+    }
+    current.push(row);
+    used += h;
+  }
+  if (current.length) {
+    pages.push(current);
+  }
+  return pages;
+};
 
 /** Blank hairline rows after real names. Cap at 1–2; empty board gets two. */
 export const leaderboardBlankCount = (

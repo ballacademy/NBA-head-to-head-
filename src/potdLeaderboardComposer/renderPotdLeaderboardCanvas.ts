@@ -56,6 +56,12 @@ import {
   PLB_YELLOW,
   leaderboardBlankCount,
   leaderboardRowH,
+  packLeaderboardRowPages,
+  PLB_SWIPE_CHEV,
+  PLB_SWIPE_INSET,
+  PLB_SWIPE_LABEL,
+  PLB_SWIPE_SIZE,
+  PLB_SWIPE_STROKE,
 } from "./potdLeaderboardLayout";
 import {
   DEFAULT_POTD_LEADERBOARD_TITLE,
@@ -110,6 +116,46 @@ const strokeFillText = (
   context.fillText(text, x, y);
 };
 
+const paintSwipeCue = (
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  scale: number,
+) => {
+  const s = scale;
+  const size = PLB_SWIPE_SIZE * s;
+  const cx = width - PLB_SWIPE_INSET * s - size / 2;
+  const cy = height - PLB_SWIPE_INSET * s - size / 2;
+  const ink = PLB_YELLOW;
+  const label = PLB_SWIPE_LABEL * s;
+  const arm = (PLB_SWIPE_CHEV / 2) * s;
+  context.save();
+  context.font = `900 ${label}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "bottom";
+  setLetterSpacing(context, 0.22 * label);
+  context.fillStyle = ink;
+  context.fillText("SWIPE", cx, cy - size / 2 - 6 * s);
+  setLetterSpacing(context, 0);
+  context.beginPath();
+  context.arc(cx, cy, size / 2, 0, Math.PI * 2);
+  context.fillStyle = "rgba(0, 0, 0, 0.42)";
+  context.fill();
+  context.lineWidth = 2.4 * s;
+  context.strokeStyle = ink;
+  context.stroke();
+  context.translate(cx + 2 * s, cy);
+  context.rotate(Math.PI / 4);
+  context.strokeStyle = ink;
+  context.lineWidth = PLB_SWIPE_STROKE * s;
+  context.beginPath();
+  context.moveTo(-arm, -arm);
+  context.lineTo(arm, -arm);
+  context.lineTo(arm, arm);
+  context.stroke();
+  context.restore();
+};
+
 const paintStuddedBox = (
   context: CanvasRenderingContext2D,
   x: number,
@@ -133,6 +179,7 @@ export interface PotdLeaderboardRenderInput {
   showPips?: boolean;
   potdKeys?: string[];
   story?: boolean;
+  pageIndex?: number;
 }
 
 export const renderPotdLeaderboardCanvas = async (
@@ -233,8 +280,17 @@ export const renderPotdLeaderboardCanvas = async (
     paintPurpleInnerHairline(context, listX, listY, listW, listH, s, input.look);
   }
 
-  const ranked = rankLeaderboard(input.entries);
-  const blanks = leaderboardBlankCount(ranked, boardH);
+  const ranked = rankLeaderboard(input.entries).filter((row) =>
+    row.name.trim(),
+  );
+  const pages = packLeaderboardRowPages(ranked);
+  const pageCount = Math.max(1, pages.length);
+  const pageIndex = Math.min(
+    Math.max(0, input.pageIndex ?? 0),
+    pageCount - 1,
+  );
+  const pageRows = pages[pageIndex] ?? [];
+  const blanks = leaderboardBlankCount(pageRows, boardH);
   const inset = PLB_LIST_INSET * s;
   const innerX = listX + inset;
   const innerW = listW - inset * 2;
@@ -257,7 +313,7 @@ export const renderPotdLeaderboardCanvas = async (
   const heads = new Map<string, HTMLImageElement>();
   if (showPips) {
     const ids = [
-      ...new Set(ranked.map((entry) => entry.teamId).filter(Boolean)),
+      ...new Set(pageRows.map((entry) => entry.teamId).filter(Boolean)),
     ] as string[];
     await Promise.all(
       ids.map(async (id) => {
@@ -273,7 +329,7 @@ export const renderPotdLeaderboardCanvas = async (
     );
   }
   await Promise.all(
-    ranked.map(async (entry) => {
+    pageRows.map(async (entry) => {
       if (!entry.headshotUrl || heads.has(entry.headshotUrl)) {
         return;
       }
@@ -298,7 +354,7 @@ export const renderPotdLeaderboardCanvas = async (
   };
 
   let cursorY = innerY;
-  ranked.forEach((entry, index) => {
+  pageRows.forEach((entry, index) => {
     const rowH = leaderboardRowH(entry.displayLines.length > 1) * s;
     const top = cursorY;
     cursorY += rowH;
@@ -402,8 +458,12 @@ export const renderPotdLeaderboardCanvas = async (
 
   for (let index = 0; index < blanks; index += 1) {
     const rowH = PLB_ROW_H * s;
-    paintHairlineRow(cursorY, rowH, ranked.length + index);
+    paintHairlineRow(cursorY, rowH, pageRows.length + index);
     cursorY += rowH;
+  }
+
+  if (pageCount > 1 && pageIndex < pageCount - 1) {
+    paintSwipeCue(context, width, height, s);
   }
 
   if (input.showBa) {

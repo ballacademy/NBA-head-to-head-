@@ -13,14 +13,21 @@ import { getTeam } from "../standingsComposer/teams";
 import { TeamLogo } from "../standingsComposer/TeamLogo";
 import { PlayerHeadshot } from "../tierListComposer/PlayerHeadshot";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
-import { leaderboardBlankCount } from "./potdLeaderboardLayout";
+import {
+  leaderboardBlankCount,
+  leaderboardListInnerH,
+  leaderboardRowH,
+  PLB_ROW_H,
+} from "./potdLeaderboardLayout";
 import {
   formatWinsLabel,
   isPotdPairName,
   medalForRank,
+  packLeaderboardPages,
   parseWinsInput,
   rankLeaderboard,
   type LeaderboardEntry,
+  type RankedLeaderboardEntry,
 } from "./potdLeaderboardState";
 
 interface PotdLeaderboardGraphicProps {
@@ -32,10 +39,12 @@ interface PotdLeaderboardGraphicProps {
   showPips?: boolean;
   potdKeys?: string[];
   exporting?: boolean;
+  pageIndex?: number;
   onTitleChange: (value: string) => void;
   onNameChange: (id: string, name: string) => void;
   onWinsChange: (id: string, wins: number) => void;
   onRemove: (id: string) => void;
+  onNextPage?: () => void;
 }
 
 export const PotdLeaderboardGraphic = forwardRef<
@@ -51,10 +60,12 @@ export const PotdLeaderboardGraphic = forwardRef<
     showPips = true,
     potdKeys = [],
     exporting = false,
+    pageIndex = 0,
     onTitleChange,
     onNameChange,
     onWinsChange,
     onRemove,
+    onNextPage,
   },
   ref,
 ) {
@@ -63,6 +74,29 @@ export const PotdLeaderboardGraphic = forwardRef<
   const [nameStyle] = useComposerNameStyle();
   const [nameFocus, setNameFocus] = useState<string | null>(null);
   const ranked = rankLeaderboard(entries);
+  const pages = packLeaderboardPages(entries);
+  const pageCount = Math.max(1, pages.length);
+  const safePage = Math.min(pageIndex, pageCount - 1);
+  const namedOnPage = pages[safePage] ?? [];
+  const unnamed = ranked.filter((row) => !row.name.trim());
+  const isLastPage = safePage === pageCount - 1;
+  const leftoverUnnamed: RankedLeaderboardEntry[] = [];
+  if (isLastPage && unnamed.length) {
+    let used = namedOnPage.reduce(
+      (sum, row) => sum + leaderboardRowH(row.displayLines.length > 1),
+      0,
+    );
+    const inner = leaderboardListInnerH();
+    for (const row of unnamed) {
+      if (used + PLB_ROW_H > inner) {
+        break;
+      }
+      leftoverUnnamed.push(row);
+      used += PLB_ROW_H;
+    }
+  }
+  const pageRows = [...namedOnPage, ...leftoverUnnamed];
+  const showSwipe = pageCount > 1 && safePage < pageCount - 1;
 
   const setRefs = (node: HTMLElement | null) => {
     localRef.current = node;
@@ -129,7 +163,7 @@ export const PotdLeaderboardGraphic = forwardRef<
         </div>
       </header>
       <div className="plb-list">
-        {ranked.map((entry, index) => {
+        {pageRows.map((entry, index) => {
             const team = showPips ? getTeam(entry.teamId) : null;
             const highlighted = isPotdPairName(entry.name, potdKeys);
             const wrap = entry.displayLines.length > 1;
@@ -235,14 +269,14 @@ export const PotdLeaderboardGraphic = forwardRef<
             );
           })}
         {Array.from(
-          { length: leaderboardBlankCount(ranked) },
+          { length: leaderboardBlankCount(pageRows) },
           (_, index) => (
             <div
               key={`plb-blank-${index}`}
               className={[
                 "plb-row",
                 "is-blank",
-                (ranked.length + index) % 2 === 1 ? "is-alt" : "",
+                (pageRows.length + index) % 2 === 1 ? "is-alt" : "",
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -251,6 +285,24 @@ export const PotdLeaderboardGraphic = forwardRef<
           ),
         )}
       </div>
+      {showSwipe ? (
+        exporting ? (
+          <div className="plb-swipe" aria-hidden="true">
+            <span className="plb-swipe__label">Swipe</span>
+            <span className="plb-swipe__chev" />
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="plb-swipe"
+            aria-label="Next leaderboard page"
+            onClick={onNextPage}
+          >
+            <span className="plb-swipe__label">Swipe</span>
+            <span className="plb-swipe__chev" />
+          </button>
+        )
+      ) : null}
     </article>
   );
 });

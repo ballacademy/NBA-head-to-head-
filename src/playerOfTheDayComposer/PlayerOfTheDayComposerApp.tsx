@@ -51,7 +51,7 @@ import {
   addNamedLeaderboardEntries,
   readLeaderboardDraft,
 } from "../potdLeaderboardComposer/potdLeaderboardState";
-import { renderPotdLeaderboardCanvas } from "../potdLeaderboardComposer/renderPotdLeaderboardCanvas";
+import { leaderboardPackExtras } from "../potdLeaderboardComposer/exportPotdLeaderboardPng";
 import { PlayerOfTheDayGraphic } from "./PlayerOfTheDayGraphic";
 import { renderPlayerOfTheDayCanvas } from "./renderPlayerOfTheDayCanvas";
 import { dataUrlFromClipboard } from "./PhotoFrame";
@@ -709,18 +709,14 @@ export function PlayerOfTheDayComposerApp() {
                             2,
                           ),
                       },
-                      {
-                        filename: exportFilenameFromTitle(
+                      ...leaderboardPackExtras(
+                        exportFilenameFromTitle(
                           board.title,
                           "potd-leaderboard",
                           date,
                         ),
-                        render: () =>
-                          renderPotdLeaderboardCanvas(
-                            { ...board, look, purpleFlair },
-                            2,
-                          ),
-                      },
+                        { ...board, look, purpleFlair },
+                      ),
                     ],
                     { letterbox: false },
                   );

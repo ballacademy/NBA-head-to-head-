@@ -491,7 +491,7 @@ describe("composer chrome", () => {
     expect(coverApp).toContain("showGold");
   });
 
-  it("keeps swipe on the cover only and drops Ranked SWIPE", () => {
+  it("keeps swipe on cover-page carousels and drops Ranked SWIPE", () => {
     const rankedGraphic = readFileSync(
       join(root, "rankedLineupsComposer/RankedLineupsGraphic.tsx"),
       "utf8",
@@ -500,9 +500,14 @@ describe("composer chrome", () => {
       join(root, "rankedLineupsComposer/renderRankedLineupsCanvas.ts"),
       "utf8",
     );
+    const plbGraphic = readFileSync(
+      join(root, "potdLeaderboardComposer/PotdLeaderboardGraphic.tsx"),
+      "utf8",
+    );
     expect(rankedGraphic).not.toContain("rl-swipe");
     expect(rankedCanvas).not.toContain("SWIPE");
     expect(coverCss).toContain(".scc-swipe");
+    expect(plbGraphic).toContain("plb-swipe");
     expect(coverApp).toContain("peekStatCardStatsLeft(draft.gameDate)");
   });
 
@@ -608,7 +613,7 @@ describe("composer chrome", () => {
         "utf8",
       ),
     ).toContain("Export pack");
-    expect(potdApp).toContain("renderPotdLeaderboardCanvas");
+    expect(potdApp).toContain("leaderboardPackExtras");
     expect(potdApp).toContain('aria-label="Fill players from this night’s best lines"');
     expect(potdApp).toContain('aria-label={`${count} players`}');
     expect(potdApp).toContain("resizePotdCards");
@@ -2301,5 +2306,44 @@ describe("composer chrome", () => {
     expect(libraryRemote).not.toMatch(/if \(options\.force\)/);
     expect(mockApp).toContain("No current ESPN trade story");
     expect(mockNews).toContain("ESPN_ATHLETE_NEWS_URL");
+  });
+
+  it("pages POTD Leaderboard overflow with HUD chips, swipe, and linked exports", () => {
+    const plbApp = readFileSync(
+      join(root, "potdLeaderboardComposer/PotdLeaderboardComposerApp.tsx"),
+      "utf8",
+    );
+    const plbGraphic = readFileSync(
+      join(root, "potdLeaderboardComposer/PotdLeaderboardGraphic.tsx"),
+      "utf8",
+    );
+    const plbCss = readFileSync(
+      join(root, "potdLeaderboardComposer/potdLeaderboardComposer.css"),
+      "utf8",
+    );
+    const plbCanvas = readFileSync(
+      join(root, "potdLeaderboardComposer/renderPotdLeaderboardCanvas.ts"),
+      "utf8",
+    );
+    const plbExport = readFileSync(
+      join(root, "potdLeaderboardComposer/exportPotdLeaderboardPng.ts"),
+      "utf8",
+    );
+    const plbState = readFileSync(
+      join(root, "potdLeaderboardComposer/potdLeaderboardState.ts"),
+      "utf8",
+    );
+    expect(plbState).toContain("packLeaderboardPages");
+    expect(plbState).toContain("withLeaderboardPage");
+    expect(plbApp).toContain('aria-label="Leaderboard page"');
+    expect(plbApp).toContain("sc-hud-simple-keep");
+    expect(plbApp).toContain("exportPotdLeaderboardPack");
+    expect(plbGraphic).toContain("packLeaderboardPages");
+    expect(plbGraphic).toContain("plb-swipe");
+    expect(plbCss).toContain(".plb-swipe");
+    expect(plbCanvas).toContain("paintSwipeCue");
+    expect(plbCanvas).toContain('fillText("SWIPE"');
+    expect(plbExport).toContain("withLeaderboardPage");
+    expect(plbExport).toContain("leaderboardPageCount");
   });
 });

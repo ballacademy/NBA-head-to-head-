@@ -3,6 +3,7 @@ import { measureTitleAdvance } from "../instagramComposer/titleLayout";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { NBA_ACTIVE_PLAYERS } from "../tierListComposer/nbaActivePlayers";
 import {
+  packLeaderboardRowPages,
   PLB_NAME_ADVANCE,
   PLB_ROW_SMALL,
   PLB_ROW_TRACK,
@@ -34,7 +35,7 @@ export const medalForRank = (
 };
 export const POTD_LEADERBOARD_EVENT = "ddgm:potd-leaderboard";
 export const DEFAULT_POTD_LEADERBOARD_TITLE = "POTD LEADERBOARD";
-export const LEADERBOARD_MAX_ROWS = 24;
+export const LEADERBOARD_MAX_ROWS = 48;
 export const LEADERBOARD_NAME_MAX = 40;
 
 export interface LeaderboardEntry {
@@ -476,4 +477,36 @@ const slugify = (value: string) =>
 export const exportLeaderboardFilename = (title: string) => {
   const stem = slugify(title) || "potd-leaderboard";
   return `${stem}.png`;
+};
+
+export const packLeaderboardPages = (entries: LeaderboardEntry[]) =>
+  packLeaderboardRowPages(
+    rankLeaderboard(entries).filter((row) => row.name.trim()),
+  );
+
+export const leaderboardPageCount = (entries: LeaderboardEntry[]) =>
+  Math.max(1, packLeaderboardPages(entries).length);
+
+export const clampLeaderboardPage = (
+  pageIndex: number,
+  entries: LeaderboardEntry[],
+) => {
+  const count = leaderboardPageCount(entries);
+  if (!Number.isFinite(pageIndex) || pageIndex < 0) {
+    return 0;
+  }
+  return Math.min(count - 1, Math.floor(pageIndex));
+};
+
+/** `title.png` stays unnumbered on a one-page board; multi-page gets `-1`, `-2`. */
+export const withLeaderboardPage = (
+  filename: string,
+  pageIndex: number,
+  pageCount: number,
+) => {
+  if (pageCount <= 1) {
+    return filename.endsWith(".png") ? filename : `${filename}.png`;
+  }
+  const stem = filename.replace(/\.png$/i, "");
+  return `${stem}-${pageIndex + 1}.png`;
 };
