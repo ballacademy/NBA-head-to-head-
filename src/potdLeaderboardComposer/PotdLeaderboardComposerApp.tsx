@@ -115,6 +115,7 @@ export function PotdLeaderboardComposerApp() {
         showBa,
         showPips,
         potdKeys,
+        pageIndex: safePage,
       };
       await exportPotdLeaderboardPng(
         node,
@@ -127,10 +128,10 @@ export function PotdLeaderboardComposerApp() {
       setStatus(
         pages > 1
           ? square
-            ? `1:1 PNG download started (${pages} pages).`
+            ? `1:1 PNG download started (page ${safePage + 1} of ${pages}).`
             : story
-              ? `Story PNG download started (${pages} pages).`
-              : `Download started (${pages} linked pages).`
+              ? `Story PNG download started (page ${safePage + 1} of ${pages}).`
+              : `Download started (page ${safePage + 1} of ${pages}).`
           : square
             ? "1:1 PNG download started."
             : story

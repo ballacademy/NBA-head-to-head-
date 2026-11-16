@@ -4,6 +4,8 @@ import {
   toSquareCanvas,
 } from "../instagramComposer/exportDownload";
 import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { bytesFromBlob, downloadZip } from "../instagramComposer/downloadZip";
+import { canvasToPngBlob } from "../standingsComposer/renderStandingsCanvas";
 import {
   leaderboardPageCount,
   withLeaderboardPage,
@@ -15,8 +17,12 @@ import {
 
 export { exportLeaderboardFilename } from "./potdLeaderboardState";
 
-const wait = (ms: number) =>
-  new Promise((resolve) => window.setTimeout(resolve, ms));
+const pngFile = async (canvas: HTMLCanvasElement, name: string) => ({
+  name,
+  bytes: await bytesFromBlob(await canvasToPngBlob(canvas)),
+});
+
+const packStem = (filename: string) => filename.replace(/\.png$/i, "");
 
 export const exportPotdLeaderboardPng = async (
   _node: HTMLElement,
@@ -26,20 +32,46 @@ export const exportPotdLeaderboardPng = async (
   square = false,
 ) => {
   const pageCount = leaderboardPageCount(input.entries);
-  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
-    if (pageIndex > 0) {
-      await wait(220);
-    }
-    const canvas = await renderPotdLeaderboardCanvas(
-      { ...input, story, pageIndex },
-      2,
-    );
-    await downloadPngMaybeSquare(
-      canvas,
-      withLeaderboardPage(filename, pageIndex, pageCount),
-      square,
-    );
+  const current = Math.min(
+    Math.max(0, input.pageIndex ?? 0),
+    pageCount - 1,
+  );
+  const canvas = await renderPotdLeaderboardCanvas(
+    { ...input, story, pageIndex: current },
+    2,
+  );
+  await downloadPngMaybeSquare(
+    canvas,
+    withLeaderboardPage(filename, current, pageCount),
+    square,
+  );
+  if (pageCount <= 1) {
+    return;
   }
+  const files = [];
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+    const pageCanvas =
+      pageIndex === current
+        ? canvas
+        : await renderPotdLeaderboardCanvas(
+            { ...input, story, pageIndex },
+            2,
+          );
+    const named = withLeaderboardPage(filename, pageIndex, pageCount);
+    if (square) {
+      files.push(
+        await pngFile(
+          pageIndex === current
+            ? await toSquareCanvas(canvas)
+            : await toSquareCanvas(pageCanvas),
+          squareFilename(named),
+        ),
+      );
+      continue;
+    }
+    files.push(await pngFile(pageCanvas, named));
+  }
+  await downloadZip(`${packStem(filename)}-pages.zip`, files);
 };
 
 export const exportPotdLeaderboardPack = async (
@@ -47,39 +79,35 @@ export const exportPotdLeaderboardPack = async (
   input: PotdLeaderboardRenderInput,
 ) => {
   const pageCount = leaderboardPageCount(input.entries);
-  const first = withLeaderboardPage(filename, 0, pageCount);
-  const extras: Array<{
-    filename: string;
-    render: () => Promise<HTMLCanvasElement>;
-  }> = [];
-  for (let pageIndex = 1; pageIndex < pageCount; pageIndex += 1) {
+  if (pageCount <= 1) {
+    await downloadExportPack(
+      () => renderPotdLeaderboardCanvas({ ...input, pageIndex: 0 }, 2),
+      filename,
+    );
+    return;
+  }
+  const files = [];
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
     const name = withLeaderboardPage(filename, pageIndex, pageCount);
-    extras.push({
-      filename: name,
-      render: () =>
-        renderPotdLeaderboardCanvas({ ...input, pageIndex }, 2),
-    });
-    extras.push({
-      filename: storyFilename(name),
-      render: () =>
-        renderPotdLeaderboardCanvas(
+    const board = await renderPotdLeaderboardCanvas(
+      { ...input, pageIndex },
+      2,
+    );
+    files.push(await pngFile(board, name));
+    files.push(
+      await pngFile(
+        await renderPotdLeaderboardCanvas(
           { ...input, story: true, pageIndex },
           2,
         ),
-    });
-    extras.push({
-      filename: squareFilename(name),
-      render: async () =>
-        toSquareCanvas(
-          await renderPotdLeaderboardCanvas({ ...input, pageIndex }, 2),
-        ),
-    });
+        storyFilename(name),
+      ),
+    );
+    files.push(
+      await pngFile(await toSquareCanvas(board), squareFilename(name)),
+    );
   }
-  await downloadExportPack(
-    () => renderPotdLeaderboardCanvas({ ...input, pageIndex: 0 }, 2),
-    first,
-    extras,
-  );
+  await downloadZip(`${packStem(filename)}-pack.zip`, files);
 };
 
 export const leaderboardPackExtras = (

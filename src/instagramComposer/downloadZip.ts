@@ -114,7 +114,10 @@ export const downloadZip = async (filename: string, files: ZipFile[]) => {
     const link = document.createElement("a");
     link.download = filename;
     link.href = objectUrl;
+    link.rel = "noopener";
+    document.body.appendChild(link);
     link.click();
+    link.remove();
   } finally {
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
   }

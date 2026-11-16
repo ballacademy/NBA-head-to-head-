@@ -2345,5 +2345,10 @@ describe("composer chrome", () => {
     expect(plbCanvas).toContain('fillText("SWIPE"');
     expect(plbExport).toContain("withLeaderboardPage");
     expect(plbExport).toContain("leaderboardPageCount");
+    expect(plbExport).toContain("downloadZip");
+    expect(plbExport).toContain("input.pageIndex");
+    expect(plbExport).toContain("-pages.zip");
+    expect(plbExport).toContain("-pack.zip");
+    expect(plbApp).toContain("pageIndex: safePage");
   });
 });
