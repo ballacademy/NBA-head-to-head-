@@ -1,6 +1,8 @@
 import { splitBalancedTitle } from "../instagramComposer/titleLayout";
+import { normalizeInjuryKicker } from "../injuryComposer/injuryState";
 import {
   ESPN_ABBREV_TO_TEAM,
+  ESPN_TEAM_IDS,
   isoDateOnly,
   nbaTodayIso,
   shiftIsoDate,
@@ -25,6 +27,13 @@ export const PICKS_EVENT_ODDS_URL = (eventId: string) =>
 /** Same CORS host as the scoreboard — pickcenter keeps the close after finals. */
 export const PICKS_EVENT_SUMMARY_URL = (eventId: string) =>
   `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${encodeURIComponent(eventId)}`;
+
+/** ESPN depth chart with injury flags. Browser CORS is missing; Pages proxy fills that. */
+export const PICKS_TEAM_DEPTHCHART_URL = (espnTeamId: number | string) =>
+  `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${encodeURIComponent(String(espnTeamId))}/depthcharts`;
+
+export const PICKS_DEPTHCHARTS_PROXY_URL = (espnTeamIds: Array<number | string>) =>
+  `/api/espn-nba-depthcharts?teams=${espnTeamIds.map(String).join(",")}`;
 
 export const PICKS_FOOTER_H = 28;
 export const PICKS_PARLAY_H = 32;
@@ -148,10 +157,12 @@ export interface PicksDraft {
   plateOpacity?: number;
 }
 
-/** ESPN boxscore starter only — never invented from a depth chart. */
+/** ESPN projected starter (injury-aware depth, named players only). */
 export interface PicksStarter {
   name: string;
   athleteId: string;
+  position?: string;
+  status?: string;
 }
 
 export interface PicksNightLineupGame {
@@ -1570,55 +1581,112 @@ const starterNameOf = (athlete: Record<string, unknown> | null) =>
   textOf(athlete?.shortName) ||
   textOf(athlete?.fullName);
 
-/** Real ESPN `starter: true` rows only. Empty when the boxscore has none — never invent. */
-export const parseEspnBoxscoreStarters = (
+const PICKS_PROJECTED_POSITIONS = ["pg", "sg", "sf", "pf", "c"] as const;
+
+const SKIP_PROJECTED_INJURY = new Set(["OUT", "REST", "DOUBTFUL"]);
+
+const injuryStatusOf = (
+  athlete: Record<string, unknown> | null,
+  override?: string,
+) => {
+  if (override) {
+    return override;
+  }
+  const rows = Array.isArray(athlete?.injuries) ? athlete.injuries : [];
+  for (const row of rows) {
+    const item = rec(row);
+    const status =
+      normalizeInjuryKicker(textOf(item?.status)) ??
+      normalizeInjuryKicker(textOf(rec(item?.type)?.description)) ??
+      normalizeInjuryKicker(textOf(rec(item?.type)?.abbreviation));
+    if (status) {
+      return status;
+    }
+  }
+  return "";
+};
+
+/** Game-night OUT/GTD from the event summary — not boxscore starters. */
+export const parseEspnEventInjuries = (
   payload: unknown,
-): Record<string, PicksStarter[]> => {
-  const box = rec(rec(payload)?.boxscore);
-  const groups = Array.isArray(box?.players) ? box.players : [];
-  const out: Record<string, PicksStarter[]> = {};
+): Record<string, string> => {
+  const groups = Array.isArray(rec(payload)?.injuries)
+    ? (rec(payload)?.injuries as unknown[])
+    : [];
+  const out: Record<string, string> = {};
   for (const group of groups) {
-    const row = rec(group);
-    const teamId = resolvePicksTeam(textOf(rec(row?.team)?.abbreviation));
-    if (!teamId) {
-      continue;
-    }
-    const blocks = Array.isArray(row?.statistics) ? row.statistics : [];
-    const starters: PicksStarter[] = [];
-    const seen = new Set<string>();
-    for (const block of blocks) {
-      const athletes = Array.isArray(rec(block)?.athletes)
-        ? (rec(block)?.athletes as unknown[])
-        : [];
-      for (const item of athletes) {
-        const entry = rec(item);
-        if (!entry || entry.starter !== true) {
-          continue;
-        }
-        const athlete = rec(entry.athlete);
-        const name = starterNameOf(athlete);
-        if (!name) {
-          continue;
-        }
-        const athleteId = textOf(athlete?.id);
-        const key = athleteId || name.toLowerCase();
-        if (seen.has(key)) {
-          continue;
-        }
-        seen.add(key);
-        starters.push({ name, athleteId });
+    const rows = Array.isArray(rec(group)?.injuries)
+      ? (rec(group)?.injuries as unknown[])
+      : [];
+    for (const row of rows) {
+      const item = rec(row);
+      const athlete = rec(item?.athlete);
+      const athleteId = textOf(athlete?.id);
+      const status =
+        normalizeInjuryKicker(textOf(item?.status)) ??
+        normalizeInjuryKicker(textOf(rec(item?.type)?.description));
+      if (athleteId && status) {
+        out[athleteId] = status;
       }
-    }
-    if (starters.length) {
-      out[teamId] = starters;
     }
   }
   return out;
 };
 
-export const fetchPicksEventStarters = async (
+/**
+ * ESPN depth-chart projected five, skipping OUT/REST/Doubtful and never
+ * inventing unnamed players. GTD/Questionable stay in the five with a tag.
+ */
+export const parseEspnProjectedStarters = (
+  payload: unknown,
+  eventInjuries: Record<string, string> = {},
+): PicksStarter[] => {
+  const root = rec(payload);
+  const charts = Array.isArray(root?.depthchart) ? root.depthchart : [];
+  const chart = rec(charts[0]);
+  const positions = rec(chart?.positions);
+  if (!positions) {
+    return [];
+  }
+  const used = new Set<string>();
+  const five: PicksStarter[] = [];
+  for (const pos of PICKS_PROJECTED_POSITIONS) {
+    const athletes = Array.isArray(rec(positions[pos])?.athletes)
+      ? (rec(positions[pos])?.athletes as unknown[])
+      : [];
+    for (const row of athletes) {
+      const athlete = rec(row);
+      const name = starterNameOf(athlete);
+      if (!name) {
+        continue;
+      }
+      const athleteId = textOf(athlete?.id);
+      const key = athleteId || name.toLowerCase();
+      if (used.has(key)) {
+        continue;
+      }
+      const status = injuryStatusOf(athlete, eventInjuries[athleteId]);
+      if (status && SKIP_PROJECTED_INJURY.has(status)) {
+        continue;
+      }
+      used.add(key);
+      five.push({
+        name,
+        athleteId,
+        position: pos.toUpperCase(),
+        status: status || undefined,
+      });
+      break;
+    }
+  }
+  return five;
+};
+
+const espnIdForPicksTeam = (teamId: string) => ESPN_TEAM_IDS[teamId] ?? 0;
+
+export const fetchPicksEventInjuries = async (
   eventId: string,
-): Promise<Record<string, PicksStarter[]>> => {
+): Promise<Record<string, string>> => {
   const id = textOf(eventId);
   if (!id || id.startsWith("custom:")) {
     return {};
@@ -1631,10 +1699,56 @@ export const fetchPicksEventStarters = async (
     if (!response.ok) {
       return {};
     }
-    return parseEspnBoxscoreStarters(await response.json());
+    return parseEspnEventInjuries(await response.json());
   } catch {
     return {};
   }
+};
+
+const fetchPicksDepthChartsDirect = async (
+  espnIds: number[],
+): Promise<Record<string, unknown>> => {
+  const entries = await Promise.all(
+    espnIds.map(async (id) => {
+      try {
+        const response = await fetch(PICKS_TEAM_DEPTHCHART_URL(id), {
+          mode: "cors",
+          credentials: "omit",
+        });
+        if (!response.ok) {
+          return [String(id), null] as const;
+        }
+        return [String(id), await response.json()] as const;
+      } catch {
+        return [String(id), null] as const;
+      }
+    }),
+  );
+  return Object.fromEntries(entries.filter(([, payload]) => payload));
+};
+
+export const fetchPicksDepthCharts = async (
+  espnIds: number[],
+): Promise<Record<string, unknown>> => {
+  const ids = [...new Set(espnIds.filter((id) => id >= 1 && id <= 30))];
+  if (!ids.length) {
+    return {};
+  }
+  try {
+    const response = await fetch(PICKS_DEPTHCHARTS_PROXY_URL(ids), {
+      credentials: "omit",
+    });
+    if (response.ok) {
+      const body = rec(await response.json());
+      const charts = rec(body?.depthcharts);
+      if (charts && Object.keys(charts).length) {
+        return charts;
+      }
+    }
+  } catch {
+    /* Local Vite has no Pages function — fall through to ESPN CORS. */
+  }
+  return fetchPicksDepthChartsDirect(ids);
 };
 
 const lineupGameKey = (game: {
@@ -1643,7 +1757,7 @@ const lineupGameKey = (game: {
   homeId: string;
 }) => `${game.eventId}|${game.awayId}|${game.homeId}`;
 
-/** Scoreboard matchups for that night, then each event’s ESPN starters. */
+/** Scoreboard matchups, then ESPN projected fives (injuries applied). */
 export const fetchPicksNightLineups = async (
   games: Array<Pick<PicksGame, "eventId" | "awayId" | "homeId">>,
 ): Promise<PicksNightLineupGame[]> => {
@@ -1655,13 +1769,24 @@ export const fetchPicksNightLineups = async (
         .filter((id) => id && !id.startsWith("custom:")),
     ),
   ];
-  const summaries = await Promise.all(
-    eventIds.map(async (eventId) => {
-      const starters = await fetchPicksEventStarters(eventId);
-      return [eventId, starters] as const;
-    }),
-  );
-  const byEvent = new Map(summaries);
+  const espnIds = [
+    ...new Set(
+      rows.flatMap((game) => [
+        espnIdForPicksTeam(game.awayId),
+        espnIdForPicksTeam(game.homeId),
+      ]),
+    ),
+  ].filter((id) => id >= 1);
+  const [injuryEntries, depthcharts] = await Promise.all([
+    Promise.all(
+      eventIds.map(async (eventId) => {
+        const injuries = await fetchPicksEventInjuries(eventId);
+        return [eventId, injuries] as const;
+      }),
+    ),
+    fetchPicksDepthCharts(espnIds),
+  ]);
+  const injuriesByEvent = new Map(injuryEntries);
   const seen = new Set<string>();
   const next: PicksNightLineupGame[] = [];
   for (const game of rows) {
@@ -1670,13 +1795,23 @@ export const fetchPicksNightLineups = async (
       continue;
     }
     seen.add(key);
-    const starters = game.eventId ? (byEvent.get(game.eventId) ?? {}) : {};
+    const eventInjuries = game.eventId
+      ? (injuriesByEvent.get(game.eventId) ?? {})
+      : {};
+    const awayEspn = espnIdForPicksTeam(game.awayId);
+    const homeEspn = espnIdForPicksTeam(game.homeId);
     next.push({
       eventId: game.eventId,
       awayId: game.awayId,
       homeId: game.homeId,
-      awayStarters: starters[game.awayId] ?? [],
-      homeStarters: starters[game.homeId] ?? [],
+      awayStarters: parseEspnProjectedStarters(
+        depthcharts[String(awayEspn)],
+        eventInjuries,
+      ),
+      homeStarters: parseEspnProjectedStarters(
+        depthcharts[String(homeEspn)],
+        eventInjuries,
+      ),
     });
   }
   return next;
@@ -1700,9 +1835,9 @@ export const picksLineupStatusMessage = (lineups: PicksNightLineupGame[]) => {
     return null;
   }
   if (missing.length === lineups.length * 2) {
-    return "No ESPN starting lineups for that night yet.";
+    return "No ESPN projected lineups for that night yet.";
   }
-  return `No ESPN lineup yet for ${missing.join(", ")}.`;
+  return `No ESPN projected lineup yet for ${missing.join(", ")}.`;
 };
 
 /** Refresh live lines, then put ledger spreads back if ESPN’s board went blank. */

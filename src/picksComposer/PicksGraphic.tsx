@@ -713,12 +713,20 @@ function TicketField({
 
 function starterList(starters: PicksStarter[]) {
   if (!starters.length) {
-    return <p className="pk-lineup-empty">No lineup yet</p>;
+    return <p className="pk-lineup-empty">No projected lineup yet</p>;
   }
   return (
     <ol className="pk-lineup-starters">
       {starters.map((starter) => (
-        <li key={starter.athleteId || starter.name}>{starter.name}</li>
+        <li key={starter.athleteId || starter.name}>
+          {starter.position ? (
+            <span className="pk-lineup-pos">{starter.position}</span>
+          ) : null}
+          {starter.name}
+          {starter.status ? (
+            <span className="pk-lineup-status">{starter.status}</span>
+          ) : null}
+        </li>
       ))}
     </ol>
   );
@@ -742,29 +750,32 @@ function PicksLineupOverlay({
       <button
         type="button"
         className={open ? "pk-lineup-info__btn is-on" : "pk-lineup-info__btn"}
-        aria-label="Starting lineups"
+        aria-label="Projected lineups"
         aria-expanded={open}
-        title="Starting lineups"
+        title="Projected lineups"
         onClick={(event) => {
           event.stopPropagation();
           onToggle?.();
         }}
       >
-        i
+        <span className="pk-lineup-info__i" aria-hidden="true">
+          i
+        </span>
+        LINEUPS
       </button>
       {open ? (
         <div
           className="pk-lineup-panel"
           role="dialog"
-          aria-label="Starting lineups"
+          aria-label="Projected lineups"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="pk-lineup-panel__bar">
-            <p className="pk-lineup-panel__title">Starting lineups</p>
+            <p className="pk-lineup-panel__title">Projected lineups</p>
             <button
               type="button"
               className="pk-lineup-panel__refresh"
-              aria-label="Refresh starting lineups"
+              aria-label="Refresh projected lineups"
               disabled={loading}
               onClick={(event) => {
                 event.stopPropagation();
@@ -776,7 +787,7 @@ function PicksLineupOverlay({
             <button
               type="button"
               className="pk-lineup-panel__close"
-              aria-label="Close starting lineups"
+              aria-label="Close projected lineups"
               onClick={(event) => {
                 event.stopPropagation();
                 onToggle?.();
@@ -787,7 +798,7 @@ function PicksLineupOverlay({
           </div>
           <div className="pk-lineup-panel__list">
             {loading && !lineups.length ? (
-              <p className="pk-lineup-empty">Loading ESPN lineups…</p>
+              <p className="pk-lineup-empty">Loading ESPN projected lineups…</p>
             ) : null}
             {!loading && !lineups.length ? (
               <p className="pk-lineup-empty">No games on that night yet.</p>

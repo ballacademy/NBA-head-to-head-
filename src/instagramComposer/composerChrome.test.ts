@@ -1230,6 +1230,9 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(picksStateSrc).toContain("PICKS_EVENT_SUMMARY_URL");
+    expect(picksStateSrc).toContain("parseEspnProjectedStarters");
+    expect(picksStateSrc).toContain("PICKS_DEPTHCHARTS_PROXY_URL");
+    expect(picksStateSrc).not.toContain("parseEspnBoxscoreStarters");
     expect(picksStateSrc).toContain("pickcenter");
     expect(picksStateSrc).toContain("formatPicksDailyRecordLine");
     expect(picksApp).toContain('aria-label="Refresh lines"');
@@ -1251,15 +1254,17 @@ describe("composer chrome", () => {
     expect(picksCss).toContain(".pk-board.is-exporting .pk-lineup-info");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-lineup-panel");
     expect(picksCss).toContain(".pk-lineup-info--visible");
-    expect(picksCss).toContain("width: calc(88 * var(--u))");
-    expect(picksGraphic).toContain("Starting lineups");
+    expect(picksCss).toContain("height: calc(72 * var(--u))");
+    expect(picksGraphic).toContain("Projected lineups");
+    expect(picksGraphic).toContain("LINEUPS");
     expect(picksGraphic).toContain("pk-lineup-info--visible");
     expect(picksGraphic).toContain("exporting ? null");
     expect(picksApp).toContain("fetchPicksNightLineups");
     expect(picksApp).toContain("showComposerToast");
-    expect(picksApp).toContain('aria-label="Starting lineups"');
+    expect(picksApp).toContain('aria-label="Projected lineups"');
     expect(picksApp).toContain("Lineups");
     expect(picksCanvas).not.toContain("pk-lineup");
+    expect(picksCanvas).not.toContain("Projected lineups");
     expect(picksCanvas).not.toContain("Starting lineups");
     expect(picksCss).toContain(".pk-ats");
     expect(picksCss).toContain(".pk-ats-lockup");

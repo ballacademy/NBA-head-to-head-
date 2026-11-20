@@ -28,7 +28,8 @@ import {
   mergePicksFill,
   refreshPicksLines,
   parseEspnAwayLine,
-  parseEspnBoxscoreStarters,
+  parseEspnEventInjuries,
+  parseEspnProjectedStarters,
   parseEspnCompleted,
   parseEspnEventOddsAwayLine,
   parseEspnSummaryAwayLine,
@@ -39,7 +40,9 @@ import {
   parsePicksScoreboard,
   PICKS_DAILY_GAP,
   PICKS_DAILY_H,
+  PICKS_DEPTHCHARTS_PROXY_URL,
   PICKS_EVENT_SUMMARY_URL,
+  PICKS_TEAM_DEPTHCHART_URL,
   PICKS_RECORD_GAP,
   PICKS_RECORD_PAD,
   PICKS_RECORD_PLATE_H,
@@ -133,67 +136,120 @@ describe("picks composer", () => {
     expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("401909843");
     expect(PICKS_EVENT_SUMMARY_URL("401909861")).toContain("site.web.api.espn.com");
     expect(PICKS_EVENT_SUMMARY_URL("401909861")).toContain("summary?event=401909861");
+    expect(PICKS_TEAM_DEPTHCHART_URL(1)).toContain("site.web.api.espn.com");
+    expect(PICKS_TEAM_DEPTHCHART_URL(1)).toContain("/teams/1/depthcharts");
+    expect(PICKS_DEPTHCHARTS_PROXY_URL([1, 30])).toBe(
+      "/api/espn-nba-depthcharts?teams=1,30",
+    );
   });
 
-  it("reads ESPN starter:true names only and never invents a five", () => {
-    const starters = parseEspnBoxscoreStarters({
-      boxscore: {
-        players: [
+  it("projects ESPN depth-chart fives with injuries and never uses boxscore starters", () => {
+    const projected = parseEspnProjectedStarters(
+      {
+        depthchart: [
           {
-            team: { abbreviation: "GS" },
-            statistics: [
-              {
+            positions: {
+              pg: {
                 athletes: [
                   {
-                    starter: true,
-                    athlete: { id: "1", displayName: "Gui Santos" },
+                    id: "a",
+                    displayName: "Kingston Flemings",
+                    injuries: [{ status: "Out" }],
                   },
                   {
-                    starter: true,
-                    athlete: { id: "2", displayName: "Brandin Podziemski" },
+                    id: "b",
+                    displayName: "CJ McCollum",
+                    injuries: [{ status: "Out" }],
                   },
+                  { id: "c", displayName: "Nickeil Alexander-Walker", injuries: [] },
+                ],
+              },
+              sg: {
+                athletes: [
+                  { id: "c", displayName: "Nickeil Alexander-Walker", injuries: [] },
+                  { id: "d", displayName: "Aaron Wiggins", injuries: [] },
+                ],
+              },
+              sf: {
+                athletes: [{ id: "e", displayName: "Dyson Daniels", injuries: [] }],
+              },
+              pf: {
+                athletes: [
                   {
-                    starter: false,
-                    athlete: { id: "3", displayName: "Georges Niang" },
-                  },
-                  {
-                    starter: true,
-                    athlete: { shortName: "C. Bassey" },
+                    id: "f",
+                    displayName: "Jalen Johnson",
+                    injuries: [{ status: "Questionable" }],
                   },
                 ],
               },
-            ],
-          },
-          {
-            team: { abbreviation: "MEM" },
-            statistics: [{ athletes: [] }],
+              c: {
+                athletes: [{ id: "g", displayName: "Onyeka Okongwu", injuries: [] }],
+              },
+            },
           },
         ],
+        boxscore: {
+          players: [
+            {
+              statistics: [
+                {
+                  athletes: [
+                    {
+                      starter: true,
+                      athlete: { id: "box", displayName: "Boxscore Only" },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
       },
-    });
-    expect(starters.GSW?.map((row) => row.name)).toEqual([
-      "Gui Santos",
-      "Brandin Podziemski",
-      "C. Bassey",
+      { f: "QUESTIONABLE" },
+    );
+    expect(projected.map((row) => `${row.position} ${row.name}`)).toEqual([
+      "PG Nickeil Alexander-Walker",
+      "SG Aaron Wiggins",
+      "SF Dyson Daniels",
+      "PF Jalen Johnson",
+      "C Onyeka Okongwu",
     ]);
-    expect(starters.MEM).toBeUndefined();
-    expect(parseEspnBoxscoreStarters({ boxscore: { teams: [] } })).toEqual({});
+    expect(projected.find((row) => row.position === "PF")?.status).toBe(
+      "QUESTIONABLE",
+    );
+    expect(projected.some((row) => row.name === "Boxscore Only")).toBe(false);
+    expect(parseEspnProjectedStarters({ boxscore: { players: [] } })).toEqual([]);
     expect(
-      parseEspnBoxscoreStarters({
-        depthchart: [{ athletes: [{ displayName: "Invented" }] }],
+      parseEspnProjectedStarters({
+        depthchart: [{ athletes: [{ displayName: "No position" }] }],
       }),
-    ).toEqual({});
+    ).toEqual([]);
+    expect(
+      parseEspnEventInjuries({
+        injuries: [
+          {
+            injuries: [
+              {
+                athlete: { id: "a" },
+                status: "Out",
+                type: { description: "out" },
+              },
+            ],
+          },
+        ],
+      }),
+    ).toEqual({ a: "OUT" });
     expect(
       picksLineupStatusMessage([
         {
           eventId: "1",
           awayId: "GSW",
           homeId: "MEM",
-          awayStarters: starters.GSW ?? [],
+          awayStarters: projected,
           homeStarters: [],
         },
       ]),
-    ).toBe("No ESPN lineup yet for MEM.");
+    ).toBe("No ESPN projected lineup yet for MEM.");
     expect(
       picksLineupStatusMessage([
         {
@@ -204,7 +260,7 @@ describe("picks composer", () => {
           homeStarters: [],
         },
       ]),
-    ).toBe("No ESPN starting lineups for that night yet.");
+    ).toBe("No ESPN projected lineups for that night yet.");
   });
 
   it("reads a real ESPN spread as the away line and never invents a number", () => {

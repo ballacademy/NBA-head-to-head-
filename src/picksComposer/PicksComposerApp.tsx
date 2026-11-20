@@ -427,7 +427,7 @@ export function PicksComposerApp() {
             <button
               type="button"
               className={lineupsOpen ? "sc-chip is-on" : "sc-chip"}
-              aria-label="Starting lineups"
+              aria-label="Projected lineups"
               aria-pressed={lineupsOpen}
               onClick={() => {
                 setLineupsOpen((open) => {
