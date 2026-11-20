@@ -1250,11 +1250,15 @@ describe("composer chrome", () => {
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-lineup-info");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-lineup-panel");
+    expect(picksCss).toContain(".pk-lineup-info--visible");
+    expect(picksCss).toContain("width: calc(88 * var(--u))");
     expect(picksGraphic).toContain("Starting lineups");
-    expect(picksGraphic).toContain("pk-lineup-info");
+    expect(picksGraphic).toContain("pk-lineup-info--visible");
     expect(picksGraphic).toContain("exporting ? null");
     expect(picksApp).toContain("fetchPicksNightLineups");
     expect(picksApp).toContain("showComposerToast");
+    expect(picksApp).toContain('aria-label="Starting lineups"');
+    expect(picksApp).toContain("Lineups");
     expect(picksCanvas).not.toContain("pk-lineup");
     expect(picksCanvas).not.toContain("Starting lineups");
     expect(picksCss).toContain(".pk-ats");

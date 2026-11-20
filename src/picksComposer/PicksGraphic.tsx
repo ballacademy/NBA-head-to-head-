@@ -738,7 +738,7 @@ function PicksLineupOverlay({
   onRefresh?: () => void;
 }) {
   return (
-    <div className="pk-lineup-info">
+    <div className="pk-lineup-info pk-lineup-info--visible">
       <button
         type="button"
         className={open ? "pk-lineup-info__btn is-on" : "pk-lineup-info__btn"}
