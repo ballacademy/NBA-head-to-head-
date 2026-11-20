@@ -28,6 +28,7 @@ import {
   mergePicksFill,
   refreshPicksLines,
   parseEspnAwayLine,
+  parseEspnBoxscoreStarters,
   parseEspnCompleted,
   parseEspnEventOddsAwayLine,
   parseEspnSummaryAwayLine,
@@ -46,6 +47,7 @@ import {
   picksDailyRecordKicker,
   picksDatePill,
   picksDefaultTitle,
+  picksLineupStatusMessage,
   picksFillLayout,
   picksRecordKicker,
   picksTitlePlateH,
@@ -131,6 +133,78 @@ describe("picks composer", () => {
     expect(PICKS_EVENT_ODDS_URL("401909843")).toContain("401909843");
     expect(PICKS_EVENT_SUMMARY_URL("401909861")).toContain("site.web.api.espn.com");
     expect(PICKS_EVENT_SUMMARY_URL("401909861")).toContain("summary?event=401909861");
+  });
+
+  it("reads ESPN starter:true names only and never invents a five", () => {
+    const starters = parseEspnBoxscoreStarters({
+      boxscore: {
+        players: [
+          {
+            team: { abbreviation: "GS" },
+            statistics: [
+              {
+                athletes: [
+                  {
+                    starter: true,
+                    athlete: { id: "1", displayName: "Gui Santos" },
+                  },
+                  {
+                    starter: true,
+                    athlete: { id: "2", displayName: "Brandin Podziemski" },
+                  },
+                  {
+                    starter: false,
+                    athlete: { id: "3", displayName: "Georges Niang" },
+                  },
+                  {
+                    starter: true,
+                    athlete: { shortName: "C. Bassey" },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            team: { abbreviation: "MEM" },
+            statistics: [{ athletes: [] }],
+          },
+        ],
+      },
+    });
+    expect(starters.GSW?.map((row) => row.name)).toEqual([
+      "Gui Santos",
+      "Brandin Podziemski",
+      "C. Bassey",
+    ]);
+    expect(starters.MEM).toBeUndefined();
+    expect(parseEspnBoxscoreStarters({ boxscore: { teams: [] } })).toEqual({});
+    expect(
+      parseEspnBoxscoreStarters({
+        depthchart: [{ athletes: [{ displayName: "Invented" }] }],
+      }),
+    ).toEqual({});
+    expect(
+      picksLineupStatusMessage([
+        {
+          eventId: "1",
+          awayId: "GSW",
+          homeId: "MEM",
+          awayStarters: starters.GSW ?? [],
+          homeStarters: [],
+        },
+      ]),
+    ).toBe("No ESPN lineup yet for MEM.");
+    expect(
+      picksLineupStatusMessage([
+        {
+          eventId: "1",
+          awayId: "ATL",
+          homeId: "CHA",
+          awayStarters: [],
+          homeStarters: [],
+        },
+      ]),
+    ).toBe("No ESPN starting lineups for that night yet.");
   });
 
   it("reads a real ESPN spread as the away line and never invents a number", () => {

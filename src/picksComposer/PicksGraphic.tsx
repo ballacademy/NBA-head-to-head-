@@ -41,6 +41,7 @@ import {
   picksMl,
   picksNameLabel,
   picksRecordKicker,
+  picksShortName,
   picksTitlePlateH,
   sortPicksGames,
   splitPicksTitle,
@@ -48,8 +49,10 @@ import {
   type PicksAtsResult,
   type PicksDraft,
   type PicksGame,
+  type PicksNightLineupGame,
   type PicksResultMode,
   type PicksSide,
+  type PicksStarter,
 } from "./picksState";
 
 interface PicksGraphicProps {
@@ -74,6 +77,11 @@ interface PicksGraphicProps {
   onCycleGrade: (gameId: string) => void;
   onNotesChange: (gameId: string, notes: string) => void;
   onCycleConfidence: (gameId: string) => void;
+  lineupsOpen?: boolean;
+  lineups?: PicksNightLineupGame[];
+  lineupsLoading?: boolean;
+  onToggleLineups?: () => void;
+  onRefreshLineups?: () => void;
 }
 
 export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
@@ -98,6 +106,11 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
       onCycleGrade,
       onNotesChange,
       onCycleConfidence,
+      lineupsOpen = false,
+      lineups = [],
+      lineupsLoading = false,
+      onToggleLineups,
+      onRefreshLineups,
     },
     ref,
   ) {
@@ -279,6 +292,15 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             </div>
           </div>
         ) : null}
+        {exporting ? null : (
+          <PicksLineupOverlay
+            open={lineupsOpen}
+            lineups={lineups}
+            loading={lineupsLoading}
+            onToggle={onToggleLineups}
+            onRefresh={onRefreshLineups}
+          />
+        )}
       </article>
     );
   },
@@ -685,6 +707,114 @@ function TicketField({
         {ml ? <span className="pk-ticket__ml">{ml}</span> : null}
       </div>
       {juice ? <span className="pk-ticket__juice">{juice}</span> : null}
+    </div>
+  );
+}
+
+function starterList(starters: PicksStarter[]) {
+  if (!starters.length) {
+    return <p className="pk-lineup-empty">No lineup yet</p>;
+  }
+  return (
+    <ol className="pk-lineup-starters">
+      {starters.map((starter) => (
+        <li key={starter.athleteId || starter.name}>{starter.name}</li>
+      ))}
+    </ol>
+  );
+}
+
+function PicksLineupOverlay({
+  open,
+  lineups,
+  loading,
+  onToggle,
+  onRefresh,
+}: {
+  open: boolean;
+  lineups: PicksNightLineupGame[];
+  loading: boolean;
+  onToggle?: () => void;
+  onRefresh?: () => void;
+}) {
+  return (
+    <div className="pk-lineup-info">
+      <button
+        type="button"
+        className={open ? "pk-lineup-info__btn is-on" : "pk-lineup-info__btn"}
+        aria-label="Starting lineups"
+        aria-expanded={open}
+        title="Starting lineups"
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggle?.();
+        }}
+      >
+        i
+      </button>
+      {open ? (
+        <div
+          className="pk-lineup-panel"
+          role="dialog"
+          aria-label="Starting lineups"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="pk-lineup-panel__bar">
+            <p className="pk-lineup-panel__title">Starting lineups</p>
+            <button
+              type="button"
+              className="pk-lineup-panel__refresh"
+              aria-label="Refresh starting lineups"
+              disabled={loading}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRefresh?.();
+              }}
+            >
+              {loading ? "Loading…" : "Refresh"}
+            </button>
+            <button
+              type="button"
+              className="pk-lineup-panel__close"
+              aria-label="Close starting lineups"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggle?.();
+              }}
+            >
+              ×
+            </button>
+          </div>
+          <div className="pk-lineup-panel__list">
+            {loading && !lineups.length ? (
+              <p className="pk-lineup-empty">Loading ESPN lineups…</p>
+            ) : null}
+            {!loading && !lineups.length ? (
+              <p className="pk-lineup-empty">No games on that night yet.</p>
+            ) : null}
+            {lineups.map((game) => (
+              <section
+                key={`${game.eventId}-${game.awayId}-${game.homeId}`}
+                className="pk-lineup-game"
+              >
+                <h3 className="pk-lineup-game__matchup">
+                  {game.awayId} @ {game.homeId}
+                </h3>
+                <div className="pk-lineup-game__teams">
+                  <div>
+                    <p className="pk-lineup-team">{picksShortName(game.awayId)}</p>
+                    {starterList(game.awayStarters)}
+                  </div>
+                  <div>
+                    <p className="pk-lineup-team">{picksShortName(game.homeId)}</p>
+                    {starterList(game.homeStarters)}
+                  </div>
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

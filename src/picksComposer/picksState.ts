@@ -148,6 +148,20 @@ export interface PicksDraft {
   plateOpacity?: number;
 }
 
+/** ESPN boxscore starter only — never invented from a depth chart. */
+export interface PicksStarter {
+  name: string;
+  athleteId: string;
+}
+
+export interface PicksNightLineupGame {
+  eventId: string;
+  awayId: string;
+  homeId: string;
+  awayStarters: PicksStarter[];
+  homeStarters: PicksStarter[];
+}
+
 export interface PicksLedgerEntry {
   eventId: string;
   date: string;
@@ -1549,6 +1563,146 @@ export const fetchMissingPicksLines = async (
     const line = game.eventId ? byEvent.get(game.eventId) : undefined;
     return line == null ? game : { ...game, line };
   });
+};
+
+const starterNameOf = (athlete: Record<string, unknown> | null) =>
+  textOf(athlete?.displayName) ||
+  textOf(athlete?.shortName) ||
+  textOf(athlete?.fullName);
+
+/** Real ESPN `starter: true` rows only. Empty when the boxscore has none — never invent. */
+export const parseEspnBoxscoreStarters = (
+  payload: unknown,
+): Record<string, PicksStarter[]> => {
+  const box = rec(rec(payload)?.boxscore);
+  const groups = Array.isArray(box?.players) ? box.players : [];
+  const out: Record<string, PicksStarter[]> = {};
+  for (const group of groups) {
+    const row = rec(group);
+    const teamId = resolvePicksTeam(textOf(rec(row?.team)?.abbreviation));
+    if (!teamId) {
+      continue;
+    }
+    const blocks = Array.isArray(row?.statistics) ? row.statistics : [];
+    const starters: PicksStarter[] = [];
+    const seen = new Set<string>();
+    for (const block of blocks) {
+      const athletes = Array.isArray(rec(block)?.athletes)
+        ? (rec(block)?.athletes as unknown[])
+        : [];
+      for (const item of athletes) {
+        const entry = rec(item);
+        if (!entry || entry.starter !== true) {
+          continue;
+        }
+        const athlete = rec(entry.athlete);
+        const name = starterNameOf(athlete);
+        if (!name) {
+          continue;
+        }
+        const athleteId = textOf(athlete?.id);
+        const key = athleteId || name.toLowerCase();
+        if (seen.has(key)) {
+          continue;
+        }
+        seen.add(key);
+        starters.push({ name, athleteId });
+      }
+    }
+    if (starters.length) {
+      out[teamId] = starters;
+    }
+  }
+  return out;
+};
+
+export const fetchPicksEventStarters = async (
+  eventId: string,
+): Promise<Record<string, PicksStarter[]>> => {
+  const id = textOf(eventId);
+  if (!id || id.startsWith("custom:")) {
+    return {};
+  }
+  try {
+    const response = await fetch(PICKS_EVENT_SUMMARY_URL(id), {
+      mode: "cors",
+      credentials: "omit",
+    });
+    if (!response.ok) {
+      return {};
+    }
+    return parseEspnBoxscoreStarters(await response.json());
+  } catch {
+    return {};
+  }
+};
+
+const lineupGameKey = (game: {
+  eventId: string;
+  awayId: string;
+  homeId: string;
+}) => `${game.eventId}|${game.awayId}|${game.homeId}`;
+
+/** Scoreboard matchups for that night, then each event’s ESPN starters. */
+export const fetchPicksNightLineups = async (
+  games: Array<Pick<PicksGame, "eventId" | "awayId" | "homeId">>,
+): Promise<PicksNightLineupGame[]> => {
+  const rows = games.filter((game) => game.awayId && game.homeId);
+  const eventIds = [
+    ...new Set(
+      rows
+        .map((game) => textOf(game.eventId))
+        .filter((id) => id && !id.startsWith("custom:")),
+    ),
+  ];
+  const summaries = await Promise.all(
+    eventIds.map(async (eventId) => {
+      const starters = await fetchPicksEventStarters(eventId);
+      return [eventId, starters] as const;
+    }),
+  );
+  const byEvent = new Map(summaries);
+  const seen = new Set<string>();
+  const next: PicksNightLineupGame[] = [];
+  for (const game of rows) {
+    const key = lineupGameKey(game);
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    const starters = game.eventId ? (byEvent.get(game.eventId) ?? {}) : {};
+    next.push({
+      eventId: game.eventId,
+      awayId: game.awayId,
+      homeId: game.homeId,
+      awayStarters: starters[game.awayId] ?? [],
+      homeStarters: starters[game.homeId] ?? [],
+    });
+  }
+  return next;
+};
+
+export const picksLineupStatusMessage = (lineups: PicksNightLineupGame[]) => {
+  if (!lineups.length) {
+    return "No games on that night yet.";
+  }
+  const missing = lineups.flatMap((game) => {
+    const names: string[] = [];
+    if (!game.awayStarters.length) {
+      names.push(game.awayId);
+    }
+    if (!game.homeStarters.length) {
+      names.push(game.homeId);
+    }
+    return names;
+  });
+  if (!missing.length) {
+    return null;
+  }
+  if (missing.length === lineups.length * 2) {
+    return "No ESPN starting lineups for that night yet.";
+  }
+  return `No ESPN lineup yet for ${missing.join(", ")}.`;
 };
 
 /** Refresh live lines, then put ledger spreads back if ESPN’s board went blank. */

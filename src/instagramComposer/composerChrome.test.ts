@@ -1248,6 +1248,15 @@ describe("composer chrome", () => {
     expect(picksCss).toContain("border-radius: 50%");
     expect(picksCss).not.toContain(".pk-mark");
     expect(picksCss).toContain(".pk-board.is-exporting .pk-check:not(.is-on)");
+    expect(picksCss).toContain(".pk-board.is-exporting .pk-lineup-info");
+    expect(picksCss).toContain(".pk-board.is-exporting .pk-lineup-panel");
+    expect(picksGraphic).toContain("Starting lineups");
+    expect(picksGraphic).toContain("pk-lineup-info");
+    expect(picksGraphic).toContain("exporting ? null");
+    expect(picksApp).toContain("fetchPicksNightLineups");
+    expect(picksApp).toContain("showComposerToast");
+    expect(picksCanvas).not.toContain("pk-lineup");
+    expect(picksCanvas).not.toContain("Starting lineups");
     expect(picksCss).toContain(".pk-ats");
     expect(picksCss).toContain(".pk-ats-lockup");
     expect(picksCss).toContain(".pk-ats-kicker");

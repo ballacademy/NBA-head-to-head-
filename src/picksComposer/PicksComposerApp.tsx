@@ -16,6 +16,7 @@ import {
 } from "../instagramComposer/composerLook";
 import { useComposerNight } from "../instagramComposer/composerNight";
 import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { showComposerToast } from "../instagramComposer/composerFillToast";
 import {
   copyGraphicCaption,
   graphicCaption,
@@ -51,10 +52,12 @@ import {
   emptyPicksGame,
   emptyPicksLedger,
   fetchMissingPicksLines,
+  fetchPicksNightLineups,
   fetchPicksSlate,
   formatPicksDailyRecordLine,
   formatPicksGraphicRecord,
   picksCaptionLines,
+  picksLineupStatusMessage,
   isAutoPicksDateLine,
   isAutoPicksTitle,
   isPicksDraft,
@@ -77,6 +80,7 @@ import {
   type PicksAtsTally,
   type PicksDraft,
   type PicksLedger,
+  type PicksNightLineupGame,
   type PicksSide,
 } from "./picksState";
 import "@fontsource/montserrat/latin-900.css";
@@ -111,6 +115,9 @@ export function PicksComposerApp() {
   const [picker, setPicker] = useState<{ gameId: string; side: PicksSide } | null>(
     null,
   );
+  const [lineupsOpen, setLineupsOpen] = useState(false);
+  const [lineups, setLineups] = useState<PicksNightLineupGame[]>([]);
+  const [lineupsLoading, setLineupsLoading] = useState(false);
   const night = useComposerNight();
   const draftRef = useRef(draft);
   const ledgerRef = useRef(ledger);
@@ -178,9 +185,42 @@ export function PicksComposerApp() {
     void gradeOpenSlates(next, draftRef.current.date);
   }, [hydrated]);
 
+  const loadLineups = async (refreshNight = false) => {
+    setLineupsLoading(true);
+    try {
+      let games = draftRef.current.games.filter(
+        (game) => game.awayId && game.homeId,
+      );
+      if (refreshNight || !games.length) {
+        const incoming = await fetchPicksSlate(draftRef.current.date);
+        slateRef.current = incoming;
+        if (!games.length) {
+          games = incoming;
+        }
+      }
+      const next = await fetchPicksNightLineups(games);
+      setLineups(next);
+      const message = picksLineupStatusMessage(next);
+      if (message) {
+        setStatus(message);
+        showComposerToast(message);
+      } else {
+        setStatus("Loaded ESPN starting lineups.");
+      }
+    } catch (error) {
+      console.error(error);
+      setLineups([]);
+      setStatus("Could not load ESPN starting lineups.");
+      showComposerToast("Could not load ESPN starting lineups.");
+    } finally {
+      setLineupsLoading(false);
+    }
+  };
+
   const fillSlate = async (iso = draft.date, forceRowId?: string) => {
     const date = isoDateOnly(iso) || draft.date;
     setFilling(true);
+    setLineups([]);
     setStatus("Loading slate…");
     try {
       const incoming = await fetchPicksSlate(date);
@@ -797,6 +837,19 @@ export function PicksComposerApp() {
                   games: current.games.filter((game) => game.id !== gameId),
                 }));
               }}
+              lineupsOpen={lineupsOpen}
+              lineups={lineups}
+              lineupsLoading={lineupsLoading}
+              onToggleLineups={() => {
+                setLineupsOpen((open) => {
+                  const next = !open;
+                  if (next) {
+                    void loadLineups(true);
+                  }
+                  return next;
+                });
+              }}
+              onRefreshLineups={() => void loadLineups(true)}
               onRefillGame={(gameId) => {
                 if (slateRef.current.length) {
                   push(draft);
