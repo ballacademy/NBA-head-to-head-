@@ -36,19 +36,34 @@ export const onRequestGet: PagesFunction = async (context) => {
     ids.map(async (id) => {
       try {
         const response = await fetch(ESPN_DEPTHCHART_URL(String(id)), {
-          headers: { accept: "application/json" },
+          headers: {
+            accept: "application/json",
+            "user-agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+          },
         });
         if (!response.ok) {
-          return [String(id), null] as const;
+          return [String(id), { error: response.status }] as const;
         }
         return [String(id), await response.json()] as const;
-      } catch {
-        return [String(id), null] as const;
+      } catch (error) {
+        return [
+          String(id),
+          { error: error instanceof Error ? error.message : "fetch failed" },
+        ] as const;
       }
     }),
   );
 
+  const depthcharts = Object.fromEntries(
+    entries.filter(([, payload]) => payload && !("error" in (payload as object))),
+  );
+  const errors = Object.fromEntries(
+    entries.filter(([, payload]) => payload && typeof payload === "object" && "error" in payload),
+  );
+
   return json({
-    depthcharts: Object.fromEntries(entries.filter(([, payload]) => payload)),
+    depthcharts,
+    ...(Object.keys(errors).length ? { errors } : {}),
   });
 };
