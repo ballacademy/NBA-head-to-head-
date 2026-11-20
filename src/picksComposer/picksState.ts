@@ -1684,12 +1684,154 @@ export const parseEspnProjectedStarters = (
 
 const espnIdForPicksTeam = (teamId: string) => ESPN_TEAM_IDS[teamId] ?? 0;
 
-export const fetchPicksEventInjuries = async (
+/** Most recent completed game for that club, never the current event. */
+export const parseEspnLastCompletedEventId = (
+  payload: unknown,
+  teamId: string,
+  excludeEventId = "",
+) => {
+  const groups = Array.isArray(rec(payload)?.lastFiveGames)
+    ? (rec(payload)?.lastFiveGames as unknown[])
+    : [];
+  const skip = textOf(excludeEventId);
+  let bestId = "";
+  let bestMs = -1;
+  for (const group of groups) {
+    const block = rec(group);
+    const abbrev = resolvePicksTeam(textOf(rec(block?.team)?.abbreviation));
+    if (abbrev !== teamId) {
+      continue;
+    }
+    const events = Array.isArray(block?.events) ? (block.events as unknown[]) : [];
+    for (const row of events) {
+      const item = rec(row);
+      const id = textOf(item?.id);
+      if (!id || id === skip) {
+        continue;
+      }
+      if (!textOf(item?.gameResult) && !textOf(item?.score)) {
+        continue;
+      }
+      const ms = Date.parse(textOf(item?.gameDate)) || 0;
+      if (ms >= bestMs) {
+        bestMs = ms;
+        bestId = id;
+      }
+    }
+  }
+  return bestId;
+};
+
+interface PicksRotationPlayer {
+  name: string;
+  athleteId: string;
+  starter: boolean;
+  minutes: number;
+  didNotPlay: boolean;
+}
+
+export const parseEspnBoxscoreRotation = (
+  payload: unknown,
+  teamId: string,
+): PicksRotationPlayer[] => {
+  const groups = Array.isArray(rec(rec(payload)?.boxscore)?.players)
+    ? (rec(rec(payload)?.boxscore)?.players as unknown[])
+    : [];
+  const out: PicksRotationPlayer[] = [];
+  for (const group of groups) {
+    const row = rec(group);
+    const abbrev = resolvePicksTeam(textOf(rec(row?.team)?.abbreviation));
+    if (abbrev !== teamId) {
+      continue;
+    }
+    const blocks = Array.isArray(row?.statistics) ? (row.statistics as unknown[]) : [];
+    for (const block of blocks) {
+      const labels = Array.isArray(rec(block)?.labels)
+        ? (rec(block)?.labels as unknown[]).map((label) => String(label).toUpperCase())
+        : [];
+      const minIndex = labels.indexOf("MIN");
+      const athletes = Array.isArray(rec(block)?.athletes)
+        ? (rec(block)?.athletes as unknown[])
+        : [];
+      for (const item of athletes) {
+        const entry = rec(item);
+        const athlete = rec(entry?.athlete);
+        const name = starterNameOf(athlete);
+        if (!name) {
+          continue;
+        }
+        const stats = Array.isArray(entry?.stats) ? (entry.stats as unknown[]) : [];
+        const minutes =
+          minIndex >= 0 ? Number.parseFloat(String(stats[minIndex] ?? "0")) || 0 : 0;
+        out.push({
+          name,
+          athleteId: textOf(athlete?.id),
+          starter: entry?.starter === true,
+          minutes,
+          didNotPlay: entry?.didNotPlay === true,
+        });
+      }
+    }
+  }
+  return out;
+};
+
+/** Prior-game named rotation, injuries applied — never the current boxscore. */
+export const projectPicksFiveFromRotation = (
+  rotation: PicksRotationPlayer[],
+  eventInjuries: Record<string, string> = {},
+): PicksStarter[] => {
+  const eligible = (player: PicksRotationPlayer) => {
+    if (player.didNotPlay) {
+      return false;
+    }
+    const status = eventInjuries[player.athleteId];
+    return !(status && SKIP_PROJECTED_INJURY.has(status));
+  };
+  const used = new Set<string>();
+  const take = (player: PicksRotationPlayer): PicksStarter => {
+    const key = player.athleteId || player.name.toLowerCase();
+    used.add(key);
+    const status = eventInjuries[player.athleteId];
+    return {
+      name: player.name,
+      athleteId: player.athleteId,
+      status: status || undefined,
+    };
+  };
+  const five: PicksStarter[] = [];
+  for (const player of rotation) {
+    if (five.length >= 5) {
+      break;
+    }
+    const key = player.athleteId || player.name.toLowerCase();
+    if (!player.starter || used.has(key) || !eligible(player)) {
+      continue;
+    }
+    five.push(take(player));
+  }
+  const bench = [...rotation]
+    .filter((player) => !player.starter)
+    .sort((a, b) => b.minutes - a.minutes);
+  for (const player of bench) {
+    if (five.length >= 5) {
+      break;
+    }
+    const key = player.athleteId || player.name.toLowerCase();
+    if (used.has(key) || !eligible(player)) {
+      continue;
+    }
+    five.push(take(player));
+  }
+  return five;
+};
+
+export const fetchPicksEventSummary = async (
   eventId: string,
-): Promise<Record<string, string>> => {
+): Promise<unknown> => {
   const id = textOf(eventId);
   if (!id || id.startsWith("custom:")) {
-    return {};
+    return null;
   }
   try {
     const response = await fetch(PICKS_EVENT_SUMMARY_URL(id), {
@@ -1697,11 +1839,11 @@ export const fetchPicksEventInjuries = async (
       credentials: "omit",
     });
     if (!response.ok) {
-      return {};
+      return null;
     }
-    return parseEspnEventInjuries(await response.json());
+    return await response.json();
   } catch {
-    return {};
+    return null;
   }
 };
 
@@ -1757,6 +1899,26 @@ const lineupGameKey = (game: {
   homeId: string;
 }) => `${game.eventId}|${game.awayId}|${game.homeId}`;
 
+const projectedFiveForTeam = (
+  teamId: string,
+  eventInjuries: Record<string, string>,
+  depthcharts: Record<string, unknown>,
+  previousSummary: unknown,
+) => {
+  const fromDepth = parseEspnProjectedStarters(
+    depthcharts[String(espnIdForPicksTeam(teamId))],
+    eventInjuries,
+  );
+  if (fromDepth.length >= 5) {
+    return fromDepth;
+  }
+  const fromPrior = projectPicksFiveFromRotation(
+    parseEspnBoxscoreRotation(previousSummary, teamId),
+    eventInjuries,
+  );
+  return fromPrior.length ? fromPrior : fromDepth;
+};
+
 /** Scoreboard matchups, then ESPN projected fives (injuries applied). */
 export const fetchPicksNightLineups = async (
   games: Array<Pick<PicksGame, "eventId" | "awayId" | "homeId">>,
@@ -1777,16 +1939,34 @@ export const fetchPicksNightLineups = async (
       ]),
     ),
   ].filter((id) => id >= 1);
-  const [injuryEntries, depthcharts] = await Promise.all([
+  const [summaryEntries, depthcharts] = await Promise.all([
     Promise.all(
       eventIds.map(async (eventId) => {
-        const injuries = await fetchPicksEventInjuries(eventId);
-        return [eventId, injuries] as const;
+        const summary = await fetchPicksEventSummary(eventId);
+        return [eventId, summary] as const;
       }),
     ),
     fetchPicksDepthCharts(espnIds),
   ]);
-  const injuriesByEvent = new Map(injuryEntries);
+  const summaries = new Map(summaryEntries);
+  const prevIds = [
+    ...new Set(
+      rows.flatMap((game) => {
+        const summary = game.eventId ? summaries.get(game.eventId) : null;
+        return [
+          parseEspnLastCompletedEventId(summary, game.awayId, game.eventId),
+          parseEspnLastCompletedEventId(summary, game.homeId, game.eventId),
+        ].filter(Boolean);
+      }),
+    ),
+  ];
+  const prevEntries = await Promise.all(
+    prevIds.map(async (eventId) => {
+      const summary = await fetchPicksEventSummary(eventId);
+      return [eventId, summary] as const;
+    }),
+  );
+  const previous = new Map(prevEntries);
   const seen = new Set<string>();
   const next: PicksNightLineupGame[] = [];
   for (const game of rows) {
@@ -1795,22 +1975,33 @@ export const fetchPicksNightLineups = async (
       continue;
     }
     seen.add(key);
-    const eventInjuries = game.eventId
-      ? (injuriesByEvent.get(game.eventId) ?? {})
-      : {};
-    const awayEspn = espnIdForPicksTeam(game.awayId);
-    const homeEspn = espnIdForPicksTeam(game.homeId);
+    const summary = game.eventId ? summaries.get(game.eventId) : null;
+    const eventInjuries = parseEspnEventInjuries(summary);
+    const awayPrevId = parseEspnLastCompletedEventId(
+      summary,
+      game.awayId,
+      game.eventId,
+    );
+    const homePrevId = parseEspnLastCompletedEventId(
+      summary,
+      game.homeId,
+      game.eventId,
+    );
     next.push({
       eventId: game.eventId,
       awayId: game.awayId,
       homeId: game.homeId,
-      awayStarters: parseEspnProjectedStarters(
-        depthcharts[String(awayEspn)],
+      awayStarters: projectedFiveForTeam(
+        game.awayId,
         eventInjuries,
+        depthcharts,
+        previous.get(awayPrevId),
       ),
-      homeStarters: parseEspnProjectedStarters(
-        depthcharts[String(homeEspn)],
+      homeStarters: projectedFiveForTeam(
+        game.homeId,
         eventInjuries,
+        depthcharts,
+        previous.get(homePrevId),
       ),
     });
   }

@@ -28,8 +28,11 @@ import {
   mergePicksFill,
   refreshPicksLines,
   parseEspnAwayLine,
+  parseEspnBoxscoreRotation,
   parseEspnEventInjuries,
+  parseEspnLastCompletedEventId,
   parseEspnProjectedStarters,
+  projectPicksFiveFromRotation,
   parseEspnCompleted,
   parseEspnEventOddsAwayLine,
   parseEspnSummaryAwayLine,
@@ -261,6 +264,73 @@ describe("picks composer", () => {
         },
       ]),
     ).toBe("No ESPN projected lineups for that night yet.");
+  });
+
+  it("projects from the prior game’s named rotation and skips the current boxscore", () => {
+    expect(
+      parseEspnLastCompletedEventId(
+        {
+          lastFiveGames: [
+            {
+              team: { abbreviation: "ATL" },
+              events: [
+                { id: "old", gameDate: "2026-11-16T01:00Z", gameResult: "W", score: "1-0" },
+                { id: "prev", gameDate: "2026-11-19T01:00Z", gameResult: "W", score: "2-0" },
+                { id: "current", gameDate: "2026-11-20T00:00Z", gameResult: "W", score: "3-0" },
+              ],
+            },
+          ],
+        },
+        "ATL",
+        "current",
+      ),
+    ).toBe("prev");
+    const rotation = parseEspnBoxscoreRotation(
+      {
+        boxscore: {
+          players: [
+            {
+              team: { abbreviation: "ATL" },
+              statistics: [
+                {
+                  labels: ["MIN"],
+                  athletes: [
+                    {
+                      starter: true,
+                      athlete: { id: "out", displayName: "Kingston Flemings" },
+                      stats: ["12"],
+                    },
+                    {
+                      starter: true,
+                      athlete: { id: "ok", displayName: "Dyson Daniels" },
+                      stats: ["34"],
+                    },
+                    {
+                      starter: false,
+                      athlete: { id: "bench", displayName: "Aaron Wiggins" },
+                      stats: ["28"],
+                    },
+                    {
+                      starter: true,
+                      athlete: { id: "box", displayName: "Boxscore Only" },
+                      stats: ["1"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+      "ATL",
+    );
+    const projected = projectPicksFiveFromRotation(rotation, { out: "OUT" });
+    expect(projected.map((row) => row.name)).toEqual([
+      "Dyson Daniels",
+      "Boxscore Only",
+      "Aaron Wiggins",
+    ]);
+    expect(projected.some((row) => row.name === "Kingston Flemings")).toBe(false);
   });
 
   it("reads a real ESPN spread as the away line and never invents a number", () => {
