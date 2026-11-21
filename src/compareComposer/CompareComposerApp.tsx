@@ -1,0 +1,1054 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { writeLastShowBa } from "../instagramComposer/composerBoardDefaults";
+import { BaMarkToggle } from "../instagramComposer/BaMarkToggle";
+import { ComposerBoard } from "../instagramComposer/ComposerBoard";
+import { ComposerLookToggle } from "../instagramComposer/ComposerLookToggle";
+import { ComposerSaves } from "../instagramComposer/ComposerSaves";
+import { ComposerStatsSampleToggle } from "../instagramComposer/ComposerStatsSampleToggle";
+import { ComposerToolbar } from "../instagramComposer/ComposerToolbar";
+import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
+import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
+import { WatermarkToggle } from "../instagramComposer/WatermarkToggle";
+import {
+  nightStandoutPickerRows,
+  useComposerNight,
+} from "../instagramComposer/composerNight";
+import { useComposerStatsSample } from "../instagramComposer/composerStatsSample";
+import { LetterGradeHud } from "../instagramComposer/LetterGradeHud";
+import { PhotoGradeToggle } from "../instagramComposer/PhotoGradeToggle";
+import {
+  DEFAULT_LETTER_GRADE,
+  parseLetterGrade,
+} from "../lib/letterGrade";
+import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
+import { usePhotoGrade } from "../instagramComposer/photoGrade";
+import {
+  COMPARE_LOOK_KEY,
+  useComposerLook,
+  usePurpleFlair,
+} from "../instagramComposer/composerLook";
+import { downloadExportPack, storyFilename } from "../instagramComposer/exportPack";
+import { copyGraphicCaption } from "../instagramComposer/graphicCaption";
+import { KeepCustomPhotoDialog } from "../instagramComposer/KeepCustomPhotoDialog";
+import { useComposerUndo } from "../instagramComposer/useComposerUndo";
+import {
+  COMPARE_TITLE_PRESETS,
+  exportFilenameFromTitle,
+} from "../instagramComposer/composerPresets";
+import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
+import { onComposerTextChange } from "../instagramComposer/titleLayout";
+import { readJson, writeJson } from "../lib/browserStorage";
+import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
+import { thisWeekRange } from "../instagramComposer/composerDateRange";
+import {
+  averageLastGames,
+  fetchRecentGames,
+  gameOnDate,
+  gamesInInclusiveRange,
+} from "../playerOfTheDayComposer/lastGame";
+import {
+  everyTeamCurrentSeason,
+  everyTeamSeasons,
+  loadEveryTeamRosters,
+} from "../everyTeamComposer/historicalRosters";
+import { PlayerPicker } from "../tierListComposer/PlayerPicker";
+import { getPlayer } from "../tierListComposer/nbaActivePlayers";
+import {
+  carriedPlayerId,
+  rememberComposerPlayer,
+} from "../instagramComposer/composerCarry";
+import { CompareGraphic } from "./CompareGraphic";
+import {
+  GRAPHIC_HEIGHT,
+  STORY_DESIGN_HEIGHT,
+} from "./compareLayout";
+import { exportComparePng } from "./exportComparePng";
+import { renderCompareCanvas } from "./renderCompareCanvas";
+import {
+  addCompareStat,
+  applySideStatValues,
+  autoCompareStatsLabel,
+  compareCaptionFor,
+  compareGameNightLabel,
+  compareUsesLiveSeasonAverages,
+  comparePasteSlotIndex,
+  clearCompareSide,
+  COMPARE_STAT_MAX,
+  COMPARE_STAT_PRESETS,
+  defaultCompareDraft,
+  nextCompareStat,
+  effectiveCompareSeason,
+  fillCompareSide,
+  hasCustomPhoto,
+  isCompareDraft,
+  isSeasonAverageStatsLabel,
+  landCarriedComparePlayer,
+  moveCompareStat,
+  normalizeCompareDraft,
+  parseCompareStatKey,
+  parseCompareStatsMode,
+  patchCompareStat,
+  removeCompareStat,
+  resetCompareKeepPhotos,
+  setComparePhoto,
+  setCompareStatKey,
+  statsFromLastGame,
+  statsFromSeason,
+  swapCompareSides,
+  type CompareDraft,
+  type CompareStatsMode,
+} from "./compareState";
+import "@fontsource/montserrat/latin-900.css";
+import "./compareComposer.css";
+import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+
+const STORAGE_KEY = "ddgm:compare-composer";
+const SAVES_KEY = "ddgm:compare-composer:saves";
+
+const loadDraft = (): CompareDraft => {
+  const stored = readJson<Partial<CompareDraft>>(STORAGE_KEY);
+  const base = isCompareDraft(stored)
+    ? normalizeCompareDraft(stored)
+    : defaultCompareDraft();
+  return landCarriedComparePlayer(base, carriedPlayerId());
+};
+
+export function CompareComposerApp() {
+  const boardRef = useRef<HTMLElement | null>(null);
+  const empty = defaultCompareDraft();
+  const [draft, setDraft] = useState<CompareDraft>(empty);
+  const [picker, setPicker] = useState<0 | 1 | null>(null);
+  const [photoTarget, setPhotoTarget] = useState<0 | 1>(0);
+  const [exporting, setExporting] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const [rostersReady, setRostersReady] = useState(false);
+  const [look, setLook] = useComposerLook(COMPARE_LOOK_KEY);
+  const [purpleFlair, setPurpleFlair] = usePurpleFlair();
+  const [photoGrade, setPhotoGrade, gradeIntensity, setGradeIntensity] = usePhotoGrade();
+  const [statsSample, setStatsSample] = useComposerStatsSample();
+  const [keepPrompt, setKeepPrompt] = useState<{
+    side: 0 | 1;
+    playerId: string;
+    playerName: string;
+  } | null>(null);
+  const [storyCrop, setStoryCrop] = useState(false);
+  const { push, pop, canUndo } = useComposerUndo<CompareDraft>();
+  const night = useComposerNight();
+
+  useEffect(() => {
+    document.title = "Comparison graphic";
+  }, []);
+
+  useEffect(() => {
+    void loadEveryTeamRosters()
+      .then(() => setRostersReady(true))
+      .catch((error: unknown) => {
+        console.error(error);
+      })
+      .finally(() => {
+        setDraft(loadDraft());
+        setHydrated(true);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    writeJson(STORAGE_KEY, draft);
+  }, [draft, hydrated]);
+
+  const fillStats = async (
+    snapshot: CompareDraft,
+    side?: 0 | 1,
+    playerId?: string,
+    sample = statsSample,
+    onDate = night.date,
+  ) => {
+    const mode = parseCompareStatsMode(snapshot.statsMode);
+    const sides: Array<0 | 1> = side == null ? [0, 1] : [side];
+    let nextStats = snapshot.stats;
+    const played: string[] = [];
+    const missed: string[] = [];
+    for (const index of sides) {
+      const person = snapshot.sides[index]!;
+      const id = playerId && index === side ? playerId : person.playerId;
+      if (!id) {
+        nextStats = applySideStatValues(nextStats, index, nextStats.map(() => ""));
+        continue;
+      }
+      if (mode === "game") {
+        const games = await fetchRecentGames(id, sample);
+        const game = gameOnDate(games, onDate || "");
+        const name =
+          [person.firstName, person.lastName].filter(Boolean).join(" ") ||
+          getPlayer(id)?.name ||
+          "Player";
+        if (game) {
+          played.push(name);
+        } else {
+          missed.push(name);
+        }
+        nextStats = applySideStatValues(
+          nextStats,
+          index,
+          statsFromLastGame(game, nextStats),
+        );
+      } else if (mode === "last-5" || mode === "this-week") {
+        const recent = await fetchRecentGames(id, sample);
+        const windowed =
+          mode === "this-week"
+            ? gamesInInclusiveRange(
+                recent,
+                thisWeekRange().from,
+                thisWeekRange().to,
+              )
+            : recent.slice(0, 5);
+        const game = averageLastGames(
+          windowed,
+          mode === "last-5" ? 5 : windowed.length || 1,
+        );
+        nextStats = applySideStatValues(
+          nextStats,
+          index,
+          statsFromLastGame(game, nextStats),
+        );
+      } else {
+        const season = effectiveCompareSeason(snapshot, index);
+        if (compareUsesLiveSeasonAverages(season, sample)) {
+          const games = await fetchRecentGames(id, sample, season);
+          const averaged = averageLastGames(
+            games,
+            Math.max(games.length, 1),
+          );
+          nextStats = applySideStatValues(
+            nextStats,
+            index,
+            statsFromLastGame(averaged, nextStats),
+          );
+        } else {
+          nextStats = applySideStatValues(
+            nextStats,
+            index,
+            statsFromSeason(id, person.teamId, season, nextStats, sample),
+          );
+        }
+      }
+    }
+    setDraft((current) => ({ ...current, stats: nextStats }));
+    if (mode === "game") {
+      const nightLabel = compareGameNightLabel(onDate);
+      if (missed.length && played.length) {
+        setStatus(
+          `Filled ${played.join(" and ")} from ${nightLabel}. ${missed.join(" and ")} did not play that night.`,
+        );
+      } else if (played.length) {
+        setStatus(`Filled ${played.join(" and ")} from ${nightLabel}.`);
+      } else if (missed.length) {
+        setStatus(
+          `${missed.join(" and ")} did not play ${nightLabel} — pick a night they both did.`,
+        );
+      }
+    }
+  };
+
+  const commitPick = (side: 0 | 1, playerId: string, keep: boolean) => {
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    rememberComposerPlayer(playerId);
+    push(draft);
+    const nextSides = [...draft.sides] as CompareDraft["sides"];
+    nextSides[side] = fillCompareSide(player, draft.sides[side]!, keep);
+    const next = { ...draft, sides: nextSides };
+    setDraft(next);
+    setPicker(null);
+    setKeepPrompt(null);
+    setStatus(
+      keep
+        ? `Kept the photo for ${player.name}.`
+        : `Filled ${player.name} — upload an action photo.`,
+    );
+    void fillStats(next, side, player.id);
+  };
+
+  const openSidePicker = (side: 0 | 1) => {
+    setPhotoTarget(side);
+    setPicker(side);
+  };
+
+  const fillLastNight = async () => {
+    const iso = night.yesterdayIso;
+    night.setDate(iso);
+    setStatus("Loading this night’s box scores…");
+    const rows = (await night.ensureStandouts(iso)).filter(
+      (row) => row.live !== true && row.final !== false,
+    );
+    if (!rows[0]) {
+      setStatus("No box scores for that night yet — pick players.");
+      return;
+    }
+    const first = getPlayer(rows[0].athleteId);
+    const second = rows[1] ? getPlayer(rows[1].athleteId) : null;
+    if (!first) {
+      setStatus("No box scores for that night yet — pick players.");
+      return;
+    }
+    rememberComposerPlayer(first.id);
+    push(draft);
+    const nextSides = [...draft.sides] as CompareDraft["sides"];
+    nextSides[0] = fillCompareSide(first, draft.sides[0]!, false);
+    if (second) {
+      nextSides[1] = fillCompareSide(second, draft.sides[1]!, false);
+    }
+    const next = {
+      ...draft,
+      sides: nextSides,
+      statsMode: "game" as const,
+      statsLabel: autoCompareStatsLabel(
+        "game",
+        draft.season || everyTeamCurrentSeason(),
+        iso,
+      ),
+    };
+    setDraft(next);
+    void fillStats(next, undefined, undefined, statsSample, iso);
+  };
+
+  useEffect(() => {
+    if (picker == null) {
+      return;
+    }
+    void night.ensureStandouts(night.date);
+  }, [picker, night.date, night.ensureStandouts]);
+
+  const handlePick = (playerId: string) => {
+    if (picker == null) {
+      return;
+    }
+    const player = getPlayer(playerId);
+    if (!player) {
+      return;
+    }
+    if (hasCustomPhoto(draft.sides[picker]!)) {
+      setKeepPrompt({
+        side: picker,
+        playerId: player.id,
+        playerName: player.name,
+      });
+      setPicker(null);
+      return;
+    }
+    commitPick(picker, player.id, false);
+  };
+
+  const setStatsMode = (statsMode: CompareStatsMode) => {
+    if (parseCompareStatsMode(draft.statsMode) === statsMode) {
+      return;
+    }
+    const season = draft.season || everyTeamCurrentSeason();
+    const previousAuto = autoCompareStatsLabel(
+      parseCompareStatsMode(draft.statsMode),
+      season,
+      night.date,
+    );
+    const statsLabel =
+      !draft.statsLabel.trim() ||
+      draft.statsLabel === previousAuto ||
+      (statsMode === "game" &&
+        isSeasonAverageStatsLabel(draft.statsLabel, season))
+        ? autoCompareStatsLabel(statsMode, season, night.date)
+        : draft.statsLabel;
+    const next = { ...draft, statsMode, statsLabel };
+    setDraft(next);
+    void fillStats(next);
+  };
+
+  const setSharedSeason = (season: string) => {
+    const mode = parseCompareStatsMode(draft.statsMode);
+    const previousAuto = autoCompareStatsLabel(mode, draft.season || season);
+    const statsLabel =
+      mode === "season" &&
+      (!draft.statsLabel.trim() || draft.statsLabel === previousAuto)
+        ? autoCompareStatsLabel(mode, season)
+        : draft.statsLabel;
+    const next = { ...draft, season, statsLabel };
+    setDraft(next);
+    if (mode === "season") {
+      void fillStats(next);
+    }
+  };
+
+  const setSideSeason = (side: 0 | 1, value: string) => {
+    const sideSeasons = [...(draft.sideSeasons ?? [null, null])] as [
+      string | null,
+      string | null,
+    ];
+    sideSeasons[side] = value || null;
+    const next = { ...draft, sideSeasons };
+    setDraft(next);
+    if (parseCompareStatsMode(draft.statsMode) === "season") {
+      void fillStats(next, side);
+    }
+  };
+
+  const handleExport = async (
+    filename?: string,
+    story = false,
+    square = false,
+  ) => {
+    const node = boardRef.current;
+    if (!node) {
+      setStatus("Graphic is not ready to export.");
+      return;
+    }
+    setExporting(true);
+    try {
+      await exportComparePng(
+        node,
+        filename ?? exportFilenameFromTitle(draft.title, "compare"),
+        { ...draft, look, purpleFlair, photoGrade },
+        story,
+        square,
+      );
+      setStatus(
+        square
+          ? "1:1 PNG download started."
+          : story
+            ? "Story PNG download started."
+            : "Download started.",
+      );
+    } catch (error) {
+      console.error(error);
+      setStatus("Could not export PNG.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  useEffect(() => {
+    const onPaste = (event: ClipboardEvent) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      if (target instanceof Element && target.closest(".pod-photo")) {
+        return;
+      }
+      void dataUrlFromClipboard(event).then((dataUrl) => {
+        if (!dataUrl) {
+          return;
+        }
+        event.preventDefault();
+        const side = comparePasteSlotIndex(photoTarget, picker);
+        setDraft((current) => {
+          const sides = [...current.sides] as CompareDraft["sides"];
+          sides[side] = setComparePhoto(current.sides[side]!, dataUrl);
+          return { ...current, sides };
+        });
+        setStatus("Pasted photo.");
+      });
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [picker, photoTarget]);
+
+  const closePicker = useCallback(() => setPicker(null), []);
+  const used: Record<string, string> = {};
+  draft.sides.forEach((side, index) => {
+    if (side.playerId) {
+      used[side.playerId] = index === 0 ? "Left" : "Right";
+    }
+  });
+  const seasons = everyTeamSeasons();
+  const mode = parseCompareStatsMode(draft.statsMode);
+  const nextStat = nextCompareStat(draft.stats);
+
+  return (
+    <div className="sc-composer">
+      <ComposerToolbar
+        title="Compare"
+        identity={
+          <>
+          <label className="sc-field sc-field--wide">
+          Title
+          <input
+            value={draft.title}
+            maxLength={36}
+            onChange={(event) =>
+              onComposerTextChange(
+                event,
+                (title) => setDraft((current) => ({ ...current, title })),
+                36,
+              )
+            }
+          />
+        </label>
+        <TitlePresetSelect
+          value={draft.title}
+          presets={COMPARE_TITLE_PRESETS}
+          onChange={(title) => setDraft((current) => ({ ...current, title }))}
+        />
+          </>
+        }
+        data={
+          <>
+        <div className="sc-look" role="group" aria-label="Left player">
+          <span className="sc-look__label">Left</span>
+          <button
+            type="button"
+            className="sc-chip"
+            aria-label={
+              draft.sides[0]?.playerId ? "Change left player" : "Pick left player"
+            }
+            onClick={() => openSidePicker(0)}
+          >
+            {draft.sides[0]?.playerId ? "Change" : "Pick player"}
+          </button>
+        </div>
+        <div className="sc-look" role="group" aria-label="Right player">
+          <span className="sc-look__label">Right</span>
+          <button
+            type="button"
+            className="sc-chip"
+            aria-label={
+              draft.sides[1]?.playerId
+                ? "Change right player"
+                : "Pick right player"
+            }
+            onClick={() => openSidePicker(1)}
+          >
+            {draft.sides[1]?.playerId ? "Change" : "Pick player"}
+          </button>
+        </div>
+        <button
+          type="button"
+          className="sc-chip"
+          onClick={() => void fillLastNight()}
+        >
+          Fill last night
+        </button>
+        <button
+          type="button"
+          className="sc-chip"
+          aria-label="Swap sides"
+          onClick={() => setDraft((current) => swapCompareSides(current))}
+        >
+          Swap sides
+        </button>
+        <div className="sc-look" role="group" aria-label="Stats source">
+          <span className="sc-look__label">Stats</span>
+          <button
+            type="button"
+            className={mode === "game" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "game"}
+            onClick={() => setStatsMode("game")}
+          >
+            Last game
+          </button>
+          <button
+            type="button"
+            className={mode === "season" ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={mode === "season"}
+            onClick={() => setStatsMode("season")}
+          >
+            Season avg
+          </button>
+          <button
+            type="button"
+            className={
+              mode === "last-5"
+                ? "sc-chip is-on sc-hud-full-only"
+                : "sc-chip sc-hud-full-only"
+            }
+            aria-pressed={mode === "last-5"}
+            onClick={() => setStatsMode("last-5")}
+          >
+            Last 5
+          </button>
+          <button
+            type="button"
+            className={
+              mode === "this-week"
+                ? "sc-chip is-on sc-hud-full-only"
+                : "sc-chip sc-hud-full-only"
+            }
+            aria-pressed={mode === "this-week"}
+            onClick={() => setStatsMode("this-week")}
+          >
+            This week
+          </button>
+        </div>
+        <ComposerStatsSampleToggle
+          sample={statsSample}
+          onChange={(nextSample) => {
+            setStatsSample(nextSample);
+            void fillStats(draft, undefined, undefined, nextSample);
+          }}
+        />
+        {mode === "game" ? (
+          <ComposerNightDate
+            date={night.date}
+            todayIso={night.todayIso}
+            yesterdayIso={night.yesterdayIso}
+            onChange={(iso) => {
+              night.setDate(iso);
+              const season = draft.season || everyTeamCurrentSeason();
+              const previousAuto = autoCompareStatsLabel(
+                "game",
+                season,
+                night.date,
+              );
+              const statsLabel =
+                !draft.statsLabel.trim() || draft.statsLabel === previousAuto
+                  ? autoCompareStatsLabel("game", season, iso)
+                  : draft.statsLabel;
+              const next = { ...draft, statsLabel };
+              setDraft(next);
+              void fillStats(next, undefined, undefined, statsSample, iso);
+            }}
+          />
+        ) : null}
+        <label className="sc-field sc-hud-full-only">
+          Season
+          <select
+            value={draft.season || everyTeamCurrentSeason()}
+            aria-label="Shared compare season"
+            disabled={!rostersReady || mode !== "season"}
+            onChange={(event) => setSharedSeason(event.target.value)}
+          >
+            {seasons.map((option) => (
+              <option key={option} value={option}>
+                {option}
+                {option === everyTeamCurrentSeason() ? " (current)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="sc-field sc-hud-full-only">
+          Left season
+          <select
+            value={draft.sideSeasons?.[0] ?? ""}
+            aria-label="Left player season"
+            disabled={!rostersReady || mode !== "season"}
+            onChange={(event) => setSideSeason(0, event.target.value)}
+          >
+            <option value="">Same</option>
+            {seasons.map((option) => (
+              <option key={`left-${option}`} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="sc-field sc-hud-full-only">
+          Right season
+          <select
+            value={draft.sideSeasons?.[1] ?? ""}
+            aria-label="Right player season"
+            disabled={!rostersReady || mode !== "season"}
+            onChange={(event) => setSideSeason(1, event.target.value)}
+          >
+            <option value="">Same</option>
+            {seasons.map((option) => (
+              <option key={`right-${option}`} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        {draft.stats.map((stat, index) => (
+          <div key={`cmp-key-${stat.key}-${index}`} className="sc-field sc-hud-full-only">
+            <span>Stat {index + 1}</span>
+            <div className="sc-stat-slot">
+              <select
+                value={stat.key}
+                aria-label={`Compare stat ${index + 1}`}
+                onChange={(event) => {
+                  const key = parseCompareStatKey(event.target.value);
+                  const next = {
+                    ...draft,
+                    stats: setCompareStatKey(draft.stats, index, key),
+                  };
+                  setDraft(next);
+                  void fillStats(next);
+                }}
+              >
+                {COMPARE_STAT_PRESETS.map((preset) => (
+                  <option key={preset.key} value={preset.key}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+              {draft.stats.length > 1 ? (
+                <button
+                  type="button"
+                  className="sc-chip sc-stat-slot__remove"
+                  aria-label={`Remove compare stat ${index + 1} ${stat.label}`}
+                  onClick={() => {
+                    const next = {
+                      ...draft,
+                      stats: removeCompareStat(draft.stats, index),
+                    };
+                    setDraft(next);
+                    void fillStats(next);
+                  }}
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="sc-chip sc-hud-full-only"
+          disabled={draft.stats.length >= COMPARE_STAT_MAX}
+          onClick={() => {
+            const next = { ...draft, stats: addCompareStat(draft.stats) };
+            setDraft(next);
+            void fillStats(next);
+          }}
+        >
+          {nextStat ? `Add ${nextStat.label}` : "10 stats"}
+        </button>
+          </>
+        }
+        board={
+          <>
+        <ComposerLookToggle look={look} onChange={setLook} />
+        <PurpleFlairToggle on={purpleFlair} onChange={setPurpleFlair} />
+        <PhotoGradeToggle on={photoGrade} onChange={setPhotoGrade} intensity={gradeIntensity} onIntensityChange={setGradeIntensity} />
+        <LetterGradeHud
+          on={draft.showLetterGrade === true}
+          grade={parseLetterGrade(draft.letterGrade)}
+          reason={draft.letterGradeReason ?? ""}
+          onToggle={(showLetterGrade) =>
+            setDraft((current) => ({
+              ...current,
+              showLetterGrade,
+              letterGrade: parseLetterGrade(
+                current.letterGrade ?? DEFAULT_LETTER_GRADE,
+              ),
+            }))
+          }
+          onGrade={(letterGrade) =>
+            setDraft((current) => ({ ...current, letterGrade }))
+          }
+          onReason={(letterGradeReason) =>
+            setDraft((current) => ({ ...current, letterGradeReason }))
+          }
+        />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Winner mark</span>
+          <button
+            type="button"
+            className={draft.showWinner ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={draft.showWinner === true}
+            aria-label="Winner mark"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                showWinner: !current.showWinner,
+              }))
+            }
+          >
+            {draft.showWinner ? "On" : "Off"}
+          </button>
+        </label>
+        <BaMarkToggle
+          on={draft.showBa !== false}
+          onChange={(showBa) => {
+            writeLastShowBa(showBa);
+            setDraft((current) => ({ ...current, showBa }));
+          }}
+        />
+        <WatermarkToggle
+          value={draft.watermark}
+          onChange={(watermark) =>
+            setDraft((current) => ({ ...current, watermark }))
+          }
+        />
+        <label className="sc-field">
+          <span className="sc-toolbar__eyebrow">Story crop</span>
+          <button
+            type="button"
+            className={storyCrop ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={storyCrop}
+            aria-label="Story crop check"
+            onClick={() => setStoryCrop((on) => !on)}
+          >
+            {storyCrop ? "On" : "Off"}
+          </button>
+        </label>
+          </>
+        }
+        persist={
+        <ComposerSaves
+          storageKey={SAVES_KEY}
+          board={draft}
+          onLoad={(next) => {
+            const loaded = normalizeCompareDraft(next);
+            setDraft(loaded);
+            setStatus("Loaded named graphic.");
+            void fillStats(loaded);
+          }}
+        />
+        }
+        actions={
+          <>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const previous = pop();
+              if (previous) {
+                setDraft(previous);
+                setStatus("Undid last change.");
+              }
+            }}
+            disabled={!canUndo}
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              push(draft);
+              setDraft(resetCompareKeepPhotos(draft));
+              setStatus("Reset — photos kept.");
+            }}
+          >
+            Reset keep photos
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+                if (!confirmBlankPost()) {
+                  return;
+                }
+              push(draft);
+              setDraft(defaultCompareDraft());
+              setStatus("Blank post.");
+            }}
+          >
+            Blank post
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() =>
+              void copyGraphicCaption(compareCaptionFor(draft)).then(
+                () => setStatus("Caption copied."),
+                () => setStatus("Could not copy caption."),
+              )
+            }
+          >
+            Copy caption
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-hud-full-only"
+            onClick={() =>
+              void handleExport(
+                exportFilenameFromTitle(draft.title, "compare", "", true),
+                true,
+              )
+            }
+            disabled={exporting}
+          >
+            Export 9:16
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost sc-btn--aside sc-hud-full-only"
+            onClick={() => void handleExport(undefined, false, true)}
+            disabled={exporting}
+            aria-label="Export 1:1"
+          >
+            Export 1:1
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              void (async () => {
+                setExporting(true);
+                try {
+                  const feed = exportFilenameFromTitle(draft.title, "compare");
+                  const input = { ...draft, look, purpleFlair, photoGrade };
+                  await downloadExportPack(
+                    () => renderCompareCanvas(input, 2),
+                    feed,
+                    [
+                      {
+                        filename: storyFilename(feed),
+                        render: () =>
+                          renderCompareCanvas({ ...input, story: true }, 2),
+                      },
+                    ],
+                    { letterbox: false },
+                  );
+                  setStatus("Pack download started (4:5 + 9:16).");
+                } catch (error) {
+                  console.error(error);
+                  setStatus("Could not export pack.");
+                } finally {
+                  setExporting(false);
+                }
+              })();
+            }}
+            disabled={exporting}
+          >
+            Export pack
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--primary"
+            onClick={() => void handleExport()}
+            disabled={exporting}
+          >
+            {exporting ? "Exporting…" : "Export PNG"}
+          </button>
+          </>
+        }
+      />
+      <main className="sc-stage">
+        <div className={storyCrop ? "sc-stage__frame is-story" : "sc-stage__frame"}>
+          <ComposerBoard
+            height={storyCrop ? STORY_DESIGN_HEIGHT : GRAPHIC_HEIGHT}
+          >
+            <CompareGraphic
+              ref={boardRef}
+              draft={draft}
+              look={look}
+              purpleFlair={purpleFlair}
+              photoGrade={photoGrade}
+              exporting={exporting}
+              story={storyCrop}
+              onTitleChange={(title) =>
+                setDraft((current) => ({ ...current, title }))
+              }
+              onSubtitleChange={(subtitle) =>
+                setDraft((current) => ({ ...current, subtitle }))
+              }
+              onStatsLabelChange={(statsLabel) =>
+                setDraft((current) => ({ ...current, statsLabel }))
+              }
+              onStatChange={(index, patch) =>
+                setDraft((current) => ({
+                  ...current,
+                  stats: patchCompareStat(current.stats, index, patch),
+                }))
+              }
+              onRemoveStat={(index) => {
+                const next = {
+                  ...draft,
+                  stats: removeCompareStat(draft.stats, index),
+                };
+                setDraft(next);
+                void fillStats(next);
+              }}
+              onMoveStat={(fromIndex, toIndex) => {
+                setDraft((current) => ({
+                  ...current,
+                  stats: moveCompareStat(current.stats, fromIndex, toIndex),
+                }));
+              }}
+              onActivate={setPhotoTarget}
+              onPick={openSidePicker}
+              onPan={(side, pan) =>
+                setDraft((current) => {
+                  const sides = [...current.sides] as CompareDraft["sides"];
+                  sides[side] = { ...current.sides[side]!, pan };
+                  return { ...current, sides };
+                })
+              }
+              onUpload={(side, dataUrl) =>
+                setDraft((current) => {
+                  const sides = [...current.sides] as CompareDraft["sides"];
+                  sides[side] = setComparePhoto(current.sides[side]!, dataUrl);
+                  return { ...current, sides };
+                })
+              }
+              onSwap={(from, to) => {
+                if (from === to) {
+                  return;
+                }
+                push(draft);
+                setDraft((current) => swapCompareSides(current));
+                setStatus("Swapped sides.");
+              }}
+              onLetterGradeChange={(letterGrade) =>
+                setDraft((current) => ({ ...current, letterGrade }))
+              }
+              onLetterGradeReasonChange={(letterGradeReason) =>
+                setDraft((current) => ({ ...current, letterGradeReason }))
+              }
+            />
+            <StoryCropGuide on={storyCrop} />
+          </ComposerBoard>
+          <p className="sc-hint">
+            Empty photos first — pick two players for this-season averages,
+            then upload action shots. Drag a photo on the preview to swap sides
+            (stats come with them). Number + label stack on each side; the
+            leader highlights. Toggle last-game or a per-side season. Downloads
+            a 4:5 Instagram PNG — nothing is posted.
+          </p>
+          {status ? <p className="sc-status">{status}</p> : null}
+        </div>
+      </main>
+      {picker != null ? (
+        <PlayerPicker
+          heading={picker === 0 ? "Pick left player" : "Pick right player"}
+          hint="Same or different people. Stats fill from this season’s averages unless you switch to last game."
+          currentId={draft.sides[picker]?.playerId}
+          usedLabels={used}
+          suggested={nightStandoutPickerRows(night.standouts)}
+          suggestedHeading={night.heading}
+          suggestedLoading={night.loading}
+          onJumpLastNight={
+            night.date === night.todayIso
+              ? () => night.setDate(night.yesterdayIso)
+              : undefined
+          }
+          onPick={handlePick}
+          onClear={() => {
+            push(draft);
+            const nextSides = [...draft.sides] as CompareDraft["sides"];
+            nextSides[picker] = clearCompareSide();
+            const next = {
+              ...draft,
+              sides: nextSides,
+              stats: applySideStatValues(
+                draft.stats,
+                picker,
+                draft.stats.map(() => ""),
+              ),
+            };
+            setDraft(next);
+            setPicker(null);
+          }}
+          onClose={closePicker}
+        />
+      ) : null}
+      {keepPrompt ? (
+        <KeepCustomPhotoDialog
+          playerName={keepPrompt.playerName}
+          onKeep={() => commitPick(keepPrompt.side, keepPrompt.playerId, true)}
+          onReplace={() =>
+            commitPick(keepPrompt.side, keepPrompt.playerId, false)
+          }
+          onClose={() => setKeepPrompt(null)}
+        />
+      ) : null}
+    </div>
+  );
+}

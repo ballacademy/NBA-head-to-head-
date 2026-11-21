@@ -35,6 +35,7 @@ import {
 } from "./lib/hubUnlockProgress";
 import {
   applyLandingDeepLinksFromSearch,
+  gameAppDocumentTitle,
   hubParamForFeature,
   loadLandingHubTab,
   parentTabForFeature,
@@ -516,6 +517,10 @@ function App() {
     }
     return tab;
   });
+  useLayoutEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    document.title = gameAppDocumentTitle(params.get("hub"), params.get("play"));
+  }, [landingHubTab, phase]);
   const [hubUnlockPrompt, setHubUnlockPrompt] =
     useState<HubTabLockPrompt | null>(null);
   const skipPopStateResetRef = useRef(false);

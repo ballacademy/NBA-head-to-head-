@@ -1,0 +1,210 @@
+.inj-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: calc(16 * var(--u)) calc(28 * var(--u)) calc(24 * var(--u));
+  box-sizing: border-box;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
+
+.inj-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.inj-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.inj-board.is-none {
+  box-shadow: none;
+}
+
+.inj-brand,
+.inj-kicker,
+.inj-date,
+.inj-title-input {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.inj-brand {
+  height: calc(36 * var(--u));
+  letter-spacing: 0.18em;
+  font-size: calc(22 * var(--u));
+}
+
+.inj-title-block {
+  position: relative;
+  min-height: calc(88 * var(--u));
+}
+
+.inj-title-line {
+  display: block;
+  font-size: calc(46 * var(--u));
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+}
+
+.inj-title-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  color: transparent;
+  caret-color: #fff;
+}
+
+.inj-kicker {
+  display: block;
+  margin: calc(4 * var(--u)) auto 0;
+  width: min(72%, calc(420 * var(--u)));
+  height: calc(36 * var(--u));
+  border-radius: calc(6 * var(--u));
+  background: #fff;
+  color: #111;
+  font-style: italic;
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.08em;
+}
+
+.inj-date {
+  height: calc(28 * var(--u));
+  margin-top: calc(8 * var(--u));
+  font-size: calc(16 * var(--u));
+  letter-spacing: 0.22em;
+  opacity: 0.88;
+}
+
+.inj-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: calc(12 * var(--u));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(var(--inj-rows, 6), minmax(0, 1fr));
+  align-content: stretch;
+  align-items: stretch;
+  gap: calc(8 * var(--u)) calc(20 * var(--u));
+  overflow: hidden;
+}
+
+.inj-team {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--u));
+  min-width: 0;
+  min-height: 0;
+}
+
+.inj-team__mark {
+  flex: 0 0 calc(var(--inj-logo, 56) * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(2 * var(--u));
+  font-size: calc(12 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.inj-team__logo {
+  position: relative;
+  width: calc(var(--inj-logo, 56) * var(--u));
+  height: calc(var(--inj-logo, 56) * var(--u));
+  flex: 0 0 calc(var(--inj-logo, 56) * var(--u));
+}
+
+.inj-team__logo canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.inj-team__rows {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(6 * var(--u));
+}
+
+.inj-row {
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  min-width: 0;
+}
+
+.inj-pip {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+  min-width: calc(72 * var(--u));
+  padding: 0 calc(8 * var(--u));
+  height: calc(var(--inj-pip, 22) * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: var(--pip-fill, #fff);
+  color: var(--pip-ink, #111);
+  font-family: var(--ig-poster);
+  font-size: calc(var(--inj-pip-size, 12) * var(--u));
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inj-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--ig-poster);
+  font-size: calc(var(--inj-name, 18) * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.inj-empty {
+  grid-column: 1 / -1;
+  margin: auto;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}
+
+.inj-board.is-exporting .inj-brand:focus,
+.inj-board.is-exporting .inj-kicker:focus,
+.inj-board.is-exporting .inj-date:focus {
+  outline: none;
+}

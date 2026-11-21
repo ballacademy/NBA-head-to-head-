@@ -45,6 +45,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
+    setupFiles: ["src/lib/durableJson.testSetup.ts"],
     include: [
       "src/**/*.test.ts",
       "functions/__tests__/**/*.test.ts",

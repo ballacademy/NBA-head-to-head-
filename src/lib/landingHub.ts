@@ -278,6 +278,25 @@ export const parseLandingPlayWithH2h = (
   return { section: null, h2hMode: null };
 };
 
+/** Tab title for `?hub=play` / Daily Draft / Draft Day GM (not Standings graphic). */
+export const gameAppDocumentTitle = (
+  hub: string | null | undefined,
+  play: string | null | undefined,
+): string => {
+  const token = normalizeQueryToken(hub ?? "");
+  if (token === "ddgm" || token === "draft" || token === "game") {
+    return "Draft Day GM";
+  }
+  const { section } = parseLandingPlayWithH2h(play);
+  if (section === "daily") {
+    return "Daily Draft";
+  }
+  if (token === "play" || section) {
+    return "Play";
+  }
+  return "Draft Day GM";
+};
+
 /** 6-character private room codes (no 0/O/1/I). */
 export const parsePrivateRoomParam = (
   value: string | null | undefined,
