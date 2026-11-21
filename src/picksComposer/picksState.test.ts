@@ -32,6 +32,7 @@ import {
   parseEspnEventInjuries,
   parseEspnLastCompletedEventId,
   parseEspnProjectedStarters,
+  findPicksLineup,
   projectPicksFiveFromRotation,
   parseEspnCompleted,
   parseEspnEventOddsAwayLine,
@@ -331,6 +332,27 @@ describe("picks composer", () => {
       "Aaron Wiggins",
     ]);
     expect(projected.some((row) => row.name === "Kingston Flemings")).toBe(false);
+    expect(
+      findPicksLineup(
+        [
+          {
+            eventId: "1",
+            awayId: "CHA",
+            homeId: "ATL",
+            awayStarters: [{ name: "A", athleteId: "a" }],
+            homeStarters: [{ name: "B", athleteId: "b" }],
+          },
+          {
+            eventId: "2",
+            awayId: "IND",
+            homeId: "CLE",
+            awayStarters: [],
+            homeStarters: [],
+          },
+        ],
+        { eventId: "1", awayId: "CHA", homeId: "ATL" },
+      )?.awayStarters.map((row) => row.name),
+    ).toEqual(["A"]);
   });
 
   it("reads a real ESPN spread as the away line and never invents a number", () => {

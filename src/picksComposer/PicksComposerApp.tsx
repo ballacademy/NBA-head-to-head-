@@ -54,6 +54,7 @@ import {
   fetchMissingPicksLines,
   fetchPicksNightLineups,
   fetchPicksSlate,
+  findPicksLineup,
   formatPicksDailyRecordLine,
   formatPicksGraphicRecord,
   picksCaptionLines,
@@ -79,6 +80,7 @@ import {
   upsertPicksLedger,
   type PicksAtsTally,
   type PicksDraft,
+  type PicksGame,
   type PicksLedger,
   type PicksNightLineupGame,
   type PicksSide,
@@ -115,7 +117,7 @@ export function PicksComposerApp() {
   const [picker, setPicker] = useState<{ gameId: string; side: PicksSide } | null>(
     null,
   );
-  const [lineupsOpen, setLineupsOpen] = useState(false);
+  const [lineupsOpenId, setLineupsOpenId] = useState<string | null>(null);
   const [lineups, setLineups] = useState<PicksNightLineupGame[]>([]);
   const [lineupsLoading, setLineupsLoading] = useState(false);
   const night = useComposerNight();
@@ -185,7 +187,10 @@ export function PicksComposerApp() {
     void gradeOpenSlates(next, draftRef.current.date);
   }, [hydrated]);
 
-  const loadLineups = async (refreshNight = false) => {
+  const loadLineups = async (
+    refreshNight = false,
+    focus?: PicksGame,
+  ) => {
     setLineupsLoading(true);
     try {
       let games = draftRef.current.games.filter(
@@ -198,20 +203,39 @@ export function PicksComposerApp() {
           games = incoming;
         }
       }
+      if (focus?.awayId && focus?.homeId) {
+        games = games.filter(
+          (game) =>
+            game.eventId === focus.eventId &&
+            game.awayId === focus.awayId &&
+            game.homeId === focus.homeId,
+        );
+        if (!games.length) {
+          games = [focus];
+        }
+      }
       const next = await fetchPicksNightLineups(games);
-      setLineups(next);
+      setLineups((current) => {
+        if (!focus) {
+          return next;
+        }
+        const merged = current.filter((row) => !findPicksLineup(next, row));
+        return [...merged, ...next];
+      });
       const message = picksLineupStatusMessage(next);
       if (message) {
         setStatus(message);
         showComposerToast(message);
       } else {
-        setStatus("Loaded ESPN starting lineups.");
+        setStatus("Loaded ESPN projected lineups.");
       }
     } catch (error) {
       console.error(error);
-      setLineups([]);
-      setStatus("Could not load ESPN starting lineups.");
-      showComposerToast("Could not load ESPN starting lineups.");
+      if (!focus) {
+        setLineups([]);
+      }
+      setStatus("Could not load ESPN projected lineups.");
+      showComposerToast("Could not load ESPN projected lineups.");
     } finally {
       setLineupsLoading(false);
     }
@@ -423,23 +447,6 @@ export function PicksComposerApp() {
               disabled={filling}
             >
               {filling ? "Loading…" : "Fill"}
-            </button>
-            <button
-              type="button"
-              className={lineupsOpen ? "sc-chip is-on" : "sc-chip"}
-              aria-label="Projected lineups"
-              aria-pressed={lineupsOpen}
-              onClick={() => {
-                setLineupsOpen((open) => {
-                  const next = !open;
-                  if (next) {
-                    void loadLineups(true);
-                  }
-                  return next;
-                });
-              }}
-            >
-              Lineups
             </button>
             {hudRecord.wins || hudRecord.losses || hudRecord.pushes ? null : (
               <p className="sc-hint pk-hud-ats__hint sc-hud-full-only">
@@ -854,19 +861,27 @@ export function PicksComposerApp() {
                   games: current.games.filter((game) => game.id !== gameId),
                 }));
               }}
-              lineupsOpen={lineupsOpen}
+              lineupsOpenId={lineupsOpenId}
               lineups={lineups}
               lineupsLoading={lineupsLoading}
-              onToggleLineups={() => {
-                setLineupsOpen((open) => {
-                  const next = !open;
+              onToggleLineups={(gameId) => {
+                setLineupsOpenId((current) => {
+                  const next = current === gameId ? null : gameId;
                   if (next) {
-                    void loadLineups(true);
+                    const game = draftRef.current.games.find((row) => row.id === next);
+                    if (game) {
+                      void loadLineups(false, game);
+                    }
                   }
                   return next;
                 });
               }}
-              onRefreshLineups={() => void loadLineups(true)}
+              onRefreshLineups={(gameId) => {
+                const game = draftRef.current.games.find((row) => row.id === gameId);
+                if (game) {
+                  void loadLineups(true, game);
+                }
+              }}
               onRefillGame={(gameId) => {
                 if (slateRef.current.length) {
                   push(draft);

@@ -1893,11 +1893,19 @@ export const fetchPicksDepthCharts = async (
   return fetchPicksDepthChartsDirect(ids);
 };
 
-const lineupGameKey = (game: {
+export const picksLineupKey = (game: {
   eventId: string;
   awayId: string;
   homeId: string;
 }) => `${game.eventId}|${game.awayId}|${game.homeId}`;
+
+export const findPicksLineup = (
+  lineups: PicksNightLineupGame[],
+  game: { eventId: string; awayId: string; homeId: string },
+) => {
+  const key = picksLineupKey(game);
+  return lineups.find((row) => picksLineupKey(row) === key) ?? null;
+};
 
 const projectedFiveForTeam = (
   teamId: string,
@@ -1970,7 +1978,7 @@ export const fetchPicksNightLineups = async (
   const seen = new Set<string>();
   const next: PicksNightLineupGame[] = [];
   for (const game of rows) {
-    const key = lineupGameKey(game);
+    const key = picksLineupKey(game);
     if (seen.has(key)) {
       continue;
     }

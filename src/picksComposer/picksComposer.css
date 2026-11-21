@@ -763,42 +763,54 @@
   text-transform: none;
 }
 
-/* projected-lineups-visible e2aef90 */
+.pk-board:has(.pk-row.is-lineup) {
+  overflow: visible;
+}
+
+.pk-list:has(.pk-row.is-lineup) {
+  overflow: visible;
+  z-index: 8;
+}
+
+.pk-row.is-lineup {
+  overflow: visible;
+  z-index: 8;
+}
+
 .pk-lineup-info,
 .pk-lineup-info--visible {
   position: absolute;
-  top: calc((var(--pk-header-h, 154) - 18) * var(--u));
-  left: 50%;
-  z-index: 12;
-  transform: translate(calc(168 * var(--u)), -50%);
+  top: 50%;
+  left: auto;
+  right: calc(6 * var(--u));
+  z-index: 4;
+  transform: translateY(-50%);
   pointer-events: auto;
 }
 
 .pk-lineup-info__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(8 * var(--u));
-  width: auto;
-  height: calc(72 * var(--u));
-  padding: 0 calc(18 * var(--u));
-  border: calc(4 * var(--u)) solid #fff;
-  border-radius: calc(36 * var(--u));
+  display: grid;
+  place-items: center;
+  width: calc(36 * var(--u));
+  height: calc(36 * var(--u));
+  padding: 0;
+  border: calc(2 * var(--u)) solid #fff;
+  border-radius: 50%;
   background: #e8b923;
   color: #111;
   font-family: var(--ig-poster);
-  font-size: calc(18 * var(--u));
+  font-size: calc(20 * var(--u));
   font-weight: 900;
-  font-style: normal;
+  font-style: italic;
   line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: 0 calc(4 * var(--u)) calc(12 * var(--u)) rgba(0, 0, 0, 0.55);
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: 0 calc(2 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.45);
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .pk-lineup-info__i {
-  font-size: calc(32 * var(--u));
+  font-size: calc(20 * var(--u));
   font-style: italic;
   letter-spacing: 0;
   text-transform: none;
@@ -812,19 +824,20 @@
 
 .pk-lineup-panel {
   position: absolute;
-  top: calc(56 * var(--u));
-  left: calc(-220 * var(--u));
+  top: calc(40 * var(--u));
+  right: 0;
+  left: auto;
   z-index: 13;
   box-sizing: border-box;
-  width: calc(520 * var(--u));
-  max-width: calc(100vw - 40px);
-  max-height: calc(920 * var(--u));
+  width: calc(420 * var(--u));
+  max-width: min(420px, calc(100vw - 40px));
+  max-height: calc(320 * var(--u));
   overflow: auto;
-  padding: calc(12 * var(--u));
+  padding: calc(10 * var(--u));
   border: calc(2 * var(--u)) solid rgba(255, 255, 255, 0.18);
-  border-radius: calc(10 * var(--u));
+  border-radius: calc(8 * var(--u));
   background: rgba(14, 15, 18, 0.96);
-  box-shadow: 0 calc(10 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.45);
+  box-shadow: 0 calc(8 * var(--u)) calc(20 * var(--u)) rgba(0, 0, 0, 0.5);
 }
 
 .pk-lineup-panel__bar {

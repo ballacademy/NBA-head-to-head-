@@ -46,6 +46,7 @@ import {
   sortPicksGames,
   splitPicksTitle,
   visiblePicksGames,
+  findPicksLineup,
   type PicksAtsResult,
   type PicksDraft,
   type PicksGame,
@@ -77,11 +78,11 @@ interface PicksGraphicProps {
   onCycleGrade: (gameId: string) => void;
   onNotesChange: (gameId: string, notes: string) => void;
   onCycleConfidence: (gameId: string) => void;
-  lineupsOpen?: boolean;
+  lineupsOpenId?: string | null;
   lineups?: PicksNightLineupGame[];
   lineupsLoading?: boolean;
-  onToggleLineups?: () => void;
-  onRefreshLineups?: () => void;
+  onToggleLineups?: (gameId: string) => void;
+  onRefreshLineups?: (gameId: string) => void;
 }
 
 export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
@@ -106,7 +107,7 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
       onCycleGrade,
       onNotesChange,
       onCycleConfidence,
-      lineupsOpen = false,
+      lineupsOpenId = null,
       lineups = [],
       lineupsLoading = false,
       onToggleLineups,
@@ -270,6 +271,19 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
                 onCycleGrade={onCycleGrade}
                 onNotesChange={onNotesChange}
                 onCycleConfidence={onCycleConfidence}
+                lineup={exporting ? null : findPicksLineup(lineups, game)}
+                lineupOpen={!exporting && lineupsOpenId === game.id}
+                lineupLoading={lineupsLoading}
+                onToggleLineup={
+                  exporting || !game.awayId || !game.homeId
+                    ? undefined
+                    : () => onToggleLineups?.(game.id)
+                }
+                onRefreshLineup={
+                  exporting || !game.awayId || !game.homeId
+                    ? undefined
+                    : () => onRefreshLineups?.(game.id)
+                }
               />
             ))
           ) : (
@@ -292,15 +306,6 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
             </div>
           </div>
         ) : null}
-        {exporting ? null : (
-          <PicksLineupOverlay
-            open={lineupsOpen}
-            lineups={lineups}
-            loading={lineupsLoading}
-            onToggle={onToggleLineups}
-            onRefresh={onRefreshLineups}
-          />
-        )}
       </article>
     );
   },
@@ -324,6 +329,11 @@ function PicksRow({
   onCycleGrade,
   onNotesChange,
   onCycleConfidence,
+  lineup,
+  lineupOpen,
+  lineupLoading,
+  onToggleLineup,
+  onRefreshLineup,
 }: {
   game: PicksGame;
   mode: PicksResultMode;
@@ -342,6 +352,11 @@ function PicksRow({
   onCycleGrade: (gameId: string) => void;
   onNotesChange: (gameId: string, notes: string) => void;
   onCycleConfidence: (gameId: string) => void;
+  lineup?: PicksNightLineupGame | null;
+  lineupOpen?: boolean;
+  lineupLoading?: boolean;
+  onToggleLineup?: () => void;
+  onRefreshLineup?: () => void;
 }) {
   const awayColor = getTeamColors(game.awayId).primary;
   const homeColor = getTeamColors(game.homeId).primary;
@@ -356,6 +371,7 @@ function PicksRow({
         game.pick === "away" ? "is-away-pick" : "",
         game.pick === "home" ? "is-home-pick" : "",
         game.locked ? "is-lock" : "",
+        lineupOpen ? "is-lineup" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -461,6 +477,16 @@ function PicksRow({
           ×
         </button>
       </div>
+      {onToggleLineup ? (
+        <PicksRowLineup
+          game={game}
+          lineup={lineup ?? null}
+          open={lineupOpen === true}
+          loading={lineupLoading === true}
+          onToggle={onToggleLineup}
+          onRefresh={onRefreshLineup}
+        />
+      ) : null}
     </div>
   );
 }
@@ -732,17 +758,19 @@ function starterList(starters: PicksStarter[]) {
   );
 }
 
-function PicksLineupOverlay({
+function PicksRowLineup({
+  game,
+  lineup,
   open,
-  lineups,
   loading,
   onToggle,
   onRefresh,
 }: {
+  game: PicksGame;
+  lineup: PicksNightLineupGame | null;
   open: boolean;
-  lineups: PicksNightLineupGame[];
   loading: boolean;
-  onToggle?: () => void;
+  onToggle: () => void;
   onRefresh?: () => void;
 }) {
   return (
@@ -750,28 +778,29 @@ function PicksLineupOverlay({
       <button
         type="button"
         className={open ? "pk-lineup-info__btn is-on" : "pk-lineup-info__btn"}
-        aria-label="Projected lineups"
+        aria-label={`Projected lineups for ${game.awayId} at ${game.homeId}`}
         aria-expanded={open}
         title="Projected lineups"
         onClick={(event) => {
           event.stopPropagation();
-          onToggle?.();
+          onToggle();
         }}
       >
         <span className="pk-lineup-info__i" aria-hidden="true">
           i
         </span>
-        LINEUPS
       </button>
       {open ? (
         <div
           className="pk-lineup-panel"
           role="dialog"
-          aria-label="Projected lineups"
+          aria-label={`Projected lineups for ${game.awayId} at ${game.homeId}`}
           onClick={(event) => event.stopPropagation()}
         >
           <div className="pk-lineup-panel__bar">
-            <p className="pk-lineup-panel__title">Projected lineups</p>
+            <p className="pk-lineup-panel__title">
+              {game.awayId} @ {game.homeId}
+            </p>
             <button
               type="button"
               className="pk-lineup-panel__refresh"
@@ -790,39 +819,33 @@ function PicksLineupOverlay({
               aria-label="Close projected lineups"
               onClick={(event) => {
                 event.stopPropagation();
-                onToggle?.();
+                onToggle();
               }}
             >
               ×
             </button>
           </div>
           <div className="pk-lineup-panel__list">
-            {loading && !lineups.length ? (
+            {loading && !lineup ? (
               <p className="pk-lineup-empty">Loading ESPN projected lineups…</p>
             ) : null}
-            {!loading && !lineups.length ? (
-              <p className="pk-lineup-empty">No games on that night yet.</p>
+            {!loading && !lineup ? (
+              <p className="pk-lineup-empty">No projected lineup yet</p>
             ) : null}
-            {lineups.map((game) => (
-              <section
-                key={`${game.eventId}-${game.awayId}-${game.homeId}`}
-                className="pk-lineup-game"
-              >
-                <h3 className="pk-lineup-game__matchup">
-                  {game.awayId} @ {game.homeId}
-                </h3>
+            {lineup ? (
+              <section className="pk-lineup-game">
                 <div className="pk-lineup-game__teams">
                   <div>
                     <p className="pk-lineup-team">{picksShortName(game.awayId)}</p>
-                    {starterList(game.awayStarters)}
+                    {starterList(lineup.awayStarters)}
                   </div>
                   <div>
                     <p className="pk-lineup-team">{picksShortName(game.homeId)}</p>
-                    {starterList(game.homeStarters)}
+                    {starterList(lineup.homeStarters)}
                   </div>
                 </div>
               </section>
-            ))}
+            ) : null}
           </div>
         </div>
       ) : null}
