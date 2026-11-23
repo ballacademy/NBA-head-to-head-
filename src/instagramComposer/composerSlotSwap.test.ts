@@ -7,7 +7,10 @@ import {
   swapItems,
 } from "./composerSlotSwap";
 import { swapStrips, createEmptyStrips } from "../teamOfTheWeekComposer/teamOfTheWeekState";
-import { PLUS_STARTER_COUNT } from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
+import {
+  PLUS_STARTER_COUNT,
+  plusSlotsCanSwap,
+} from "../teamOfTheWeekPlusComposer/teamOfTheWeekPlusState";
 import {
   DEFAULT_POSITION_LABELS,
   swapRankedLineup,
@@ -61,7 +64,7 @@ describe("composer slot swap", () => {
     expect(swapped[1]?.playerId).toBeNull();
   });
 
-  it("swaps TOTW Plus across starter and standout rows", () => {
+  it("can still move TOTW Plus photos between rows in data, but UI swap stays in-row", () => {
     const slots = [
       ...createEmptyStrips(),
       ...createEmptyStrips(),
@@ -84,6 +87,9 @@ describe("composer slot swap", () => {
     expect(swapped[standout]?.lastName).toBe("Tatum");
     expect(swapped[0]?.photoSrc).toBe("barnes.png");
     expect(swapped[standout]?.teamId).toBe("BOS");
+    expect(plusSlotsCanSwap(0, 2)).toBe(true);
+    expect(plusSlotsCanSwap(standout, standout + 1)).toBe(true);
+    expect(plusSlotsCanSwap(0, standout)).toBe(false);
   });
 
   it("swaps ranked strips with their position labels", () => {

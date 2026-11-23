@@ -82,6 +82,7 @@ import {
   isTotwPlusDraft,
   patchStrip,
   plusBoardEmpty,
+  plusSlotsCanSwap,
   selectPlusStarters,
   setStripPhoto,
   slotLabel,
@@ -845,6 +846,9 @@ export function TeamOfTheWeekPlusComposerApp() {
               setSlots((current) => patchStrip(current, index, names))
             }
             onSwap={(from, to) => {
+              if (!plusSlotsCanSwap(from, to)) {
+                return;
+              }
               push(slots);
               setSlots((current) => swapStrips(current, from, to));
               setStatus("Swapped player slots.");
@@ -861,7 +865,7 @@ export function TeamOfTheWeekPlusComposerApp() {
             Standouts (bottom row only) are rotation/role players who beat
             their usual line — not two-way/camp 10-point weeks. Packed PG → C
             the same way; a big cannot sit in slot 1.             Drag a
-            player on the preview to swap slots across either row, or Change player
+            player left or right on the preview to swap slots in that row, or Change player
             to put anyone in a strip — a center can sit in PG. Empty photo until you
             paste. Stats sheet (Copy stats / CSV / Export PNG) dumps the filled
             TOTW five and Standouts five as separate tables — GP, PTS, REB,

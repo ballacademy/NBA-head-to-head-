@@ -81,8 +81,9 @@ export const composerSlotClass = (
 export function useComposerSlotSwap(options: {
   enabled: boolean;
   onSwap?: (from: number, to: number) => void;
+  canSwap?: (from: number, to: number) => boolean;
 }) {
-  const { enabled, onSwap } = options;
+  const { enabled, onSwap, canSwap } = options;
   const dragRef = useRef<{
     from: number;
     x: number;
@@ -91,6 +92,8 @@ export function useComposerSlotSwap(options: {
   } | null>(null);
   const onSwapRef = useRef(onSwap);
   onSwapRef.current = onSwap;
+  const canSwapRef = useRef(canSwap);
+  canSwapRef.current = canSwap;
   const listenersRef = useRef<(() => void) | null>(null);
   const skipClickRef = useRef(false);
   const [draggingFrom, setDraggingFrom] = useState<number | null>(null);
@@ -137,7 +140,11 @@ export function useComposerSlotSwap(options: {
       if (drag.moved) {
         moveEvent.preventDefault();
         const over = composerSlotFromPoint(moveEvent.clientX, moveEvent.clientY);
-        setDropIndex(over != null && over !== drag.from ? over : null);
+        const allowed =
+          over != null &&
+          over !== drag.from &&
+          (canSwapRef.current?.(drag.from, over) ?? true);
+        setDropIndex(allowed ? over : null);
       }
     };
 
@@ -156,7 +163,12 @@ export function useComposerSlotSwap(options: {
       }, 0);
       const to = composerSlotFromPoint(endEvent.clientX, endEvent.clientY);
       const swap = onSwapRef.current;
-      if (swap && to != null && to !== drag.from) {
+      if (
+        swap &&
+        to != null &&
+        to !== drag.from &&
+        (canSwapRef.current?.(drag.from, to) ?? true)
+      ) {
         swap(drag.from, to);
       }
     };

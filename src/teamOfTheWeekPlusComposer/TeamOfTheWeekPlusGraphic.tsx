@@ -35,6 +35,7 @@ import {
   PLUS_ZOOM_STEP,
 } from "./teamOfTheWeekPlusLayout";
 import {
+  plusSlotsCanSwap,
   slotLabel,
   standoutSlots,
   starterSlots,
@@ -80,6 +81,7 @@ const PortraitCell = ({
   draggingFrom,
   dropIndex,
   slotSwapEnabled,
+  canSlotSwap,
   onPick,
   onHover,
   onPan,
@@ -95,6 +97,7 @@ const PortraitCell = ({
   draggingFrom: number | null;
   dropIndex: number | null;
   slotSwapEnabled: boolean;
+  canSlotSwap?: (from: number, to: number) => boolean;
   onPick: (index: number) => void;
   onHover?: (index: number) => void;
   onPan: (index: number, pan: PhotoPan) => void;
@@ -129,6 +132,7 @@ const PortraitCell = ({
         empty={empty}
         zoomStep={PLUS_ZOOM_STEP}
         slotSwapEnabled={slotSwapEnabled}
+        canSlotSwap={canSlotSwap}
         onActivate={() => onHover?.(index)}
         onPan={(pan) => onPan(index, pan)}
         onUpload={(dataUrl) => onUpload(index, dataUrl)}
@@ -195,6 +199,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
   const slotSwap = useComposerSlotSwap({
     enabled: !exporting,
     onSwap,
+    canSwap: plusSlotsCanSwap,
   });
   const slotSwapEnabled = !exporting && Boolean(onSwap);
 
@@ -316,6 +321,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             draggingFrom={slotSwap.draggingFrom}
             dropIndex={slotSwap.dropIndex}
             slotSwapEnabled={slotSwapEnabled}
+            canSlotSwap={plusSlotsCanSwap}
             onPick={onPick}
             onHover={onHover}
             onPan={onPan}
@@ -364,6 +370,7 @@ export const TeamOfTheWeekPlusGraphic = forwardRef<
             draggingFrom={slotSwap.draggingFrom}
             dropIndex={slotSwap.dropIndex}
             slotSwapEnabled={slotSwapEnabled}
+            canSlotSwap={plusSlotsCanSwap}
             onPick={onPick}
             onHover={onHover}
             onPan={onPan}

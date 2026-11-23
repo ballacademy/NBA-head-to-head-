@@ -121,6 +121,10 @@ export const slotLabel = (index: number) =>
     ? `Starter ${index + 1}`
     : `Standout ${index - PLUS_STARTER_COUNT + 1}`;
 
+/** Starters and standouts are separate rows — photo pan must not swap across them. */
+export const plusSlotsCanSwap = (from: number, to: number) =>
+  (from < PLUS_STARTER_COUNT) === (to < PLUS_STARTER_COUNT);
+
 export const defaultTotwPlusDraft = (): TotwPlusDraft => ({
   brand: DEFAULT_BRAND,
   week: defaultWeekLabel(),

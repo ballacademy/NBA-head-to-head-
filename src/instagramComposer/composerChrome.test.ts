@@ -1433,12 +1433,17 @@ describe("composer chrome", () => {
     expect(totwApp).toContain("swapStrips");
     expect(totwPlusGraphic).toContain("data-composer-slot");
     expect(totwPlusGraphic).toContain("onSwapStart={slotSwap.startDrag}");
+    expect(totwPlusGraphic).toContain("canSwap: plusSlotsCanSwap");
+    expect(totwPlusGraphic).toContain("canSlotSwap={plusSlotsCanSwap}");
     expect(totwPlusApp).toContain("swapStrips");
+    expect(totwPlusApp).toContain("plusSlotsCanSwap");
+    expect(totwPlusApp).not.toContain("across either row");
     expect(rankedGraphic).toContain("data-composer-slot");
     expect(rankedGraphic).toContain("useComposerSlotSwap");
     expect(rankedState).toContain("swapRankedLineup");
     expect(rankedApp).toContain("swapRankedLineup");
     expect(photoFrame).toContain("slotSwapEnabled");
+    expect(photoFrame).toContain("canSlotSwap");
     expect(coverGraphic).toContain("data-composer-slot");
     expect(coverGraphic).toContain("onHover?.(index)");
     expect(pyramidGraphic).toContain("data-composer-slot");

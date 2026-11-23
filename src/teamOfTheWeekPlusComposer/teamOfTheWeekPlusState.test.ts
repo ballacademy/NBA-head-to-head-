@@ -64,6 +64,7 @@ import {
   PLUS_SLOT_COUNT,
   PLUS_STANDOUT_COUNT,
   PLUS_STARTER_COUNT,
+  plusSlotsCanSwap,
   patchStrip,
   selectPlusStandouts,
   selectPlusStarters,
@@ -87,6 +88,10 @@ describe("team of the week plus", () => {
     expect(PLUS_STARTER_COUNT).toBe(5);
     expect(PLUS_STANDOUT_COUNT).toBe(5);
     expect(PLUS_SLOT_COUNT).toBe(10);
+    expect(plusSlotsCanSwap(0, 4)).toBe(true);
+    expect(plusSlotsCanSwap(5, 9)).toBe(true);
+    expect(plusSlotsCanSwap(0, 5)).toBe(false);
+    expect(plusSlotsCanSwap(4, 9)).toBe(false);
     const metrics = plusBoardMetrics();
     expect(metrics.starterH / metrics.photoStackH).toBeCloseTo(
       PLUS_STARTER_SHARE,

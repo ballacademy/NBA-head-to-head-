@@ -42,6 +42,8 @@ interface PhotoFrameProps {
   onUploadMany?: (dataUrls: string[]) => void;
   onPick: () => void;
   slotSwapEnabled?: boolean;
+  /** When set, only those slot pairs steal the photo pan for a swap. */
+  canSlotSwap?: (from: number, to: number) => boolean;
   /** Fires on click/pointer-down, empty or filled — paste uses this slot. */
   onActivate?: () => void;
 }
@@ -119,6 +121,7 @@ export function PhotoFrame({
   onUploadMany,
   onPick,
   slotSwapEnabled = false,
+  canSlotSwap,
   onActivate,
 }: PhotoFrameProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -356,7 +359,8 @@ export function PhotoFrame({
             over != null &&
             Number.isInteger(home) &&
             over !== home &&
-            traveled > COMPOSER_SLOT_SWAP_THRESHOLD
+            traveled > COMPOSER_SLOT_SWAP_THRESHOLD &&
+            (canSlotSwap?.(home, over) ?? true)
           ) {
             if (!swapMode.current) {
               swapMode.current = true;
