@@ -253,7 +253,7 @@ describe("picks composer", () => {
           homeStarters: [],
         },
       ]),
-    ).toBe("No ESPN projected lineup yet for MEM.");
+    ).toBe("No ESPN projected lineup yet for GSW @ MEM.");
     expect(
       picksLineupStatusMessage([
         {
@@ -264,7 +264,7 @@ describe("picks composer", () => {
           homeStarters: [],
         },
       ]),
-    ).toBe("No ESPN projected lineups for that night yet.");
+    ).toBe("No ESPN projected lineup yet for ATL @ CHA.");
   });
 
   it("projects from the prior game’s named rotation and skips the current boxscore", () => {

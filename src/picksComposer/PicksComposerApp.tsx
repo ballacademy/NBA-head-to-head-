@@ -438,16 +438,10 @@ export function PicksComposerApp() {
                 night.setDate(iso);
                 void fillSlate(iso);
               }}
+              onFill={() => void fillSlate(draft.date)}
+              fillLabel="Fill"
+              filling={filling}
             />
-            <button
-              type="button"
-              className="sc-chip"
-              aria-label="Fill tonight’s slate"
-              onClick={() => void fillSlate(draft.date)}
-              disabled={filling}
-            >
-              {filling ? "Loading…" : "Fill"}
-            </button>
             {hudRecord.wins || hudRecord.losses || hudRecord.pushes ? null : (
               <p className="sc-hint pk-hud-ats__hint sc-hud-full-only">
                 0-0-0 until a lock is graded — Fill tonight doesn’t write this.
@@ -702,7 +696,7 @@ export function PicksComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               onClick={() => {
                 void (async () => {
                   setExporting(true);

@@ -715,7 +715,7 @@ export function StatCardComposerApp() {
           </div>
         <button
           type="button"
-          className="sc-chip"
+          className="sc-chip sc-hud-fill"
           onClick={() => void fillLastNight()}
         >
           Fill last night
@@ -984,7 +984,7 @@ export function StatCardComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-btn--pack"
             onClick={() => {
               void (async () => {
                 setExporting(true);

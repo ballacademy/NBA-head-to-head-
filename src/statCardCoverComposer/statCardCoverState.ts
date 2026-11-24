@@ -314,6 +314,28 @@ export const landCarriedCoverPlayer = (
   };
 };
 
+export const landCarriedCoverPlayers = (
+  draft: StatCardCoverDraft,
+  playerIds: string[],
+): StatCardCoverDraft => {
+  let next = draft;
+  for (const id of playerIds) {
+    const index = next.slots.findIndex((slot) => !slot.playerId);
+    if (index < 0) {
+      break;
+    }
+    const player = getPlayer(id);
+    if (!player || next.slots.some((slot) => slot.playerId === id)) {
+      continue;
+    }
+    next = {
+      ...next,
+      slots: setCoverSlotPlayer(next.slots, index, player),
+    };
+  }
+  return next;
+};
+
 export const swapCoverSlots = (
   slots: CoverSlot[],
   from: number,

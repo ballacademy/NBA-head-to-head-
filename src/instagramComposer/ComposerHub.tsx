@@ -216,7 +216,7 @@ export function ComposerHub() {
       className={[
         "sc-root",
         photoEdit ? "is-photo-edit" : "",
-        hudMode === "simple" ? "is-hud-simple" : "",
+        hudMode === "simple" ? "is-hud-simple" : "is-hud-full",
         focusMode ? "is-hud-focus" : "",
         composerPreviewAllowsPageScroll(previewZoom, previewZoomBump)
           ? "is-preview-zoomed"

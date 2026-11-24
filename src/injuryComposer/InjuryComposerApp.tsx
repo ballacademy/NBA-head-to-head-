@@ -25,6 +25,7 @@ import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { nbaTodayIso } from "../playerOfTheDayComposer/lastGame";
+import { fetchScheduleRange } from "../scheduleComposer/scheduleState";
 import { InjuryGraphic } from "./InjuryGraphic";
 import { exportInjuryPng } from "./exportInjuryPng";
 import { renderInjuryCanvas } from "./renderInjuryCanvas";
@@ -34,11 +35,14 @@ import {
   injuryDateLine,
   injuryFillStatus,
   injuryKickerForTeams,
+  injuryPageCount,
+  injuryPageTeams,
   isInjuryDraft,
   normalizeInjuryDraft,
-  selectInjuryPost,
+  rankInjuryTeams,
   setInjuryPlayerStatus,
   type InjuryDraft,
+  type InjuryTeamBlock,
 } from "./injuryState";
 import "@fontsource/montserrat/latin-900.css";
 import "./injuryComposer.css";
@@ -66,6 +70,8 @@ export function InjuryComposerApp() {
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const { push, pop, canUndo } = useComposerUndo<InjuryDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
+  const [allTeams, setAllTeams] = useState<InjuryTeamBlock[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
 
   useEffect(() => {
     document.title = "Injury report graphic";
@@ -79,20 +85,40 @@ export function InjuryComposerApp() {
     }
   }, [draft, hydrated]);
 
-  const fillReport = async () => {
+  const applyInjuryTeams = (ranked: InjuryTeamBlock[], page = 0) => {
+    const teams = injuryPageTeams(ranked, page);
+    setAllTeams(ranked);
+    setPageIndex(page);
+    setDraft((current) => ({
+      ...current,
+      teams,
+      kicker: injuryKickerForTeams(teams),
+      dateLine: current.dateLine || injuryDateLine(nbaTodayIso()),
+    }));
+    const pages = injuryPageCount(ranked);
+    setStatus(
+      pages > 1
+        ? `${injuryFillStatus(ranked)} Page ${page + 1} of ${pages}.`
+        : injuryFillStatus(ranked),
+    );
+  };
+
+  const fillReport = async (league = false) => {
     setFilling(true);
     setStatus("Loading injury report…");
     try {
       const players = await fetchNbaInjuries();
-      const teams = selectInjuryPost(players, true);
+      let teamIds: string[] | undefined;
+      if (!league) {
+        const iso = nbaTodayIso();
+        const games = await fetchScheduleRange({ from: iso, to: iso });
+        teamIds = [
+          ...new Set(games.flatMap((game) => [game.homeId, game.awayId])),
+        ];
+      }
+      const ranked = rankInjuryTeams(players, true, teamIds);
       push(draft);
-      setDraft((current) => ({
-        ...current,
-        teams,
-        kicker: injuryKickerForTeams(teams),
-        dateLine: current.dateLine || injuryDateLine(nbaTodayIso()),
-      }));
-      setStatus(injuryFillStatus(teams));
+      applyInjuryTeams(ranked, 0);
     } finally {
       setFilling(false);
     }
@@ -155,6 +181,7 @@ export function InjuryComposerApp() {
         }
         data={
           <>
+            <div className="sc-hud-fill" role="group" aria-label="Fill injury report">
             <button
               type="button"
               className="sc-chip"
@@ -163,6 +190,35 @@ export function InjuryComposerApp() {
             >
               {filling ? "Loading…" : "Fill report"}
             </button>
+            <button
+              type="button"
+              className="sc-chip sc-hud-full-only"
+              onClick={() => void fillReport(true)}
+              disabled={filling}
+            >
+              Fill league
+            </button>
+            {injuryPageCount(allTeams) > 1 ? (
+              <div className="sc-look" role="group" aria-label="Injury pages">
+                <span className="sc-look__label">Page</span>
+                {Array.from(
+                  { length: injuryPageCount(allTeams) },
+                  (_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className={pageIndex === index ? "sc-chip is-on" : "sc-chip"}
+                      aria-pressed={pageIndex === index}
+                      aria-label={`Page ${index + 1}`}
+                      onClick={() => applyInjuryTeams(allTeams, index)}
+                    >
+                      {index + 1}
+                    </button>
+                  ),
+                )}
+              </div>
+            ) : null}
+            </div>
           </>
         }
         board={
@@ -266,15 +322,34 @@ export function InjuryComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               onClick={() => {
                 void (async () => {
                   setExporting(true);
                   try {
+                    const pages = injuryPageCount(allTeams);
                     await downloadExportPack(
                       () =>
                         renderInjuryCanvas({ ...draft, look, purpleFlair }, 2),
                       exportFilenameFromTitle(draft.title, "injury-report"),
+                      pages > 1
+                        ? Array.from({ length: pages }, (_, index) => ({
+                            filename: exportFilenameFromTitle(
+                              `${draft.title} p${index + 1}`,
+                              "injury-report",
+                            ),
+                            render: () =>
+                              renderInjuryCanvas(
+                                {
+                                  ...draft,
+                                  teams: injuryPageTeams(allTeams, index),
+                                  look,
+                                  purpleFlair,
+                                },
+                                2,
+                              ),
+                          }))
+                        : [],
                     );
                     setStatus("Pack download started (4:5 + 9:16).");
                   } finally {

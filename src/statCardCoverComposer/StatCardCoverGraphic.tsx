@@ -68,6 +68,7 @@ interface StatCardCoverGraphicProps {
     names: { firstName?: string; lastName?: string },
   ) => void;
   onSwap?: (from: number, to: number) => void;
+  onSwipe?: () => void;
 }
 
 export const StatCardCoverGraphic = forwardRef<
@@ -89,6 +90,7 @@ export const StatCardCoverGraphic = forwardRef<
     onUpload,
     onNameChange,
     onSwap,
+    onSwipe,
   },
   ref,
 ) {
@@ -275,10 +277,22 @@ export const StatCardCoverGraphic = forwardRef<
           }
         />
       </header>
-      <div className="scc-swipe" aria-hidden="true">
-        <span className="scc-swipe__label">Swipe</span>
-        <span className="scc-swipe__chev" />
-      </div>
+      {exporting || !onSwipe ? (
+        <div className="scc-swipe" aria-hidden="true">
+          <span className="scc-swipe__label">Swipe</span>
+          <span className="scc-swipe__chev" />
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="scc-swipe"
+          aria-label="Open Stat cards"
+          onClick={onSwipe}
+        >
+          <span className="scc-swipe__label">Swipe</span>
+          <span className="scc-swipe__chev" />
+        </button>
+      )}
       {draft.showBa !== false ? (
         <img
           className="composer-ba"

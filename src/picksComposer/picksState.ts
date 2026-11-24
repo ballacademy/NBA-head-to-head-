@@ -1920,11 +1920,12 @@ const projectedFiveForTeam = (
   if (fromDepth.length >= 5) {
     return fromDepth;
   }
-  const fromPrior = projectPicksFiveFromRotation(
-    parseEspnBoxscoreRotation(previousSummary, teamId),
-    eventInjuries,
-  );
-  return fromPrior.length ? fromPrior : fromDepth;
+  const rotation = parseEspnBoxscoreRotation(previousSummary, teamId);
+  if (!rotation.length) {
+    return fromDepth;
+  }
+  const fromPrior = projectPicksFiveFromRotation(rotation, eventInjuries);
+  return fromPrior.length >= 5 ? fromPrior : fromDepth;
 };
 
 /** Scoreboard matchups, then ESPN projected fives (injuries applied). */
@@ -2019,6 +2020,20 @@ export const fetchPicksNightLineups = async (
 export const picksLineupStatusMessage = (lineups: PicksNightLineupGame[]) => {
   if (!lineups.length) {
     return "No games on that night yet.";
+  }
+  if (lineups.length === 1) {
+    const game = lineups[0]!;
+    if (!game.awayStarters.length && !game.homeStarters.length) {
+      return `No ESPN projected lineup yet for ${game.awayId} @ ${game.homeId}.`;
+    }
+    const missing = [
+      !game.awayStarters.length ? game.awayId : "",
+      !game.homeStarters.length ? game.homeId : "",
+    ].filter(Boolean);
+    if (!missing.length) {
+      return null;
+    }
+    return `No ESPN projected lineup yet for ${game.awayId} @ ${game.homeId}.`;
   }
   const missing = lineups.flatMap((game) => {
     const names: string[] = [];

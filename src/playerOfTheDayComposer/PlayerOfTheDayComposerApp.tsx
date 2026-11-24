@@ -66,7 +66,7 @@ import {
   fillPotdFromStandouts,
   hasCustomPhoto,
   isEmptyPotdTitle,
-  landCarriedPotdPlayer,
+  landCarriedPotdPlayers,
   leaderboardTotalForName,
   clearCard,
   defaultPotdDraft,
@@ -84,8 +84,8 @@ import {
   type PotdDraft,
 } from "./playerOfTheDayState";
 import {
-  carriedPlayerId,
-  rememberComposerPlayer,
+  carriedPlayerIds,
+  rememberComposerPlayers,
 } from "../instagramComposer/composerCarry";
 import { subscribeLeaderboard } from "../potdLeaderboardComposer/potdLeaderboardState";
 
@@ -106,7 +106,7 @@ const loadDraft = (): PotdDraft => {
   if (isPotdDraft(stored)) {
     return {
       ...stored,
-      cards: landCarriedPotdPlayer(stored.cards, carriedPlayerId()),
+      cards: landCarriedPotdPlayers(stored.cards, carriedPlayerIds()),
     };
   }
   const empty = defaultPotdDraft();
@@ -114,7 +114,7 @@ const loadDraft = (): PotdDraft => {
     brand: stored?.brand?.trim() ? stored.brand : empty.brand,
     title: stored?.title?.trim() ? stored.title : empty.title,
     date: stored?.date?.trim() ? stored.date : empty.date,
-    cards: landCarriedPotdPlayer(empty.cards, carriedPlayerId()),
+    cards: landCarriedPotdPlayers(empty.cards, carriedPlayerIds()),
     showBa: stored?.showBa === true,
     wlColor: stored?.wlColor === true,
   };
@@ -366,7 +366,10 @@ export function PlayerOfTheDayComposerApp() {
     if (!player) {
       return;
     }
-    rememberComposerPlayer(playerId);
+    rememberComposerPlayers([
+      ...cards.map((card) => card.playerId),
+      playerId,
+    ]);
     push(cards);
     setCards((current) => {
       const next = applyPlayerPick(current, index, player, game, total, keepCustomPhoto);
@@ -660,7 +663,7 @@ export function PlayerOfTheDayComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-btn--pack"
             onClick={() => {
               void (async () => {
                 setExporting(true);

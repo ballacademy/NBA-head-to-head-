@@ -29,17 +29,20 @@ import {
 import { TitlePresetSelect } from "../instagramComposer/TitlePresetSelect";
 import { onComposerTextChange } from "../instagramComposer/titleLayout";
 import { useComposerUndo } from "../instagramComposer/useComposerUndo";
+import { nbaTodayIso } from "../playerOfTheDayComposer/lastGame";
 import { readJson, writeJson } from "../lib/browserStorage";
 import { ScheduleGraphic } from "./ScheduleGraphic";
 import { exportSchedulePng } from "./exportSchedulePng";
 import { renderScheduleCanvas } from "./renderScheduleCanvas";
 import {
-  capScheduleGames,
   defaultScheduleDraft,
   fetchScheduleRange,
   isScheduleDraft,
   normalizeScheduleDraft,
+  schedulePageCount,
+  schedulePageGames,
   type ScheduleDraft,
+  type ScheduleGame,
 } from "./scheduleState";
 import "@fontsource/montserrat/latin-900.css";
 import "./scheduleComposer.css";
@@ -67,6 +70,8 @@ export function ScheduleComposerApp() {
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
   const { push, pop, canUndo } = useComposerUndo<ScheduleDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
+  const [allGames, setAllGames] = useState<ScheduleGame[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
 
   useEffect(() => {
     document.title = "Schedule poster";
@@ -91,34 +96,52 @@ export function ScheduleComposerApp() {
     }));
   };
 
+  const applyScheduleGames = (
+    fetched: ScheduleGame[],
+    from: string,
+    to: string,
+    page = 0,
+  ) => {
+    const games = schedulePageGames(fetched, page);
+    const shownFrom = games[0]?.date || from;
+    const shownTo = games[games.length - 1]?.date || to;
+    setAllGames(fetched);
+    setPageIndex(page);
+    setDraft((current) => ({
+      ...current,
+      from,
+      to,
+      weekLine: isAutoWeekLine(current.weekLine, current.from, current.to)
+        ? rangeWeekLine(shownFrom, shownTo)
+        : current.weekLine,
+      games,
+    }));
+    const pages = schedulePageCount(fetched);
+    setStatus(
+      fetched.length
+        ? pages > 1
+          ? `Showing ${games.length} of ${fetched.length} games · page ${page + 1} of ${pages}.`
+          : `Loaded ${fetched.length} games.`
+        : "No games in that range.",
+    );
+  };
+
   const fillRange = async (from = draft.from, to = draft.to) => {
     setFilling(true);
     setStatus("Loading schedule…");
     try {
       const fetched = await fetchScheduleRange({ from, to });
-      const games = capScheduleGames(fetched);
-      const shownFrom = games[0]?.date || from;
-      const shownTo = games[games.length - 1]?.date || to;
       push(draft);
-      setDraft((current) => ({
-        ...current,
-        from,
-        to,
-        weekLine: isAutoWeekLine(current.weekLine, current.from, current.to)
-          ? rangeWeekLine(shownFrom, shownTo)
-          : current.weekLine,
-        games,
-      }));
-      setStatus(
-        games.length
-          ? fetched.length > games.length
-            ? `Showing ${games.length} of ${fetched.length} games.`
-            : `Loaded ${games.length} games.`
-          : "No games in that range.",
-      );
+      applyScheduleGames(fetched, from, to, 0);
     } finally {
       setFilling(false);
     }
+  };
+
+  const fillTonight = () => {
+    const iso = nbaTodayIso();
+    applyRange(iso, iso);
+    void fillRange(iso, iso);
   };
 
   const handleExport = async (story = false, square = false) => {
@@ -180,7 +203,7 @@ export function ScheduleComposerApp() {
           <>
             <button
               type="button"
-              className="sc-chip"
+              className="sc-chip sc-hud-full-only"
               aria-label="Next 7 days"
               onClick={() => {
                 const range = nextNDaysRange(7);
@@ -197,8 +220,35 @@ export function ScheduleComposerApp() {
               fillLabel="Fill schedule"
               simpleSet="night"
               onChange={(range) => applyRange(range.from, range.to)}
-              onFill={() => void fillRange()}
+              onFill={fillTonight}
             />
+            {schedulePageCount(allGames) > 1 ? (
+              <div className="sc-look" role="group" aria-label="Schedule pages">
+                <span className="sc-look__label">Page</span>
+                {Array.from(
+                  { length: schedulePageCount(allGames) },
+                  (_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className={pageIndex === index ? "sc-chip is-on" : "sc-chip"}
+                      aria-pressed={pageIndex === index}
+                      aria-label={`Page ${index + 1}`}
+                      onClick={() =>
+                        applyScheduleGames(
+                          allGames,
+                          draft.from,
+                          draft.to,
+                          index,
+                        )
+                      }
+                    >
+                      {index + 1}
+                    </button>
+                  ),
+                )}
+              </div>
+            ) : null}
           </>
         }
         board={
@@ -301,15 +351,34 @@ export function ScheduleComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               onClick={() => {
                 void (async () => {
                   setExporting(true);
                   try {
+                    const pages = schedulePageCount(allGames);
                     await downloadExportPack(
                       () =>
                         renderScheduleCanvas({ ...draft, look, purpleFlair }, 2),
                       exportFilenameFromTitle(draft.title, "schedule"),
+                      pages > 1
+                        ? Array.from({ length: pages }, (_, index) => ({
+                            filename: exportFilenameFromTitle(
+                              `${draft.title} p${index + 1}`,
+                              "schedule",
+                            ),
+                            render: () =>
+                              renderScheduleCanvas(
+                                {
+                                  ...draft,
+                                  games: schedulePageGames(allGames, index),
+                                  look,
+                                  purpleFlair,
+                                },
+                                2,
+                              ),
+                          }))
+                        : [],
                     );
                     setStatus("Pack download started (4:5 + 9:16).");
                   } finally {

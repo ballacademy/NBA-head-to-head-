@@ -703,7 +703,7 @@ export function TeamOfTheWeekPlusComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-btn--pack"
             onClick={() => {
               void (async () => {
                 setExporting(true);

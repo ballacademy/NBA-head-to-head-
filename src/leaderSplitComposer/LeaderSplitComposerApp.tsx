@@ -470,7 +470,7 @@ export function LeaderSplitComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               disabled={exporting}
               onClick={() => {
                 void (async () => {

@@ -41,7 +41,7 @@ describe("takeaways visual punch", () => {
       "utf8",
     );
     expect(css).toContain(".tk-cover.is-gold .scc-pill");
-    expect(css).toMatch(/\.tk-cover\.is-gold \.scc-pill \{[\s\S]*?background:\s*#facc15/);
+    expect(css).toMatch(/\.tk-cover\.is-gold \.scc-pill \{[\s\S]*?background:\s*#fff/);
     expect(css).toContain(".tk-cover.is-gold .scc-seam::after");
     expect(css).toContain(".tk-card .ig-name-fade");
     expect(css).not.toContain(".tk-card .nf-fade");

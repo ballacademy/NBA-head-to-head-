@@ -776,7 +776,7 @@ export function EveryTeamComposerApp() {
           yesterdayIso={night.yesterdayIso}
           onChange={night.setDate}
         />
-        <div className="sc-look sc-look--sort" role="group" aria-label="Fill last night">
+        <div className="sc-look sc-look--sort sc-hud-fill" role="group" aria-label="Fill last night">
           <span className="sc-look__label">Last night</span>
           <select
             value={nightMetric}
@@ -1172,22 +1172,18 @@ export function EveryTeamComposerApp() {
             );
             setSlots(assigned.slots);
             setPartners(assigned.partners);
-            if (samePosition) {
-              const nextIndex = nextEmptyEveryTeamSlot(
-                assigned.slots,
-                activeIndex,
-                ranked,
-                rankedOrder,
-              );
-              setActiveIndex(nextIndex);
-              setStatus(
-                nextIndex == null
-                  ? `Picked ${player?.name ?? "player"}. Board filled.`
-                  : `Picked ${player?.name ?? "player"}. Next: ${teamAtSlot(nextIndex, ranked, rankedOrder)?.name}.`,
-              );
-            } else {
-              setActiveIndex(null);
-            }
+            const nextIndex = nextEmptyEveryTeamSlot(
+              assigned.slots,
+              activeIndex,
+              ranked,
+              rankedOrder,
+            );
+            setActiveIndex(nextIndex);
+            setStatus(
+              nextIndex == null
+                ? `Picked ${player?.name ?? "player"}. Board filled.`
+                : `Picked ${player?.name ?? "player"}. Next: ${teamAtSlot(nextIndex, ranked, rankedOrder)?.name}.`,
+            );
           }}
           onClear={() => {
             push(snapshot());

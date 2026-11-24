@@ -452,7 +452,7 @@ export function HeadlineComposerApp() {
           />
           <button
             type="button"
-            className="sc-chip"
+            className="sc-chip sc-hud-fill"
             onClick={() => {
               night.setDate(night.yesterdayIso);
               void fillAutoBody(draft, night.yesterdayIso);
@@ -830,7 +830,7 @@ export function HeadlineComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-btn--pack"
             onClick={() => {
               void (async () => {
                 setExporting(true);

@@ -308,7 +308,7 @@ describe("composer chrome", () => {
 
   it("keeps Simple HUD composer tabs and 9:16 / 1:1, and adds last-night Fill", () => {
     expect(sheet).toMatch(
-      /\.sc-root\.is-hud-simple \.sc-toolbar__row--actions \.sc-hud-full-only \{\s*display:\s*inline-block/,
+      /\.sc-root\.is-hud-simple \.sc-toolbar__row--actions \.sc-hud-full-only \{\s*display:\s*none/,
     );
     const tabsSource = readFileSync(
       join(root, "instagramComposer/ComposerTabs.tsx"),
@@ -958,7 +958,7 @@ describe("composer chrome", () => {
     );
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-hud-full-only");
     expect(sheet).toMatch(
-      /\.sc-root\.is-hud-simple \.sc-toolbar__row--actions \.sc-hud-full-only \{\s*display:\s*inline-block/,
+      /\.sc-root\.is-hud-simple \.sc-toolbar__row--actions \.sc-hud-full-only \{\s*display:\s*none/,
     );
     const standingsHud = readFileSync(
       join(root, "standingsComposer/StandingsComposerApp.tsx"),
@@ -1760,7 +1760,8 @@ describe("composer chrome", () => {
     expect(coverApp).toContain("useStatCoverDateRange");
     expect(coverApp).toContain("Cover + cards");
     expect(coverApp).toContain("story: true");
-    expect(coverApp).toContain("hasCustomPhoto(slot)");
+    expect(coverApp).toContain("hasCustomPhoto(current)");
+    expect(coverApp).not.toContain("skippedHeadshots");
     expect(statCardApp).toContain("useStatCoverDateRange");
     expect(statCardApp).toContain("ComposerHudExtras");
     expect(coverApp).toContain("pickerOpen");
@@ -1940,15 +1941,15 @@ describe("composer chrome", () => {
       "utf8",
     );
     expect(compareState).toContain("player.headshotUrl || null");
-    expect(sheet).toContain("max-height: 22vh");
+    expect(sheet).not.toContain("max-height: 22vh");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-field--stamp");
     expect(sheet).toContain("text-overflow: ellipsis");
     const picksGraphic = readFileSync(
       join(root, "picksComposer/PicksGraphic.tsx"),
       "utf8",
     );
-    expect(picksGraphic).toContain('atsRecord.trim() || "0-0-0"');
-    expect(picksGraphic).toContain("const showRecord = true");
+    expect(picksGraphic).toContain('recordLine !== "0-0-0"');
+    expect(picksGraphic).toContain("const showRecord = Boolean(recordLine)");
     const potdApp = readFileSync(
       join(root, "playerOfTheDayComposer/PlayerOfTheDayComposerApp.tsx"),
       "utf8",
@@ -2311,7 +2312,9 @@ describe("composer chrome", () => {
       join(root, "mockTradeComposer/mockTradeNews.ts"),
       "utf8",
     );
-    expect(sheet).toContain("max-height: 22vh");
+    expect(sheet).not.toContain("max-height: 22vh");
+    expect(sheet).toContain(".sc-hud-fill");
+    expect(sheet).toContain(".sc-tabs__more");
     expect(sheet).toContain(".sc-root.is-hud-simple .sc-stage");
     expect(sheet).toContain("contents boxes ignore `order`");
     expect(sheet).toContain("overflow-wrap: anywhere");

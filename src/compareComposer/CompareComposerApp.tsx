@@ -54,7 +54,7 @@ import {
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
-  carriedPlayerId,
+  carriedPlayerIds,
   rememberComposerPlayer,
 } from "../instagramComposer/composerCarry";
 import { CompareGraphic } from "./CompareGraphic";
@@ -82,7 +82,7 @@ import {
   hasCustomPhoto,
   isCompareDraft,
   isSeasonAverageStatsLabel,
-  landCarriedComparePlayer,
+  landCarriedComparePlayers,
   moveCompareStat,
   normalizeCompareDraft,
   parseCompareStatKey,
@@ -110,7 +110,7 @@ const loadDraft = (): CompareDraft => {
   const base = isCompareDraft(stored)
     ? normalizeCompareDraft(stored)
     : defaultCompareDraft();
-  return landCarriedComparePlayer(base, carriedPlayerId());
+  return landCarriedComparePlayers(base, carriedPlayerIds());
 };
 
 export function CompareComposerApp() {
@@ -264,7 +264,8 @@ export function CompareComposerApp() {
     nextSides[side] = fillCompareSide(player, draft.sides[side]!, keep);
     const next = { ...draft, sides: nextSides };
     setDraft(next);
-    setPicker(null);
+    const other: 0 | 1 = side === 0 ? 1 : 0;
+    setPicker(next.sides[other]?.playerId ? null : other);
     setKeepPrompt(null);
     setStatus(
       keep
@@ -526,13 +527,32 @@ export function CompareComposerApp() {
             {draft.sides[1]?.playerId ? "Change" : "Pick player"}
           </button>
         </div>
-        <button
-          type="button"
-          className="sc-chip"
-          onClick={() => void fillLastNight()}
-        >
-          Fill last night
-        </button>
+        <ComposerNightDate
+          date={night.date}
+          todayIso={night.todayIso}
+          yesterdayIso={night.yesterdayIso}
+          onChange={(iso) => {
+            night.setDate(iso);
+            if (mode !== "game") {
+              return;
+            }
+            const season = draft.season || everyTeamCurrentSeason();
+            const previousAuto = autoCompareStatsLabel(
+              "game",
+              season,
+              night.date,
+            );
+            const statsLabel =
+              !draft.statsLabel.trim() || draft.statsLabel === previousAuto
+                ? autoCompareStatsLabel("game", season, iso)
+                : draft.statsLabel;
+            const next = { ...draft, statsLabel };
+            setDraft(next);
+            void fillStats(next, undefined, undefined, statsSample, iso);
+          }}
+          onFill={() => void fillLastNight()}
+          fillLabel="Fill last night"
+        />
         <button
           type="button"
           className="sc-chip"
@@ -591,29 +611,6 @@ export function CompareComposerApp() {
             void fillStats(draft, undefined, undefined, nextSample);
           }}
         />
-        {mode === "game" ? (
-          <ComposerNightDate
-            date={night.date}
-            todayIso={night.todayIso}
-            yesterdayIso={night.yesterdayIso}
-            onChange={(iso) => {
-              night.setDate(iso);
-              const season = draft.season || everyTeamCurrentSeason();
-              const previousAuto = autoCompareStatsLabel(
-                "game",
-                season,
-                night.date,
-              );
-              const statsLabel =
-                !draft.statsLabel.trim() || draft.statsLabel === previousAuto
-                  ? autoCompareStatsLabel("game", season, iso)
-                  : draft.statsLabel;
-              const next = { ...draft, statsLabel };
-              setDraft(next);
-              void fillStats(next, undefined, undefined, statsSample, iso);
-            }}
-          />
-        ) : null}
         <label className="sc-field sc-hud-full-only">
           Season
           <select
@@ -877,7 +874,7 @@ export function CompareComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-btn--pack"
             onClick={() => {
               void (async () => {
                 setExporting(true);

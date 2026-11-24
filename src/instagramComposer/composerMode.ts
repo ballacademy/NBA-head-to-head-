@@ -680,3 +680,15 @@ export const composerHref = (mode: ComposerMode) => {
   }
   return "/";
 };
+
+/** Cover swipe / Fill names hop — same history path as the chip row. */
+export const hopComposerMode = (mode: ComposerMode) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const href = composerHref(mode);
+  if (`${window.location.pathname}${window.location.search}` !== href) {
+    window.history.pushState({}, "", href);
+  }
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};

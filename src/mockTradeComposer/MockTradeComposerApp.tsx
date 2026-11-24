@@ -188,15 +188,30 @@ export function MockTradeComposerApp() {
       return;
     }
     push(draft);
-    setDraft((board) =>
-      patchMockTradeSide(board, side, {
-        ...board.sides[side]!,
-        players: board.sides[side]!.players.map((slot, index) =>
-          index === player ? fillMockTradePlayer(person, slot, keep) : slot,
-        ),
-      }),
+    const next = patchMockTradeSide(draft, side, {
+      ...draft.sides[side]!,
+      players: draft.sides[side]!.players.map((slot, index) =>
+        index === player ? fillMockTradePlayer(person, slot, keep) : slot,
+      ),
+    });
+    setDraft(next);
+    const seats = next.sides.flatMap((row, sideIndex) =>
+      row.players.map((slot, playerIndex) => ({
+        side: sideIndex,
+        player: playerIndex,
+        empty: !slot.playerId,
+      })),
     );
-    setPicker(null);
+    const nextSeat =
+      seats.find(
+        (seat) =>
+          seat.empty && (seat.side === side && seat.player > player),
+      ) ??
+      seats.find((seat) => seat.empty && seat.side === side) ??
+      seats.find((seat) => seat.empty);
+    setPicker(
+      nextSeat ? { side: nextSeat.side, player: nextSeat.player } : null,
+    );
     setKeepPrompt(null);
     setStatus(
       keep
@@ -382,7 +397,7 @@ export function MockTradeComposerApp() {
             {draft.sides.map((_, index) => teamSelect(index))}
             <button
               type="button"
-              className="sc-chip"
+              className="sc-chip sc-hud-fill"
               onClick={() => void fillLastNight()}
             >
               Fill last night
@@ -838,7 +853,7 @@ export function MockTradeComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               onClick={() => {
                 void (async () => {
                   setExporting(true);

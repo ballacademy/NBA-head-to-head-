@@ -54,6 +54,10 @@ describe("extras 17–32 HUD helpers", () => {
     expect(jumpComposerMode("takeaway cards", tabs)).toBe("takeaways-card");
     expect(jumpComposerMode("bars", tabs)).toBe("leader-bars");
     expect(jumpComposerMode("leaders", tabs)).toBe("leader-split");
+    expect(jumpComposerMode("cover", tabs)).toBe("stat-card-cover");
+    expect(jumpComposerMode("lb", tabs)).toBe("potd-leaderboard");
+    expect(jumpComposerMode("leaderboard", tabs)).toBe("potd-leaderboard");
+    expect(jumpComposerMode("cards", tabs)).toBe("takeaways-card");
     expect(jumpComposerMode("poster", tabs)).toBe("poster-news");
     expect(jumpComposerMode("dual", tabs)).toBe("dual-ranks");
   });

@@ -14,8 +14,8 @@ import { PurpleFlairToggle } from "../instagramComposer/PurpleFlairToggle";
 import { StoryCropGuide } from "../instagramComposer/StoryCropGuide";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
 import {
-  carriedPlayerId,
-  rememberComposerPlayer,
+  carriedPlayerIds,
+  rememberComposerPlayers,
 } from "../instagramComposer/composerCarry";
 import {
   THIS_WEEK_FALLBACK_STATUS,
@@ -64,7 +64,7 @@ import {
   fillTakeawaysNames,
   hasCustomTakeawaysPhoto,
   isTakeawaysDraft,
-  landCarriedTakeawaysPlayer,
+  landCarriedTakeawaysPlayers,
   normalizeTakeawaysDraft,
   patchTakeawaysCard,
   setTakeawaysCardCount,
@@ -114,7 +114,7 @@ export function TakeawaysCardComposerApp() {
   useEffect(() => {
     document.title = "NBA takeaways cards";
     void hydrateJsonStorage().then(() => {
-      setDraft(landCarriedTakeawaysPlayer(loadDraft(), carriedPlayerId()));
+      setDraft(landCarriedTakeawaysPlayers(loadDraft(), carriedPlayerIds()));
       setHydrated(true);
     });
   }, []);
@@ -139,7 +139,10 @@ export function TakeawaysCardComposerApp() {
     if (!player) {
       return;
     }
-    rememberComposerPlayer(playerId);
+    rememberComposerPlayers([
+      ...draft.cards.map((card) => card.playerId),
+      playerId,
+    ]);
     setDraft((current) => ({
       ...current,
       cards: setTakeawaysCardPlayer(current.cards, index, player, keepPhoto),
@@ -179,11 +182,9 @@ export function TakeawaysCardComposerApp() {
               ? THIS_WEEK_FALLBACK_STATUS
               : filled
                 ? `Filled ${filled} names — add takeaways yourself.`
-                : "No TOTW names for that week yet — pick players.";
+                : "No standouts in that range — pick players.";
           setStatus(statusText);
-          if (result.fellBack && filled) {
-            showComposerToast(statusText);
-          }
+          showComposerToast(statusText);
           return next;
         });
       })
@@ -493,7 +494,7 @@ export function TakeawaysCardComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               disabled={exporting}
               onClick={() => {
                 void (async () => {

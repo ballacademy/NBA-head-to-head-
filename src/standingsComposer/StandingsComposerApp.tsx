@@ -28,6 +28,7 @@ import {
   COMPOSER_TITLE_MAX_LENGTH,
   onComposerTextChange,
 } from "../instagramComposer/titleLayout";
+import { nextEmptySlotIndex } from "../instagramComposer/nextEmptySlot";
 import { readJson, writeJson } from "../lib/browserStorage";
 import {
   fetchAllStandingRecords,
@@ -361,6 +362,7 @@ export function StandingsComposerApp() {
         }
         data={
           <>
+          <div className="sc-hud-fill" role="group" aria-label="Fill standings">
           <button
             type="button"
             className="sc-chip"
@@ -377,6 +379,7 @@ export function StandingsComposerApp() {
           >
             Fill West
           </button>
+          </div>
           <label className="sc-field sc-hud-full-only">
             <span className="sc-toolbar__eyebrow">Last week East</span>
             <button
@@ -668,8 +671,11 @@ export function StandingsComposerApp() {
           usedLabels={pickerLabels}
           onPick={(teamId) => {
             push(slots);
-            setSlots((current) => assignTeam(current, activeIndex, teamId));
-            setActiveIndex(null);
+            const next = assignTeam(slots, activeIndex, teamId);
+            setSlots(next);
+            setActiveIndex(
+              nextEmptySlotIndex(next, activeIndex, (id) => !id),
+            );
           }}
           onClear={() => {
             push(slots);

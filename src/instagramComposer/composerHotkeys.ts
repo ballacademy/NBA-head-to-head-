@@ -110,10 +110,14 @@ export const runComposerHotkey = (
     return clickNamed(root, ["Undo"]);
   }
   if (action === "ratio-9-16") {
-    return clickNamed(root, ["Export 9:16"]);
+    return (
+      clickNamed(root, ["Export 9:16"]) || clickNamed(root, ["Export pack"])
+    );
   }
   if (action === "ratio-1-1") {
-    return clickNamed(root, ["Export 1:1"]);
+    return (
+      clickNamed(root, ["Export 1:1"]) || clickNamed(root, ["Export pack"])
+    );
   }
   return false;
 };

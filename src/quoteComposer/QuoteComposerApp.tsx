@@ -325,7 +325,7 @@ export function QuoteComposerApp() {
           ) : null}
           <button
             type="button"
-            className="sc-chip"
+            className="sc-chip sc-hud-fill"
             onClick={() => void fillLastNight()}
           >
             Fill last night
@@ -483,7 +483,7 @@ export function QuoteComposerApp() {
           </button>
           <button
             type="button"
-            className="sc-btn sc-btn--ghost"
+            className="sc-btn sc-btn--ghost sc-btn--pack"
             onClick={() => {
               void (async () => {
                 setExporting(true);

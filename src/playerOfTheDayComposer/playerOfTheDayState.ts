@@ -446,6 +446,12 @@ export const landCarriedPotdPlayer = (
   return applyPlayerPick(cards, index, player, null);
 };
 
+export const landCarriedPotdPlayers = (
+  cards: PotdCard[],
+  playerIds: string[],
+): PotdCard[] =>
+  playerIds.reduce((next, id) => landCarriedPotdPlayer(next, id), cards);
+
 export const clearCard = (cards: PotdCard[], index: number): PotdCard[] => {
   if (index < 0 || index >= cards.length) {
     return cards;

@@ -586,6 +586,34 @@ export const landCarriedComparePlayer = (
   };
 };
 
+export const landCarriedComparePlayers = (
+  draft: CompareDraft,
+  playerIds: string[],
+): CompareDraft => {
+  let next = draft;
+  for (const id of playerIds) {
+    const emptyIndex = next.sides.findIndex((side) => !side.playerId);
+    if (emptyIndex !== 0 && emptyIndex !== 1) {
+      break;
+    }
+    const player = getPlayer(id);
+    if (!player || next.sides.some((side) => side.playerId === id)) {
+      continue;
+    }
+    const empty: 0 | 1 = emptyIndex;
+    const sides: CompareDraft["sides"] = [
+      empty === 0
+        ? fillCompareSide(player, next.sides[0]!)
+        : next.sides[0]!,
+      empty === 1
+        ? fillCompareSide(player, next.sides[1]!)
+        : next.sides[1]!,
+    ];
+    next = { ...next, sides };
+  }
+  return next;
+};
+
 export const setComparePhoto = (
   side: CompareSide,
   dataUrl: string,

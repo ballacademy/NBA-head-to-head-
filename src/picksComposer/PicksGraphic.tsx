@@ -121,8 +121,8 @@ export const PicksGraphic = forwardRef<HTMLElement, PicksGraphicProps>(
     const allGames = sortPicksGames(draft.games);
     const games = visiblePicksGames(allGames, exporting);
     const mode: PicksResultMode = draft.resultMode === "su" ? "su" : "ats";
-    const recordLine = atsRecord.trim() || "0-0-0";
-    const showRecord = true;
+    const recordLine = atsRecord.trim();
+    const showRecord = Boolean(recordLine) && recordLine !== "0-0-0";
     const dailyLine = dailyRecord.trim();
     const showDaily = Boolean(dailyLine);
     const fill = picksFillLayout(

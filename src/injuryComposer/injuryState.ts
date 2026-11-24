@@ -248,16 +248,23 @@ export const groupInjuriesByTeam = (
 const outCount = (block: InjuryTeamBlock) =>
   block.players.filter((player) => player.status === "OUT").length;
 
-/** OUT-first team pages, capped so type reads at IG size. */
-export const selectInjuryPost = (
+/** OUT-first ranking. Optional teamIds limits Fill to tonight’s slate. */
+export const rankInjuryTeams = (
   players: InjuryPlayer[],
   includeGtd = false,
+  teamIds?: string[],
 ): InjuryTeamBlock[] => {
   const allowed = new Set<InjuryKicker>(
     includeGtd ? ["OUT", "GTD"] : ["OUT"],
   );
-  const filtered = players.filter((player) => allowed.has(player.status));
-  const ranked = groupInjuriesByTeam(filtered)
+  const wanted = teamIds?.length ? new Set(teamIds) : null;
+  const filtered = players.filter((player) => {
+    if (!allowed.has(player.status)) {
+      return false;
+    }
+    return !wanted || wanted.has(player.teamId);
+  });
+  return groupInjuriesByTeam(filtered)
     .map((block) => ({
       ...block,
       players: block.players.slice(0, INJURY_POST_PLAYER_MAX),
@@ -268,6 +275,27 @@ export const selectInjuryPost = (
         right.players.length - left.players.length ||
         left.teamId.localeCompare(right.teamId),
     );
+};
+
+export const injuryPageCount = (teams: InjuryTeamBlock[]) =>
+  Math.max(1, Math.ceil(Math.max(teams.length, 1) / INJURY_POST_TEAM_MAX));
+
+export const injuryPageTeams = (teams: InjuryTeamBlock[], pageIndex = 0) => {
+  const count = injuryPageCount(teams);
+  const page = Math.min(Math.max(0, pageIndex), count - 1);
+  return teams.slice(
+    page * INJURY_POST_TEAM_MAX,
+    (page + 1) * INJURY_POST_TEAM_MAX,
+  );
+};
+
+/** OUT-first team pages, capped so type reads at IG size. */
+export const selectInjuryPost = (
+  players: InjuryPlayer[],
+  includeGtd = false,
+  teamIds?: string[],
+): InjuryTeamBlock[] => {
+  const ranked = rankInjuryTeams(players, includeGtd, teamIds);
   const page = ranked.slice(0, INJURY_POST_TEAM_MAX);
   if (!includeGtd) {
     return page;

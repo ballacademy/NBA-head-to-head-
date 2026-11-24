@@ -18,6 +18,17 @@
   );
 }
 
+.tk-cover.is-unnamed .scc-lockup,
+.tk-cover.is-unnamed .scc-swipe,
+.tk-cover.is-unnamed .scc-pill {
+  display: none;
+}
+
+.tk-cover.is-unnamed:not(.is-metal) {
+  background-color: #141416;
+  background-image: none;
+}
+
 .tk-cover .scc-cell .pod-photo.is-empty {
   background-color: #0a0a0c;
   background-image: none;

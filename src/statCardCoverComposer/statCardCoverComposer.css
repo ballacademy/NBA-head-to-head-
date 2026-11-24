@@ -294,6 +294,17 @@
   pointer-events: none;
 }
 
+button.scc-swipe {
+  pointer-events: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
 .scc-swipe__label {
   font-family: var(--ig-poster);
   font-size: calc(18 * var(--u));

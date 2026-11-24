@@ -6,22 +6,42 @@ export const COMPOSER_CARRY_KEY = "ddgm:composer-carry";
 
 export interface ComposerCarry {
   playerId: string;
+  playerIds?: string[];
   playerName: string;
   from: string;
   to: string;
   at: number;
 }
 
+const uniquePlayerIds = (ids: Array<string | null | undefined>) => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of ids) {
+    const id = typeof raw === "string" ? raw.trim() : "";
+    if (!id || seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+};
+
 export const parseComposerCarry = (value: unknown): ComposerCarry | null => {
   if (!value || typeof value !== "object") {
     return null;
   }
   const raw = value as Partial<ComposerCarry>;
-  if (typeof raw.playerId !== "string" || !raw.playerId.trim()) {
+  const playerIds = uniquePlayerIds([
+    raw.playerId,
+    ...(Array.isArray(raw.playerIds) ? raw.playerIds : []),
+  ]);
+  if (!playerIds.length) {
     return null;
   }
   return {
-    playerId: raw.playerId,
+    playerId: playerIds[0]!,
+    playerIds,
     playerName: typeof raw.playerName === "string" ? raw.playerName : "",
     from: typeof raw.from === "string" ? raw.from : "",
     to: typeof raw.to === "string" ? raw.to : "",
@@ -32,11 +52,19 @@ export const parseComposerCarry = (value: unknown): ComposerCarry | null => {
 export const readComposerCarry = () =>
   parseComposerCarry(readJson(COMPOSER_CARRY_KEY));
 
-export const rememberComposerPlayer = (playerId: string) => {
-  const player = getPlayer(playerId);
+export const rememberComposerPlayer = (playerId: string) =>
+  rememberComposerPlayers([playerId]);
+
+export const rememberComposerPlayers = (playerIds: Array<string | null | undefined>) => {
+  const ids = uniquePlayerIds(playerIds);
+  if (!ids.length) {
+    return readComposerCarry();
+  }
+  const player = getPlayer(ids[0]!);
   const range = readComposerDateRange();
   const next: ComposerCarry = {
-    playerId,
+    playerId: ids[0]!,
+    playerIds: ids,
     playerName: player?.name ?? "",
     from: range.from,
     to: range.to,
@@ -52,3 +80,5 @@ export const carriedPlayerId = (currentId?: string | null) => {
   }
   return readComposerCarry()?.playerId ?? "";
 };
+
+export const carriedPlayerIds = () => readComposerCarry()?.playerIds ?? [];

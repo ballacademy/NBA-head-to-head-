@@ -187,7 +187,7 @@ export function PosterNewsComposerApp() {
           <>
             <button
               type="button"
-              className="sc-chip"
+              className="sc-chip sc-hud-fill"
               onClick={() => void fillLastNight()}
             >
               Fill last night
@@ -323,7 +323,7 @@ export function PosterNewsComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               disabled={exporting}
               onClick={() => {
                 void (async () => {

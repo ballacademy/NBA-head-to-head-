@@ -72,7 +72,7 @@ export function ComposerSaves<T>({
       </label>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost"
+        className="sc-btn sc-btn--ghost sc-saves__quick"
         onClick={() => {
           const { saves: next, saved } = upsertNamedGraphic(
             storageKey,
@@ -101,7 +101,7 @@ export function ComposerSaves<T>({
       </button>
       <button
         type="button"
-        className="sc-btn sc-btn--ghost"
+        className="sc-btn sc-btn--ghost sc-saves__quick"
         onClick={() => {
           const copyName = `${(name.trim() || "Graphic").slice(0, 32)} copy`;
           const { saves: next, saved } = upsertNamedGraphic(

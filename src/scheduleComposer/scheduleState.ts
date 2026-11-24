@@ -302,19 +302,33 @@ export const scheduleGroups = (games: ScheduleGame[]) => {
   return groups;
 };
 
+export const sortScheduleGames = (games: ScheduleGame[]) =>
+  [...games].sort(
+    (left, right) =>
+      left.date.localeCompare(right.date) ||
+      left.timeLabel.localeCompare(right.timeLabel) ||
+      left.awayId.localeCompare(right.awayId),
+  );
+
+export const schedulePageCount = (games: ScheduleGame[]) =>
+  Math.max(1, Math.ceil(Math.max(games.length, 1) / SCHEDULE_POST_GAME_MAX));
+
+export const schedulePageGames = (games: ScheduleGame[], pageIndex = 0) => {
+  const sorted = sortScheduleGames(games);
+  const count = schedulePageCount(sorted);
+  const page = Math.min(Math.max(0, pageIndex), count - 1);
+  return sorted.slice(
+    page * SCHEDULE_POST_GAME_MAX,
+    (page + 1) * SCHEDULE_POST_GAME_MAX,
+  );
+};
+
 export const capScheduleGames = (
   games: ScheduleGame[],
   max = SCHEDULE_POST_GAME_MAX,
 ): ScheduleGame[] => {
   const limit = Math.max(1, Math.round(max));
-  return [...games]
-    .sort(
-      (left, right) =>
-        left.date.localeCompare(right.date) ||
-        left.timeLabel.localeCompare(right.timeLabel) ||
-        left.awayId.localeCompare(right.awayId),
-    )
-    .slice(0, limit);
+  return sortScheduleGames(games).slice(0, limit);
 };
 
 export const scheduleFillLayout = (

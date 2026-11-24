@@ -316,14 +316,15 @@ export const renderPicksCanvas = async (
   context.textBaseline = "middle";
   context.fillText(pill, width / 2, weekY + weekH / 2);
   setLetterSpacing(context, 0);
-  const atsRecord = (input.atsRecord ?? "").trim() || "0-0-0";
+  const atsRecord = (input.atsRecord ?? "").trim();
+  const showRecord = Boolean(atsRecord) && atsRecord !== "0-0-0";
   const dailyRecord = (input.dailyRecord ?? "").trim();
   const fill = picksFillLayout(
     games.length,
     boardH,
     0,
     lines.length,
-    true,
+    showRecord,
     Boolean(dailyRecord),
   );
   const needed = new Set<string>();
@@ -533,7 +534,7 @@ export const renderPicksCanvas = async (
     cursorY += (fill.rowH + fill.gap) * s;
   });
 
-  if (atsRecord) {
+  if (showRecord) {
     const lockup = {
       x: (width - PICKS_RECORD_PLATE_W * s) / 2,
       y: height - (PICKS_RECORD_PAD + PICKS_RECORD_PLATE_H) * s,

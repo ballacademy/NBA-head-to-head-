@@ -52,7 +52,7 @@ export function ComposerDateRange({
   ];
   const showDates = alwaysShowDates || !simple;
   return (
-    <div className="sc-look" role="group" aria-label="Date range">
+    <div className="sc-look sc-hud-fill" role="group" aria-label="Date range">
       <span className="sc-look__label">Range</span>
       {chips.map((item) => (
         <button

@@ -70,6 +70,7 @@ interface TakeawaysCoverGraphicProps {
     names: { firstName?: string; lastName?: string },
   ) => void;
   onSwap?: (from: number, to: number) => void;
+  onSwipe?: () => void;
 }
 
 export const TakeawaysCoverGraphic = forwardRef<
@@ -91,6 +92,7 @@ export const TakeawaysCoverGraphic = forwardRef<
     onUpload,
     onNameChange,
     onSwap,
+    onSwipe,
   },
   ref,
 ) {
@@ -166,6 +168,7 @@ export const TakeawaysCoverGraphic = forwardRef<
         typeOnly ? "is-type-only" : "",
         draft.coverField === "metal" ? "is-metal" : "",
         draft.titleStyle === "plate" ? "is-plate" : "",
+        slots.some((slot) => slot.playerId) ? "" : "is-unnamed",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -296,10 +299,22 @@ export const TakeawaysCoverGraphic = forwardRef<
       {draft.showRangeUnderPip ? (
         <p className="tk-range">{draft.rangeLine}</p>
       ) : null}
-      <div className="scc-swipe" aria-hidden="true">
-        <span className="scc-swipe__label">Swipe</span>
-        <span className="scc-swipe__chev" />
-      </div>
+      {exporting || !onSwipe ? (
+        <div className="scc-swipe" aria-hidden="true">
+          <span className="scc-swipe__label">Swipe</span>
+          <span className="scc-swipe__chev" />
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="scc-swipe"
+          aria-label="Open Takeaway cards"
+          onClick={onSwipe}
+        >
+          <span className="scc-swipe__label">Swipe</span>
+          <span className="scc-swipe__chev" />
+        </button>
+      )}
       {draft.showBa !== false ? (
         <img
           className="composer-ba"

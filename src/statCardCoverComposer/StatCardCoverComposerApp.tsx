@@ -57,9 +57,10 @@ import { dataUrlFromClipboard } from "../playerOfTheDayComposer/PhotoFrame";
 import { PlayerPicker } from "../tierListComposer/PlayerPicker";
 import { getPlayer } from "../tierListComposer/nbaActivePlayers";
 import {
-  carriedPlayerId,
-  rememberComposerPlayer,
+  carriedPlayerIds,
+  rememberComposerPlayers,
 } from "../instagramComposer/composerCarry";
+import { hopComposerMode } from "../instagramComposer/composerMode";
 import { StatCardCoverGraphic } from "./StatCardCoverGraphic";
 import { exportStatCardCoverPng } from "./exportStatCardCoverPng";
 import { renderStatCardCoverCanvas } from "./renderStatCardCoverCanvas";
@@ -78,7 +79,7 @@ import {
   fillCoverFromStandouts,
   hasCustomPhoto,
   isStatCardCoverDraft,
-  landCarriedCoverPlayer,
+  landCarriedCoverPlayers,
   normalizeStatCardCoverDraft,
   patchCoverSlot,
   setCoverSlotPhotoAt,
@@ -104,7 +105,7 @@ const loadDraft = (): StatCardCoverDraft => {
   const base = isStatCardCoverDraft(stored)
     ? normalizeStatCardCoverDraft(stored)
     : defaultStatCardCoverDraft();
-  return landCarriedCoverPlayer(base, carriedPlayerId());
+  return landCarriedCoverPlayers(base, carriedPlayerIds());
 };
 
 export function StatCardCoverComposerApp() {
@@ -181,7 +182,7 @@ export function StatCardCoverComposerApp() {
         }
         filledKey.current = key;
         if (notable[0]?.athleteId) {
-          rememberComposerPlayer(notable[0].athleteId);
+          rememberComposerPlayers(notable.map((row) => row.athleteId));
         }
         setDraft((current) =>
           fillCoverFromStandouts(
@@ -224,6 +225,11 @@ export function StatCardCoverComposerApp() {
 
   const closePicker = useCallback(() => setActiveIndex(null), []);
 
+  const hopToStatCards = () => {
+    rememberComposerPlayers(draft.slots.map((slot) => slot.playerId));
+    hopComposerMode("stat-card");
+  };
+
   const fillFromNight = () => {
     autoFill.current = true;
     void fetchCompletedStandoutsInRange(range.from, range.to).then((result) => {
@@ -235,7 +241,7 @@ export function StatCardCoverComposerApp() {
       }
       setRangeStandouts(result.rows);
       if (notable[0]?.athleteId) {
-        rememberComposerPlayer(notable[0].athleteId);
+        rememberComposerPlayers(notable.map((row) => row.athleteId));
       }
       setDraft((current) => {
         const next = fillCoverFromStandouts(
@@ -302,7 +308,10 @@ export function StatCardCoverComposerApp() {
     if (!player) {
       return;
     }
-    rememberComposerPlayer(playerId);
+    rememberComposerPlayers([
+      ...draft.slots.map((slot) => slot.playerId),
+      playerId,
+    ]);
     push(draft);
     setDraft((current) => {
       const slots = setCoverSlotPlayer(current.slots, index, player, keepCustomPhoto);
@@ -686,7 +695,7 @@ export function StatCardCoverComposerApp() {
             </button>
             <button
               type="button"
-              className="sc-btn sc-btn--ghost"
+              className="sc-btn sc-btn--ghost sc-btn--pack"
               onClick={() => {
                 void (async () => {
                   setExporting(true);
@@ -758,14 +767,9 @@ export function StatCardCoverComposerApp() {
                       bytes: await bytesFromBlob(await canvasToPngBlob(coverCanvas)),
                     });
                     let index = 0;
-                    let skippedHeadshots = 0;
                     const startLeft = peekStatCardStatsLeft(draft.gameDate);
                     for (const slot of draft.slots) {
                       if (!slot.playerId) {
-                        continue;
-                      }
-                      if (!hasCustomPhoto(slot)) {
-                        skippedHeadshots += 1;
                         continue;
                       }
                       const card = statCardFromCoverSlot(
@@ -818,16 +822,10 @@ export function StatCardCoverComposerApp() {
                       nextStatsLeft(startLeft, index),
                       draft.gameDate,
                     );
-                    const skipped =
-                      skippedHeadshots > 0
-                        ? ` Skipped ${skippedHeadshots} headshot-only slot${
-                            skippedHeadshots === 1 ? "" : "s"
-                          }.`
-                        : "";
                     setStatus(
-                      `Cover + cards download started (${index} action photo${
+                      `Cover + cards download started (${index} card${
                         index === 1 ? "" : "s"
-                      }).${skipped}`,
+                      }).`,
                     );
                   } catch (error) {
                     console.error(error);
@@ -840,6 +838,13 @@ export function StatCardCoverComposerApp() {
               disabled={exporting}
             >
               Cover + cards
+            </button>
+            <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={hopToStatCards}
+            >
+              Stat cards
             </button>
             <button
               type="button"
@@ -905,6 +910,7 @@ export function StatCardCoverComposerApp() {
                   }));
                   setStatus("Reordered cover portraits.");
                 }}
+                onSwipe={exporting ? undefined : hopToStatCards}
               />
             </ComposerBoard>
             <StoryCropGuide on={storyCrop} />
@@ -913,7 +919,8 @@ export function StatCardCoverComposerApp() {
             Stars and standouts cover — 2, 3, or 4 full-bleed faces in one row,
             no individual stats. Drag a portrait on the preview to reorder slots.
             Fill from a date range. Export pack is the cover at 4:5 + 9:16 + 1:1.
-            Cover + cards zips action-photo slots only. Downloads Instagram
+            Cover + cards zips ESPN headshot slots too (action preferred).
+            Swipe hops Stat with those names queued. Downloads Instagram
             PNGs — nothing is posted.
           </p>
           {status ? <p className="sc-status">{status}</p> : null}

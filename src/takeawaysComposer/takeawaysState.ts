@@ -517,6 +517,15 @@ export const landCarriedTakeawaysPlayer = (
   });
 };
 
+export const landCarriedTakeawaysPlayers = (
+  draft: TakeawaysDraft,
+  playerIds: string[],
+): TakeawaysDraft =>
+  playerIds.reduce(
+    (next, id) => landCarriedTakeawaysPlayer(next, id),
+    draft,
+  );
+
 /** Names only — never writes takeaway copy. TOTW pack first, then ranked night names. */
 export const fillTakeawaysNames = (
   draft: TakeawaysDraft,

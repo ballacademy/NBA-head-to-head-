@@ -153,9 +153,7 @@ export const PlayInGraphic = forwardRef<HTMLElement, PlayInGraphicProps>(
               {record ? <span className="pi-wl">{record}</span> : null}
             </>
           ) : (
-            <span className="pi-empty">
-              {playInBoardEmpty(draft) ? "" : "PICK"}
-            </span>
+            <span className="pi-empty">PICK</span>
           )}
           {score ? <span className="pi-score">{score}</span> : null}
         </button>

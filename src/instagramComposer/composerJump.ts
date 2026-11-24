@@ -18,6 +18,10 @@ const ALIASES: Array<{ needle: string; mode: ComposerMode }> = [
   { needle: "spreads", mode: "picks" },
   { needle: "takeaways", mode: "takeaways-cover" },
   { needle: "takeaway", mode: "takeaways-cover" },
+  { needle: "cards", mode: "takeaways-card" },
+  { needle: "cover", mode: "stat-card-cover" },
+  { needle: "lb", mode: "potd-leaderboard" },
+  { needle: "leaderboard", mode: "potd-leaderboard" },
   { needle: "bars", mode: "leader-bars" },
   { needle: "leaders", mode: "leader-split" },
   { needle: "poster", mode: "poster-news" },
@@ -27,7 +31,7 @@ const ALIASES: Array<{ needle: string; mode: ComposerMode }> = [
 ];
 
 export const composerJumpHaystack = (tab: ComposerJumpTab) =>
-  `${tab.label} ${tab.mode}`.toLowerCase();
+  tab.label.toLowerCase();
 
 export const matchingComposerTabs = (
   query: string,

@@ -173,10 +173,9 @@ export function ComposerTabs({
                   key={item.id}
                   type="button"
                   className={item.mode === mode ? "is-on" : ""}
-                  title={`Download ${item.filename}`}
-                  aria-label={`Re-download ${item.filename}`}
+                  title={item.filename}
+                  aria-label={`Open ${COMPOSER_MODE_LABEL[item.mode ?? mode] ?? item.filename}`}
                   onClick={() => {
-                    downloadExportHistoryItem(item);
                     if (item.mode) {
                       onSelect(item.mode);
                     }
@@ -206,105 +205,110 @@ export function ComposerTabs({
             </div>
           </details>
         ) : null}
-        <div className="sc-tabs__edit">
-          <span className="sc-tabs__label">HUD</span>
-          <div className="sc-tabs__pills">
-            <button
-              type="button"
-              className={photoEdit ? "is-on" : ""}
-              aria-pressed={photoEdit}
-              aria-label="Show upload, change player, and zoom controls"
-              onClick={() => onPhotoEditChange(!photoEdit)}
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              className={hudMode === "simple" ? "is-on" : ""}
-              aria-pressed={hudMode === "simple"}
-              aria-label="Simple HUD"
-              onClick={() => setHudMode("simple")}
-            >
-              Simple
-            </button>
-            <button
-              type="button"
-              className={hudMode === "full" ? "is-on" : ""}
-              aria-pressed={hudMode === "full"}
-              aria-label="Full HUD"
-              onClick={() => setHudMode("full")}
-            >
-              Full
-            </button>
-            <button
-              type="button"
-              className={focusMode ? "is-on" : ""}
-              aria-pressed={focusMode}
-              aria-label="Focus mode"
-              onClick={() => setFocusMode(!focusMode)}
-            >
-              Focus
-            </button>
-          </div>
-          <div className="sc-tabs__pills" role="group" aria-label="Preview zoom">
-            {(["fit", "75", "100"] as const).map((zoom) => (
-              <button
-                key={zoom}
-                type="button"
-                className={previewZoom === zoom ? "is-on" : ""}
-                aria-pressed={previewZoom === zoom}
-                onClick={() => setPreviewZoom(zoom)}
-              >
-                {zoom === "fit" ? "Fit" : `${zoom}%`}
-              </button>
-            ))}
-            <button
-              type="button"
-              aria-label="Zoom out post"
-              title="Zoom out post"
-              onClick={() =>
-                setPreviewZoomBump(stepPreviewZoomBump(previewZoomBump, -1))
-              }
-            >
-              −
-            </button>
-            <button
-              type="button"
-              aria-label="Zoom in post"
-              title="Zoom in post"
-              onClick={() =>
-                setPreviewZoomBump(stepPreviewZoomBump(previewZoomBump, 1))
-              }
-            >
-              +
-            </button>
-          </div>
-          <ComposerNameStyleToggle />
-          <ComposerStampToggle />
-          {exports.length ? (
-            <label className="sc-field">
-              Exports
-              <select
-                aria-label="Re-download last exports"
-                defaultValue=""
-                onChange={(event) => {
-                  const item = exports.find((row) => row.id === event.target.value);
-                  event.target.value = "";
-                  if (item) {
-                    downloadExportHistoryItem(item);
-                  }
-                }}
-              >
-                <option value="">Last {exports.length} PNGs</option>
-                {exports.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.filename}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
+        <div className="sc-tabs__hud" role="group" aria-label="HUD">
+          <button
+            type="button"
+            className={hudMode === "simple" ? "is-on" : ""}
+            aria-pressed={hudMode === "simple"}
+            aria-label="Simple HUD"
+            onClick={() => setHudMode("simple")}
+          >
+            Simple
+          </button>
+          <button
+            type="button"
+            className={hudMode === "full" ? "is-on" : ""}
+            aria-pressed={hudMode === "full"}
+            aria-label="Full HUD"
+            onClick={() => setHudMode("full")}
+          >
+            Full
+          </button>
         </div>
+        <details className="sc-tabs__more">
+          <summary aria-label="More composer chrome">⋯</summary>
+          <div className="sc-tabs__edit" role="group" aria-label="More composer chrome">
+            <span className="sc-tabs__label">HUD</span>
+            <div className="sc-tabs__pills">
+              <button
+                type="button"
+                className={photoEdit ? "is-on" : ""}
+                aria-pressed={photoEdit}
+                aria-label="Show upload, change player, and zoom controls"
+                onClick={() => onPhotoEditChange(!photoEdit)}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className={focusMode ? "is-on" : ""}
+                aria-pressed={focusMode}
+                aria-label="Focus mode"
+                onClick={() => setFocusMode(!focusMode)}
+              >
+                Focus
+              </button>
+            </div>
+            <div className="sc-tabs__pills" role="group" aria-label="Preview zoom">
+              {(["fit", "75", "100"] as const).map((zoom) => (
+                <button
+                  key={zoom}
+                  type="button"
+                  className={previewZoom === zoom ? "is-on" : ""}
+                  aria-pressed={previewZoom === zoom}
+                  onClick={() => setPreviewZoom(zoom)}
+                >
+                  {zoom === "fit" ? "Fit" : `${zoom}%`}
+                </button>
+              ))}
+              <button
+                type="button"
+                aria-label="Zoom out post"
+                title="Zoom out post"
+                onClick={() =>
+                  setPreviewZoomBump(stepPreviewZoomBump(previewZoomBump, -1))
+                }
+              >
+                −
+              </button>
+              <button
+                type="button"
+                aria-label="Zoom in post"
+                title="Zoom in post"
+                onClick={() =>
+                  setPreviewZoomBump(stepPreviewZoomBump(previewZoomBump, 1))
+                }
+              >
+                +
+              </button>
+            </div>
+            <ComposerNameStyleToggle />
+            <ComposerStampToggle />
+            {exports.length ? (
+              <label className="sc-field">
+                Exports
+                <select
+                  aria-label="Re-download last exports"
+                  defaultValue=""
+                  onChange={(event) => {
+                    const item = exports.find((row) => row.id === event.target.value);
+                    event.target.value = "";
+                    if (item) {
+                      downloadExportHistoryItem(item);
+                    }
+                  }}
+                >
+                  <option value="">Last {exports.length} PNGs</option>
+                  {exports.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.filename}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+          </div>
+        </details>
       </div>
       {COMPOSER_TAB_GROUPS.map((group) => {
         const tabs = group.tabs.filter((tab) => hitModes.has(tab.mode));
