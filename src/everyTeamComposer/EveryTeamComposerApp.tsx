@@ -165,7 +165,7 @@ const loadDraft = (): EveryTeamComposerDraft => {
     partners: isEveryTeamSlots(stored?.partners)
       ? pruneSlotsToSeasons(stored.partners, season, cellSeasons)
       : createEmptyEveryTeamSlots(),
-    showCellStat: stored?.showCellStat === true,
+    showCellStat: stored?.showCellStat !== false,
     cellStatMetric: parseEveryTeamStatMetric(stored?.cellStatMetric),
     statRate: parseEveryTeamStatRate(stored?.statRate),
   };
@@ -195,7 +195,7 @@ export function EveryTeamComposerApp() {
   const [gridGroup, setGridGroup] = useState<EveryTeamGridGroup>("none");
   const [partners, setPartners] = useState<EveryTeamSlots>(createEmptyEveryTeamSlots);
   const [duoSeat, setDuoSeat] = useState<EveryTeamSeat>("a");
-  const [showCellStat, setShowCellStat] = useState(false);
+  const [showCellStat, setShowCellStat] = useState(true);
   const [cellStatMetric, setCellStatMetric] =
     useState<EveryTeamStatMetric>("points");
   const [statRate, setStatRate] = useState<EveryTeamStatRate>("per-game");
@@ -293,7 +293,7 @@ export function EveryTeamComposerApp() {
         setRanked(draft.ranked === true);
         setRankedOrder(normalizeRankedOrder(draft.rankedOrder));
         setShowNames(draft.showNames === true);
-        setShowCellStat(draft.showCellStat === true);
+        setShowCellStat(draft.showCellStat !== false);
         setCellStatMetric(parseEveryTeamStatMetric(draft.cellStatMetric));
         setStatRate(parseEveryTeamStatRate(draft.statRate));
         setShowHistoricalLogos(draft.showHistoricalLogos === true);
@@ -783,6 +783,15 @@ export function EveryTeamComposerApp() {
           onChange={setShowNames}
           ariaLabel="Show player names on cells"
         />
+        <StripStatHud
+          className="sc-hud-fill"
+          on={showCellStat}
+          metric={cellStatMetric}
+          onToggle={setShowCellStat}
+          onMetric={setCellStatMetric}
+          label="Stats"
+          alwaysShowMetric
+        />
         <div className="sc-look" role="group" aria-label="Board order">
           <span className="sc-look__label">Order</span>
           <button
@@ -827,15 +836,6 @@ export function EveryTeamComposerApp() {
           seasonRange={boardSeasonRange}
           filling={rangeLoading}
           onChange={setRange}
-        />
-        <StripStatHud
-          className="sc-hud-fill"
-          on={showCellStat}
-          metric={cellStatMetric}
-          onToggle={setShowCellStat}
-          onMetric={setCellStatMetric}
-          label="Stat"
-          alwaysShowMetric
         />
         <div className="sc-look sc-hud-fill" role="group" aria-label="Same position">
           <span className="sc-look__label">Same position</span>
@@ -1029,7 +1029,7 @@ export function EveryTeamComposerApp() {
             setRanked(next.ranked === true);
             setRankedOrder(normalizeRankedOrder(next.rankedOrder));
             setShowNames(next.showNames === true);
-            setShowCellStat(next.showCellStat === true);
+            setShowCellStat(next.showCellStat !== false);
             setCellStatMetric(parseEveryTeamStatMetric(next.cellStatMetric));
             setStatRate(parseEveryTeamStatRate(next.statRate));
             setShowHistoricalLogos(next.showHistoricalLogos === true);

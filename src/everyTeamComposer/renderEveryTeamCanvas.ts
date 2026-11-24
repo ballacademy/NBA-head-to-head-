@@ -106,6 +106,36 @@ const withDropShadow = (
   context.restore();
 };
 
+/** Gold cell lockup. Fade must paint first — it overwrites fillStyle. */
+export const paintEveryTeamCellStat = (
+  context: CanvasRenderingContext2D,
+  label: string,
+  x: number,
+  y: number,
+  size: number,
+  scale: number,
+  withFade: boolean,
+) => {
+  if (withFade) {
+    paintNameFadeRect(context, x, y + size - size * 0.28, size, size * 0.28);
+  }
+  const fontSize = 11 * scale;
+  context.save();
+  context.font = `900 ${fontSize}px ${POSTER_FONT}`;
+  context.textAlign = "left";
+  context.textBaseline = "bottom";
+  context.fillStyle = "#facc15";
+  context.shadowColor = "rgba(0, 0, 0, 0.88)";
+  context.shadowOffsetX = Math.round(1 * scale);
+  context.shadowOffsetY = Math.round(1.1 * scale);
+  context.shadowBlur = 0;
+  setLetterSpacing(context, 0.06 * fontSize);
+  const width = context.measureText(label).width;
+  context.fillText(label, x + size / 2 - width / 2, y + size - size * 0.04);
+  setLetterSpacing(context, 0);
+  context.restore();
+};
+
 const drawTrackedText = (
   context: CanvasRenderingContext2D,
   text: string,
@@ -513,17 +543,15 @@ export const renderEveryTeamCanvas = async (
       );
     }
     if (cell.cellStat) {
-      context.save();
-      context.font = `900 ${11 * scale}px ${POSTER_FONT}`;
-      context.textAlign = "center";
-      context.textBaseline = "bottom";
-      context.fillStyle = "#facc15";
-      if (!input.showNames) {
-        const fadeH = size * 0.28;
-        paintNameFadeRect(context, x, y + size - fadeH, size, fadeH);
-      }
-      context.fillText(cell.cellStat, x + size / 2, y + size - size * 0.04);
-      context.restore();
+      paintEveryTeamCellStat(
+        context,
+        cell.cellStat,
+        x,
+        y,
+        size,
+        scale,
+        input.showNames !== true,
+      );
     }
   });
 

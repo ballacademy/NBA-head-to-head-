@@ -573,6 +573,12 @@ describe("composer chrome", () => {
     expect(etApp.indexOf("Fill leaders")).toBeLessThan(
       etApp.indexOf("Sort 1–30"),
     );
+    expect(etApp.indexOf("ComposerNamesToggle")).toBeLessThan(
+      etApp.indexOf('label="Stats"'),
+    );
+    expect(etApp.indexOf('label="Stats"')).toBeLessThan(
+      etApp.indexOf("Fill leaders"),
+    );
     expect(etApp).toContain("alwaysShowMetric");
     expect(etApp).not.toContain("Auto-fill stat");
     expect(etApp).not.toContain("Auto-sort stat");
@@ -580,6 +586,17 @@ describe("composer chrome", () => {
     expect(etApp).toContain("handleAutoSort(cellStatMetric)");
     expect(tierApp).toContain("Copy caption");
     expect(tierApp).toContain("tierListCaption");
+  });
+
+  it("paints Every Team cell stats after the name fade so PNG export stays gold", () => {
+    const canvas = readFileSync(
+      join(root, "everyTeamComposer/renderEveryTeamCanvas.ts"),
+      "utf8",
+    );
+    expect(canvas).toContain("paintEveryTeamCellStat");
+    expect(canvas.indexOf("if (withFade)")).toBeLessThan(
+      canvas.indexOf('context.fillStyle = "#facc15"'),
+    );
   });
 
   it("drops the BALLACADEMY wordmark when BA is on and shrinks TOTW Plus logos", () => {
@@ -1370,7 +1387,7 @@ describe("composer chrome", () => {
     expect(etApp).toContain("ComposerDateRange");
     expect(etApp).toContain("alwaysShowDates");
     expect(etApp).toContain("includeFullSeason");
-    expect(etApp).toContain('label="Stat"');
+    expect(etApp).toContain('label="Stats"');
     expect(etApp).toContain("alwaysShowMetric");
     expect(etApp).not.toContain("nightAuto");
     expect(etApp).toContain("Show player names on cells");

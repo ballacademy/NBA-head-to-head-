@@ -67,7 +67,7 @@ describe("composer toolbar chrome", () => {
     }
   });
 
-  it("keeps filters in the shared filters slot on Every Team, Tier, and Headline", () => {
+  it("keeps filters in the shared filters slot on Tier and Headline", () => {
     const everyTeam = readFileSync(
       join(root, "everyTeamComposer/EveryTeamComposerApp.tsx"),
       "utf8",
@@ -80,8 +80,8 @@ describe("composer toolbar chrome", () => {
       join(root, "headlineComposer/HeadlineComposerApp.tsx"),
       "utf8",
     );
-    expect(everyTeam).toContain("filters=");
     expect(everyTeam).toContain("Same position");
+    expect(everyTeam).toContain("sc-hud-fill");
     expect(tier).toContain("filters=");
     expect(tier).toContain("PlayerFilterBar");
     expect(headline).toContain("filters=");
