@@ -170,6 +170,33 @@ export const rangesEqual = (
   right: ComposerDateRange,
 ) => left.from === right.from && left.to === right.to;
 
+/**
+ * Season-to-date window, including a From date parked in September camp
+ * (09/16) instead of the October opener. Those ranges must not fetch the
+ * first 21 nights of preseason box scores.
+ */
+export const rangeCoversSeasonToDate = (
+  range: ComposerDateRange,
+  season: string,
+  now = new Date(),
+) => {
+  const board = seasonDateRange(season, now);
+  if (rangesEqual(range, board)) {
+    return true;
+  }
+  const startYear = Number.parseInt(String(season).slice(0, 4), 10);
+  if (!Number.isFinite(startYear)) {
+    return false;
+  }
+  const earliest = `${startYear}-09-01`;
+  const opener = `${startYear}-10-01`;
+  return (
+    range.from >= earliest &&
+    range.from <= opener &&
+    range.to >= board.to
+  );
+};
+
 export const normalizeDateRange = (
   from: string,
   to: string,

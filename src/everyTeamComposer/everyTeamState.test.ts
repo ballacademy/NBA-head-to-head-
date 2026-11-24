@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { NBA_TEAMS } from "../standingsComposer/teams";
 import {
   EVERY_TEAM_CITY,
@@ -12,6 +12,7 @@ import {
   autoSortRankedOrder,
   boxScoreMetricValue,
   fillEveryTeamFromRange,
+  liveCountingFromRangeRows,
   rankedMetricValues,
   clearEveryTeamSlot,
   createDefaultRankedOrder,
@@ -36,7 +37,10 @@ import {
   EVERY_TEAM_STAT_METRICS,
   formatEveryTeamCellStat,
   formatRosterStat,
+  clearLiveCountingStats,
+  getRosterPlayer,
   hydrateEveryTeamRosters,
+  hydrateLiveSeasonAverages,
   listRosterPlayers,
   matchingTeamIds,
   pickSeasonLeader,
@@ -55,6 +59,10 @@ import { sortPlayers } from "../tierListComposer/nbaActivePlayers";
 hydrateEveryTeamRosters(
   catalog as unknown as Parameters<typeof hydrateEveryTeamRosters>[0],
 );
+
+afterEach(() => {
+  clearLiveCountingStats();
+});
 import {
   FIELD_TEXTURE_SRC,
   HEADER_TEXTURE_SRC,
@@ -399,6 +407,52 @@ describe("every-team order and slots", () => {
     expect(unchanged.ranked).toBe(0);
   });
 
+  it("uses live ESPN counting stats instead of last year for 2026-27 leaders", () => {
+    expect(pickSeasonLeader("LAC", "2026-27", "rebounds")?.name).toBe(
+      "Brandon Ingram",
+    );
+    hydrateLiveSeasonAverages({
+      "4066648": {
+        gp: 13,
+        min: 29.2,
+        pts: 14,
+        reb: 6.2,
+        ast: 1.5,
+        stl: 0.9,
+        blk: 0.2,
+        tov: 1.7,
+      },
+      "3448": {
+        gp: 15,
+        min: 24.6,
+        pts: 15.7,
+        reb: 5.3,
+        ast: 1.4,
+        stl: 0.4,
+        blk: 1.2,
+        tov: 1.1,
+      },
+    });
+    expect(pickSeasonLeader("LAC", "2026-27", "rebounds")?.name).toBe(
+      "Rui Hachimura",
+    );
+    expect(
+      rosterStatValue(
+        getRosterPlayer("LAC", "2026-27", "4066648"),
+        "rebounds",
+      ),
+    ).toBe(6.2);
+    expect(formatEveryTeamCellStat(getRosterPlayer("LAC", "2026-27", "4066648"), "rebounds")).toBe(
+      "6.2 REB",
+    );
+    const ingram = getRosterPlayer("LAC", "2026-27", "3913176");
+    expect(rosterStatValue(ingram, "rebounds")).toBeNull();
+    expect(ingram?.gp).toBe(0);
+    expect(autoFillEveryTeamSlots("2026-27", {}, "rebounds")[slotIndexForTeam("LAC")]).toBe(
+      "4066648",
+    );
+  });
+
   it("borrows last-season stats for 2026-27 team-switchers", () => {
     const powell = listRosterPlayers("CHI", "2026-27").find(
       (player) => player.name === "Norman Powell",
@@ -558,6 +612,23 @@ describe("every-team order and slots", () => {
       "threes",
     );
     expect(threes.slots[slotIndexForTeam("GSW")]).toBe("high");
+    expect(
+      liveCountingFromRangeRows([
+        {
+          athleteId: "4066648",
+          teamId: "LAC",
+          games: 13,
+          game: {
+            stats: {
+              pts: "14.0",
+              reb: "6.2",
+              ast: "1.5",
+              min: "29.2",
+            },
+          },
+        },
+      ]).get("4066648")?.reb,
+    ).toBe(6.2);
     expect(
       boxScoreMetricValue(
         { pts: "8", reb: "1", ast: "2", three: "5-9", min: "28" },

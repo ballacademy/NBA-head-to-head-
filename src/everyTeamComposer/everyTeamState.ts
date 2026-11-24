@@ -14,6 +14,7 @@ import {
   seasonForTeam,
   type EveryTeamStatMetric,
   type EveryTeamStatRate,
+  type LiveCountingStats,
 } from "./historicalRosters";
 
 export { DEFAULT_BRAND };
@@ -623,6 +624,34 @@ export const boxScoreMetricValue = (
     return boxPct(stats.ft);
   }
   return null;
+};
+
+export const liveCountingFromRangeRow = (row: RangeBoxRow): LiveCountingStats => ({
+  gp: Math.max(1, row.games ?? 1),
+  min: boxNumber(row.game.stats.min) || null,
+  pts: boxNumber(row.game.stats.pts),
+  reb: boxNumber(row.game.stats.reb),
+  ast: boxNumber(row.game.stats.ast),
+  stl: row.game.stats.stl != null ? boxNumber(row.game.stats.stl) : null,
+  blk: row.game.stats.blk != null ? boxNumber(row.game.stats.blk) : null,
+  tov: row.game.stats.tov != null ? boxNumber(row.game.stats.tov) : null,
+  fg3m: boxMakes(row.game.stats.three),
+  fgPct: boxPct(row.game.stats.fg),
+  fg3Pct: boxPct(row.game.stats.three),
+  ftPct: boxPct(row.game.stats.ft),
+});
+
+export const liveCountingFromRangeRows = (
+  rows: RangeBoxRow[],
+): Map<string, LiveCountingStats> => {
+  const byId = new Map<string, LiveCountingStats>();
+  for (const row of rows) {
+    if (!row.athleteId) {
+      continue;
+    }
+    byId.set(row.athleteId, liveCountingFromRangeRow(row));
+  }
+  return byId;
 };
 
 export const scaleBoxScoreStat = (

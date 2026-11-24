@@ -12,6 +12,7 @@ import { ComposerDateRange } from "../instagramComposer/ComposerDateRange";
 import { ComposerNightDate } from "../instagramComposer/ComposerNightDate";
 import { useComposerNight } from "../instagramComposer/composerNight";
 import {
+  rangeCoversSeasonToDate,
   rangesEqual,
   seasonDateRange,
   useComposerDateRange,
@@ -63,6 +64,7 @@ import {
   fillEveryTeamFromNight,
   fillEveryTeamFromRange,
   fillEveryTeamPartnersFromNight,
+  liveCountingFromRangeRows,
   rankedRangeMetricValues,
   isEveryTeamDraft,
   isEveryTeamSlots,
@@ -86,7 +88,10 @@ import {
   everyTeamCurrentSeason,
   everyTeamSeasons,
   getRosterPlayer,
+  hasLiveSeasonAverages,
   historyLabel,
+  hydrateLiveSeasonAverages,
+  hydrateLiveWindowAverages,
   isEveryTeamRostersReady,
   isMissingSeason,
   loadEveryTeamRosters,
@@ -106,6 +111,7 @@ import {
 import "@fontsource/montserrat/latin-900.css";
 import "./everyTeamComposer.css";
 import { confirmBlankPost } from "../instagramComposer/confirmBlankPost";
+import { fetchEspnSeasonAverages } from "./espnSeasonAverages";
 
 const STORAGE_KEY = "ddgm:every-team-composer";
 const DATE_RANGE_KEY = "ddgm:every-team-date-range";
@@ -198,6 +204,7 @@ export function EveryTeamComposerApp() {
   const [statRate, setStatRate] = useState<EveryTeamStatRate>("per-game");
   const [nightMetric, setNightMetric] = useState<EveryTeamNightMetric>("pts");
   const [rangeLoading, setRangeLoading] = useState(false);
+  const [statsEpoch, setStatsEpoch] = useState(0);
   const night = useComposerNight();
   const { range, setRange } = useComposerDateRange({
     storageKey: DATE_RANGE_KEY,
@@ -207,14 +214,54 @@ export function EveryTeamComposerApp() {
   const boardSeasonRange = seasonDateRange(season);
   const useSeasonTable =
     season !== everyTeamCurrentSeason() ||
-    rangesEqual(range, boardSeasonRange);
+    rangesEqual(range, boardSeasonRange) ||
+    rangeCoversSeasonToDate(range, season);
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
   const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
 
+  const bumpStatsEpoch = () => setStatsEpoch((value) => value + 1);
+
+  const ensureLiveSeasonAverages = async () => {
+    if (season !== everyTeamCurrentSeason() || statsSample !== "regular") {
+      hydrateLiveSeasonAverages(null);
+      bumpStatsEpoch();
+      return;
+    }
+    const rows = await fetchEspnSeasonAverages(season, statsSample);
+    hydrateLiveSeasonAverages(rows.size > 0 ? rows : null);
+    bumpStatsEpoch();
+  };
+
   useEffect(() => {
     document.title = "Every team graphic";
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      if (season !== everyTeamCurrentSeason() || statsSample !== "regular") {
+        hydrateLiveSeasonAverages(null);
+        if (!cancelled) {
+          bumpStatsEpoch();
+        }
+        return;
+      }
+      const rows = await fetchEspnSeasonAverages(season, statsSample);
+      if (cancelled) {
+        return;
+      }
+      hydrateLiveSeasonAverages(rows.size > 0 ? rows : null);
+      bumpStatsEpoch();
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, season, statsSample]);
 
   useEffect(() => {
     void loadEveryTeamRosters()
@@ -453,6 +500,8 @@ export function EveryTeamComposerApp() {
       ? normalizeRankedOrder(rankedOrder)
       : createDefaultRankedOrder();
     if (useSeasonTable) {
+      hydrateLiveWindowAverages(null);
+      await ensureLiveSeasonAverages();
       applyRankedMetric(
         metric,
         slots,
@@ -473,6 +522,8 @@ export function EveryTeamComposerApp() {
     setStatus("Loading box scores for that date range…");
     try {
       const rows = await fetchRangeProduction(range.from, range.to);
+      hydrateLiveWindowAverages(liveCountingFromRangeRows(rows));
+      bumpStatsEpoch();
       applyRankedMetric(
         metric,
         slots,
@@ -495,6 +546,13 @@ export function EveryTeamComposerApp() {
       : createDefaultRankedOrder();
     const label = autoSortMetricLabel(metric, statRate);
     if (useSeasonTable) {
+      hydrateLiveWindowAverages(null);
+      if (season === everyTeamCurrentSeason() && statsSample === "regular") {
+        setRangeLoading(true);
+        setStatus("Loading this season’s ESPN averages…");
+        await ensureLiveSeasonAverages();
+        setRangeLoading(false);
+      }
       let fillSeason = season;
       let next = autoFillEveryTeamSlots(
         fillSeason,
@@ -505,7 +563,11 @@ export function EveryTeamComposerApp() {
       );
       let filled = next.filter(Boolean).length;
       let usedLastSeason = false;
-      if (filled === 0 && statsSample === "regular") {
+      if (
+        filled === 0 &&
+        statsSample === "regular" &&
+        !hasLiveSeasonAverages()
+      ) {
         const prior = previousSeason(season);
         if (prior !== season) {
           const priorSlots = autoFillEveryTeamSlots(
@@ -569,6 +631,8 @@ export function EveryTeamComposerApp() {
     setStatus("Loading box scores for that date range…");
     try {
       const rows = await fetchRangeProduction(range.from, range.to);
+      hydrateLiveWindowAverages(liveCountingFromRangeRows(rows));
+      bumpStatsEpoch();
       const result = fillEveryTeamFromRange(slots, rows, metric, statRate);
       if (result.filled === 0) {
         setStatus(
@@ -635,7 +699,7 @@ export function EveryTeamComposerApp() {
   const rosterPlayers = useMemo(
     () =>
       activeTeam ? rosterAsTierPlayers(activeTeam.id, activeSeason) : [],
-    [activeTeam, activeSeason],
+    [activeTeam, activeSeason, statsEpoch],
   );
   const missingActive =
     activeTeam != null && isMissingSeason(activeTeam.id, activeSeason);

@@ -57,6 +57,22 @@ export interface EveryTeamRosterPlayer {
   screenAstPts?: number | null;
 }
 
+/** This-season ESPN counting line. Overlay replaces last-year / preseason scraps. */
+export interface LiveCountingStats {
+  gp: number;
+  min?: number | null;
+  pts?: number | null;
+  reb?: number | null;
+  ast?: number | null;
+  stl?: number | null;
+  blk?: number | null;
+  tov?: number | null;
+  fg3m?: number | null;
+  fgPct?: number | null;
+  fg3Pct?: number | null;
+  ftPct?: number | null;
+}
+
 type SeasonAverageExtras = Omit<
   EveryTeamRosterPlayer,
   "id" | "name" | "position" | "depth" | "headshotUrl" | "pts" | "reb" | "ast" | "stl" | "blk"
@@ -134,6 +150,8 @@ let depthIndexCache: {
   season: string;
   byId: Map<string, Array<{ teamId: string; depth: number }>>;
 } | null = null;
+let liveSeasonAverages: Map<string, LiveCountingStats> | null = null;
+let liveWindowAverages: Map<string, LiveCountingStats> | null = null;
 
 export const EVERY_TEAM_SORT_KEY = "ddgm:every-team-player-sort";
 
@@ -143,6 +161,46 @@ export const everyTeamSeasons = () => seasons;
 
 export const everyTeamCurrentSeason = () => currentSeason;
 
+const toLiveMap = (
+  value:
+    | Map<string, LiveCountingStats>
+    | Record<string, LiveCountingStats>
+    | null,
+) => {
+  if (!value) {
+    return null;
+  }
+  return value instanceof Map ? value : new Map(Object.entries(value));
+};
+
+/** ESPN regular-season averages for the live board year. */
+export const hydrateLiveSeasonAverages = (
+  value:
+    | Map<string, LiveCountingStats>
+    | Record<string, LiveCountingStats>
+    | null,
+) => {
+  liveSeasonAverages = toLiveMap(value);
+};
+
+/** Box-score window (last week / last 5) — wins over season averages while set. */
+export const hydrateLiveWindowAverages = (
+  value:
+    | Map<string, LiveCountingStats>
+    | Record<string, LiveCountingStats>
+    | null,
+) => {
+  liveWindowAverages = toLiveMap(value);
+};
+
+export const hasLiveSeasonAverages = () =>
+  Boolean(liveSeasonAverages && liveSeasonAverages.size > 0);
+
+export const clearLiveCountingStats = () => {
+  liveSeasonAverages = null;
+  liveWindowAverages = null;
+};
+
 export const hydrateEveryTeamRosters = (payload: HistoricalCatalog) => {
   currentSeason = payload.currentSeason;
   seasons = payload.seasons.slice();
@@ -150,6 +208,8 @@ export const hydrateEveryTeamRosters = (payload: HistoricalCatalog) => {
   loaded = true;
   priorStatsCache = null;
   depthIndexCache = null;
+  liveSeasonAverages = null;
+  liveWindowAverages = null;
 };
 
 export const loadEveryTeamRosters = async () => {
@@ -336,6 +396,80 @@ const mergeSeasonAverages = (
   return next;
 };
 
+const blankCountingStats = (
+  player: EveryTeamRosterPlayer,
+): EveryTeamRosterPlayer => ({
+  ...player,
+  pts: null,
+  reb: null,
+  ast: null,
+  stl: null,
+  blk: null,
+  gp: 0,
+  min: null,
+  tov: null,
+  fg3m: null,
+  fgPct: null,
+  fg3Pct: null,
+  ftPct: null,
+});
+
+const applyLiveCountingStats = (
+  player: EveryTeamRosterPlayer,
+  live: LiveCountingStats,
+): EveryTeamRosterPlayer => ({
+  ...player,
+  gp: live.gp,
+  min: live.min ?? null,
+  pts: live.pts ?? null,
+  reb: live.reb ?? null,
+  ast: live.ast ?? null,
+  stl: live.stl ?? null,
+  blk: live.blk ?? null,
+  tov: live.tov ?? null,
+  fg3m: live.fg3m ?? null,
+  fgPct: live.fgPct ?? null,
+  fg3Pct: live.fg3Pct ?? null,
+  ftPct: live.ftPct ?? null,
+});
+
+/**
+ * Window box scores beat ESPN season averages. Missing from a live map is
+ * "did not play" — not last year's TOR/LAL line on a new club.
+ */
+const resolveLiveCounting = (
+  playerId: string,
+  season: string,
+  sample: ComposerStatsSample,
+): LiveCountingStats | null | undefined => {
+  if (liveWindowAverages) {
+    return liveWindowAverages.get(playerId) ?? null;
+  }
+  if (
+    liveSeasonAverages &&
+    season === currentSeason &&
+    sample === "regular"
+  ) {
+    return liveSeasonAverages.get(playerId) ?? null;
+  }
+  return undefined;
+};
+
+const applyLiveLayer = (
+  player: EveryTeamRosterPlayer,
+  season: string,
+  sample: ComposerStatsSample,
+): EveryTeamRosterPlayer => {
+  const live = resolveLiveCounting(player.id, season, sample);
+  if (live === undefined) {
+    return player;
+  }
+  if (!live || live.gp <= 0) {
+    return blankCountingStats(player);
+  }
+  return applyLiveCountingStats(player, live);
+};
+
 /** Season averages for a player, using last year’s table when this year is empty. */
 export const playerRowForSeason = (
   playerId: string,
@@ -351,7 +485,14 @@ export const playerRowForSeason = (
     ? priorPlayerStats(playerId, teamId, statsSeason)
     : (priorStatsById(statsSeason).get(playerId) ?? null);
   const found = row ?? priorStatsById(statsSeason).get(playerId) ?? null;
-  return found ? mergeSeasonAverages(found, statsSeason) : null;
+  if (!found) {
+    return null;
+  }
+  return applyLiveLayer(
+    mergeSeasonAverages(found, statsSeason),
+    season,
+    sample,
+  );
 };
 
 const overlayLastSeasonStats = (
@@ -360,6 +501,9 @@ const overlayLastSeasonStats = (
   season: string,
   sample: ComposerStatsSample = "regular",
 ): EveryTeamRosterPlayer => {
+  if (resolveLiveCounting(player.id, season, sample) !== undefined) {
+    return applyLiveLayer(player, season, sample);
+  }
   const statsSeason = statsSeasonFor(season, sample);
   if (statsSeason === season) {
     return mergeSeasonAverages(player, statsSeason);
@@ -921,7 +1065,7 @@ export const pickSeasonLeaders = (
     }))
     .filter(
       (row): row is { player: EveryTeamRosterPlayer; value: number } =>
-        row.value != null,
+        row.value != null && row.player.gp !== 0,
     )
     .sort(
       (left, right) =>

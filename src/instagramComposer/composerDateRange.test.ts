@@ -14,6 +14,7 @@ import {
   nbaSeasonOpenIso,
   normalizeDateRange,
   parseComposerDateRange,
+  rangeCoversSeasonToDate,
   rangeForPreset,
   rangeWeekLine,
   seasonDateRange,
@@ -72,6 +73,27 @@ describe("composer date range", () => {
       from: "2012-10-01",
       to: "2013-06-30",
     });
+    expect(
+      rangeCoversSeasonToDate(
+        { from: "2026-09-16", to: "2026-11-07" },
+        "2026-27",
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      rangeCoversSeasonToDate(
+        { from: "2026-10-01", to: "2026-11-07" },
+        "2026-27",
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      rangeCoversSeasonToDate(
+        { from: "2026-11-02", to: "2026-11-08" },
+        "2026-27",
+        now,
+      ),
+    ).toBe(false);
   });
 
   it("swaps inverted from/to and caps inclusive nights", () => {

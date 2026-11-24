@@ -561,6 +561,9 @@ describe("composer chrome", () => {
     );
     expect(etApp).toContain("Copy caption");
     expect(etApp).toContain("everyTeamCaption");
+    expect(etApp).toContain("fetchEspnSeasonAverages");
+    expect(etApp).toContain("hydrateLiveSeasonAverages");
+    expect(etApp).toContain("rangeCoversSeasonToDate");
     expect(tierApp).toContain("Copy caption");
     expect(tierApp).toContain("tierListCaption");
   });
