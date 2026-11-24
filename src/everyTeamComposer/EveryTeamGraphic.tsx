@@ -46,6 +46,7 @@ import {
   formatEveryTeamCellStat,
   formatSeasonShort,
   getRosterPlayer,
+  rosterStatValue,
   isMissingSeason,
   seasonForTeam,
   teamLogoSrc,
@@ -429,7 +430,10 @@ export const EveryTeamGraphic = forwardRef<HTMLElement, EveryTeamGraphicProps>(
             const overridden = Boolean(cellSeasons?.[team.id]);
             const showYear =
               overridden || cellSeason !== everyTeamCurrentSeason();
-            const noStats = Boolean(shown && shown.pts == null);
+            const noStats = Boolean(
+              shown &&
+              rosterStatValue(shown, cellStatMetric, cellStatRate) == null,
+            );
             return (
               <div
                 key={team.id}

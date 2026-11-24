@@ -83,7 +83,6 @@ import {
 } from "./everyTeamState";
 import {
   EVERY_TEAM_SORT_KEY,
-  EVERY_TEAM_STAT_METRICS,
   EVERY_TEAM_STAT_RATES,
   everyTeamCurrentSeason,
   everyTeamSeasons,
@@ -196,8 +195,6 @@ export function EveryTeamComposerApp() {
   const [gridGroup, setGridGroup] = useState<EveryTeamGridGroup>("none");
   const [partners, setPartners] = useState<EveryTeamSlots>(createEmptyEveryTeamSlots);
   const [duoSeat, setDuoSeat] = useState<EveryTeamSeat>("a");
-  const [fillMetric, setFillMetric] = useState<EveryTeamStatMetric>("points");
-  const [sortMetric, setSortMetric] = useState<EveryTeamStatMetric>("pra");
   const [showCellStat, setShowCellStat] = useState(false);
   const [cellStatMetric, setCellStatMetric] =
     useState<EveryTeamStatMetric>("points");
@@ -205,6 +202,7 @@ export function EveryTeamComposerApp() {
   const [nightMetric, setNightMetric] = useState<EveryTeamNightMetric>("pts");
   const [rangeLoading, setRangeLoading] = useState(false);
   const [statsEpoch, setStatsEpoch] = useState(0);
+  const [liveReady, setLiveReady] = useState(false);
   const night = useComposerNight();
   const { range, setRange } = useComposerDateRange({
     storageKey: DATE_RANGE_KEY,
@@ -216,20 +214,29 @@ export function EveryTeamComposerApp() {
     season !== everyTeamCurrentSeason() ||
     rangesEqual(range, boardSeasonRange) ||
     rangeCoversSeasonToDate(range, season);
+  const needsLiveSeason =
+    season === everyTeamCurrentSeason() && statsSample === "regular";
+  const postingLocked =
+    rangeLoading || !rostersReady || (needsLiveSeason && !liveReady);
   const [samePosition, setSamePosition] = useState(false);
   const [fillPosition, setFillPosition] = useState("PG");
+  const fillPositionFilter =
+    samePosition && fillPosition !== ALL_PLAYER_FILTER ? fillPosition : null;
   const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
+  const wasSeasonTable = useRef(useSeasonTable);
 
   const bumpStatsEpoch = () => setStatsEpoch((value) => value + 1);
 
   const ensureLiveSeasonAverages = async () => {
     if (season !== everyTeamCurrentSeason() || statsSample !== "regular") {
       hydrateLiveSeasonAverages(null);
+      setLiveReady(true);
       bumpStatsEpoch();
       return;
     }
     const rows = await fetchEspnSeasonAverages(season, statsSample);
     hydrateLiveSeasonAverages(rows.size > 0 ? rows : null);
+    setLiveReady(true);
     bumpStatsEpoch();
   };
 
@@ -246,15 +253,18 @@ export function EveryTeamComposerApp() {
       if (season !== everyTeamCurrentSeason() || statsSample !== "regular") {
         hydrateLiveSeasonAverages(null);
         if (!cancelled) {
+          setLiveReady(true);
           bumpStatsEpoch();
         }
         return;
       }
+      setLiveReady(false);
       const rows = await fetchEspnSeasonAverages(season, statsSample);
       if (cancelled) {
         return;
       }
       hydrateLiveSeasonAverages(rows.size > 0 ? rows : null);
+      setLiveReady(true);
       bumpStatsEpoch();
     };
     void run();
@@ -262,6 +272,14 @@ export function EveryTeamComposerApp() {
       cancelled = true;
     };
   }, [hydrated, season, statsSample]);
+
+  useEffect(() => {
+    if (useSeasonTable && !wasSeasonTable.current) {
+      hydrateLiveWindowAverages(null);
+      bumpStatsEpoch();
+    }
+    wasSeasonTable.current = useSeasonTable;
+  }, [useSeasonTable]);
 
   useEffect(() => {
     void loadEveryTeamRosters()
@@ -496,46 +514,26 @@ export function EveryTeamComposerApp() {
   const handleAutoSort = async (metric: EveryTeamStatMetric) => {
     await loadEveryTeamRosters();
     setRostersReady(true);
+    if (needsLiveSeason) {
+      await ensureLiveSeasonAverages();
+    }
     const teams = ranked
       ? normalizeRankedOrder(rankedOrder)
       : createDefaultRankedOrder();
-    if (useSeasonTable) {
-      hydrateLiveWindowAverages(null);
-      await ensureLiveSeasonAverages();
-      applyRankedMetric(
-        metric,
+    applyRankedMetric(
+      metric,
+      slots,
+      rankedMetricValues(
+        teams,
         slots,
-        rankedMetricValues(
-          teams,
-          slots,
-          season,
-          cellSeasons,
-          metric,
-          statsSample,
-          statRate,
-        ),
-        null,
-      );
-      return;
-    }
-    setRangeLoading(true);
-    setStatus("Loading box scores for that date range…");
-    try {
-      const rows = await fetchRangeProduction(range.from, range.to);
-      hydrateLiveWindowAverages(liveCountingFromRangeRows(rows));
-      bumpStatsEpoch();
-      applyRankedMetric(
+        season,
+        cellSeasons,
         metric,
-        slots,
-        rankedRangeMetricValues(teams, slots, rows, metric, statRate),
-        null,
-      );
-    } catch (error: unknown) {
-      console.error(error);
-      setStatus("Could not load that date range.");
-    } finally {
-      setRangeLoading(false);
-    }
+        statsSample,
+        statRate,
+      ),
+      null,
+    );
   };
 
   const handleAutoFill = async (metric: EveryTeamStatMetric) => {
@@ -560,6 +558,7 @@ export function EveryTeamComposerApp() {
         metric,
         statsSample,
         statRate,
+        fillPositionFilter,
       );
       let filled = next.filter(Boolean).length;
       let usedLastSeason = false;
@@ -576,6 +575,7 @@ export function EveryTeamComposerApp() {
             metric,
             statsSample,
             statRate,
+            fillPositionFilter,
           );
           const priorFilled = priorSlots.filter(Boolean).length;
           if (priorFilled > 0) {
@@ -601,6 +601,7 @@ export function EveryTeamComposerApp() {
             metric,
             statsSample,
             statRate,
+            fillPositionFilter,
           ),
         );
       }
@@ -633,7 +634,14 @@ export function EveryTeamComposerApp() {
       const rows = await fetchRangeProduction(range.from, range.to);
       hydrateLiveWindowAverages(liveCountingFromRangeRows(rows));
       bumpStatsEpoch();
-      const result = fillEveryTeamFromRange(slots, rows, metric, statRate);
+      const result = fillEveryTeamFromRange(
+        slots,
+        rows,
+        metric,
+        statRate,
+        fillPositionFilter,
+        season,
+      );
       if (result.filled === 0) {
         setStatus(
           `No ${autoSortMetricLabel(metric, statRate)} lines in that date range.`,
@@ -660,11 +668,28 @@ export function EveryTeamComposerApp() {
     if (!rows.length && night.date === night.todayIso) {
       rows = await night.ensureStandouts(night.yesterdayIso);
     }
-    const result = fillEveryTeamFromNight(slots, rows, metric);
+    const result = fillEveryTeamFromNight(
+      slots,
+      rows,
+      metric,
+      fillPositionFilter,
+      season,
+    );
     if (result.filled === 0) {
       setStatus("No last-night lines for this date.");
       return;
     }
+    hydrateLiveWindowAverages(
+      liveCountingFromRangeRows(
+        rows.map((row) => ({
+          athleteId: row.athleteId,
+          teamId: row.teamId,
+          games: row.games ?? 1,
+          game: row.game,
+        })),
+      ),
+    );
+    bumpStatsEpoch();
     push(snapshot());
     setSlots(result.slots);
     if (duo) {
@@ -753,33 +778,10 @@ export function EveryTeamComposerApp() {
           sample={statsSample}
           onChange={setStatsSample}
         />
-        <label className="sc-field">
-          <span className="sc-toolbar__eyebrow">Rate</span>
-          <select
-            value={statRate}
-            aria-label="Per game, totals, or per minute"
-            onChange={(event) =>
-              setStatRate(parseEveryTeamStatRate(event.target.value))
-            }
-          >
-            {EVERY_TEAM_STAT_RATES.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
         <ComposerNamesToggle
           on={showNames}
           onChange={setShowNames}
           ariaLabel="Show player names on cells"
-        />
-        <StripStatHud
-          on={showCellStat}
-          metric={cellStatMetric}
-          onToggle={setShowCellStat}
-          onMetric={setCellStatMetric}
-          label="On-cell stat"
         />
         <div className="sc-look" role="group" aria-label="Board order">
           <span className="sc-look__label">Order</span>
@@ -800,30 +802,22 @@ export function EveryTeamComposerApp() {
             Ranked
           </button>
         </div>
-        <div className="sc-look sc-look--sort" role="group" aria-label="Auto-fill every team">
-          <span className="sc-look__label">Auto-fill</span>
+        <label className="sc-field sc-hud-fill">
+          <span className="sc-toolbar__eyebrow">Rate</span>
           <select
-            value={fillMetric}
-            aria-label="Auto-fill stat"
+            value={statRate}
+            aria-label="Per game, totals, or per minute"
             onChange={(event) =>
-              setFillMetric(parseEveryTeamStatMetric(event.target.value))
+              setStatRate(parseEveryTeamStatRate(event.target.value))
             }
           >
-            {EVERY_TEAM_STAT_METRICS.map((metric) => (
-              <option key={metric.id} value={metric.id}>
-                {metric.label}
+            {EVERY_TEAM_STAT_RATES.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
               </option>
             ))}
           </select>
-          <button
-            type="button"
-            className="sc-chip"
-            onClick={() => void handleAutoFill(fillMetric)}
-            disabled={rangeLoading || !rostersReady}
-          >
-            Fill leaders
-          </button>
-        </div>
+        </label>
         <ComposerDateRange
           from={range.from}
           to={range.to}
@@ -834,6 +828,78 @@ export function EveryTeamComposerApp() {
           filling={rangeLoading}
           onChange={setRange}
         />
+        <StripStatHud
+          className="sc-hud-fill"
+          on={showCellStat}
+          metric={cellStatMetric}
+          onToggle={setShowCellStat}
+          onMetric={setCellStatMetric}
+          label="Stat"
+          alwaysShowMetric
+        />
+        <div className="sc-look sc-hud-fill" role="group" aria-label="Same position">
+          <span className="sc-look__label">Same position</span>
+          <button
+            type="button"
+            className={samePosition ? "sc-chip is-on" : "sc-chip"}
+            aria-pressed={samePosition}
+            aria-label="Same position on every team"
+            onClick={() =>
+              setSamePosition((current) => {
+                if (!current && fillPosition === ALL_PLAYER_FILTER) {
+                  setFillPosition("PG");
+                }
+                return !current;
+              })
+            }
+          >
+            {samePosition ? "On" : "Off"}
+          </button>
+          {samePosition ? (
+            <select
+              value={fillPosition}
+              aria-label="Fill position"
+              onChange={(event) => setFillPosition(event.target.value)}
+            >
+              {POSITION_FILTERS.filter(
+                (option) => option.id !== ALL_PLAYER_FILTER,
+              ).map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : null}
+        </div>
+        <div className="sc-look sc-look--sort sc-hud-fill" role="group" aria-label="Fill and sort">
+          <span className="sc-look__label">Board</span>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void handleAutoFill(cellStatMetric)}
+            disabled={postingLocked}
+            title={
+              needsLiveSeason && !liveReady
+                ? "Loading this season’s ESPN averages…"
+                : `Fill each team’s ${autoSortMetricLabel(cellStatMetric, statRate)} leader`
+            }
+          >
+            Fill leaders
+          </button>
+          <button
+            type="button"
+            className="sc-chip"
+            onClick={() => void handleAutoSort(cellStatMetric)}
+            disabled={postingLocked}
+            title={
+              needsLiveSeason && !liveReady
+                ? "Loading this season’s ESPN averages…"
+                : `Sort 1–30 by ${autoSortMetricLabel(cellStatMetric, statRate)}`
+            }
+          >
+            Sort 1–30
+          </button>
+        </div>
         <ComposerNightDate
           date={night.date}
           todayIso={night.todayIso}
@@ -862,71 +928,6 @@ export function EveryTeamComposerApp() {
             Fill last night
           </button>
         </div>
-        <div className="sc-look sc-look--sort" role="group" aria-label="Auto-sort ranked board">
-          <span className="sc-look__label">Auto-sort</span>
-          <select
-            value={sortMetric}
-            aria-label="Auto-sort stat"
-            onChange={(event) =>
-              setSortMetric(parseEveryTeamStatMetric(event.target.value))
-            }
-          >
-            {EVERY_TEAM_STAT_METRICS.map((metric) => (
-              <option key={metric.id} value={metric.id}>
-                {metric.label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            className="sc-chip"
-            onClick={() => void handleAutoSort(sortMetric)}
-            disabled={rangeLoading || !rostersReady}
-          >
-            Sort 1–30
-          </button>
-        </div>
-          </>
-        }
-        filters={
-          <>
-            <label className="sc-field">
-              <span className="sc-toolbar__eyebrow">Same position</span>
-              <button
-                type="button"
-                className={samePosition ? "sc-chip is-on" : "sc-chip"}
-                aria-pressed={samePosition}
-                aria-label="Same position on every team"
-                onClick={() =>
-                  setSamePosition((current) => {
-                    if (!current && fillPosition === ALL_PLAYER_FILTER) {
-                      setFillPosition("PG");
-                    }
-                    return !current;
-                  })
-                }
-              >
-                {samePosition ? "On" : "Off"}
-              </button>
-            </label>
-            {samePosition ? (
-              <label className="sc-field">
-                Position
-                <select
-                  value={fillPosition}
-                  aria-label="Fill position"
-                  onChange={(event) => setFillPosition(event.target.value)}
-                >
-                  {POSITION_FILTERS.filter(
-                    (option) => option.id !== ALL_PLAYER_FILTER,
-                  ).map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
           </>
         }
         board={

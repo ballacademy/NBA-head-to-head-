@@ -44,6 +44,7 @@ import {
   listRosterPlayers,
   matchingTeamIds,
   pickSeasonLeader,
+  playerMatchesEveryTeamPosition,
   playerRowForSeason,
   playerStatValue,
   rosterAsTierPlayers,
@@ -451,6 +452,37 @@ describe("every-team order and slots", () => {
     expect(autoFillEveryTeamSlots("2026-27", {}, "rebounds")[slotIndexForTeam("LAC")]).toBe(
       "4066648",
     );
+    const ranked = autoSortRankedOrder(
+      createDefaultRankedOrder(),
+      rankedMetricValues(
+        createDefaultRankedOrder(),
+        autoFillEveryTeamSlots("2026-27", {}, "rebounds"),
+        "2026-27",
+        {},
+        "rebounds",
+      ),
+    );
+    expect(ranked.ranked).toBe(1);
+    expect(ranked.order[0]).toBe("LAC");
+  });
+
+  it("matches G/F groups and fills the same position on every team", () => {
+    expect(playerMatchesEveryTeamPosition("PG", "G")).toBe(true);
+    expect(playerMatchesEveryTeamPosition("C", "G")).toBe(false);
+    expect(playerMatchesEveryTeamPosition("PF", "F")).toBe(true);
+    const centers = autoFillEveryTeamSlots(
+      "2026-27",
+      {},
+      "points",
+      "regular",
+      "per-game",
+      "C",
+    );
+    const okc = listRosterPlayers("OKC", "2026-27").find(
+      (player) => player.id === centers[slotIndexForTeam("OKC")],
+    );
+    expect(okc?.position).toBe("C");
+    expect(centers[slotIndexForTeam("OKC")]).not.toBe("4278073");
   });
 
   it("borrows last-season stats for 2026-27 team-switchers", () => {

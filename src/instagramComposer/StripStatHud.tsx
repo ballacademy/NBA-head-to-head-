@@ -11,6 +11,8 @@ interface StripStatHudProps {
   onMetric: (metric: EveryTeamStatMetric) => void;
   label?: string;
   className?: string;
+  /** Keep the metric select visible so Fill / Sort can use it while the print is off. */
+  alwaysShowMetric?: boolean;
 }
 
 export function StripStatHud({
@@ -20,6 +22,7 @@ export function StripStatHud({
   onMetric,
   label = "Stat under name",
   className,
+  alwaysShowMetric = false,
 }: StripStatHudProps) {
   return (
     <label className={["sc-field", className].filter(Boolean).join(" ")}>
@@ -33,7 +36,7 @@ export function StripStatHud({
       >
         {on ? "On" : "Off"}
       </button>
-      {on ? (
+      {on || alwaysShowMetric ? (
         <select
           value={metric}
           aria-label={`${label} metric`}

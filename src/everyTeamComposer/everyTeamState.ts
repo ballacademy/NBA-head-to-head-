@@ -9,6 +9,7 @@ import {
   getRosterPlayer,
   pickSeasonLeader,
   pickSeasonLeaders,
+  playerMatchesEveryTeamPosition,
   rosterHasPlayer,
   rosterStatValue,
   seasonForTeam,
@@ -459,6 +460,7 @@ export const autoFillEveryTeamSlots = (
   metric: EveryTeamStatMetric = "points",
   sample: ComposerStatsSample = "regular",
   rate: EveryTeamStatRate = "per-game",
+  position?: string | null,
 ): EveryTeamSlots =>
   EVERY_TEAM_ORDER.map(
     (team) =>
@@ -468,6 +470,7 @@ export const autoFillEveryTeamSlots = (
         metric,
         sample,
         rate,
+        position,
       )?.id ?? null,
   );
 
@@ -478,6 +481,7 @@ export const autoFillEveryTeamPartners = (
   metric: EveryTeamStatMetric = "points",
   sample: ComposerStatsSample = "regular",
   rate: EveryTeamStatRate = "per-game",
+  position?: string | null,
 ): EveryTeamSlots =>
   EVERY_TEAM_ORDER.map((team, index) => {
     const skip = occupied[index];
@@ -488,6 +492,7 @@ export const autoFillEveryTeamPartners = (
       sample,
       2,
       rate,
+      position,
     );
     return leaders.find((player) => player.id !== skip)?.id ?? null;
   });
@@ -514,9 +519,23 @@ export const fillEveryTeamFromNight = (
     game: { stats: { pts: string; reb: string; ast: string } };
   }>,
   metric: EveryTeamNightMetric = "pts",
+  position?: string | null,
+  boardSeason?: string,
 ): { slots: EveryTeamSlots; filled: number } => {
   const best = new Map<string, { id: string; score: number }>();
   for (const row of standouts) {
+    if (position) {
+      const rostered = getRosterPlayer(
+        row.teamId,
+        boardSeason ?? "",
+        row.athleteId,
+      );
+      if (
+        !playerMatchesEveryTeamPosition(rostered?.position ?? "", position)
+      ) {
+        continue;
+      }
+    }
     const score = nightScore(row.game.stats, metric);
     const prev = best.get(row.teamId);
     if (!prev || score > prev.score) {
@@ -683,9 +702,23 @@ export const fillEveryTeamFromRange = (
   rows: RangeBoxRow[],
   metric: EveryTeamStatMetric,
   rate: EveryTeamStatRate = "per-game",
+  position?: string | null,
+  boardSeason?: string,
 ): { slots: EveryTeamSlots; filled: number } => {
   const best = new Map<string, { id: string; score: number }>();
   for (const row of rows) {
+    if (position) {
+      const rostered = getRosterPlayer(
+        row.teamId,
+        boardSeason ?? "",
+        row.athleteId,
+      );
+      if (
+        !playerMatchesEveryTeamPosition(rostered?.position ?? "", position)
+      ) {
+        continue;
+      }
+    }
     const raw = boxScoreMetricValue(
       row.game.stats,
       metric,

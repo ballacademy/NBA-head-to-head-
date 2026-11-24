@@ -564,6 +564,20 @@ describe("composer chrome", () => {
     expect(etApp).toContain("fetchEspnSeasonAverages");
     expect(etApp).toContain("hydrateLiveSeasonAverages");
     expect(etApp).toContain("rangeCoversSeasonToDate");
+    expect(etApp.indexOf("<ComposerDateRange")).toBeLessThan(
+      etApp.indexOf("Fill leaders"),
+    );
+    expect(etApp.indexOf("Same position")).toBeLessThan(
+      etApp.indexOf("Fill leaders"),
+    );
+    expect(etApp.indexOf("Fill leaders")).toBeLessThan(
+      etApp.indexOf("Sort 1–30"),
+    );
+    expect(etApp).toContain("alwaysShowMetric");
+    expect(etApp).not.toContain("Auto-fill stat");
+    expect(etApp).not.toContain("Auto-sort stat");
+    expect(etApp).toContain("handleAutoFill(cellStatMetric)");
+    expect(etApp).toContain("handleAutoSort(cellStatMetric)");
     expect(tierApp).toContain("Copy caption");
     expect(tierApp).toContain("tierListCaption");
   });
@@ -1356,7 +1370,8 @@ describe("composer chrome", () => {
     expect(etApp).toContain("ComposerDateRange");
     expect(etApp).toContain("alwaysShowDates");
     expect(etApp).toContain("includeFullSeason");
-    expect(etApp).toContain("On-cell stat");
+    expect(etApp).toContain('label="Stat"');
+    expect(etApp).toContain("alwaysShowMetric");
     expect(etApp).not.toContain("nightAuto");
     expect(etApp).toContain("Show player names on cells");
     expect(compareApp).toContain("last-5");
@@ -2322,7 +2337,7 @@ describe("composer chrome", () => {
     expect(sheet).toContain("contents boxes ignore `order`");
     expect(sheet).toContain("overflow-wrap: anywhere");
     expect(everyTeam).toContain("await loadEveryTeamRosters()");
-    expect(everyTeam).toContain("disabled={rangeLoading || !rostersReady}");
+    expect(everyTeam).toContain("disabled={postingLocked}");
     expect(everyTeam).toContain("previousSeason(season)");
     expect(statApp).toContain("night.setDate(yesterday)");
     expect(statApp).toContain("lastNightRange()");

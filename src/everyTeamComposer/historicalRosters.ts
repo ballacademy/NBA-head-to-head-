@@ -1050,6 +1050,36 @@ export const matchingTeamIds = (
   }).map((item) => item.id);
 };
 
+export const playerMatchesEveryTeamPosition = (
+  playerPosition: string,
+  wanted: string | null | undefined,
+) => {
+  if (!wanted || wanted === "all") {
+    return true;
+  }
+  if (wanted === "Coach" || wanted === "HC") {
+    return playerPosition === "HC";
+  }
+  if (playerPosition === wanted) {
+    return true;
+  }
+  if (wanted === "G") {
+    return (
+      playerPosition === "PG" ||
+      playerPosition === "SG" ||
+      playerPosition === "G"
+    );
+  }
+  if (wanted === "F") {
+    return (
+      playerPosition === "SF" ||
+      playerPosition === "PF" ||
+      playerPosition === "F"
+    );
+  }
+  return false;
+};
+
 export const pickSeasonLeaders = (
   teamId: string,
   season: string,
@@ -1057,6 +1087,7 @@ export const pickSeasonLeaders = (
   sample: ComposerStatsSample = "regular",
   count = 1,
   rate: EveryTeamStatRate = "per-game",
+  position?: string | null,
 ): EveryTeamRosterPlayer[] => {
   const ranked = listRosterPlayers(teamId, season, sample)
     .map((player) => ({
@@ -1065,7 +1096,9 @@ export const pickSeasonLeaders = (
     }))
     .filter(
       (row): row is { player: EveryTeamRosterPlayer; value: number } =>
-        row.value != null && row.player.gp !== 0,
+        row.value != null &&
+        row.player.gp !== 0 &&
+        playerMatchesEveryTeamPosition(row.player.position, position),
     )
     .sort(
       (left, right) =>
@@ -1082,8 +1115,10 @@ export const pickSeasonLeader = (
   metric: EveryTeamStatMetric,
   sample: ComposerStatsSample = "regular",
   rate: EveryTeamStatRate = "per-game",
+  position?: string | null,
 ): EveryTeamRosterPlayer | null =>
-  pickSeasonLeaders(teamId, season, metric, sample, 1, rate)[0] ?? null;
+  pickSeasonLeaders(teamId, season, metric, sample, 1, rate, position)[0] ??
+  null;
 
 export const roundStat = (value: number) => Math.round(value * 10) / 10;
 
