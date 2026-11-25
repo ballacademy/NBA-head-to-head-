@@ -94,7 +94,7 @@ export function ShotChartComposerApp() {
   const { range, setRange } = useComposerDateRange();
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const night = useComposerNight();
-  const { push, pop, canUndo } = useComposerUndo<ShotChartDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<ShotChartDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
   const fillSeq = useRef(0);
 
@@ -443,7 +443,7 @@ export function ShotChartComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
-                const previous = pop();
+                const previous = undo(draft);
                 if (previous) {
                   setDraft(previous);
                 }
@@ -451,6 +451,19 @@ export function ShotChartComposerApp() {
               disabled={!canUndo}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                }
+              }}
+              disabled={!canRedo}
+            >
+              Redo
             </button>
             <button
               type="button"

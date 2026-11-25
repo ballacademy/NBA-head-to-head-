@@ -32,18 +32,24 @@ import {
 import { readJson, writeJson } from "../lib/browserStorage";
 import { TeamPicker } from "../standingsComposer/TeamPicker";
 import { autoSortMetricLabel } from "../everyTeamComposer/everyTeamState";
+import { fetchEspnSeasonAverages } from "../everyTeamComposer/espnSeasonAverages";
 import {
   EVERY_TEAM_STAT_METRICS,
   everyTeamCurrentSeason,
+  hydrateLiveSeasonAverages,
   loadEveryTeamRosters,
   matchingTeamIds,
   parseEveryTeamStatMetric,
-  playerStatValue,
-  previousSeason,
-  teamStatValue,
   withRosterDepth,
   type EveryTeamStatMetric,
 } from "../everyTeamComposer/historicalRosters";
+import {
+  averagePlayerStat,
+  averageTeamStat,
+  overlayCountingStats,
+  seasonsForStatsWindow,
+  statsWindowLabel,
+} from "./statsWindow";
 import { exportTierListPng } from "./exportTierPng";
 import { PlayerFilterBar } from "./PlayerFilterBar";
 import { PlayerPicker } from "./PlayerPicker";
@@ -171,7 +177,8 @@ export function TierListComposerApp() {
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [showBa, setShowBa] = useState(true);
   const [showNames, setShowNames] = useState(false);
-  const { push, pop, canUndo } = useComposerUndo<TierRow[]>();
+  const [liveEpoch, setLiveEpoch] = useState(0);
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<TierRow[]>();
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
   const matchingIds = useMemo(
@@ -180,10 +187,14 @@ export function TierListComposerApp() {
         ? searchPlayers(
             "",
             playerFilters,
-            withRosterDepth(NBA_ACTIVE_PLAYERS),
+            overlayCountingStats(
+              withRosterDepth(NBA_ACTIVE_PLAYERS),
+              playerFilters,
+              statsSample,
+            ),
           ).map((player) => player.id)
         : matchingTeamIds(playerFilters),
-    [subject, playerFilters, rostersReady],
+    [subject, playerFilters, rostersReady, statsSample, liveEpoch],
   );
   const filteredPlayerCount = matchingIds.length;
 
@@ -213,6 +224,34 @@ export function TierListComposerApp() {
         setRostersReady(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (!rostersReady) {
+      return;
+    }
+    const current = everyTeamCurrentSeason();
+    const seasons = seasonsForStatsWindow(playerFilters);
+    if (!seasons.includes(current) || statsSample !== "regular") {
+      return;
+    }
+    let cancelled = false;
+    void fetchEspnSeasonAverages(current, statsSample).then((rows) => {
+      if (cancelled) {
+        return;
+      }
+      hydrateLiveSeasonAverages(rows.size > 0 ? rows : null);
+      setLiveEpoch((value) => value + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    rostersReady,
+    playerFilters.statsWindow,
+    playerFilters.statsFrom,
+    playerFilters.statsTo,
+    statsSample,
+  ]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -343,34 +382,18 @@ export function TierListComposerApp() {
   };
 
   const valuesForIds = (ids: string[], metric: EveryTeamStatMetric) => {
-    const season = everyTeamCurrentSeason();
-    const prior = previousSeason(season);
+    const seasons = seasonsForStatsWindow(playerFilters);
     const values = new Map<string, number | null>();
     ids.forEach((id) => {
       if (subject === "teams") {
-        values.set(
-          id,
-          teamStatValue(id, season, metric, statsSample) ??
-            teamStatValue(id, season, metric, "regular") ??
-            teamStatValue(id, prior, metric, "regular"),
-        );
+        values.set(id, averageTeamStat(id, metric, seasons, statsSample));
         return;
       }
       const player = getPlayer(id);
-      const team = player?.team ?? null;
-      const live =
-        playerStatValue(id, season, metric, team, statsSample) ??
-        playerStatValue(id, season, metric, team, "regular") ??
-        playerStatValue(id, prior, metric, team, "regular");
-      if (live != null) {
-        values.set(id, live);
-        return;
-      }
-      if (metric === "points" && player && player.ppg > 0) {
-        values.set(id, player.ppg);
-        return;
-      }
-      values.set(id, null);
+      values.set(
+        id,
+        averagePlayerStat(id, player?.team ?? null, metric, seasons, statsSample),
+      );
     });
     return values;
   };
@@ -424,7 +447,7 @@ export function TierListComposerApp() {
           setRows(board);
         }
         setStatus(
-          `No ${label} yet — last season’s table is used when this year has none.`,
+          `No ${label} yet for ${statsWindowLabel(playerFilters)}.`,
         );
         return;
       }
@@ -639,7 +662,7 @@ export function TierListComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(rows);
               if (previous) {
                 setRows(previous);
                 setStatus("Undid last change.");
@@ -648,6 +671,20 @@ export function TierListComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(rows);
+              if (next) {
+                setRows(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos
@@ -813,6 +850,7 @@ export function TierListComposerApp() {
           hint="Players and head coaches. Board filters already applied."
           includeCoaches
           lockedFilters={playerFilters}
+          scoringLabel={`${statsWindowLabel(playerFilters)} PPG`}
           currentId={active.replaceId}
           usedLabels={usedLabelsForPicker(rows, active.rowIndex, active.replaceId)}
           clearLabel={active.replaceId ? "Remove from row" : "Clear slot"}

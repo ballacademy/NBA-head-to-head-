@@ -68,7 +68,7 @@ export function ScheduleComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(SCHEDULE_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const { push, pop, canUndo } = useComposerUndo<ScheduleDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<ScheduleDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
   const [allGames, setAllGames] = useState<ScheduleGame[]>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -291,7 +291,7 @@ export function ScheduleComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
-                const previous = pop();
+                const previous = undo(draft);
                 if (previous) {
                   setDraft(previous);
                 }
@@ -299,6 +299,19 @@ export function ScheduleComposerApp() {
               disabled={!canUndo}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                }
+              }}
+              disabled={!canRedo}
+            >
+              Redo
             </button>
             <button
               type="button"

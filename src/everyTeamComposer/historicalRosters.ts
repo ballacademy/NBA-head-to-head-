@@ -708,6 +708,7 @@ export const rosterAsTierPlayers = (
     experienceYears: 0,
     allStar: false,
     ppg: player.pts ?? 0,
+    mpg: player.min ?? 0,
     depth: player.depth,
   }));
 };

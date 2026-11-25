@@ -165,7 +165,7 @@ export function TeamOfTheWeekComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<TotwStrip[]>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<TotwStrip[]>();
   const { range, setRange } = useComposerDateRange();
   const [weekRows, setWeekRows] = useState<NightStandout[]>([]);
   const [weekLoading, setWeekLoading] = useState(false);
@@ -642,7 +642,7 @@ export function TeamOfTheWeekComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(strips);
               if (previous) {
                 setStrips(previous);
                 setStatus("Undid last change.");
@@ -651,6 +651,20 @@ export function TeamOfTheWeekComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(strips);
+              if (next) {
+                setStrips(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos

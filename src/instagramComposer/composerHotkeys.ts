@@ -1,6 +1,7 @@
 export const COMPOSER_HOTKEY_FILL = "f";
 export const COMPOSER_HOTKEY_EXPORT = "e";
 export const COMPOSER_HOTKEY_UNDO = "z";
+export const COMPOSER_HOTKEY_REDO = "y";
 
 export const isComposerTypingTarget = (target: EventTarget | null) => {
   if (typeof Element === "undefined" || !(target instanceof Element)) {
@@ -22,7 +23,7 @@ export const isComposerTypingTarget = (target: EventTarget | null) => {
 };
 
 export const composerHotkeyAction = (event: KeyboardEvent) => {
-  if (event.metaKey || event.ctrlKey || event.altKey) {
+  if (event.altKey) {
     return null;
   }
   if (isComposerTypingTarget(event.target)) {
@@ -33,14 +34,21 @@ export const composerHotkeyAction = (event: KeyboardEvent) => {
     return "focus-off" as const;
   }
   const lower = key.toLowerCase();
+  const modified = event.metaKey || event.ctrlKey;
+  if (lower === COMPOSER_HOTKEY_UNDO) {
+    return event.shiftKey ? ("redo" as const) : ("undo" as const);
+  }
+  if (modified && lower === COMPOSER_HOTKEY_REDO) {
+    return "redo" as const;
+  }
+  if (modified) {
+    return null;
+  }
   if (lower === COMPOSER_HOTKEY_FILL) {
     return "fill" as const;
   }
   if (lower === COMPOSER_HOTKEY_EXPORT) {
     return "export" as const;
-  }
-  if (lower === COMPOSER_HOTKEY_UNDO) {
-    return "undo" as const;
   }
   if (key === "1") {
     return "ratio-4-5" as const;
@@ -79,14 +87,13 @@ export const COMPOSER_HOTKEY_FILL_LABELS = [
   "Auto-fill",
 ] as const;
 
-const clickNamed = (root: ParentNode, names: readonly string[]) => {
-  const buttons = [...root.querySelectorAll("button")];
-  for (const name of names) {
-    const button = buttons.find((el) => {
+const clickNamed = (root: ParentNode, labels: readonly string[]) => {
+  for (const label of labels) {
+    const button = Array.from(root.querySelectorAll("button")).find((el) => {
       if ((el as HTMLButtonElement).disabled) {
         return false;
       }
-      return buttonLabel(el) === name;
+      return buttonLabel(el) === label;
     });
     if (button) {
       button.click();
@@ -108,6 +115,9 @@ export const runComposerHotkey = (
   }
   if (action === "undo") {
     return clickNamed(root, ["Undo"]);
+  }
+  if (action === "redo") {
+    return clickNamed(root, ["Redo"]);
   }
   if (action === "ratio-9-16") {
     return (

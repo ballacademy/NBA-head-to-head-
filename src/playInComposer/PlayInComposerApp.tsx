@@ -72,7 +72,7 @@ export function PlayInComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PLAY_IN_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const { push, pop, canUndo } = useComposerUndo<PlayInDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<PlayInDraft>();
   const [liveOn, setLiveOn] = useState(true);
   const [storyCrop, setStoryCrop] = useState(false);
 
@@ -400,7 +400,7 @@ export function PlayInComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(draft);
               if (previous) {
                 setDraft(previous);
               }
@@ -408,6 +408,19 @@ export function PlayInComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(draft);
+              if (next) {
+                setDraft(next);
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button
             type="button"

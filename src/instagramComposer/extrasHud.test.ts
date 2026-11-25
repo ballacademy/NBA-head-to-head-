@@ -93,6 +93,36 @@ describe("extras 17–32 HUD helpers", () => {
     expect(key("f")).toBe("fill");
     expect(key("e")).toBe("export");
     expect(key("z")).toBe("undo");
+    expect(
+      composerHotkeyAction({
+        key: "z",
+        metaKey: false,
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: true,
+        target: null,
+      } as KeyboardEvent),
+    ).toBe("redo");
+    expect(
+      composerHotkeyAction({
+        key: "z",
+        metaKey: true,
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: false,
+        target: null,
+      } as KeyboardEvent),
+    ).toBe("undo");
+    expect(
+      composerHotkeyAction({
+        key: "y",
+        metaKey: false,
+        ctrlKey: true,
+        altKey: false,
+        shiftKey: false,
+        target: null,
+      } as KeyboardEvent),
+    ).toBe("redo");
     expect(key("1")).toBe("ratio-4-5");
     expect(key("2")).toBe("ratio-9-16");
     expect(key("3")).toBe("ratio-1-1");
@@ -127,6 +157,11 @@ describe("extras 17–32 HUD helpers", () => {
     } as unknown as ParentNode);
     expect(east.click).toHaveBeenCalledTimes(1);
     expect(generic.click).not.toHaveBeenCalled();
+    const redo = { textContent: "Redo", disabled: false, click: vi.fn() };
+    runComposerHotkey("redo", {
+      querySelectorAll: () => [redo],
+    } as unknown as ParentNode);
+    expect(redo.click).toHaveBeenCalledTimes(1);
   });
 
   it("toasts preseason and under-2 GP fills", () => {

@@ -222,7 +222,7 @@ export function EveryTeamComposerApp() {
   const [fillPosition, setFillPosition] = useState("PG");
   const fillPositionFilter =
     samePosition && fillPosition !== ALL_PLAYER_FILTER ? fillPosition : null;
-  const { push, pop, canUndo } = useComposerUndo<EveryTeamBoardSnapshot>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<EveryTeamBoardSnapshot>();
   const wasSeasonTable = useRef(useSeasonTable);
 
   const bumpStatsEpoch = () => setStatsEpoch((value) => value + 1);
@@ -1052,7 +1052,7 @@ export function EveryTeamComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(snapshot());
               if (previous) {
                 setSlots(previous.slots);
                 setPartners(previous.partners);
@@ -1065,6 +1065,24 @@ export function EveryTeamComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(snapshot());
+              if (next) {
+                setSlots(next.slots);
+                setPartners(next.partners);
+                setRankedOrder(normalizeRankedOrder(next.rankedOrder));
+                setSeason(next.season);
+                setCellSeasons(next.cellSeasons);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos

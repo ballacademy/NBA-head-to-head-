@@ -139,7 +139,7 @@ export function PyramidComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<{
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<{
     slots: PyramidSlot[];
     rows: number;
   }>();
@@ -531,7 +531,7 @@ export function PyramidComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo({ slots, rows });
               if (previous) {
                 setSlots(previous.slots);
                 setRows(previous.rows);
@@ -541,6 +541,21 @@ export function PyramidComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo({ slots, rows });
+              if (next) {
+                setSlots(next.slots);
+                setRows(next.rows);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos

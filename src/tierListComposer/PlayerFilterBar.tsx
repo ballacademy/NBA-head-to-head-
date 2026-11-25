@@ -10,6 +10,8 @@ import {
   DRAFT_STATUS_FILTERS,
   EXPERIENCE_SPAN,
   HEIGHT_SPAN,
+  MINUTES_SPAN,
+  POINTS_SPAN,
   POSITION_FILTERS,
   ROLE_FILTERS,
   TEAM_FILTERS,
@@ -20,6 +22,11 @@ import {
   type NumberRange,
   type PlayerSearchFilters,
 } from "./nbaActivePlayers";
+import { everyTeamCurrentSeason, everyTeamSeasons } from "../everyTeamComposer/historicalRosters";
+import {
+  STATS_WINDOW_RANGE,
+  statsWindowOptions,
+} from "./statsWindow";
 
 export function FilterSelect({
   label,
@@ -117,6 +124,90 @@ interface PlayerFilterBarProps {
   onChange: (filters: PlayerSearchFilters) => void;
   onReset: () => void;
   variant?: "players" | "teams";
+  showStatsWindow?: boolean;
+  showStatRanges?: boolean;
+}
+
+function StatsWindowSelect({
+  filters,
+  onChange,
+}: {
+  filters: PlayerSearchFilters;
+  onChange: (filters: PlayerSearchFilters) => void;
+}) {
+  const seasons = everyTeamSeasons();
+  const current = everyTeamCurrentSeason();
+  const options = statsWindowOptions(seasons, current);
+  const blocks: Array<{
+    group?: string;
+    rows: Array<{ id: string; label: string }>;
+  }> = [];
+  options.forEach((option) => {
+    const last = blocks[blocks.length - 1];
+    if (last && last.group === option.group) {
+      last.rows.push(option);
+      return;
+    }
+    blocks.push({ group: option.group, rows: [option] });
+  });
+  const window = filters.statsWindow ?? "current";
+  const showRange = window === STATS_WINDOW_RANGE;
+  const from = filters.statsFrom ?? seasons[0] ?? current;
+  const to = filters.statsTo ?? current;
+  const seasonOptions = seasons.map((season) => ({ id: season, label: season }));
+
+  return (
+    <div className="sc-player-filters__stats">
+      <label className="sc-picker__dropdown">
+        Stats from
+        <select
+          value={window}
+          aria-label="Stats from"
+          onChange={(event) =>
+            onChange({ ...filters, statsWindow: event.target.value })
+          }
+        >
+          {blocks.map((block, index) =>
+            block.group ? (
+              <optgroup key={block.group} label={block.group}>
+                {block.rows.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </optgroup>
+            ) : (
+              block.rows.map((option) => (
+                <option key={`${index}-${option.id}`} value={option.id}>
+                  {option.label}
+                </option>
+              ))
+            ),
+          )}
+        </select>
+      </label>
+      {showRange ? (
+        <>
+          <FilterSelect
+            label="From"
+            value={from}
+            options={seasonOptions}
+            onChange={(event) =>
+              onChange({ ...filters, statsFrom: event.target.value })
+            }
+          />
+          <FilterSelect
+            label="To"
+            value={to}
+            options={seasonOptions}
+            onChange={(event) =>
+              onChange({ ...filters, statsTo: event.target.value })
+            }
+          />
+        </>
+      ) : null}
+    </div>
+  );
 }
 
 export function PlayerFilterBar({
@@ -125,6 +216,8 @@ export function PlayerFilterBar({
   onChange,
   onReset,
   variant = "players",
+  showStatsWindow = true,
+  showStatRanges = true,
 }: PlayerFilterBarProps) {
   const setFilter =
     (key: keyof PlayerSearchFilters) =>
@@ -132,7 +225,14 @@ export function PlayerFilterBar({
       onChange({ ...filters, [key]: event.target.value });
     };
   const setRange =
-    (key: "ageRange" | "heightRange" | "experienceRange") =>
+    (
+      key:
+        | "ageRange"
+        | "heightRange"
+        | "experienceRange"
+        | "pointsRange"
+        | "minutesRange",
+    ) =>
     (range: NumberRange) => {
       onChange({ ...filters, [key]: range });
     };
@@ -145,6 +245,9 @@ export function PlayerFilterBar({
       className="sc-player-filters"
       aria-label={teamsOnly ? "Team filters" : "Player filters"}
     >
+      {showStatsWindow ? (
+        <StatsWindowSelect filters={filters} onChange={onChange} />
+      ) : null}
       <FilterSelect
         label="Team"
         value={filters.team ?? ALL_PLAYER_FILTER}
@@ -222,6 +325,24 @@ export function PlayerFilterBar({
               format={(years) => `${years}y`}
               onChange={setRange("experienceRange")}
             />
+            {showStatRanges ? (
+              <>
+                <FilterRange
+                  label="Points"
+                  span={POINTS_SPAN}
+                  value={filters.pointsRange}
+                  format={(value) => `${value} PPG`}
+                  onChange={setRange("pointsRange")}
+                />
+                <FilterRange
+                  label="Minutes"
+                  span={MINUTES_SPAN}
+                  value={filters.minutesRange}
+                  format={(value) => `${value} MPG`}
+                  onChange={setRange("minutesRange")}
+                />
+              </>
+            ) : null}
           </div>
         </>
       )}

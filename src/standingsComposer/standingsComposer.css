@@ -1776,10 +1776,18 @@ main.sc-stage {
   align-items: end;
 }
 
+.sc-player-filters__stats {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 8px 10px;
+  align-items: end;
+}
+
 .sc-player-filters__ranges {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px 16px;
   padding-top: 4px;
 }
@@ -2950,6 +2958,7 @@ label.sc-chip {
   .sc-picker__dropdowns,
   .sc-picker__board-filters .sc-picker__dropdowns,
   .sc-player-filters,
+  .sc-player-filters__stats,
   .sc-player-filters__ranges {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

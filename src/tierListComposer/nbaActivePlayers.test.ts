@@ -278,6 +278,19 @@ describe("active NBA player catalog", () => {
     expect(stored.experienceRange).toEqual({ min: 1, max: 4 });
     expect(isEmptyPlayerFilters(stored)).toBe(false);
     expect(isEmptyPlayerFilters(parsePlayerSearchFilters({}))).toBe(true);
+    const scoring = parsePlayerSearchFilters({
+      pointsRange: { min: 10, max: 28 },
+      minutesRange: { min: 12, max: 36 },
+      statsWindow: "2025-26",
+    });
+    expect(scoring.pointsRange).toEqual({ min: 10, max: 28 });
+    expect(scoring.minutesRange).toEqual({ min: 12, max: 36 });
+    expect(scoring.statsWindow).toBe("2025-26");
+    const catalogHot = searchPlayers("", {
+      pointsRange: { min: 30, max: 50 },
+    });
+    expect(catalogHot.every((player) => player.ppg >= 30)).toBe(true);
+    expect(catalogHot.some((player) => player.id === "3945274")).toBe(true);
   });
 
   it("filters starters vs bench from the Every Team depth chart", () => {

@@ -62,7 +62,7 @@ export function PotdLeaderboardComposerApp() {
   const [potdKeys, setPotdKeys] = useState<string[]>([]);
   const [pageIndex, setPageIndex] = useState(0);
   const [draftName, setDraftName] = useState("");
-  const { push, pop, canUndo } = useComposerUndo<LeaderboardEntry[]>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<LeaderboardEntry[]>();
   const pageCount = useMemo(
     () => leaderboardPageCount(entries),
     [entries],
@@ -294,7 +294,7 @@ export function PotdLeaderboardComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(entries);
               if (previous) {
                 setEntries(previous);
                 setStatus("Undid last change.");
@@ -303,6 +303,20 @@ export function PotdLeaderboardComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(entries);
+              if (next) {
+                setEntries(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos

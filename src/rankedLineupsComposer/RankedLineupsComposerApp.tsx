@@ -218,7 +218,7 @@ export function RankedLineupsComposerApp({
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<{
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<{
     strips: RankedLineupStrip[];
     positionLabels: string[];
   }>();
@@ -860,7 +860,7 @@ export function RankedLineupsComposerApp({
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(snapshotBoard());
               if (previous) {
                 setStrips(previous.strips);
                 setPositionLabels(
@@ -876,6 +876,27 @@ export function RankedLineupsComposerApp({
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(snapshotBoard());
+              if (next) {
+                setStrips(next.strips);
+                setPositionLabels(
+                  parsePositionLabels(
+                    next.positionLabels,
+                    next.strips.length,
+                  ),
+                );
+                persistSlide(next.strips);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos

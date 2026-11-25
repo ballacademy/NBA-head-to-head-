@@ -96,7 +96,7 @@ export function LeaderSplitComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<LeaderSplitDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<LeaderSplitDraft>();
   const { range, setRange } = useComposerDateRange();
 
   useEffect(() => {
@@ -429,10 +429,16 @@ export function LeaderSplitComposerApp() {
         actions={
           <>
             <button type="button" className="sc-chip" disabled={!canUndo} onClick={() => {
-              const prev = pop();
+              const prev = undo(draft);
               if (prev) setDraft(prev);
             }}>
               Undo
+            </button>
+          <button type="button" className="sc-chip" disabled={!canRedo} onClick={() => {
+              const next = redo(draft);
+              if (next) setDraft(next);
+            }}>
+              Redo
             </button>
             <button
               type="button"

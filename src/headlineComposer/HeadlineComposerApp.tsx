@@ -156,7 +156,7 @@ export function HeadlineComposerApp() {
     playerName: string;
   } | null>(null);
   const [storyCrop, setStoryCrop] = useState(false);
-  const { push, pop, canUndo } = useComposerUndo<HeadlineDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<HeadlineDraft>();
   const night = useComposerNight();
   const nameScope = parseHeadlineNameScope(
     draft.nameScope ?? (draft.subjectMode === "team" ? "auto" : "player"),
@@ -753,7 +753,7 @@ export function HeadlineComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(draft);
               if (previous) {
                 setDraft(normalizeHeadlineDraft(previous));
                 setStatus("Undid last change.");
@@ -762,6 +762,20 @@ export function HeadlineComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(draft);
+              if (next) {
+                setDraft(normalizeHeadlineDraft(next));
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button
             type="button"

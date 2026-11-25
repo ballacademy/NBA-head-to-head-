@@ -24,10 +24,11 @@ import {
   EMPTY_PLAYER_FILTERS,
   EXPERIENCE_SPAN,
   HEIGHT_SPAN,
+  MINUTES_SPAN,
   NBA_ACTIVE_PLAYERS,
-  PLAYER_SCORING_SEASON,
   PLAYER_SCORING_SOURCE,
   PLAYER_SORT_KEY,
+  POINTS_SPAN,
   POSITION_FILTERS,
   ROLE_FILTERS,
   depthChartLabel,
@@ -41,6 +42,7 @@ import {
   type NumberRange,
   type TierPlayer,
 } from "./nbaActivePlayers";
+import { overlayCountingStats, statsWindowLabel } from "./statsWindow";
 
 interface PlayerPickerProps {
   heading: string;
@@ -267,7 +269,7 @@ export function PlayerPicker({
     const catalog = includeCoaches
       ? withCoaches(rosterPlayers ?? NBA_ACTIVE_PLAYERS)
       : (rosterPlayers ?? NBA_ACTIVE_PLAYERS);
-    const withDepth = withRosterDepth(catalog);
+    const withDepth = overlayCountingStats(withRosterDepth(catalog), boardFilters);
     return sortPlayers(
       searchPlayers(
         query,
@@ -331,8 +333,16 @@ export function PlayerPicker({
     }
   };
 
+  const scoringSeasonLabel = statsWindowLabel(boardFilters);
   const setLocalRange =
-    (key: "ageRange" | "heightRange" | "experienceRange") =>
+    (
+      key:
+        | "ageRange"
+        | "heightRange"
+        | "experienceRange"
+        | "pointsRange"
+        | "minutesRange",
+    ) =>
     (range: NumberRange) => {
       setLocalFilters((current) => ({ ...current, [key]: range }));
     };
@@ -420,12 +430,12 @@ export function PlayerPicker({
                 hasRecChrome
                   ? "Gold recs sort by that night’s PTS. Catalog below stays season PPG."
                   : scoringLabel ??
-                    `${PLAYER_SCORING_SOURCE} · ${PLAYER_SCORING_SEASON} regular-season PPG`
+                    `${PLAYER_SCORING_SOURCE} · ${scoringSeasonLabel} PPG`
               }
             >
               {hasRecChrome
                 ? "Night PTS"
-                : (scoringLabel ?? `${PLAYER_SCORING_SEASON} PPG`)}
+                : (scoringLabel ?? `${scoringSeasonLabel} PPG`)}
             </span>
             {hideBoardFilters ? null : (
               <button
@@ -568,8 +578,7 @@ export function PlayerPicker({
             {simple
               ? "Same position on every team. Depth chart is starter, then backups, for that season."
               : `Showing the board’s filtered roster. Name search still applies.
-            Points sort uses Basketball-Reference ${PLAYER_SCORING_SEASON}
-            regular-season PPG.`}
+            Points sort uses ${scoringSeasonLabel} PPG.`}
           </p>
         ) : simple ? (
           <div className="sc-picker__board-filters">
@@ -624,6 +633,20 @@ export function PlayerPicker({
                 value={localFilters.experienceRange}
                 format={(years) => `${years}y`}
                 onChange={setLocalRange("experienceRange")}
+              />
+              <FilterRange
+                label="Points"
+                span={POINTS_SPAN}
+                value={localFilters.pointsRange}
+                format={(value) => `${value} PPG`}
+                onChange={setLocalRange("pointsRange")}
+              />
+              <FilterRange
+                label="Minutes"
+                span={MINUTES_SPAN}
+                value={localFilters.minutesRange}
+                format={(value) => `${value} MPG`}
+                onChange={setLocalRange("minutesRange")}
               />
             </div>
             <div

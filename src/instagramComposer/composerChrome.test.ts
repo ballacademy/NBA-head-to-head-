@@ -586,6 +586,9 @@ describe("composer chrome", () => {
     expect(etApp).toContain("handleAutoSort(cellStatMetric)");
     expect(tierApp).toContain("Copy caption");
     expect(tierApp).toContain("tierListCaption");
+    expect(tierApp).toContain("fetchEspnSeasonAverages");
+    expect(tierApp).toContain("overlayCountingStats");
+    expect(tierApp).toContain("Redo");
   });
 
   it("paints Every Team cell stats after the name fade so PNG export stays gold", () => {
@@ -722,6 +725,22 @@ describe("composer chrome", () => {
     expect(plotApp).toContain('aria-label="Swap X and Y"');
     expect(plotApp).toContain("Populate");
     expect(plotApp).toContain("PlayerFilterBar");
+    expect(plotApp).toContain("showStatsWindow={false}");
+    const playerFilters = readFileSync(
+      join(root, "tierListComposer/PlayerFilterBar.tsx"),
+      "utf8",
+    );
+    expect(playerFilters).toContain('aria-label="Stats from"');
+    expect(playerFilters).toContain('label="Points"');
+    expect(playerFilters).toContain('label="Minutes"');
+    expect(playerFilters).toContain("statsWindowOptions");
+    const statsWindow = readFileSync(
+      join(root, "tierListComposer/statsWindow.ts"),
+      "utf8",
+    );
+    expect(statsWindow).toContain('"2020s"');
+    expect(statsWindow).toContain('"2010s"');
+    expect(statsWindow).toContain('"2000s"');
     const compareApp = readFileSync(
       join(root, "compareComposer/CompareComposerApp.tsx"),
       "utf8",

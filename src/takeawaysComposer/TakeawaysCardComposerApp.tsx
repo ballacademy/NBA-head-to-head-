@@ -106,7 +106,7 @@ export function TakeawaysCardComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<TakeawaysDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<TakeawaysDraft>();
   const { range, setRange } = useComposerDateRange();
   const card = draft.cards[draft.currentIndex] ?? draft.cards[0]!;
   const cardIndex = draft.currentIndex;
@@ -444,13 +444,26 @@ export function TakeawaysCardComposerApp() {
               className="sc-chip"
               disabled={!canUndo}
               onClick={() => {
-                const prev = pop();
+                const prev = undo(draft);
                 if (prev) {
                   setDraft(prev);
                 }
               }}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-chip"
+              disabled={!canRedo}
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                }
+              }}
+            >
+              Redo
             </button>
             <button
               type="button"

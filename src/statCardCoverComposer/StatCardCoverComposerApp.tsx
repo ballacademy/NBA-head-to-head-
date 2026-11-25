@@ -128,7 +128,7 @@ export function StatCardCoverComposerApp() {
   } | null>(null);
   const filledKey = useRef("");
   const autoFill = useRef(true);
-  const { push, pop, canUndo } = useComposerUndo<StatCardCoverDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<StatCardCoverDraft>();
   const { range, setRange } = useStatCoverDateRange();
   const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
   const [standoutsLoading, setStandoutsLoading] = useState(false);
@@ -616,7 +616,7 @@ export function StatCardCoverComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
-                const previous = pop();
+                const previous = undo(draft);
                 if (previous) {
                   setDraft(previous);
                   setStatus("Undid last change.");
@@ -625,6 +625,20 @@ export function StatCardCoverComposerApp() {
               disabled={!canUndo}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                  setStatus("Redid last change.");
+                }
+              }}
+              disabled={!canRedo}
+            >
+              Redo
             </button>
             <button
               type="button"

@@ -124,7 +124,7 @@ export function StandingsComposerApp() {
     Record<RankingConference, RankingSlots | null>
   >({ East: null, West: null });
   const [filling, setFilling] = useState(false);
-  const { push, pop, canUndo } = useComposerUndo<RankingSlots>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<RankingSlots>();
   const boardConference = conferenceFromSubtitle(subtitle);
   const lastWeekSlots = lastWeekByConference[boardConference];
 
@@ -513,7 +513,7 @@ export function StandingsComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(slots);
               if (previous) {
                 setSlots(previous);
                 setStatus("Undid last change.");
@@ -522,6 +522,20 @@ export function StandingsComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(slots);
+              if (next) {
+                setSlots(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos

@@ -133,7 +133,7 @@ export function CompareComposerApp() {
     playerName: string;
   } | null>(null);
   const [storyCrop, setStoryCrop] = useState(false);
-  const { push, pop, canUndo } = useComposerUndo<CompareDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<CompareDraft>();
   const night = useComposerNight();
 
   useEffect(() => {
@@ -803,7 +803,7 @@ export function CompareComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(draft);
               if (previous) {
                 setDraft(previous);
                 setStatus("Undid last change.");
@@ -812,6 +812,20 @@ export function CompareComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(draft);
+              if (next) {
+                setDraft(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button
             type="button"

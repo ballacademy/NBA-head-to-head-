@@ -32,8 +32,10 @@ export interface TierPlayer {
   country: string | null;
   experienceYears: number;
   allStar: boolean;
-  /** 2025-26 regular-season points per game; 0 when Basketball-Reference has no row. */
+  /** Points per game in the active stats window; catalog seed is 2025-26 BBR. */
   ppg: number;
+  /** Minutes per game in the active stats window; 0 when the window has no row. */
+  mpg?: number;
   /** Depth-chart unit (1 = starter) when the roster is a season depth chart. */
   depth?: number;
   /** Head coaches in the pyramid / player-tier pickers. */
@@ -133,6 +135,12 @@ export interface PlayerSearchFilters {
   allStar?: string;
   country?: string;
   experienceRange?: NumberRange;
+  pointsRange?: NumberRange;
+  minutesRange?: NumberRange;
+  /** `current`, a season id, a decade (`2020s`), or `range`. */
+  statsWindow?: string;
+  statsFrom?: string;
+  statsTo?: string;
 }
 
 const spanOf = (values: number[]): NumberRange => ({
@@ -147,6 +155,8 @@ export const HEIGHT_SPAN = spanOf(
 export const EXPERIENCE_SPAN = spanOf(
   NBA_ACTIVE_PLAYERS.map((player) => player.experienceYears),
 );
+export const POINTS_SPAN: NumberRange = { min: 0, max: 50 };
+export const MINUTES_SPAN: NumberRange = { min: 0, max: 48 };
 
 export const ROLE_STARTER_FILTER = "starter";
 export const ROLE_BENCH_FILTER = "bench";
@@ -164,6 +174,9 @@ export const EMPTY_PLAYER_FILTERS: PlayerSearchFilters = {
   ageRange: { min: AGE_SPAN.min, max: AGE_SPAN.max },
   heightRange: { min: HEIGHT_SPAN.min, max: HEIGHT_SPAN.max },
   experienceRange: { min: EXPERIENCE_SPAN.min, max: EXPERIENCE_SPAN.max },
+  pointsRange: { min: POINTS_SPAN.min, max: POINTS_SPAN.max },
+  minutesRange: { min: MINUTES_SPAN.min, max: MINUTES_SPAN.max },
+  statsWindow: "current",
 };
 
 export const isFullRange = (range: NumberRange | undefined, span: NumberRange) =>
@@ -202,7 +215,10 @@ export const isEmptyPlayerFilters = (filters: PlayerSearchFilters) =>
   ) &&
   isFullRange(filters.ageRange, AGE_SPAN) &&
   isFullRange(filters.heightRange, HEIGHT_SPAN) &&
-  isFullRange(filters.experienceRange, EXPERIENCE_SPAN);
+  isFullRange(filters.experienceRange, EXPERIENCE_SPAN) &&
+  isFullRange(filters.pointsRange, POINTS_SPAN) &&
+  isFullRange(filters.minutesRange, MINUTES_SPAN) &&
+  parseStatsWindowId(filters.statsWindow) === "current";
 
 const isNumberRange = (value: unknown): value is NumberRange =>
   Boolean(
@@ -235,7 +251,37 @@ export const parsePlayerSearchFilters = (
   if (isNumberRange(raw.experienceRange)) {
     next.experienceRange = clampRange(raw.experienceRange, EXPERIENCE_SPAN);
   }
+  if (isNumberRange(raw.pointsRange)) {
+    next.pointsRange = clampRange(raw.pointsRange, POINTS_SPAN);
+  }
+  if (isNumberRange(raw.minutesRange)) {
+    next.minutesRange = clampRange(raw.minutesRange, MINUTES_SPAN);
+  }
+  next.statsWindow = parseStatsWindowId(raw.statsWindow);
+  if (typeof raw.statsFrom === "string" && raw.statsFrom) {
+    next.statsFrom = raw.statsFrom;
+  }
+  if (typeof raw.statsTo === "string" && raw.statsTo) {
+    next.statsTo = raw.statsTo;
+  }
   return next;
+};
+
+const parseStatsWindowId = (value: unknown): string => {
+  if (typeof value !== "string" || !value) {
+    return "current";
+  }
+  if (
+    value === "current" ||
+    value === "range" ||
+    value === "2020s" ||
+    value === "2010s" ||
+    value === "2000s" ||
+    /^\d{4}-\d{2}$/.test(value)
+  ) {
+    return value;
+  }
+  return "current";
 };
 
 export const POSITION_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
@@ -428,9 +474,13 @@ export const searchPlayers = (
   const age = clampRange(filters.ageRange, AGE_SPAN);
   const height = clampRange(filters.heightRange, HEIGHT_SPAN);
   const experience = clampRange(filters.experienceRange, EXPERIENCE_SPAN);
+  const points = clampRange(filters.pointsRange, POINTS_SPAN);
+  const minutes = clampRange(filters.minutesRange, MINUTES_SPAN);
   const ageOpen = isFullRange(age, AGE_SPAN);
   const heightOpen = isFullRange(height, HEIGHT_SPAN);
   const experienceOpen = isFullRange(experience, EXPERIENCE_SPAN);
+  const pointsOpen = isFullRange(points, POINTS_SPAN);
+  const minutesOpen = isFullRange(minutes, MINUTES_SPAN);
 
   return (catalog ?? NBA_ACTIVE_PLAYERS).filter((player) => {
     if (team && player.team !== team) {
@@ -467,6 +517,12 @@ export const searchPlayers = (
       !experienceOpen &&
       !inRange(player.experienceYears, experience.min, experience.max)
     ) {
+      return false;
+    }
+    if (!pointsOpen && !inRange(player.ppg, points.min, points.max)) {
+      return false;
+    }
+    if (!minutesOpen && !inRange(player.mpg ?? 0, minutes.min, minutes.max)) {
       return false;
     }
     if (!matchesDraftClass(player, filters.draftClass)) {
@@ -547,7 +603,7 @@ export const depthChartLabel = (player: Pick<TierPlayer, "position" | "depth">) 
   return `${player.position} · ${rank}`;
 };
 
-export const formatPpg = (ppg: number, emptyLabel = "No 25–26 PPG") =>
+export const formatPpg = (ppg: number, emptyLabel = "No PPG") =>
   ppg > 0 ? `${ppg.toFixed(1)} PPG` : emptyLabel;
 
 /** A few stars for screenshots / seed boards. */

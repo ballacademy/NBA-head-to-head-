@@ -110,7 +110,7 @@ export function TakeawaysCoverComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<TakeawaysDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<TakeawaysDraft>();
   const { range, setRange } = useComposerDateRange();
   const pickerOpen = activeIndex != null;
 
@@ -410,13 +410,26 @@ export function TakeawaysCoverComposerApp() {
               className="sc-chip"
               disabled={!canUndo}
               onClick={() => {
-                const prev = pop();
+                const prev = undo(draft);
                 if (prev) {
                   setDraft(prev);
                 }
               }}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-chip"
+              disabled={!canRedo}
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                }
+              }}
+            >
+              Redo
             </button>
             <button
               type="button"

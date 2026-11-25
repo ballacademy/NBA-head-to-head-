@@ -157,7 +157,7 @@ export function StatCardComposerApp() {
   const highPipRef = useRef(false);
   const draftRef = useRef(draft);
   draftRef.current = draft;
-  const { push, pop, canUndo } = useComposerUndo<StatCardDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<StatCardDraft>();
   const night = useComposerNight();
   const { range, setRange } = useStatCoverDateRange();
   const [rangeStandouts, setRangeStandouts] = useState<NightStandout[]>([]);
@@ -906,7 +906,7 @@ export function StatCardComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(draft);
               if (previous) {
                 rememberHighPip(previous.showHighPip === true);
                 setDraft(previous);
@@ -916,6 +916,21 @@ export function StatCardComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(draft);
+              if (next) {
+                rememberHighPip(next.showHighPip === true);
+                setDraft(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button
             type="button"

@@ -112,7 +112,7 @@ export function MockTradeComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<MockTradeDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<MockTradeDraft>();
 
   useEffect(() => {
     document.title = "Mock trade graphic";
@@ -756,7 +756,7 @@ export function MockTradeComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
-                const previous = pop();
+                const previous = undo(draft);
                 if (previous) {
                   setDraft(previous);
                   setStatus("Undid last change.");
@@ -765,6 +765,20 @@ export function MockTradeComposerApp() {
               disabled={!canUndo}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                  setStatus("Redid last change.");
+                }
+              }}
+              disabled={!canRedo}
+            >
+              Redo
             </button>
             <button
               type="button"

@@ -106,7 +106,7 @@ export function QuoteComposerApp() {
     playerName: string;
     keepPhoto: boolean;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<QuoteDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<QuoteDraft>();
 
   useEffect(() => {
     document.title = "Quote graphic";
@@ -414,7 +414,7 @@ export function QuoteComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(draft);
               if (previous) {
                 setDraft(previous);
               }
@@ -422,6 +422,19 @@ export function QuoteComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(draft);
+              if (next) {
+                setDraft(next);
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button
             type="button"

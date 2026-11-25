@@ -327,6 +327,8 @@ const rosterAsSearchPlayer = (
       team: teamId,
       position: (player.position as TierPlayer["position"]) || live.position,
       headshotUrl: player.headshotUrl || live.headshotUrl,
+      ppg: player.pts ?? live.ppg,
+      mpg: player.min ?? live.mpg ?? 0,
     };
   }
   return {
@@ -353,6 +355,7 @@ const rosterAsSearchPlayer = (
     experienceYears: 0,
     allStar: false,
     ppg: player.pts ?? 0,
+    mpg: player.min ?? 0,
   };
 };
 

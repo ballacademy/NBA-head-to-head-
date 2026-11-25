@@ -68,7 +68,7 @@ export function InjuryComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(INJURY_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const { push, pop, canUndo } = useComposerUndo<InjuryDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<InjuryDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
   const [allTeams, setAllTeams] = useState<InjuryTeamBlock[]>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -261,7 +261,7 @@ export function InjuryComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
-                const previous = pop();
+                const previous = undo(draft);
                 if (previous) {
                   setDraft(previous);
                 }
@@ -269,6 +269,19 @@ export function InjuryComposerApp() {
               disabled={!canUndo}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                }
+              }}
+              disabled={!canRedo}
+            >
+              Redo
             </button>
             <button
               type="button"

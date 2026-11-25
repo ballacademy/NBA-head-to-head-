@@ -152,7 +152,7 @@ export function PlayerOfTheDayComposerApp() {
     playerId: string;
     playerName: string;
   } | null>(null);
-  const { push, pop, canUndo } = useComposerUndo<PotdCard[]>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<PotdCard[]>();
   const night = useComposerNight();
   const [hudMode] = useComposerHudMode();
   const [nightBest, setNightBest] = useState<NightStandout[]>([]);
@@ -605,7 +605,7 @@ export function PlayerOfTheDayComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(cards);
               if (previous) {
                 setCards(previous);
                 setStatus("Undid last change.");
@@ -614,6 +614,20 @@ export function PlayerOfTheDayComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(cards);
+              if (next) {
+                setCards(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button type="button" className="sc-btn sc-btn--ghost" onClick={handleResetKeepPhotos}>
             Reset keep photos

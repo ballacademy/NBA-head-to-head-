@@ -112,7 +112,7 @@ export function PicksComposerApp() {
   const [hydrated, setHydrated] = useState(false);
   const [look, setLook] = useComposerLook(PICKS_LOOK_KEY);
   const [purpleFlair, setPurpleFlair] = usePurpleFlair();
-  const { push, pop, canUndo } = useComposerUndo<PicksDraft>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<PicksDraft>();
   const [storyCrop, setStoryCrop] = useState(false);
   const [picker, setPicker] = useState<{ gameId: string; side: PicksSide } | null>(
     null,
@@ -639,7 +639,7 @@ export function PicksComposerApp() {
               type="button"
               className="sc-btn sc-btn--ghost"
               onClick={() => {
-                const previous = pop();
+                const previous = undo(draft);
                 if (previous) {
                   setDraft(previous);
                 }
@@ -647,6 +647,19 @@ export function PicksComposerApp() {
               disabled={!canUndo}
             >
               Undo
+            </button>
+          <button
+              type="button"
+              className="sc-btn sc-btn--ghost"
+              onClick={() => {
+                const next = redo(draft);
+                if (next) {
+                  setDraft(next);
+                }
+              }}
+              disabled={!canRedo}
+            >
+              Redo
             </button>
             <button
               type="button"

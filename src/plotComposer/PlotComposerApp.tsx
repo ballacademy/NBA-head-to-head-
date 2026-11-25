@@ -151,7 +151,7 @@ export function PlotComposerApp() {
   const [statsSample, setStatsSample] = useComposerStatsSample();
   const [storyCrop, setStoryCrop] = useState(false);
   const [pinning, setPinning] = useState(false);
-  const { push, pop, canUndo } = useComposerUndo<PlotPoint[]>();
+  const { push, undo, redo, canUndo, canRedo } = useComposerUndo<PlotPoint[]>();
 
   useEffect(() => {
     document.title = "Plot graphic";
@@ -537,6 +537,7 @@ export function PlotComposerApp() {
           onChange={setFilters}
           onReset={() => setFilters({ ...EMPTY_PLAYER_FILTERS })}
           variant={subject === "teams" ? "teams" : "players"}
+          showStatsWindow={false}
         />
         {subject === "players" ? (
           <div className="sc-look" role="group" aria-label="Pin players">
@@ -766,7 +767,7 @@ export function PlotComposerApp() {
             type="button"
             className="sc-btn sc-btn--ghost"
             onClick={() => {
-              const previous = pop();
+              const previous = undo(points);
               if (previous) {
                 setPoints(previous);
                 setStatus("Undid last change.");
@@ -775,6 +776,20 @@ export function PlotComposerApp() {
             disabled={!canUndo}
           >
             Undo
+          </button>
+          <button
+            type="button"
+            className="sc-btn sc-btn--ghost"
+            onClick={() => {
+              const next = redo(points);
+              if (next) {
+                setPoints(next);
+                setStatus("Redid last change.");
+              }
+            }}
+            disabled={!canRedo}
+          >
+            Redo
           </button>
           <button
             type="button"
