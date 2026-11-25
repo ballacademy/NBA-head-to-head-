@@ -536,7 +536,7 @@ export const renderEveryTeamCanvas = async (
         given,
         family,
         x + size / 2,
-        y + size - (cell.cellStat ? size * 0.2 : size * 0.06),
+        y + size - (cell.cellStat ? size * 0.22 : size * 0.06),
         size * 0.84,
         14 * scale,
         11 * scale,

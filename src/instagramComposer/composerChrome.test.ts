@@ -605,10 +605,10 @@ describe("composer chrome", () => {
     expect(canvas.indexOf("if (withFade)")).toBeLessThan(
       canvas.indexOf('context.fillStyle = "#facc15"'),
     );
-    expect(layout).toContain("ET_STAT_SIZE = 16.5");
+    expect(layout).toContain("ET_STAT_SIZE = 19");
     expect(canvas).toContain("ET_STAT_SIZE * scale");
     expect(css).toContain(".et-cell__stat");
-    expect(css).toContain("calc(16.5 * var(--u))");
+    expect(css).toContain("calc(19 * var(--u))");
   });
 
   it("drops the BALLACADEMY wordmark when BA is on and shrinks TOTW Plus logos", () => {

@@ -53,6 +53,6 @@ describe("paintEveryTeamCellStat", () => {
     paintEveryTeamCellStat(context, "27.1 PTS", 0, 0, 200, 2, false);
     expect(rects.length).toBe(0);
     expect(fills[0]?.fill).toBe("#facc15");
-    expect(String(context.font)).toContain("33px");
+    expect(String(context.font)).toContain("38px");
   });
 });
