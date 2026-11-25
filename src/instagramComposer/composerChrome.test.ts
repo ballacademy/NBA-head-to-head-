@@ -593,10 +593,22 @@ describe("composer chrome", () => {
       join(root, "everyTeamComposer/renderEveryTeamCanvas.ts"),
       "utf8",
     );
+    const css = readFileSync(
+      join(root, "everyTeamComposer/everyTeamComposer.css"),
+      "utf8",
+    );
+    const layout = readFileSync(
+      join(root, "everyTeamComposer/everyTeamLayout.ts"),
+      "utf8",
+    );
     expect(canvas).toContain("paintEveryTeamCellStat");
     expect(canvas.indexOf("if (withFade)")).toBeLessThan(
       canvas.indexOf('context.fillStyle = "#facc15"'),
     );
+    expect(layout).toContain("ET_STAT_SIZE = 16.5");
+    expect(canvas).toContain("ET_STAT_SIZE * scale");
+    expect(css).toContain(".et-cell__stat");
+    expect(css).toContain("calc(16.5 * var(--u))");
   });
 
   it("drops the BALLACADEMY wordmark when BA is on and shrinks TOTW Plus logos", () => {

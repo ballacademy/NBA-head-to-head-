@@ -49,6 +49,7 @@ import {
   ET_RANK_BADGE_INSET,
   ET_RANK_BADGE_PAD_X,
   ET_RANK_SIZE,
+  ET_STAT_SIZE,
   ET_TITLE_SIZE,
   ET_TITLE_TRACK,
   everyTeamBannerRectPath,
@@ -117,9 +118,9 @@ export const paintEveryTeamCellStat = (
   withFade: boolean,
 ) => {
   if (withFade) {
-    paintNameFadeRect(context, x, y + size - size * 0.28, size, size * 0.28);
+    paintNameFadeRect(context, x, y + size - size * 0.34, size, size * 0.34);
   }
-  const fontSize = 11 * scale;
+  const fontSize = ET_STAT_SIZE * scale;
   context.save();
   context.font = `900 ${fontSize}px ${POSTER_FONT}`;
   context.textAlign = "left";
@@ -205,6 +206,7 @@ export const renderEveryTeamCanvas = async (
       document.fonts.load(`900 ${BRAND_FONT * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${ET_TITLE_SIZE * scale}px ${POSTER_FONT}`),
       document.fonts.load(`900 ${ET_RANK_SIZE * scale}px ${POSTER_FONT}`),
+      document.fonts.load(`900 ${ET_STAT_SIZE * scale}px ${POSTER_FONT}`),
     ]).catch(() => undefined);
   }
 
@@ -534,7 +536,7 @@ export const renderEveryTeamCanvas = async (
         given,
         family,
         x + size / 2,
-        y + size - (cell.cellStat ? size * 0.14 : size * 0.06),
+        y + size - (cell.cellStat ? size * 0.2 : size * 0.06),
         size * 0.84,
         14 * scale,
         11 * scale,

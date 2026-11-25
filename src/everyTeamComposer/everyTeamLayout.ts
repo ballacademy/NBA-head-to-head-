@@ -18,6 +18,8 @@ export const ET_CELL_GAP = 7;
 export const ET_BORDER = 4;
 export const ET_TITLE_SIZE = 54;
 export const ET_TITLE_TRACK = 0.02;
+/** Gold cell stat. ~50% larger than the original 11. */
+export const ET_STAT_SIZE = 16.5;
 export const ET_LOGO_FIT = 0.94;
 /** Small corner badge so 1–30 do not fight the face. */
 export const ET_RANK_SIZE = 15;
