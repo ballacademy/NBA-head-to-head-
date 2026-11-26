@@ -5,8 +5,8 @@ import { NBA_TEAMS, type NbaTeam } from "../standingsComposer/teams";
 import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import {
   EVERY_TEAM_STAT_METRICS,
+  everyTeamLeaderMinGp,
   everyTeamStatSupportsRate,
-  EVERY_TEAM_LEADER_MIN_GP,
   getRosterPlayer,
   pickSeasonLeader,
   pickSeasonLeaders,
@@ -706,11 +706,20 @@ export const fillEveryTeamFromRange = (
   position?: string | null,
   boardSeason?: string,
 ): { slots: EveryTeamSlots; filled: number } => {
+  const teamGames = new Map<string, number>();
+  for (const row of rows) {
+    if (typeof row.games === "number" && row.games > 0) {
+      teamGames.set(
+        row.teamId,
+        Math.max(teamGames.get(row.teamId) ?? 0, row.games),
+      );
+    }
+  }
   const best = new Map<string, { id: string; score: number }>();
   for (const row of rows) {
     if (
       typeof row.games === "number" &&
-      row.games < EVERY_TEAM_LEADER_MIN_GP
+      row.games < everyTeamLeaderMinGp(teamGames.get(row.teamId) ?? row.games)
     ) {
       continue;
     }

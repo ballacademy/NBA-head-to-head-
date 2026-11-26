@@ -43,7 +43,8 @@ import {
   hydrateLiveSeasonAverages,
   listRosterPlayers,
   matchingTeamIds,
-  EVERY_TEAM_LEADER_MIN_GP,
+  EVERY_TEAM_LEADER_GP_FRACTION,
+  everyTeamLeaderMinGp,
   everyTeamQualifiesForLeader,
   pickSeasonLeader,
   playerMatchesEveryTeamPosition,
@@ -468,10 +469,12 @@ describe("every-team order and slots", () => {
     expect(ranked.order[0]).toBe("LAC");
   });
 
-  it("fills 4-GP Edwards over McDaniels and skips 1-GP lines", () => {
-    expect(EVERY_TEAM_LEADER_MIN_GP).toBe(2);
-    expect(everyTeamQualifiesForLeader({ gp: 4 })).toBe(true);
-    expect(everyTeamQualifiesForLeader({ gp: 1 })).toBe(false);
+  it("uses ESPN’s 70% of team games so McDaniels fills over 4-GP Edwards", () => {
+    expect(EVERY_TEAM_LEADER_GP_FRACTION).toBe(0.7);
+    expect(everyTeamLeaderMinGp(19)).toBe(14);
+    expect(everyTeamLeaderMinGp(82)).toBe(58);
+    expect(everyTeamQualifiesForLeader({ gp: 4 }, 19)).toBe(false);
+    expect(everyTeamQualifiesForLeader({ gp: 19 }, 19)).toBe(true);
     expect(everyTeamQualifiesForLeader({ gp: null })).toBe(true);
     hydrateLiveSeasonAverages({
       "4594268": {
@@ -505,10 +508,10 @@ describe("every-team order and slots", () => {
         tov: 3,
       },
     });
-    expect(pickSeasonLeader("MIN", "2026-27", "points")?.id).toBe("4594268");
+    expect(pickSeasonLeader("MIN", "2026-27", "points")?.id).toBe("4431671");
     expect(
       autoFillEveryTeamSlots("2026-27", {}, "points")[slotIndexForTeam("MIN")],
-    ).toBe("4594268");
+    ).toBe("4431671");
   });
 
   it("matches G/F groups and fills the same position on every team", () => {

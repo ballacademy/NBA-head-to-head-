@@ -196,6 +196,9 @@ export const hydrateLiveWindowAverages = (
 export const hasLiveSeasonAverages = () =>
   Boolean(liveSeasonAverages && liveSeasonAverages.size > 0);
 
+const hasLiveCountingOverlay = () =>
+  Boolean(liveSeasonAverages || liveWindowAverages);
+
 export const clearLiveCountingStats = () => {
   liveSeasonAverages = null;
   liveWindowAverages = null;
@@ -1081,17 +1084,37 @@ export const playerMatchesEveryTeamPosition = (
   return false;
 };
 
-/** Fill leaders skip 0–1 GP lines; missing GP (older tables) still qualifies. */
-export const EVERY_TEAM_LEADER_MIN_GP = 2;
+/**
+ * ESPN / NBA counting-stat qualifier: 70% of the team’s games
+ * (58 in an 82-game season; 14 with 19 team games so far).
+ */
+export const EVERY_TEAM_LEADER_GP_FRACTION = 0.7;
+
+export const everyTeamLeaderMinGp = (teamGames: number) =>
+  teamGames > 0 ? Math.ceil(EVERY_TEAM_LEADER_GP_FRACTION * teamGames) : 0;
+
+export const everyTeamScheduleGames = (
+  players: Array<Pick<EveryTeamRosterPlayer, "gp">>,
+) =>
+  players.reduce((max, player) => {
+    const gp = player.gp;
+    return typeof gp === "number" && gp > max ? gp : max;
+  }, 0);
 
 export const everyTeamQualifiesForLeader = (
   player: Pick<EveryTeamRosterPlayer, "gp">,
+  teamGames?: number | null,
 ) => {
   const gp = player.gp;
   if (gp == null) {
     return true;
   }
-  return gp >= EVERY_TEAM_LEADER_MIN_GP;
+  if (gp <= 0) {
+    return false;
+  }
+  const schedule =
+    teamGames != null && teamGames > 0 ? teamGames : gp;
+  return gp >= everyTeamLeaderMinGp(schedule);
 };
 
 export const pickSeasonLeaders = (
@@ -1103,7 +1126,11 @@ export const pickSeasonLeaders = (
   rate: EveryTeamStatRate = "per-game",
   position?: string | null,
 ): EveryTeamRosterPlayer[] => {
-  const ranked = listRosterPlayers(teamId, season, sample)
+  const roster = listRosterPlayers(teamId, season, sample);
+  const teamGames = hasLiveCountingOverlay()
+    ? everyTeamScheduleGames(roster)
+    : 0;
+  const ranked = roster
     .map((player) => ({
       player,
       value: rosterStatValue(player, metric, rate),
@@ -1111,7 +1138,7 @@ export const pickSeasonLeaders = (
     .filter(
       (row): row is { player: EveryTeamRosterPlayer; value: number } =>
         row.value != null &&
-        everyTeamQualifiesForLeader(row.player) &&
+        everyTeamQualifiesForLeader(row.player, teamGames) &&
         playerMatchesEveryTeamPosition(row.player.position, position),
     )
     .sort(
