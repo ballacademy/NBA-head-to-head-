@@ -6,6 +6,7 @@ import { DEFAULT_BRAND } from "../standingsComposer/rankingState";
 import {
   EVERY_TEAM_STAT_METRICS,
   everyTeamStatSupportsRate,
+  EVERY_TEAM_LEADER_MIN_GP,
   getRosterPlayer,
   pickSeasonLeader,
   pickSeasonLeaders,
@@ -707,6 +708,12 @@ export const fillEveryTeamFromRange = (
 ): { slots: EveryTeamSlots; filled: number } => {
   const best = new Map<string, { id: string; score: number }>();
   for (const row of rows) {
+    if (
+      typeof row.games === "number" &&
+      row.games < EVERY_TEAM_LEADER_MIN_GP
+    ) {
+      continue;
+    }
     if (position) {
       const rostered = getRosterPlayer(
         row.teamId,

@@ -881,7 +881,7 @@ export function EveryTeamComposerApp() {
             title={
               needsLiveSeason && !liveReady
                 ? "Loading this season’s ESPN averages…"
-                : `Fill each team’s ${autoSortMetricLabel(cellStatMetric, statRate)} leader`
+                : `Fill each team’s ${autoSortMetricLabel(cellStatMetric, statRate)} leader (min 2 GP)`
             }
           >
             Fill leaders

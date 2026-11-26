@@ -10,11 +10,15 @@ export const ESPN_SEASON_TYPE = {
   preseason: 1,
 } as const;
 
+/** ESPN's default by-athlete dump is qualified leaders (~70% of games). */
+export const ESPN_SEASON_BY_ATHLETE_LIMIT = 1000;
+
 export const ESPN_SEASON_BY_ATHLETE_URL = (
   seasonYear: number,
   seasonType: number = ESPN_SEASON_TYPE.regular,
+  page = 1,
 ) =>
-  `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete?limit=400&season=${seasonYear}&seasontype=${seasonType}`;
+  `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete?region=us&lang=en&contentorigin=espn&isqualified=false&page=${page}&limit=${ESPN_SEASON_BY_ATHLETE_LIMIT}&sort=offensive.avgPoints:desc&season=${seasonYear}&seasontype=${seasonType}`;
 
 interface EspnByAthleteCategoryMeta {
   name?: string;
@@ -27,6 +31,7 @@ interface EspnByAthleteCategoryValues {
 }
 
 export interface EspnByAthletePayload {
+  pagination?: { pages?: number; page?: number; count?: number };
   categories?: EspnByAthleteCategoryMeta[];
   athletes?: Array<{
     athlete?: { id?: string | number };
@@ -156,18 +161,29 @@ export const fetchEspnSeasonAverages = async (
   }
   const request = (async () => {
     try {
-      const response = await fetch(
-        ESPN_SEASON_BY_ATHLETE_URL(seasonYear, seasonType),
-        {
-          mode: "cors",
-          credentials: "omit",
-        },
-      );
-      if (!response.ok) {
-        return new Map<string, LiveCountingStats>();
+      const athletes: NonNullable<EspnByAthletePayload["athletes"]> = [];
+      let categories: EspnByAthletePayload["categories"];
+      let pages = 1;
+      for (let page = 1; page <= pages && page <= 8; page += 1) {
+        const response = await fetch(
+          ESPN_SEASON_BY_ATHLETE_URL(seasonYear, seasonType, page),
+          {
+            mode: "cors",
+            credentials: "omit",
+          },
+        );
+        if (!response.ok) {
+          if (page === 1) {
+            return new Map<string, LiveCountingStats>();
+          }
+          break;
+        }
+        const payload = (await response.json()) as EspnByAthletePayload;
+        categories = payload.categories ?? categories;
+        athletes.push(...(payload.athletes ?? []));
+        pages = Math.max(1, payload.pagination?.pages ?? 1);
       }
-      const payload = (await response.json()) as EspnByAthletePayload;
-      const parsed = parseEspnSeasonAverages(payload);
+      const parsed = parseEspnSeasonAverages({ categories, athletes });
       if (parsed.size > 0) {
         cache.set(key, parsed);
       }

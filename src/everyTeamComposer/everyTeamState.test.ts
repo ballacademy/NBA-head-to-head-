@@ -43,6 +43,8 @@ import {
   hydrateLiveSeasonAverages,
   listRosterPlayers,
   matchingTeamIds,
+  EVERY_TEAM_LEADER_MIN_GP,
+  everyTeamQualifiesForLeader,
   pickSeasonLeader,
   playerMatchesEveryTeamPosition,
   playerRowForSeason,
@@ -466,6 +468,49 @@ describe("every-team order and slots", () => {
     expect(ranked.order[0]).toBe("LAC");
   });
 
+  it("fills 4-GP Edwards over McDaniels and skips 1-GP lines", () => {
+    expect(EVERY_TEAM_LEADER_MIN_GP).toBe(2);
+    expect(everyTeamQualifiesForLeader({ gp: 4 })).toBe(true);
+    expect(everyTeamQualifiesForLeader({ gp: 1 })).toBe(false);
+    expect(everyTeamQualifiesForLeader({ gp: null })).toBe(true);
+    hydrateLiveSeasonAverages({
+      "4594268": {
+        gp: 4,
+        min: 33.8,
+        pts: 33.3,
+        reb: 4.8,
+        ast: 3.5,
+        stl: 2.0,
+        blk: 0.8,
+        tov: 3.5,
+      },
+      "4431671": {
+        gp: 19,
+        min: 34.0,
+        pts: 19.2,
+        reb: 4.5,
+        ast: 2.0,
+        stl: 1.0,
+        blk: 1.0,
+        tov: 1.5,
+      },
+      "4432247": {
+        gp: 1,
+        min: 24,
+        pts: 50,
+        reb: 8,
+        ast: 6,
+        stl: 2,
+        blk: 1,
+        tov: 3,
+      },
+    });
+    expect(pickSeasonLeader("MIN", "2026-27", "points")?.id).toBe("4594268");
+    expect(
+      autoFillEveryTeamSlots("2026-27", {}, "points")[slotIndexForTeam("MIN")],
+    ).toBe("4594268");
+  });
+
   it("matches G/F groups and fills the same position on every team", () => {
     expect(playerMatchesEveryTeamPosition("PG", "G")).toBe(true);
     expect(playerMatchesEveryTeamPosition("C", "G")).toBe(false);
@@ -644,6 +689,29 @@ describe("every-team order and slots", () => {
       "threes",
     );
     expect(threes.slots[slotIndexForTeam("GSW")]).toBe("high");
+    const skipped = fillEveryTeamFromRange(
+      createEmptyEveryTeamSlots(),
+      [
+        {
+          athleteId: "flash",
+          teamId: "MIN",
+          games: 1,
+          game: {
+            stats: { pts: "50", reb: "8", ast: "6", min: "36" },
+          },
+        },
+        {
+          athleteId: "steady",
+          teamId: "MIN",
+          games: 4,
+          game: {
+            stats: { pts: "33.3", reb: "4.8", ast: "3.5", min: "33.8" },
+          },
+        },
+      ],
+      "points",
+    );
+    expect(skipped.slots[slotIndexForTeam("MIN")]).toBe("steady");
     expect(
       liveCountingFromRangeRows([
         {

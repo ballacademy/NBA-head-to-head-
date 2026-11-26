@@ -1081,6 +1081,19 @@ export const playerMatchesEveryTeamPosition = (
   return false;
 };
 
+/** Fill leaders skip 0–1 GP lines; missing GP (older tables) still qualifies. */
+export const EVERY_TEAM_LEADER_MIN_GP = 2;
+
+export const everyTeamQualifiesForLeader = (
+  player: Pick<EveryTeamRosterPlayer, "gp">,
+) => {
+  const gp = player.gp;
+  if (gp == null) {
+    return true;
+  }
+  return gp >= EVERY_TEAM_LEADER_MIN_GP;
+};
+
 export const pickSeasonLeaders = (
   teamId: string,
   season: string,
@@ -1098,7 +1111,7 @@ export const pickSeasonLeaders = (
     .filter(
       (row): row is { player: EveryTeamRosterPlayer; value: number } =>
         row.value != null &&
-        row.player.gp !== 0 &&
+        everyTeamQualifiesForLeader(row.player) &&
         playerMatchesEveryTeamPosition(row.player.position, position),
     )
     .sort(
