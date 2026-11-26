@@ -30,8 +30,21 @@ import { getTeamColors } from "../lib/teamColors";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
 import { formatComposerName } from "../instagramComposer/composerNameStyle";
-import { abbreviateOverflowName } from "../instagramComposer/nameFit";
+import { abbreviateOverflowName, wrapNameToWidth } from "../instagramComposer/nameFit";
 import { LB_LOGO_SIZE, LB_TRACK_GOLD_H, LB_TRACK_H, leaderBarsRowCols } from "../leaderBarsComposer/leaderBarsLayout";
+import {
+  LS_GAP,
+  LS_LOGO,
+  LS_NAME_CAP,
+  LS_NAME_TYPE,
+  LS_RANK_CAP,
+  LS_RANK_TYPE,
+  LS_RANK_W,
+  LS_VALUE_CAP,
+  LS_VALUE_TYPE,
+  LS_VALUE_W,
+  leaderSplitRowCols,
+} from "../leaderSplitComposer/leaderSplitLayout";
 import { LEADER_GOLD, type LeaderRow } from "./leaderboardFill";
 import { leaderPlateAccent, leaderPlateFill } from "./leaderPlate";
 
@@ -451,20 +464,29 @@ export const paintListRow = async (
     context.fillRect(x, y, w, h);
   }
   const compact = !punch && !namePlates;
+  const punchCols = punch ? leaderSplitRowCols(w / s) : null;
   const rankSize = punch
-    ? Math.min(Math.round(h * 0.11), 18 * s)
+    ? Math.min(Math.round(h * LS_RANK_TYPE), LS_RANK_CAP * s)
     : namePlates
       ? Math.min(22 * s, h * 0.38)
       : Math.min(18 * s, Math.round(h * 0.34));
   context.font = `900 ${rankSize}px ${POSTER_FONT}`;
-  context.textAlign = compact ? "center" : "left";
+  context.textAlign = compact || punch ? "center" : "left";
   context.textBaseline = "middle";
   context.fillStyle = highlight ? LEADER_GOLD : rankMetalFill(rank);
-  context.fillText(String(rank), compact ? x + 13 * s : x + 6 * s, y + h / 2);
+  context.fillText(
+    String(rank),
+    compact
+      ? x + 13 * s
+      : punch
+        ? x + (punchCols!.rankW * s) / 2
+        : x + 6 * s,
+    y + h / 2,
+  );
   const logoSize = compact
     ? Math.min(h - 8 * s, 22 * s)
-    : Math.min(h - (punch ? 24 * s : 8 * s), punch ? 28 * s : 32 * s);
-  const logoX = x + (compact ? 28 * s : punch ? 26 * s : 40 * s);
+    : Math.min(h - (punch ? 16 * s : 8 * s), punch ? LS_LOGO * s : 32 * s);
+  const logoX = x + (compact ? 28 * s : punch ? (LS_RANK_W + LS_GAP) * s : 40 * s);
   if (showHeadshots && row.headshotUrl) {
     const shot = await loadCorsImage(row.headshotUrl);
     if (shot) {
@@ -497,28 +519,58 @@ export const paintListRow = async (
   ).toUpperCase();
   context.fillStyle = highlight ? LEADER_GOLD : "#fff";
   const nameSize = punch
-    ? Math.min(Math.round(h * 0.2), 42 * s)
+    ? Math.min(Math.round(h * LS_NAME_TYPE), LS_NAME_CAP * s)
     : namePlates
       ? Math.min(18 * s, h * 0.32)
       : Math.round(h * 0.34);
   context.font = `900 ${nameSize}px ${POSTER_FONT}`;
   context.textAlign = "left";
-  const nameX = logoX + logoSize + (compact ? 4 * s : 8 * s);
-  const valueW = punch ? 170 * s : compact ? 44 * s : 80 * s;
-  const nameMax = Math.max(48 * s, w - (nameX - x) - valueW - (compact ? 2 * s : 0));
-  const fitted = abbreviateOverflowName(name, nameMax, (value) =>
-    context.measureText(value).width,
+  if (punch) {
+    setTracking(context, -0.02 * nameSize);
+  }
+  const nameX = logoX + logoSize + (compact ? 4 * s : (punch ? LS_GAP : 8) * s);
+  const valueW = punch ? LS_VALUE_W * s : compact ? 44 * s : 80 * s;
+  const nameMax = Math.max(
+    48 * s,
+    punch
+      ? punchCols!.nameW * s
+      : w - (nameX - x) - valueW - (compact ? 2 * s : 0),
   );
-  context.fillText(fitted, nameX, y + h / 2);
+  const measureName = (value: string) => context.measureText(value).width;
+  if (punch && measureName(name) > nameMax) {
+    const lines = wrapNameToWidth(name, nameMax, measureName, 2);
+    const fittedLines =
+      lines.length === 2 && lines.every((line) => measureName(line) <= nameMax)
+        ? lines
+        : [
+            abbreviateOverflowName(name, nameMax, measureName),
+          ];
+    const lineH = nameSize * 0.92;
+    const startY =
+      fittedLines.length === 1
+        ? y + h / 2
+        : y + h / 2 - ((fittedLines.length - 1) * lineH) / 2;
+    fittedLines.forEach((line, lineIndex) => {
+      context.fillText(line, nameX, startY + lineIndex * lineH);
+    });
+  } else {
+    const fitted = abbreviateOverflowName(name, nameMax, measureName);
+    context.fillText(fitted, nameX, y + h / 2);
+  }
+  setTracking(context, 0);
   context.textAlign = "right";
   const valueSize = punch
-    ? Math.min(Math.round(h * 0.3), 64 * s)
+    ? Math.min(Math.round(h * LS_VALUE_TYPE), LS_VALUE_CAP * s)
     : namePlates
       ? Math.min(22 * s, h * 0.36)
       : Math.round(h * 0.4);
   context.font = `900 ${valueSize}px ${POSTER_FONT}`;
+  if (punch) {
+    setTracking(context, -0.04 * valueSize);
+  }
   context.fillStyle = highlight ? LEADER_GOLD : rankMetalFill(rank, "#fff");
   context.fillText(row.value, x + w - 10 * s, y + h / 2, valueW);
+  setTracking(context, 0);
 };
 
 export const paintTitlePlate = (

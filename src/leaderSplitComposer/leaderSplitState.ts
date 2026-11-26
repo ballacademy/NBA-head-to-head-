@@ -7,7 +7,7 @@ import {
   formatComposerName,
   type ComposerNameStyle,
 } from "../instagramComposer/composerNameStyle";
-import { abbreviateOverflowName } from "../instagramComposer/nameFit";
+import { abbreviateOverflowName, wrapNameToWidth } from "../instagramComposer/nameFit";
 import { measureTitleAdvance } from "../instagramComposer/titleLayout";
 import { getTeam } from "../standingsComposer/teams";
 import type { TierPlayer } from "../tierListComposer/nbaActivePlayers";
@@ -28,7 +28,7 @@ export const LEADER_SPLIT_STORAGE_KEY = "ddgm:leader-split-composer";
 export const LEADER_SPLIT_SAVES_KEY = "ddgm:leader-split-composer:saves";
 export const DEFAULT_LEADER_SPLIT_TITLE = "PPG LEADERS";
 /** Face lower, fill the leftover crop — not a floating bust in a black well. */
-export const LS_HERO_PAN: PhotoPan = { x: 0.5, y: 0.4, zoom: 1.72, rotate: 0 };
+export const LS_HERO_PAN: PhotoPan = { x: 0.5, y: 0.36, zoom: 1.5, rotate: 0 };
 
 export interface LeaderSplitDraft {
   title: string;
@@ -82,6 +82,12 @@ export const defaultLeaderSplitDraft = (
   showBa: true,
 });
 
+const isLegacyHeroPan = (pan: PhotoPan) =>
+  pan.x === 0.5 &&
+  pan.y === 0.4 &&
+  pan.zoom === 1.72 &&
+  (pan.rotate ?? 0) === 0;
+
 export const normalizeLeaderSplitDraft = (
   value: Partial<LeaderSplitDraft>,
   fallback = defaultLeaderSplitDraft(),
@@ -97,7 +103,12 @@ export const normalizeLeaderSplitDraft = (
   showListHeadshots: value.showListHeadshots === true,
   namePlates: value.namePlates === true,
   customPhoto: value.customPhoto === true,
-  pan: isPhotoPan(value.pan) ? value.pan : fallback.pan,
+  pan:
+    isPhotoPan(value.pan)
+      ? value.customPhoto === true || !isLegacyHeroPan(value.pan)
+        ? value.pan
+        : { ...LS_HERO_PAN }
+      : fallback.pan,
   photoSrc: isNullable(value.photoSrc) ? value.photoSrc : fallback.photoSrc,
   playerId: isNullable(value.playerId) ? value.playerId : fallback.playerId,
   teamId: isNullable(value.teamId) ? value.teamId : fallback.teamId,
@@ -158,17 +169,49 @@ export const leaderSplitOccupied = (draft: LeaderSplitDraft) =>
 /** Packed list row — last-name punch; period-abbreviate overflow, don’t clip. */
 export const LS_NAME_ADVANCE = 8;
 
+const leaderSplitNameSource = (
+  row: Pick<LeaderRow, "firstName" | "lastName">,
+  style: ComposerNameStyle = "full",
+) =>
+  style === "full"
+    ? row.lastName || row.firstName || `${row.firstName} ${row.lastName}`.trim()
+    : formatComposerName(row.firstName, row.lastName, style) ||
+      `${row.firstName} ${row.lastName}`.replace(/\s+/g, " ").trim();
+
 export const fitLeaderSplitName = (
   row: Pick<LeaderRow, "firstName" | "lastName">,
   style: ComposerNameStyle = "full",
   maxAdvance = LS_NAME_ADVANCE,
-) => {
-  const source =
-    style === "full"
-      ? row.lastName || row.firstName || `${row.firstName} ${row.lastName}`.trim()
-      : formatComposerName(row.firstName, row.lastName, style) ||
-        `${row.firstName} ${row.lastName}`.replace(/\s+/g, " ").trim();
-  return abbreviateOverflowName(source, maxAdvance, (value) =>
+) =>
+  abbreviateOverflowName(leaderSplitNameSource(row, style), maxAdvance, (value) =>
     measureTitleAdvance(value, 0.02),
   );
+
+/**
+ * Hyphenated last names wrap at the hyphen (`GILGEOUS-` / `ALEXANDER`)
+ * instead of clipping to `GILGEOU…`. Single-token overflow still
+ * period-abbreviates.
+ */
+export const leaderSplitRowName = (
+  row: Pick<LeaderRow, "firstName" | "lastName">,
+  style: ComposerNameStyle = "full",
+  maxAdvance = LS_NAME_ADVANCE,
+) => {
+  const source = leaderSplitNameSource(row, style);
+  const upper = source.replace(/\s+/g, " ").trim().toUpperCase();
+  if (!upper) {
+    return "";
+  }
+  const measure = (value: string) => measureTitleAdvance(value, -0.02);
+  if (measure(upper) <= maxAdvance) {
+    return upper;
+  }
+  const lines = wrapNameToWidth(upper, maxAdvance, measure, 2);
+  if (
+    lines.length === 2 &&
+    lines.every((line) => measure(line) <= maxAdvance)
+  ) {
+    return lines.join("\n");
+  }
+  return abbreviateOverflowName(upper, maxAdvance, measure);
 };

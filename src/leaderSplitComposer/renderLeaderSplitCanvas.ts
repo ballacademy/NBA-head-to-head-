@@ -20,6 +20,7 @@ import {
   setTracking,
 } from "../leaderboardComposer/leaderboardPaint";
 import {
+  LS_FADE,
   LS_HERO_FAMILY,
   LS_HERO_GIVEN,
   LS_HERO_KICKER,
@@ -70,9 +71,10 @@ export const renderLeaderSplitCanvas = async (
     photo.h * s,
     input.photoGrade,
   );
+  const fadeTop = 1 - LS_FADE;
   const fade = context.createLinearGradient(
     0,
-    (photo.y + photo.h * 0.58) * s,
+    (photo.y + photo.h * fadeTop) * s,
     0,
     (photo.y + photo.h) * s,
   );
@@ -82,9 +84,9 @@ export const renderLeaderSplitCanvas = async (
   context.fillStyle = fade;
   context.fillRect(
     photo.x * s,
-    (photo.y + photo.h * 0.58) * s,
+    (photo.y + photo.h * fadeTop) * s,
     photo.w * s,
-    photo.h * 0.42 * s,
+    photo.h * LS_FADE * s,
   );
   const first = rows[0];
   context.textAlign = "left";

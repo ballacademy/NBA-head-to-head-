@@ -5,11 +5,44 @@ import {
 } from "../standingsComposer/rankingState";
 
 export const LS_LIST_PCT = 0.42;
-export const LS_PAD = 24;
-export const LS_HERO_KICKER = 18;
+export const LS_PAD = 16;
+export const LS_RANK_W = 32;
+export const LS_LOGO = 40;
+export const LS_GAP = 8;
+export const LS_VALUE_W = 114;
+export const LS_HERO_KICKER = 20;
 export const LS_HERO_FAMILY = 96;
-export const LS_HERO_GIVEN = 22;
-export const LS_HERO_STAT = 64;
+export const LS_HERO_GIVEN = 24;
+export const LS_HERO_STAT = 72;
+/** Bottom fade as a fraction of the photo pane — enough for the lockup, not a grey veil. */
+export const LS_FADE = 0.36;
+/** Row type as a fraction of row height, then capped so 5-row leftover does not clip. */
+export const LS_RANK_TYPE = 0.18;
+export const LS_NAME_TYPE = 0.24;
+export const LS_VALUE_TYPE = 0.28;
+export const LS_RANK_CAP = 32;
+export const LS_NAME_CAP = 38;
+export const LS_VALUE_CAP = 54;
+
+export interface LeaderSplitRowCols {
+  rankW: number;
+  logoW: number;
+  gap: number;
+  valueW: number;
+  nameX: number;
+  nameW: number;
+}
+
+/** Rank | logo | name | value — same grid for CSS and canvas punch. */
+export const leaderSplitRowCols = (rowW: number): LeaderSplitRowCols => {
+  const rankW = LS_RANK_W;
+  const logoW = LS_LOGO;
+  const gap = LS_GAP;
+  const valueW = LS_VALUE_W;
+  const nameX = rankW + gap + logoW + gap;
+  const nameW = Math.max(48, rowW - nameX - gap - valueW);
+  return { rankW, logoW, gap, valueW, nameX, nameW };
+};
 
 export interface LeaderSplitRect {
   x: number;

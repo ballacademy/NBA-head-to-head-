@@ -2248,8 +2248,13 @@ describe("composer chrome", () => {
     expect(css).not.toContain("space-evenly");
     expect(css).not.toContain(".ls-list-title");
     expect(css).toContain("font-size: calc(96 * var(--u))");
+    expect(css).not.toContain("calc(170 * var(--u))");
+    expect(css).toContain("calc(114 * var(--u))");
+    expect(css).toContain("calc(38 * var(--u))");
+    expect(css).toContain("white-space: pre-wrap");
     expect(graphic).not.toContain("ls-list-title");
     expect(graphic).toContain("ls-kicker");
+    expect(graphic).toContain("leaderSplitRowName");
     expect(canvas).not.toContain("min(56");
     expect(canvas).toContain("leaderSplitLayout");
     expect(state).toContain("leaderSplitVisibleEntries");
@@ -2392,7 +2397,9 @@ describe("composer chrome", () => {
     expect(headlineHud).toContain("night.setDate(night.yesterdayIso)");
     expect(dualGraphic).toContain("fitDualRankName");
     expect(splitGraphic).toContain("fitLeaderSplitName");
+    expect(splitGraphic).toContain("leaderSplitRowName");
     expect(splitCss).toContain("text-overflow: clip");
+    expect(splitCss).toContain("white-space: pre-wrap");
     expect(landingHub).toContain("export const gameAppDocumentTitle");
     expect(landingPage).toContain("gameAppDocumentTitle");
     expect(app).toContain("gameAppDocumentTitle");

@@ -29,9 +29,15 @@ import {
   leaderPlateAccent,
   leaderPlateFill,
 } from "../leaderboardComposer/leaderPlate";
-import { leaderSplitLayout } from "./leaderSplitLayout";
+import {
+  leaderSplitLayout,
+  leaderSplitRowCols,
+  LS_NAME_CAP,
+  LS_NAME_TYPE,
+} from "./leaderSplitLayout";
 import {
   fitLeaderSplitName,
+  leaderSplitRowName,
   leaderSplitVisibleEntries,
   type LeaderSplitDraft,
 } from "./leaderSplitState";
@@ -82,6 +88,12 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
       : { given: "", family: "" };
     const boardH = story ? STORY_DESIGN_HEIGHT : square ? GRAPHIC_WIDTH : GRAPHIC_HEIGHT;
     const layout = leaderSplitLayout(entries.length, draft.mirror, boardH);
+    const nameCols = leaderSplitRowCols(layout.rows.w);
+    const namePx = Math.min(
+      (layout.rowH || 180) * LS_NAME_TYPE,
+      LS_NAME_CAP,
+    );
+    const nameAdvance = (nameCols.nameW / Math.max(1, namePx)) * 0.88;
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -157,17 +169,11 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
                 ) : (
                   <span className="ls-logo" />
                 )}
-                <input
+                <textarea
                   className="ls-name"
                   value={
-                    fitLeaderSplitName(row, nameStyle) ||
-                    (nameStyle === "full"
-                      ? row.lastName || row.firstName
-                      : formatComposerName(
-                          row.firstName,
-                          row.lastName,
-                          nameStyle,
-                        )) ||
+                    leaderSplitRowName(row, nameStyle, nameAdvance) ||
+                    fitLeaderSplitName(row, nameStyle, nameAdvance) ||
                     leaderRowName(row)
                   }
                   title={
@@ -175,9 +181,20 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
                     leaderRowName(row)
                   }
                   aria-label={`Leader ${index + 1} name`}
+                  rows={1}
                   spellCheck={false}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                    }
+                  }}
                   onChange={(event) => {
-                    const bits = event.target.value.split(/\s+/);
+                    const next = event.target.value.replace(/\s+/g, " ").trim();
+                    if (nameStyle === "full") {
+                      onRowChange(entry.index, { lastName: next });
+                      return;
+                    }
+                    const bits = next.split(/\s+/);
                     onRowChange(entry.index, {
                       firstName: bits.slice(0, -1).join(" "),
                       lastName: bits.at(-1) ?? "",

@@ -31,7 +31,7 @@
   flex-direction: column;
   min-width: 0;
   z-index: 2;
-  padding: calc(24 * var(--u));
+  padding: calc(16 * var(--u));
   background-color: #1c1c1c;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
   background-size: calc(10 * var(--u)) calc(10 * var(--u));
@@ -84,9 +84,9 @@
   flex: 1 1 0;
   display: grid;
   grid-template-columns:
-    calc(22 * var(--u)) calc(28 * var(--u)) minmax(0, 1fr) calc(170 * var(--u));
+    calc(32 * var(--u)) calc(40 * var(--u)) minmax(0, 1fr) calc(114 * var(--u));
   align-items: center;
-  gap: calc(6 * var(--u));
+  gap: calc(8 * var(--u));
   min-height: 0;
   overflow: hidden;
 }
@@ -169,17 +169,18 @@
 
 .ls-rank {
   font-size: min(
-    calc(var(--ls-row-h) * 0.11 * var(--u)),
-    calc(18 * var(--u))
+    calc(var(--ls-row-h) * 0.18 * var(--u)),
+    calc(32 * var(--u))
   );
   color: rgba(255, 255, 255, 0.55);
   text-align: center;
+  letter-spacing: -0.04em;
 }
 
 .ls-logo,
 .ls-face {
-  width: calc(28 * var(--u));
-  height: calc(28 * var(--u));
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
   object-fit: contain;
 }
 
@@ -190,23 +191,32 @@
 
 .ls-name {
   font-size: min(
-    calc(var(--ls-row-h) * 0.2 * var(--u)),
-    calc(42 * var(--u))
+    calc(var(--ls-row-h) * 0.24 * var(--u)),
+    calc(38 * var(--u))
   );
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
   text-align: left;
-  white-space: nowrap;
+  line-height: 0.92;
+  white-space: pre-wrap;
+  overflow-wrap: normal;
+  word-break: normal;
   overflow: hidden;
   text-overflow: clip;
   width: 100%;
-  field-sizing: fixed;
+  max-height: 100%;
+  display: block;
+  appearance: none;
+  resize: none;
+  padding: 0;
+  field-sizing: content;
 }
 
 .ls-value {
   font-size: min(
-    calc(var(--ls-row-h) * 0.3 * var(--u)),
-    calc(64 * var(--u))
+    calc(var(--ls-row-h) * 0.28 * var(--u)),
+    calc(54 * var(--u))
   );
+  letter-spacing: -0.04em;
   text-align: right;
   line-height: 1;
   overflow: hidden;
@@ -219,7 +229,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 42%;
+  height: 36%;
   z-index: 2;
   pointer-events: none;
   background: linear-gradient(
@@ -255,7 +265,7 @@
 
 .ls-kicker {
   color: var(--gold);
-  font-size: calc(18 * var(--u));
+  font-size: calc(20 * var(--u));
   letter-spacing: 0.18em;
   pointer-events: auto;
   background: transparent;
@@ -265,7 +275,7 @@
 }
 
 .ls-hero-given {
-  font-size: calc(22 * var(--u));
+  font-size: calc(24 * var(--u));
   letter-spacing: 0.1em;
   opacity: 0.92;
 }
@@ -278,7 +288,7 @@
 }
 
 .ls-hero-value {
-  font-size: calc(64 * var(--u));
+  font-size: calc(72 * var(--u));
   color: var(--gold);
 }
 
