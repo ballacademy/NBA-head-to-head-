@@ -3,6 +3,7 @@ import {
   readComposerNameStyle,
 } from "../instagramComposer/composerNameStyle";
 import type { ComposerLook } from "../instagramComposer/composerLook";
+import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import { GRAPHIC_WIDTH } from "../standingsComposer/rankingState";
 import {
   LEADER_GOLD,
@@ -19,16 +20,20 @@ import {
   POSTER_FONT,
   setTracking,
 } from "../leaderboardComposer/leaderboardPaint";
+import { paintStuddedCharcoal } from "../standingsComposer/headerTexture";
 import {
   LS_FADE,
   LS_HERO_FAMILY,
   LS_HERO_GIVEN,
-  LS_HERO_KICKER,
   LS_HERO_STAT,
+  LS_MAST_TYPE,
   leaderSplitBoardHeight,
   leaderSplitLayout,
 } from "./leaderSplitLayout";
-import type { LeaderSplitDraft } from "./leaderSplitState";
+import {
+  DEFAULT_LEADER_SPLIT_TITLE,
+  type LeaderSplitDraft,
+} from "./leaderSplitState";
 
 export type LeaderSplitRenderInput = LeaderSplitDraft & {
   look?: ComposerLook;
@@ -57,7 +62,8 @@ export const renderLeaderSplitCanvas = async (
     squareLeaderRows(input.rows, Boolean(input.square)),
     true,
   );
-  const layout = leaderSplitLayout(rows.length, input.mirror, boardH);
+  const plates = input.namePlates !== false;
+  const layout = leaderSplitLayout(rows.length, input.mirror, boardH, plates);
   const photo = layout.photo;
   const list = layout.list;
   const s = scale;
@@ -113,22 +119,41 @@ export const renderLeaderSplitCanvas = async (
     context.fillStyle = "rgba(255,255,255,0.92)";
     context.font = `900 ${LS_HERO_GIVEN * s}px ${POSTER_FONT}`;
     context.fillText(lines.given.toUpperCase(), typeX, cursor, typeMax);
-    cursor -= LS_HERO_GIVEN * 1.2 * s;
   }
-  context.fillStyle = LEADER_GOLD;
-  context.font = `900 ${LS_HERO_KICKER * s}px ${POSTER_FONT}`;
-  setTracking(context, 0.18 * LS_HERO_KICKER * s);
-  context.fillText(
-    (input.title || "PPG LEADERS").toUpperCase(),
-    typeX,
-    cursor,
-    typeMax,
-  );
-  setTracking(context, 0);
 
   paintLeaderCharcoalPane(context, list.x * s, list.y * s, list.w * s, list.h * s, scale);
-  const plates = input.namePlates === true;
+  const mast = layout.mast;
+  paintStuddedCharcoal(context, mast.x * s, mast.y * s, mast.w * s, mast.h * s, scale);
+  context.strokeStyle = input.look === "black" ? "#0a0a0a" : "#fff";
+  context.lineWidth = Math.max(2, 3 * s);
+  context.strokeRect(
+    mast.x * s + 1.5 * s,
+    mast.y * s + 1.5 * s,
+    mast.w * s - 3 * s,
+    mast.h * s - 3 * s,
+  );
+  const titleLines = splitBalancedTitle(input.title, DEFAULT_LEADER_SPLIT_TITLE);
+  const mastSize = titleLines.length > 1 ? LS_MAST_TYPE * s : 52 * s;
+  context.font = `900 italic ${mastSize}px ${POSTER_FONT}`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = LEADER_GOLD;
+  setTracking(context, 0.02 * mastSize);
+  const mastLineH = mastSize * 0.95;
+  const mastStart =
+    mast.y * s + mast.h * s / 2 - ((titleLines.length - 1) * mastLineH) / 2;
+  titleLines.forEach((line, index) => {
+    context.fillText(
+      line,
+      (mast.x + mast.w / 2) * s,
+      mastStart + index * mastLineH,
+      mast.w * s - 24 * s,
+    );
+  });
+  setTracking(context, 0);
+
   const rowH = layout.rowH;
+  const step = rowH + layout.rowGap;
   if (!plates && rows.length > 0) {
     paintLeaderHairlineRows(
       context,
@@ -146,7 +171,7 @@ export const renderLeaderSplitCanvas = async (
       rows[index]!,
       index + 1,
       layout.rows.x * s,
-      (layout.rows.y + index * rowH) * s,
+      (layout.rows.y + index * step) * s,
       layout.rows.w * s,
       rowH * s,
       false,

@@ -29,10 +29,10 @@ describe("leader format floors", () => {
 
   it("keeps an on-board title on empty Leader split, Dual ranks, and Leader bars", () => {
     expect(read("leaderSplitComposer/LeaderSplitGraphic.tsx")).toContain(
-      "ls-kicker",
+      "ls-title-plate",
     );
     expect(read("leaderSplitComposer/leaderSplitComposer.css")).toContain(
-      ".ls-kicker",
+      ".ls-title-plate",
     );
     expect(read("dualRanksComposer/DualRanksGraphic.tsx")).toContain(
       "dr-empty-title",

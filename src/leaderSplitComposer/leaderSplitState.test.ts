@@ -24,10 +24,10 @@ import {
 } from "./leaderSplitState";
 
 describe("leader split pack", () => {
-  it("defaults name plates off", () => {
-    expect(defaultLeaderSplitDraft().namePlates).toBe(false);
-    expect(normalizeLeaderSplitDraft({}).namePlates).toBe(false);
-    expect(normalizeLeaderSplitDraft({ namePlates: true }).namePlates).toBe(true);
+  it("defaults name plates on", () => {
+    expect(defaultLeaderSplitDraft().namePlates).toBe(true);
+    expect(normalizeLeaderSplitDraft({}).namePlates).toBe(true);
+    expect(normalizeLeaderSplitDraft({ namePlates: false }).namePlates).toBe(false);
   });
 
   it("migrates the old 1.72 ESPN crop onto the looser hero pan", () => {
@@ -50,7 +50,10 @@ describe("leader split pack", () => {
     expect(eight.photo.w).toBe(GRAPHIC_WIDTH - eight.list.w);
     expect(eight.photo.h).toBe(GRAPHIC_HEIGHT);
     expect(eight.rowH).toBeGreaterThan(56);
-    expect(eight.rows.y + eight.rowH * 8).toBeCloseTo(eight.rows.y + eight.rows.h, 5);
+    expect(eight.mast.h).toBeGreaterThan(80);
+    expect(
+      eight.rows.y + eight.rowH * 8 + eight.rowGap * 7,
+    ).toBeCloseTo(eight.rows.y + eight.rows.h, 5);
     const five = leaderSplitLayout(5, false, GRAPHIC_HEIGHT);
     expect(five.rowH).toBeGreaterThan(eight.rowH);
     expect(five.photo.h).toBe(eight.photo.h);

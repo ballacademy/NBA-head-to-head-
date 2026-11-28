@@ -40,7 +40,7 @@ export interface LeaderSplitDraft {
   season: string;
   mirror: boolean;
   showListHeadshots: boolean;
-  /** Team-color name plates. Default Off; packing fills the pane. */
+  /** Team-color name plates with a faded club mark. Default On. */
   namePlates: boolean;
   playerId: string | null;
   teamId: string | null;
@@ -73,7 +73,7 @@ export const defaultLeaderSplitDraft = (
   season,
   mirror: false,
   showListHeadshots: false,
-  namePlates: false,
+  namePlates: true,
   playerId: null,
   teamId: null,
   photoSrc: null,
@@ -101,7 +101,7 @@ export const normalizeLeaderSplitDraft = (
   ),
   mirror: value.mirror === true,
   showListHeadshots: value.showListHeadshots === true,
-  namePlates: value.namePlates === true,
+  namePlates: value.namePlates !== false,
   customPhoto: value.customPhoto === true,
   pan:
     isPhotoPan(value.pan)

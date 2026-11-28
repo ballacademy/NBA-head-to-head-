@@ -10,6 +10,7 @@ import {
   composerLookClass,
   type ComposerLook,
 } from "../instagramComposer/composerLook";
+import { ComposerTitleField } from "../instagramComposer/ComposerTitleField";
 import {
   composerNameLines,
   formatComposerName,
@@ -24,11 +25,16 @@ import {
 } from "../standingsComposer/rankingState";
 import { getTeam } from "../standingsComposer/teams";
 import { teamLogoSrc } from "../everyTeamComposer/historicalRosters";
-import { leaderRowName, type LeaderRow } from "../leaderboardComposer/leaderboardFill";
+import {
+  LEADER_TITLE_MAX,
+  leaderRowName,
+  type LeaderRow,
+} from "../leaderboardComposer/leaderboardFill";
 import {
   leaderPlateAccent,
   leaderPlateFill,
 } from "../leaderboardComposer/leaderPlate";
+import { splitBalancedTitle } from "../instagramComposer/titleLayout";
 import {
   leaderSplitLayout,
   leaderSplitRowCols,
@@ -36,6 +42,7 @@ import {
   LS_NAME_TYPE,
 } from "./leaderSplitLayout";
 import {
+  DEFAULT_LEADER_SPLIT_TITLE,
   fitLeaderSplitName,
   leaderSplitRowName,
   leaderSplitVisibleEntries,
@@ -87,13 +94,16 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
       ? composerNameLines(first.firstName, first.lastName, nameStyle)
       : { given: "", family: "" };
     const boardH = story ? STORY_DESIGN_HEIGHT : square ? GRAPHIC_WIDTH : GRAPHIC_HEIGHT;
-    const layout = leaderSplitLayout(entries.length, draft.mirror, boardH);
-    const nameCols = leaderSplitRowCols(layout.rows.w);
+    const plates = draft.namePlates !== false;
+    const layout = leaderSplitLayout(entries.length, draft.mirror, boardH, plates);
+    const hideLogo = plates && !draft.showListHeadshots;
+    const nameCols = leaderSplitRowCols(layout.rows.w, hideLogo);
     const namePx = Math.min(
       (layout.rowH || 180) * LS_NAME_TYPE,
       LS_NAME_CAP,
     );
     const nameAdvance = (nameCols.nameW / Math.max(1, namePx)) * 0.88;
+    const titleLines = splitBalancedTitle(draft.title, DEFAULT_LEADER_SPLIT_TITLE);
 
     const setRefs = (node: HTMLElement | null) => {
       localRef.current = node;
@@ -126,6 +136,19 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
 
     const list = (
       <div className="ls-list">
+        <header className="ls-title-plate">
+          <div className="ls-title-block">
+            <ComposerTitleField
+              value={draft.title}
+              lines={titleLines}
+              ariaLabel="Leader split title"
+              inputClassName="ls-title-input"
+              lineClassName="ls-title-line"
+              maxLength={LEADER_TITLE_MAX}
+              onChange={onTitleChange}
+            />
+          </div>
+        </header>
         <ol className="ls-rows">
           {entries.map((entry, index) => {
             const row = entry.row;
@@ -137,7 +160,7 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
                 key={`ls-row-${entry.index}`}
                 className={[
                   "ls-row",
-                  draft.namePlates === true ? "is-plate" : "",
+                  plates ? "is-plate" : "",
                   index === 0
                     ? "is-gold"
                     : index === 1
@@ -149,7 +172,7 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
                   .filter(Boolean)
                   .join(" ")}
                 style={
-                  draft.namePlates === true
+                  plates
                     ? ({
                         ["--team-fill" as string]: leaderPlateFill(row.teamId),
                         ["--team-accent" as string]: leaderPlateAccent(row.teamId),
@@ -158,7 +181,7 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
                 }
                 onClick={() => onPickRow?.(entry.index)}
               >
-                {draft.namePlates === true && logo ? (
+                {plates && logo ? (
                   <img className="ls-row__mark" src={logo} alt="" />
                 ) : null}
                 <span className="ls-rank">{index + 1}</span>
@@ -233,13 +256,6 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
         />
         <div className="ls-fade" aria-hidden="true" />
         <div className="ls-photo-type">
-          <input
-            className="ls-kicker"
-            value={draft.title}
-            aria-label="Leader split title"
-            spellCheck={false}
-            onChange={(event) => onTitleChange(event.target.value)}
-          />
           {lines.given ? <p className="ls-hero-given">{lines.given}</p> : null}
           {lines.family ? <p className="ls-hero-name">{lines.family}</p> : null}
           {first?.value ? <p className="ls-hero-value">{first.value}</p> : null}
@@ -252,7 +268,8 @@ export const LeaderSplitGraphic = forwardRef<HTMLElement, LeaderSplitGraphicProp
         ref={setRefs}
         className={[
           "ls-board",
-          draft.namePlates === true ? "is-plates" : "",
+          plates ? "is-plates" : "",
+          draft.showListHeadshots ? "is-faces" : "",
           draft.mirror ? "is-mirror" : "",
           story ? "is-story" : "",
           square ? "is-square" : "",

@@ -321,12 +321,12 @@ const paintNamePlate = async (
   context.fillStyle = gold ? LEADER_GOLD : leaderPlateAccent(row.teamId);
   context.fillRect(x, y, Math.max(4 * s, 6 * s), h);
   if (row.teamId) {
-    const mark = Math.min(h * 0.78, 72 * s);
-    context.globalAlpha = 0.18;
+    const mark = Math.min(h * 0.82, 72 * s);
+    context.globalAlpha = 0.22;
     await paintTeamLogo(
       context,
       row.teamId,
-      x + w - mark - 10 * s,
+      x + w * 0.18,
       y + (h - mark) / 2,
       mark,
     );
@@ -464,7 +464,8 @@ export const paintListRow = async (
     context.fillRect(x, y, w, h);
   }
   const compact = !punch && !namePlates;
-  const punchCols = punch ? leaderSplitRowCols(w / s) : null;
+  const hideLogo = Boolean(punch && namePlates && !showHeadshots);
+  const punchCols = punch ? leaderSplitRowCols(w / s, hideLogo) : null;
   const rankSize = punch
     ? Math.min(Math.round(h * LS_RANK_TYPE), LS_RANK_CAP * s)
     : namePlates
@@ -487,7 +488,9 @@ export const paintListRow = async (
     ? Math.min(h - 8 * s, 22 * s)
     : Math.min(h - (punch ? 16 * s : 8 * s), punch ? LS_LOGO * s : 32 * s);
   const logoX = x + (compact ? 28 * s : punch ? (LS_RANK_W + LS_GAP) * s : 40 * s);
-  if (showHeadshots && row.headshotUrl) {
+  if (hideLogo) {
+    /* Watermark mark on the plate is the club — skip the pip. */
+  } else if (showHeadshots && row.headshotUrl) {
     const shot = await loadCorsImage(row.headshotUrl);
     if (shot) {
       context.save();
@@ -528,7 +531,9 @@ export const paintListRow = async (
   if (punch) {
     setTracking(context, -0.02 * nameSize);
   }
-  const nameX = logoX + logoSize + (compact ? 4 * s : (punch ? LS_GAP : 8) * s);
+  const nameX = punch
+    ? x + punchCols!.nameX * s
+    : logoX + logoSize + (compact ? 4 * s : 8 * s);
   const valueW = punch ? LS_VALUE_W * s : compact ? 44 * s : 80 * s;
   const nameMax = Math.max(
     48 * s,

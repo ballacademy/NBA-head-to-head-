@@ -2247,17 +2247,20 @@ describe("composer chrome", () => {
     expect(layout).toContain("LS_LIST_PCT = 0.42");
     expect(css).not.toContain("space-evenly");
     expect(css).not.toContain(".ls-list-title");
+    expect(css).toContain(".ls-title-plate");
     expect(css).toContain("font-size: calc(96 * var(--u))");
     expect(css).not.toContain("calc(170 * var(--u))");
     expect(css).toContain("calc(114 * var(--u))");
     expect(css).toContain("calc(38 * var(--u))");
     expect(css).toContain("white-space: pre-wrap");
     expect(graphic).not.toContain("ls-list-title");
-    expect(graphic).toContain("ls-kicker");
+    expect(graphic).not.toContain("ls-kicker");
+    expect(graphic).toContain("ls-title-plate");
     expect(graphic).toContain("leaderSplitRowName");
     expect(canvas).not.toContain("min(56");
     expect(canvas).toContain("leaderSplitLayout");
     expect(state).toContain("leaderSplitVisibleEntries");
+    expect(state).toContain("namePlates: true");
     expect(pack).toContain("squareLetterbox: false");
   });
 
