@@ -14,6 +14,24 @@ Lineups are scored on:
 
 The app can export a shareable lineup image from match and Daily results.
 
+## Instagram composers
+
+On this branch the composer hub **is the home page**. Compose-only Instagram graphics (no posting). Switch **Standings**, **Tier list**, and **Every team** in the top tabs.
+
+```bash
+npm run dev
+```
+
+Then open [http://localhost:5173/](http://localhost:5173/) for standings (`/?hub=rankings` and `/rankings` also work). The tier list is at [http://localhost:5173/tier-list](http://localhost:5173/tier-list) (`?composer=tier` also works). Every team is at [http://localhost:5173/every-team](http://localhost:5173/every-team) (`/by-team` also works).
+
+- **Standings:** click a grey slot to pick a team, edit the three header lines, export a 4:5 PNG (2400×3000).
+- **Tier list:** 3–10 labeled rows (default S–F). Toggle **Teams** vs **Players**. Teams use NBA logos; players use ESPN headshots from the current 30-team rosters (`data/nba-active-tier-players.json`, CDN `a.espncdn.com/i/headshots/nba/...`) with the club mark faded behind the face. Search the player picker by name, and filter by team, age, height, division, and position.
+- **Every team:** 5×6 grid of all 30 clubs in city order. Each cell’s team logo is fixed; click it to pick a player from that roster only. Same 4:5 PNG export.
+
+Logos are vendored ESPN 500px marks — see `public/nba-logos/README.md`. Player headshots load on demand from ESPN’s public CDN (metadata is vendored so the picker does not scrape live).
+
+Draft Day GM remains at `/?hub=play` if you need the game.
+
 ## Scripts
 
 ```bash

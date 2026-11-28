@@ -6,6 +6,7 @@ import {
   buildDailyDraftShareUrl,
   buildPrivateMatchShareUrl,
   buildRanksHubShareUrl,
+  gameAppDocumentTitle,
   isLandingContentTab,
   isLandingH2hMode,
   isLandingPlaySection,
@@ -47,6 +48,16 @@ describe("landingHub", () => {
   beforeEach(() => {
     sessionStorageMock.clear();
     vi.stubGlobal("sessionStorage", sessionStorageMock);
+  });
+
+  it("sets Play / Daily Draft / Draft Day GM tab titles", () => {
+    expect(gameAppDocumentTitle("play", null)).toBe("Play");
+    expect(gameAppDocumentTitle("play", "daily")).toBe("Daily Draft");
+    expect(gameAppDocumentTitle("play", "daily-draft")).toBe("Daily Draft");
+    expect(gameAppDocumentTitle("ddgm", null)).toBe("Draft Day GM");
+    expect(gameAppDocumentTitle("game", null)).toBe("Draft Day GM");
+    expect(gameAppDocumentTitle("play", "chooser")).toBe("Play");
+    expect(gameAppDocumentTitle("ddgm", "daily")).toBe("Draft Day GM");
   });
 
   it("validates content tabs", () => {

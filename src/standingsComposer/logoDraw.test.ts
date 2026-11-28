@@ -1,0 +1,376 @@
+import { describe, expect, it } from "vitest";
+import {
+  LOGO_FIT_X,
+  LOGO_FIT_Y,
+  LOGO_LIFT,
+  LOGO_SHADOW_FRAC,
+  fittedLogoRect,
+  getOpaqueBoundsFromImageData,
+  logoGlowPx,
+  logoShadowPx,
+  opticalShiftX,
+  stampBalanceOffset,
+  stretchedLogoRect,
+  coveredLogoRect,
+} from "./logoDraw";
+import {
+  BANNER_SHAPE,
+  BANNER_VIEW,
+  BRAND_CAP_MID_EM,
+  BRAND_FONT,
+  BANNER_MARGIN_TOP,
+  BRAND_SLOT,
+  SUB_FONT,
+  SUB_OPTICAL_LIFT,
+  TITLE_BAND,
+  bandCenterY,
+  bannerBoardRect,
+  bannerStrokeOuterTop,
+  brandBaselineY,
+  brandEmTop,
+  notchFromMeasuredWidth,
+  notchInnerY,
+  subBaselineY,
+  subEmTop,
+  trackedTextWidth,
+} from "./bannerLayout";
+import {
+  BANNER_FILL_BASE,
+  BANNER_STUD_FILL,
+  BANNER_STUD_SIZE,
+  BANNER_STUD_STEP,
+  CHARCOAL_FLOOR,
+  COURT_FLOOR,
+  FIELD_TEXTURE_SRC,
+  HEADER_TEXTURE_SRC,
+  PLOT_HAIRLINE_STEP,
+  bannerStudMetrics,
+  coverRect,
+} from "./headerTexture";
+
+describe("getOpaqueBoundsFromImageData", () => {
+  it("trims transparent padding so the opaque mark can be centered", () => {
+    const width = 10;
+    const height = 10;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const paint = (x: number, y: number) => {
+      const i = (y * width + x) * 4;
+      data[i] = 255;
+      data[i + 1] = 0;
+      data[i + 2] = 0;
+      data[i + 3] = 255;
+    };
+    paint(2, 3);
+    paint(6, 3);
+    paint(2, 7);
+    paint(6, 7);
+    expect(getOpaqueBoundsFromImageData(data, width, height)).toEqual({
+      x: 2,
+      y: 3,
+      w: 5,
+      h: 5,
+      cx: 4,
+      cy: 5,
+    });
+  });
+
+  it("reports a right-weighted centroid for a Magic-like mark", () => {
+    const width = 20;
+    const height = 10;
+    const data = new Uint8ClampedArray(width * height * 4);
+    const paint = (x: number, y: number, a = 255) => {
+      const i = (y * width + x) * 4;
+      data[i] = 255;
+      data[i + 3] = a;
+    };
+    for (let x = 2; x <= 8; x += 1) {
+      paint(x, 4, 80);
+    }
+    for (let x = 12; x <= 18; x += 1) {
+      paint(x, 5, 255);
+      paint(x, 6, 255);
+    }
+    const bounds = getOpaqueBoundsFromImageData(data, width, height);
+    expect(bounds.x).toBe(2);
+    expect(bounds.w).toBe(17);
+    expect(bounds.cx).toBeGreaterThan(bounds.x + bounds.w / 2);
+  });
+});
+
+describe("fittedLogoRect", () => {
+  it("lifts the trimmed artwork ~3% of cell height", () => {
+    const cell = { x: 10, y: 20, w: 400, h: 246 };
+    const dest = fittedLogoRect(
+      { x: 40, y: 80, w: 200, h: 120 },
+      cell.x,
+      cell.y,
+      cell.w,
+      cell.h,
+    );
+    expect(dest.x + dest.w / 2).toBeCloseTo(cell.x + cell.w / 2, 6);
+    expect(dest.y + dest.h / 2).toBeCloseTo(
+      cell.y + cell.h / 2 - cell.h * LOGO_LIFT,
+      6,
+    );
+  });
+
+  it("ignores extra PNG padding in the bottom-right of the file", () => {
+    const cell = { x: 0, y: 0, w: 300, h: 200 };
+    const padded = fittedLogoRect({ x: 80, y: 90, w: 100, h: 80 }, 0, 0, 300, 200);
+    const tight = fittedLogoRect({ x: 0, y: 0, w: 100, h: 80 }, 0, 0, 300, 200);
+    expect(padded).toEqual(tight);
+    expect(padded.x + padded.w / 2).toBeCloseTo(cell.w / 2, 6);
+    expect(padded.y + padded.h / 2).toBeCloseTo(cell.h / 2 - cell.h * LOGO_LIFT, 6);
+  });
+
+  it("lets a wide wordmark use cell width instead of a square cap", () => {
+    const wide = fittedLogoRect({ x: 0, y: 0, w: 460, h: 200 }, 0, 0, 400, 246);
+    const round = fittedLogoRect({ x: 0, y: 0, w: 460, h: 460 }, 0, 0, 400, 246);
+    expect(wide.w).toBeGreaterThan(round.w);
+    expect(wide.x + wide.w / 2).toBeCloseTo(200, 6);
+    expect(wide.y + wide.h / 2).toBeCloseTo(123 - 246 * LOGO_LIFT, 6);
+  });
+
+  it("shifts a right-heavy mark like Magic slightly left", () => {
+    const cellW = 400;
+    const cellH = 246;
+    const balanced = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 230, cy: 165 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    const magic = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 272, cy: 178 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    expect(magic.x).toBeLessThan(balanced.x);
+    expect(balanced.x - magic.x).toBeGreaterThan(cellW * 0.02);
+    expect(balanced.x - magic.x).toBeLessThan(cellW * 0.06);
+    expect(opticalShiftX({ x: 0, y: 0, w: 460, h: 330, cx: 230 }, 200, cellW)).toBe(0);
+  });
+
+  it("does not optically shift a balanced circular mark", () => {
+    const dest = fittedLogoRect(
+      { x: 20, y: 20, w: 460, h: 460, cx: 250, cy: 250 },
+      0,
+      0,
+      400,
+      246,
+    );
+    const box = fittedLogoRect({ x: 20, y: 20, w: 460, h: 460 }, 0, 0, 400, 246);
+    expect(dest.x).toBeCloseTo(box.x, 6);
+  });
+
+  it("centers in the inner content box so a cell frame cannot clip the mark top-left", () => {
+    const outer = 148;
+    const inner = outer - 4 * 2;
+    const dest = fittedLogoRect(
+      { x: 20, y: 20, w: 460, h: 460, cx: 250, cy: 250 },
+      0,
+      0,
+      inner,
+      inner,
+    );
+    expect(dest.x + dest.w / 2).toBeCloseTo(inner / 2, 6);
+    expect(dest.y + dest.h / 2).toBeCloseTo(inner / 2 - inner * LOGO_LIFT, 6);
+    expect(dest.x).toBeGreaterThan(0);
+    expect(dest.y).toBeGreaterThan(0);
+    expect(dest.x + dest.w).toBeLessThan(inner);
+    expect(dest.y + dest.h).toBeLessThan(inner);
+  });
+
+  it("keeps shadow length in cell pixels without shifting the dest rect", () => {
+    expect(LOGO_SHADOW_FRAC).toBeGreaterThan(0.12);
+    expect(logoShadowPx(400, 246)).toBe(Math.round(246 * LOGO_SHADOW_FRAC));
+    const dest = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 460, cx: 230, cy: 230 },
+      0,
+      0,
+      148,
+      148,
+    );
+    expect(dest.x + dest.w / 2).toBeCloseTo(74, 6);
+    const shadow = logoShadowPx(148, 148);
+    expect(dest.x + dest.w / 2).toBeCloseTo(74, 6);
+    expect(dest.x - stampBalanceOffset(shadow)).toBeLessThan(dest.x);
+  });
+
+  it("balances the down-right stamp by half the shadow length", () => {
+    expect(stampBalanceOffset(0)).toBe(0);
+    expect(stampBalanceOffset(10)).toBe(5);
+    const cell = 148;
+    const dest = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 460, cx: 230, cy: 230 },
+      0,
+      0,
+      cell,
+      cell,
+    );
+    const shadow = logoShadowPx(cell, cell);
+    expect(dest.x - stampBalanceOffset(shadow) + dest.w / 2).toBeCloseTo(
+      cell / 2 - stampBalanceOffset(shadow),
+      6,
+    );
+  });
+
+  it("covers a fade logo chip without stretching or a padded stamp", () => {
+    const dest = coveredLogoRect(
+      { x: 20, y: 20, w: 460, h: 460 },
+      0,
+      0,
+      28,
+      28,
+    );
+    expect(dest.w).toBeGreaterThanOrEqual(28);
+    expect(dest.h).toBeGreaterThanOrEqual(28);
+    expect(dest.w / dest.h).toBeCloseTo(1);
+    const fitted = fittedLogoRect(
+      { x: 20, y: 20, w: 460, h: 460 },
+      0,
+      0,
+      28,
+      28,
+    );
+    expect(fitted.w).toBeLessThan(28);
+    expect(fitted.h).toBeLessThan(28);
+  });
+
+  it("covers the name plate without stretching the logo", () => {
+    const dest = coveredLogoRect({ x: 0, y: 0, w: 500, h: 500 }, 12, 40, 520, 116);
+    expect(dest.w / dest.h).toBeCloseTo(1);
+    expect(dest.w).toBeGreaterThanOrEqual(520);
+    expect(dest.h).toBeGreaterThanOrEqual(116);
+    expect(dest.y).toBeLessThan(40);
+    const squashed = stretchedLogoRect(12, 40, 520, 116);
+    expect(squashed.w / squashed.h).toBeCloseTo(520 / 116);
+    expect(dest.w / dest.h).not.toBeCloseTo(squashed.w / squashed.h);
+    const portrait = coveredLogoRect({ x: 0, y: 0, w: 400, h: 200 }, 0, 0, 80, 140);
+    expect(portrait.w / portrait.h).toBeCloseTo(2);
+    expect(portrait.h).toBeGreaterThanOrEqual(140);
+    expect(stretchedLogoRect(0, 0, 80, 140).w / stretchedLogoRect(0, 0, 80, 140).h).toBeCloseTo(
+      80 / 140,
+    );
+  });
+
+  it("centers team-tier logos after optical trim, with no extra left shift", () => {
+    const cellW = 400;
+    const cellH = 246;
+    const balanced = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 230, cy: 165 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    const magic = fittedLogoRect(
+      { x: 0, y: 0, w: 460, h: 330, cx: 272, cy: 178 },
+      0,
+      0,
+      cellW,
+      cellH,
+    );
+    expect(balanced.x + balanced.w / 2).toBeCloseTo(cellW / 2, 6);
+    expect(magic.x).toBeLessThan(balanced.x);
+    expect(magic.x).toBeGreaterThan(0);
+    expect(magic.x + magic.w).toBeLessThan(cellW);
+    expect(balanced.x).toBeGreaterThan(0);
+  });
+
+  it("sizes neon logo glow from leftover cell padding", () => {
+    const standings = logoGlowPx(400, 246);
+    const tight = logoGlowPx(180, 180, 0.94, 0.94);
+    expect(standings).toBeGreaterThanOrEqual(6);
+    expect(standings).toBeLessThanOrEqual(Math.round(246 * (1 - LOGO_FIT_Y)));
+    expect(tight).toBeGreaterThanOrEqual(6);
+    expect(tight).toBeLessThan(standings);
+    expect(logoGlowPx(400, 246, LOGO_FIT_X, LOGO_FIT_Y)).toBe(standings);
+  });
+});
+
+describe("banner notch and bands", () => {
+  it("grows the lower notch with a longer conference string", () => {
+    const short = notchFromMeasuredWidth(180, 1000);
+    const long = notchFromMeasuredWidth(420, 1000);
+    expect(long.right - long.left).toBeGreaterThan(short.right - short.left);
+    expect((short.left + short.right) / 2).toBeCloseTo(BANNER_VIEW.width / 2, 5);
+    expect((long.left + long.right) / 2).toBeCloseTo(BANNER_VIEW.width / 2, 5);
+  });
+
+  it("centers title and subtitle in their banner segments", () => {
+    expect(TITLE_BAND.topFrac).toBeCloseTo(BANNER_SHAPE.top / BANNER_VIEW.height);
+    expect(TITLE_BAND.topFrac + TITLE_BAND.heightFrac).toBeCloseTo(
+      BANNER_SHAPE.waist / BANNER_VIEW.height,
+    );
+    const titleY = bandCenterY(0, 200, TITLE_BAND.topFrac, TITLE_BAND.heightFrac);
+    expect(titleY).toBeCloseTo((BANNER_SHAPE.top + BANNER_SHAPE.waist) / 2);
+  });
+
+  it("raises EASTERN CONFERENCE into the inner notch pocket", () => {
+    const { top, bottom } = notchInnerY(1);
+    const geo = (top + bottom) / 2;
+    const pocketH = bottom - top;
+    const capCenter = subEmTop(1) + SUB_FONT * BRAND_CAP_MID_EM;
+    expect(SUB_OPTICAL_LIFT).toBeGreaterThan(0.15);
+    expect(capCenter).toBeCloseTo(geo - pocketH * SUB_OPTICAL_LIFT, 5);
+    expect(geo - capCenter).toBeGreaterThan(pocketH * 0.15);
+    expect(subBaselineY(1)).toBeLessThan(geo);
+    expect(subEmTop(1)).toBeGreaterThan(top);
+    expect(subEmTop(1) + SUB_FONT).toBeLessThan(bottom);
+  });
+
+  it("includes letter-spacing when measuring subtitle width", () => {
+    expect(trackedTextWidth([10, 10, 10], 4)).toBe(38);
+    expect(trackedTextWidth([], 4)).toBe(0);
+  });
+
+  it("keeps the title banner origin so logos and title layout do not shift", () => {
+    expect(bannerBoardRect(1).y).toBe(BRAND_SLOT + BANNER_MARGIN_TOP);
+    expect(bannerBoardRect(1).y).toBe(72);
+  });
+
+  it("places a larger BALLACADEMY optically in the gap above the banner stroke", () => {
+    expect(BRAND_FONT).toBe(28);
+    const strokeOuter = bannerStrokeOuterTop(1);
+    const capCenter = brandEmTop(1) + BRAND_FONT * BRAND_CAP_MID_EM;
+    expect(capCenter).toBeCloseTo(strokeOuter / 2, 5);
+    expect(brandBaselineY(1)).toBeCloseTo(brandEmTop(1) + BRAND_FONT / 2, 8);
+    expect(brandEmTop(1)).toBeGreaterThan(0);
+    expect(brandEmTop(1) + BRAND_FONT).toBeLessThan(strokeOuter);
+    expect(strokeOuter).toBeLessThan(bannerBoardRect(1).y + 8);
+  });
+});
+
+describe("header texture cover", () => {
+  it("covers a wide header without letterboxing", () => {
+    const placed = coverRect(679, 350, 0, 0, 1200, 228);
+    expect(placed.dw).toBeGreaterThanOrEqual(1200);
+    expect(placed.dh).toBeGreaterThanOrEqual(228);
+    expect(placed.dx + placed.dw).toBeGreaterThanOrEqual(1200);
+    expect(placed.dy + placed.dh).toBeGreaterThanOrEqual(228);
+  });
+
+  it("covers a 4:5 board with the stacked metal without stretching", () => {
+    const placed = coverRect(1200, 1500, 0, 0, 1200, 1500);
+    expect(placed).toEqual({ dx: 0, dy: 0, dw: 1200, dh: 1500 });
+  });
+
+  it("uses a near-black studded fill instead of the stacked field metal", () => {
+    expect(FIELD_TEXTURE_SRC).toBe("/composer-background-texture.png");
+    expect(HEADER_TEXTURE_SRC).toBe(FIELD_TEXTURE_SRC);
+    expect(BANNER_FILL_BASE.toLowerCase()).toBe("#1c1c1c");
+    expect(BANNER_STUD_FILL.toLowerCase()).toBe("#2a2a2a");
+    expect(BANNER_STUD_SIZE).toBeLessThan(BANNER_STUD_STEP / 2);
+    expect(CHARCOAL_FLOOR.toLowerCase()).toBe("#1c1c1c");
+    expect(COURT_FLOOR.toLowerCase()).toBe("#121212");
+    expect(PLOT_HAIRLINE_STEP).toBe(40);
+    const { step, size, inset } = bannerStudMetrics(2);
+    expect(step).toBe(20);
+    expect(size).toBe(5);
+    expect(inset).toBeCloseTo(7.5);
+  });
+});

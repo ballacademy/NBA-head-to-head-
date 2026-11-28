@@ -9,8 +9,20 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
-const isElementScrollable = (element: HTMLElement) =>
-  element.scrollHeight - element.clientHeight > 1;
+const isScrollableOverflow = (value: string) =>
+  value === "auto" || value === "scroll" || value === "overlay";
+
+const isElementScrollable = (element: HTMLElement) => {
+  const style =
+    typeof window === "undefined" ? null : window.getComputedStyle(element);
+  const canY =
+    element.scrollHeight - element.clientHeight > 1 &&
+    (!style || isScrollableOverflow(style.overflowY));
+  const canX =
+    element.scrollWidth - element.clientWidth > 1 &&
+    (!style || isScrollableOverflow(style.overflowX));
+  return canY || canX;
+};
 
 const eventAllowsInnerScroll = (
   target: EventTarget | null,

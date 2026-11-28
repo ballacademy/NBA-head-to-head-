@@ -1,0 +1,291 @@
+.mt-board {
+  --u: 1px;
+  --frame-color: #fff;
+  --frame-w: calc(4 * var(--u));
+  --ig-poster: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  height: 100%;
+  background-color: #0b0b0b;
+  background-image: url("/composer-background-texture.png");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame-color);
+}
+
+.mt-board.is-story {
+  aspect-ratio: 9 / 16;
+}
+
+.mt-board.is-black {
+  --frame-color: #0a0a0a;
+}
+
+.mt-title-plate {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(72 * var(--u)) 0 calc(16 * var(--u));
+  border: var(--frame-w) solid var(--frame-color);
+  background-color: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+}
+
+.mt-title {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(40 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mt-col {
+  position: absolute;
+  z-index: 2;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.18) 42%, rgba(0, 0, 0, 0.38) 100%),
+    var(--col-fill, #14181f);
+}
+
+.mt-col::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Crect width='12' height='12' fill='none'/%3E%3Crect x='5' y='5' width='2' height='2' fill='rgba(255,255,255,0.05)'/%3E%3C/svg%3E");
+  background-size: calc(12 * var(--u)) calc(12 * var(--u));
+  opacity: 0.35;
+}
+
+.mt-logo {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+.mt-logo canvas,
+.mt-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mt-team-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.mt-receive {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: calc(12 * var(--u)) calc(10 * var(--u)) calc(28 * var(--u));
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.62) 38%,
+    rgba(0, 0, 0, 0.2) 76%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.mt-receive.is-empty {
+  background: none;
+}
+
+.mt-receive__input {
+  pointer-events: auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  font-family: var(--ig-poster);
+  font-size: calc(28 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.72);
+}
+
+.mt-board.is-three .mt-receive__input {
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.06em;
+}
+
+.mt-receive__input:focus {
+  outline: calc(2 * var(--u)) dashed rgba(255, 255, 255, 0.45);
+  outline-offset: calc(4 * var(--u));
+}
+
+.mt-board.is-exporting .mt-receive__input:focus {
+  outline: none;
+}
+
+.mt-cap {
+  position: absolute;
+  z-index: 4;
+  top: calc(46 * var(--u));
+  left: calc(10 * var(--u));
+  right: calc(10 * var(--u));
+  margin: 0;
+  color: rgba(250, 204, 21, 0.92);
+  font-family: var(--ig-poster);
+  font-size: calc(14 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  text-shadow: calc(1 * var(--u)) calc(1 * var(--u)) 0 rgba(0, 0, 0, 0.7);
+}
+
+.mt-col:has(.mt-receive.is-empty) .mt-cap {
+  top: calc(10 * var(--u));
+}
+
+.mt-grade {
+  position: absolute;
+  left: calc(22 * var(--u));
+  top: calc(22 * var(--u));
+  width: calc(118 * var(--u));
+  height: calc(88 * var(--u));
+  z-index: 6;
+}
+
+.mt-player {
+  position: absolute;
+  z-index: 3;
+}
+
+.mt-player .pod-photo {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+  background: transparent;
+}
+
+.mt-player .pod-photo.is-empty {
+  background: rgba(8, 10, 14, 0.92);
+}
+
+.mt-player .pod-photo.is-empty .pod-photo__pick {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.mt-player .ig-name-fade {
+  --name-h: 110;
+  --name-logo: 28;
+}
+
+.mt-player.is-hero .ig-name-fade__given {
+  height: calc(18 * var(--u));
+  font-size: calc(16 * var(--u));
+}
+
+.mt-player.is-hero .ig-name-fade__family {
+  min-height: calc(28 * var(--u));
+  max-height: calc(40 * var(--u));
+  font-size: calc(32 * var(--u));
+}
+
+.mt-player.is-hero .pod-photo__pick {
+  font-size: calc(48 * var(--u));
+  letter-spacing: 0.14em;
+}
+
+.mt-player.is-grid .ig-name-fade {
+  --name-h: 84;
+  --name-logo: 22;
+}
+
+.mt-player.is-grid .ig-name-fade__family {
+  min-height: calc(20 * var(--u));
+  max-height: calc(26 * var(--u));
+  font-size: calc(18 * var(--u));
+}
+
+.mt-chip {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(6 * var(--u));
+  border-radius: calc(6 * var(--u));
+  background: #1c1c1c;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect width='10' height='10' fill='%231c1c1c'/%3E%3Crect x='3.75' y='3.75' width='2.5' height='2.5' fill='%232a2a2a'/%3E%3C/svg%3E");
+  background-size: calc(10 * var(--u)) calc(10 * var(--u));
+  box-shadow: inset 0 0 0 calc(2 * var(--u)) rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-family: var(--ig-poster);
+  font-size: calc(18 * var(--u));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.mt-chip.is-swap,
+.mt-chip.is-top4,
+.mt-chip.is-twoway,
+.mt-chip.is-cash {
+  box-shadow: inset 0 0 0 calc(1.5 * var(--u)) #ffe566;
+  color: #ffe566;
+}
+
+.mt-chip.is-empty {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.mt-board .composer-ba {
+  top: auto;
+  right: auto;
+  z-index: 6;
+}
+
+.mt-board.is-exporting .pod-photo__tools {
+  display: none;
+}
+
+.mt-board.is-none,
+.mt-board.is-none .mt-player .pod-photo {
+  --frame-w: 0px;
+  --frame-color: transparent;
+  box-shadow: none;
+}
